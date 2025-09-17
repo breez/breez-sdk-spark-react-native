@@ -3,7 +3,7 @@
   "version": "0.1.6-dev2",
   "description": "React Native bindings for the Breez SDK - Nodeless (Spark Implementation)",
   "source": "./src/index.tsx",
-  "main": "./lib/module/index.js",
+  "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
   "exports": {
     ".": {
@@ -149,13 +149,13 @@
     "targets": [
       "codegen",
       [
-        "commonjs",
+        "module",
         {
           "esm": true
         }
       ],
       [
-        "module",
+        "commonjs",
         {
           "esm": true
         }
