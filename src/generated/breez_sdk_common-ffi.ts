@@ -42,6 +42,12 @@ interface NativeModuleInterface {
     headers: Uint8Array,
     body: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_common_fn_method_restclient_delete(
+    ptr: bigint,
+    url: Uint8Array,
+    headers: Uint8Array,
+    body: Uint8Array
+  ): bigint;
   ubrn_ffi_breez_sdk_common_rust_future_poll_u8(
     handle: bigint,
     callback: UniffiRustFutureContinuationCallback,
@@ -189,6 +195,7 @@ interface NativeModuleInterface {
   ): void;
   ubrn_uniffi_breez_sdk_common_checksum_method_restclient_get(): number;
   ubrn_uniffi_breez_sdk_common_checksum_method_restclient_post(): number;
+  ubrn_uniffi_breez_sdk_common_checksum_method_restclient_delete(): number;
   ubrn_ffi_breez_sdk_common_uniffi_contract_version(): number;
   ubrn_uniffi_breez_sdk_common_fn_init_callback_vtable_restclient(
     vtable: UniffiVTableCallbackInterfaceRestClient
@@ -337,9 +344,18 @@ type UniffiCallbackInterfaceRestClientMethod1 = (
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceRestClientMethod2 = (
+  uniffiHandle: bigint,
+  url: Uint8Array,
+  headers: Uint8Array,
+  body: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiResult<UniffiForeignFuture>;
 export type UniffiVTableCallbackInterfaceRestClient = {
   get: UniffiCallbackInterfaceRestClientMethod0;
   post: UniffiCallbackInterfaceRestClientMethod1;
+  delete_: UniffiCallbackInterfaceRestClientMethod2;
   uniffiFree: UniffiCallbackInterfaceFree;
 };
 

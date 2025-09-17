@@ -1479,7 +1479,7 @@ export type LnurlPayRequestDetails = {
    *
    * See <https://github.com/nostr-protocol/nips/blob/master/57.md>
    */
-  allowsNostr: boolean;
+  allowsNostr: boolean | undefined;
   /**
    * Optional recipient's lnurl provider's Nostr pubkey for NIP-57. If it exists it should be a
    * valid BIP 340 public key in hex.
@@ -1535,7 +1535,7 @@ const FfiConverterTypeLnurlPayRequestDetails = (() => {
         domain: FfiConverterString.read(from),
         url: FfiConverterString.read(from),
         address: FfiConverterOptionalString.read(from),
-        allowsNostr: FfiConverterBool.read(from),
+        allowsNostr: FfiConverterOptionalBool.read(from),
         nostrPubkey: FfiConverterOptionalString.read(from),
       };
     }
@@ -1548,7 +1548,7 @@ const FfiConverterTypeLnurlPayRequestDetails = (() => {
       FfiConverterString.write(value.domain, into);
       FfiConverterString.write(value.url, into);
       FfiConverterOptionalString.write(value.address, into);
-      FfiConverterBool.write(value.allowsNostr, into);
+      FfiConverterOptionalBool.write(value.allowsNostr, into);
       FfiConverterOptionalString.write(value.nostrPubkey, into);
     }
     allocationSize(value: TypeName): number {
@@ -1561,7 +1561,7 @@ const FfiConverterTypeLnurlPayRequestDetails = (() => {
         FfiConverterString.allocationSize(value.domain) +
         FfiConverterString.allocationSize(value.url) +
         FfiConverterOptionalString.allocationSize(value.address) +
-        FfiConverterBool.allocationSize(value.allowsNostr) +
+        FfiConverterOptionalBool.allocationSize(value.allowsNostr) +
         FfiConverterOptionalString.allocationSize(value.nostrPubkey)
       );
     }
@@ -4898,6 +4898,19 @@ export interface RestClient {
     body: string | undefined,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<RestResponse>;
+  /**
+   * Makes a DELETE request, and logs on DEBUG.
+   * ### Arguments
+   * - `url`: the URL on which DELETE will be called
+   * - `headers`: the optional DELETE headers
+   * - `body`: the optional DELETE body
+   */
+  delete_(
+    url: string,
+    headers: Map<string, string> | undefined,
+    body: string | undefined,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<RestResponse>;
 }
 
 export class RestClientImpl extends UniffiAbstractObject implements RestClient {
@@ -4978,6 +4991,56 @@ export class RestClientImpl extends UniffiAbstractObject implements RestClient {
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
           return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_restclient_post(
+            uniffiTypeRestClientImplObjectFactory.clonePointer(this),
+            FfiConverterString.lower(url),
+            FfiConverterOptionalMapStringString.lower(headers),
+            FfiConverterOptionalString.lower(body)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeRestResponse.lift.bind(
+          FfiConverterTypeRestResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeServiceConnectivityError.lift.bind(
+          FfiConverterTypeServiceConnectivityError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Makes a DELETE request, and logs on DEBUG.
+   * ### Arguments
+   * - `url`: the URL on which DELETE will be called
+   * - `headers`: the optional DELETE headers
+   * - `body`: the optional DELETE body
+   */
+  public async delete_(
+    url: string,
+    headers: Map<string, string> | undefined,
+    body: string | undefined,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<RestResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_restclient_delete(
             uniffiTypeRestClientImplObjectFactory.clonePointer(this),
             FfiConverterString.lower(url),
             FfiConverterOptionalMapStringString.lower(headers),
@@ -5201,6 +5264,56 @@ const uniffiCallbackInterfaceRestClient: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
+    delete_: (
+      uniffiHandle: bigint,
+      url: Uint8Array,
+      headers: Uint8Array,
+      body: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<RestResponse> => {
+        const jsCallback = FfiConverterTypeRestClient.lift(uniffiHandle);
+        return await jsCallback.delete_(
+          FfiConverterString.lift(url),
+          FfiConverterOptionalMapStringString.lift(headers),
+          FfiConverterOptionalString.lift(body),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: RestResponse) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypeRestResponse.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ ServiceConnectivityError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeServiceConnectivityError.lower.bind(
+          FfiConverterTypeServiceConnectivityError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
       // RestClient: this will throw a stale handle error if the handle isn't found.
       FfiConverterTypeRestClient.drop(uniffiHandle);
@@ -5323,6 +5436,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_common_checksum_method_restclient_post'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_restclient_delete() !==
+    56210
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_common_checksum_method_restclient_delete'
     );
   }
 

@@ -349,6 +349,60 @@ const uniffiCallbackInterfaceLogger: {
 // FfiConverter protocol for callback interfaces
 const FfiConverterTypeLogger = new FfiConverterCallback<Logger>();
 
+export type CheckLightningAddressRequest = {
+  username: string;
+};
+
+/**
+ * Generated factory for {@link CheckLightningAddressRequest} record objects.
+ */
+export const CheckLightningAddressRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      CheckLightningAddressRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link CheckLightningAddressRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link CheckLightningAddressRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<CheckLightningAddressRequest>,
+  });
+})();
+
+const FfiConverterTypeCheckLightningAddressRequest = (() => {
+  type TypeName = CheckLightningAddressRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        username: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.username, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterString.allocationSize(value.username);
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type ClaimDepositRequest = {
   txid: string;
   vout: /*u32*/ number;
@@ -469,6 +523,10 @@ export type Config = {
   network: Network;
   syncIntervalSecs: /*u32*/ number;
   maxDepositClaimFee: Fee | undefined;
+  /**
+   * The domain used for receiving through lnurl-pay and lightning address.
+   */
+  lnurlDomain: string | undefined;
 };
 
 /**
@@ -508,6 +566,7 @@ const FfiConverterTypeConfig = (() => {
         network: FfiConverterTypeNetwork.read(from),
         syncIntervalSecs: FfiConverterUInt32.read(from),
         maxDepositClaimFee: FfiConverterOptionalTypeFee.read(from),
+        lnurlDomain: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -515,13 +574,15 @@ const FfiConverterTypeConfig = (() => {
       FfiConverterTypeNetwork.write(value.network, into);
       FfiConverterUInt32.write(value.syncIntervalSecs, into);
       FfiConverterOptionalTypeFee.write(value.maxDepositClaimFee, into);
+      FfiConverterOptionalString.write(value.lnurlDomain, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterOptionalString.allocationSize(value.apiKey) +
         FfiConverterTypeNetwork.allocationSize(value.network) +
         FfiConverterUInt32.allocationSize(value.syncIntervalSecs) +
-        FfiConverterOptionalTypeFee.allocationSize(value.maxDepositClaimFee)
+        FfiConverterOptionalTypeFee.allocationSize(value.maxDepositClaimFee) +
+        FfiConverterOptionalString.allocationSize(value.lnurlDomain)
       );
     }
   }
@@ -930,6 +991,73 @@ const FfiConverterTypeGetPaymentResponse = (() => {
     }
     allocationSize(value: TypeName): number {
       return FfiConverterTypePayment.allocationSize(value.payment);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type LightningAddressInfo = {
+  description: string;
+  lightningAddress: string;
+  lnurl: string;
+  username: string;
+};
+
+/**
+ * Generated factory for {@link LightningAddressInfo} record objects.
+ */
+export const LightningAddressInfo = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      LightningAddressInfo,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link LightningAddressInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link LightningAddressInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<LightningAddressInfo>,
+  });
+})();
+
+const FfiConverterTypeLightningAddressInfo = (() => {
+  type TypeName = LightningAddressInfo;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        description: FfiConverterString.read(from),
+        lightningAddress: FfiConverterString.read(from),
+        lnurl: FfiConverterString.read(from),
+        username: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.description, into);
+      FfiConverterString.write(value.lightningAddress, into);
+      FfiConverterString.write(value.lnurl, into);
+      FfiConverterString.write(value.username, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.description) +
+        FfiConverterString.allocationSize(value.lightningAddress) +
+        FfiConverterString.allocationSize(value.lnurl) +
+        FfiConverterString.allocationSize(value.username)
+      );
     }
   }
   return new FFIConverter();
@@ -2100,6 +2228,66 @@ const FfiConverterTypeRefundDepositResponse = (() => {
       return (
         FfiConverterString.allocationSize(value.txId) +
         FfiConverterString.allocationSize(value.txHex)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type RegisterLightningAddressRequest = {
+  username: string;
+  description: string;
+};
+
+/**
+ * Generated factory for {@link RegisterLightningAddressRequest} record objects.
+ */
+export const RegisterLightningAddressRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      RegisterLightningAddressRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link RegisterLightningAddressRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link RegisterLightningAddressRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<RegisterLightningAddressRequest>,
+  });
+})();
+
+const FfiConverterTypeRegisterLightningAddressRequest = (() => {
+  type TypeName = RegisterLightningAddressRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        username: FfiConverterString.read(from),
+        description: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.username, into);
+      FfiConverterString.write(value.description, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.username) +
+        FfiConverterString.allocationSize(value.description)
       );
     }
   }
@@ -5860,10 +6048,17 @@ export interface BreezSdkInterface {
    * A unique identifier for the listener, which can be used to remove it later
    */
   addEventListener(listener: EventListener): string;
+  checkLightningAddressAvailable(
+    req: CheckLightningAddressRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<boolean>;
   claimDeposit(
     request: ClaimDepositRequest,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<ClaimDepositResponse>;
+  deleteLightningAddress(asyncOpts_?: {
+    signal: AbortSignal;
+  }) /*throws*/ : Promise<void>;
   /**
    * Stops the SDK's background tasks
    *
@@ -5882,6 +6077,9 @@ export interface BreezSdkInterface {
     request: GetInfoRequest,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<GetInfoResponse>;
+  getLightningAddress(asyncOpts_?: {
+    signal: AbortSignal;
+  }) /*throws*/ : Promise<LightningAddressInfo | undefined>;
   getPayment(
     request: GetPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -5927,10 +6125,20 @@ export interface BreezSdkInterface {
     request: ReceivePaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<ReceivePaymentResponse>;
+  /**
+   * Attempts to recover a lightning address from the lnurl server.
+   */
+  recoverLightningAddress(asyncOpts_?: {
+    signal: AbortSignal;
+  }) /*throws*/ : Promise<LightningAddressInfo | undefined>;
   refundDeposit(
     request: RefundDepositRequest,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<RefundDepositResponse>;
+  registerLightningAddress(
+    request: RegisterLightningAddressRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<LightningAddressInfo>;
   /**
    * Removes a previously registered event listener
    *
@@ -6003,6 +6211,43 @@ export class BreezSdk
     );
   }
 
+  public async checkLightningAddressAvailable(
+    req: CheckLightningAddressRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<boolean> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_check_lightning_address_available(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeCheckLightningAddressRequest.lower(req)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_i8,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_i8,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_i8,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_i8,
+        /*liftFunc:*/ FfiConverterBool.lift.bind(FfiConverterBool),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
   public async claimDeposit(
     request: ClaimDepositRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -6028,6 +6273,41 @@ export class BreezSdk
         /*liftFunc:*/ FfiConverterTypeClaimDepositResponse.lift.bind(
           FfiConverterTypeClaimDepositResponse
         ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async deleteLightningAddress(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<void> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_delete_lightning_address(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
         /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
@@ -6094,6 +6374,43 @@ export class BreezSdk
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypeGetInfoResponse.lift.bind(
           FfiConverterTypeGetInfoResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async getLightningAddress(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<LightningAddressInfo | undefined> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_lightning_address(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterOptionalTypeLightningAddressInfo.lift.bind(
+          FfiConverterOptionalTypeLightningAddressInfo
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -6411,6 +6728,46 @@ export class BreezSdk
     }
   }
 
+  /**
+   * Attempts to recover a lightning address from the lnurl server.
+   */
+  public async recoverLightningAddress(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<LightningAddressInfo | undefined> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_recover_lightning_address(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterOptionalTypeLightningAddressInfo.lift.bind(
+          FfiConverterOptionalTypeLightningAddressInfo
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
   public async refundDeposit(
     request: RefundDepositRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -6435,6 +6792,45 @@ export class BreezSdk
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypeRefundDepositResponse.lift.bind(
           FfiConverterTypeRefundDepositResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async registerLightningAddress(
+    request: RegisterLightningAddressRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<LightningAddressInfo> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_register_lightning_address(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeRegisterLightningAddressRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeLightningAddressInfo.lift.bind(
+          FfiConverterTypeLightningAddressInfo
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -6975,6 +7371,10 @@ const FfiConverterTypeSdkBuilder = new FfiConverterObject(
  * Trait for persistent storage
  */
 export interface Storage {
+  deleteCachedItem(
+    key: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<void>;
   getCachedItem(
     key: string,
     asyncOpts_?: { signal: AbortSignal }
@@ -7123,6 +7523,43 @@ export class StorageImpl extends UniffiAbstractObject implements Storage {
     this[pointerLiteralSymbol] = pointer;
     this[destructorGuardSymbol] =
       uniffiTypeStorageImplObjectFactory.bless(pointer);
+  }
+
+  public async deleteCachedItem(
+    key: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_storage_delete_cached_item(
+            uniffiTypeStorageImplObjectFactory.clonePointer(this),
+            FfiConverterString.lower(key)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeStorageError.lift.bind(
+          FfiConverterTypeStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
   }
 
   public async getCachedItem(
@@ -7696,6 +8133,47 @@ const uniffiCallbackInterfaceStorage: {
   // Create the VTable using a series of closures.
   // ts automatically converts these into C callback functions.
   vtable: {
+    deleteCachedItem: (
+      uniffiHandle: bigint,
+      key: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<void> => {
+        const jsCallback = FfiConverterTypeStorage.lift(uniffiHandle);
+        return await jsCallback.deleteCachedItem(FfiConverterString.lift(key), {
+          signal,
+        });
+      };
+      const uniffiHandleSuccess = (returnValue: void) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ StorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeStorageError.lower.bind(
+          FfiConverterTypeStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
     getCachedItem: (
       uniffiHandle: bigint,
       key: Uint8Array,
@@ -8175,6 +8653,11 @@ const FfiConverterOptionalTypeCredentials = new FfiConverterOptional(
   FfiConverterTypeCredentials
 );
 
+// FfiConverter for LightningAddressInfo | undefined
+const FfiConverterOptionalTypeLightningAddressInfo = new FfiConverterOptional(
+  FfiConverterTypeLightningAddressInfo
+);
+
 // FfiConverter for LnurlPayInfo | undefined
 const FfiConverterOptionalTypeLnurlPayInfo = new FfiConverterOptional(
   FfiConverterTypeLnurlPayInfo
@@ -8315,11 +8798,27 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_lightning_address_available() !==
+    31624
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_check_lightning_address_available'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_deposit() !==
     43529
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_deposit'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_lightning_address() !==
+    44132
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_lightning_address'
     );
   }
   if (
@@ -8336,6 +8835,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_lightning_address() !==
+    36552
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_get_lightning_address'
     );
   }
   if (
@@ -8403,11 +8910,27 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_recover_lightning_address() !==
+    43367
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_recover_lightning_address'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_deposit() !==
     33646
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_deposit'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_register_lightning_address() !==
+    530
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_register_lightning_address'
     );
   }
   if (
@@ -8475,8 +8998,16 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_cached_item() !==
+    6883
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_storage_delete_cached_item'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_cached_item() !==
-    11423
+    30248
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_get_cached_item'
@@ -8484,7 +9015,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_set_cached_item() !==
-    17965
+    7970
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_set_cached_item'
@@ -8492,7 +9023,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_payments() !==
-    55103
+    35678
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_list_payments'
@@ -8500,7 +9031,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_insert_payment() !==
-    35649
+    28075
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_insert_payment'
@@ -8508,7 +9039,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_set_payment_metadata() !==
-    780
+    45500
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_set_payment_metadata'
@@ -8516,7 +9047,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_id() !==
-    32084
+    35394
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_id'
@@ -8524,7 +9055,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_add_deposit() !==
-    31647
+    55082
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_add_deposit'
@@ -8532,7 +9063,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_deposit() !==
-    19211
+    13111
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_delete_deposit'
@@ -8540,7 +9071,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_deposits() !==
-    11262
+    22806
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_list_deposits'
@@ -8548,7 +9079,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_update_deposit() !==
-    58400
+    48478
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_update_deposit'
@@ -8590,6 +9121,7 @@ export default Object.freeze({
   converters: {
     FfiConverterTypeBitcoinChainService,
     FfiConverterTypeBreezSdk,
+    FfiConverterTypeCheckLightningAddressRequest,
     FfiConverterTypeClaimDepositRequest,
     FfiConverterTypeClaimDepositResponse,
     FfiConverterTypeConfig,
@@ -8602,6 +9134,7 @@ export default Object.freeze({
     FfiConverterTypeGetInfoResponse,
     FfiConverterTypeGetPaymentRequest,
     FfiConverterTypeGetPaymentResponse,
+    FfiConverterTypeLightningAddressInfo,
     FfiConverterTypeListPaymentsRequest,
     FfiConverterTypeListPaymentsResponse,
     FfiConverterTypeListUnclaimedDepositsRequest,
@@ -8627,6 +9160,7 @@ export default Object.freeze({
     FfiConverterTypeReceivePaymentResponse,
     FfiConverterTypeRefundDepositRequest,
     FfiConverterTypeRefundDepositResponse,
+    FfiConverterTypeRegisterLightningAddressRequest,
     FfiConverterTypeSdkBuilder,
     FfiConverterTypeSdkEvent,
     FfiConverterTypeSendOnchainFeeQuote,

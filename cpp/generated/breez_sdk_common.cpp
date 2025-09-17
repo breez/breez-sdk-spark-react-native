@@ -108,9 +108,14 @@ typedef void (*UniffiCallbackInterfaceRestClientMethod1)(
     uint64_t uniffi_handle, RustBuffer url, RustBuffer headers, RustBuffer body,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfaceRestClientMethod2)(
+    uint64_t uniffi_handle, RustBuffer url, RustBuffer headers, RustBuffer body,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef struct UniffiVTableCallbackInterfaceRestClient {
   UniffiCallbackInterfaceRestClientMethod0 get;
   UniffiCallbackInterfaceRestClientMethod1 post;
+  UniffiCallbackInterfaceRestClientMethod2 delete;
   UniffiCallbackInterfaceFree uniffi_free;
 } UniffiVTableCallbackInterfaceRestClient;
 void *
@@ -124,6 +129,8 @@ void uniffi_breez_sdk_common_fn_init_callback_vtable_restclient(
 uniffi_breez_sdk_common_fn_method_restclient_get(void *ptr, RustBuffer url,
                                                  RustBuffer headers);
 /*handle*/ uint64_t uniffi_breez_sdk_common_fn_method_restclient_post(
+    void *ptr, RustBuffer url, RustBuffer headers, RustBuffer body);
+/*handle*/ uint64_t uniffi_breez_sdk_common_fn_method_restclient_delete(
     void *ptr, RustBuffer url, RustBuffer headers, RustBuffer body);
 RustBuffer
 ffi_breez_sdk_common_rustbuffer_alloc(uint64_t size,
@@ -255,6 +262,7 @@ void ffi_breez_sdk_common_rust_future_complete_void(
     /*handle*/ uint64_t handle, RustCallStatus *uniffi_out_err);
 uint16_t uniffi_breez_sdk_common_checksum_method_restclient_get();
 uint16_t uniffi_breez_sdk_common_checksum_method_restclient_post();
+uint16_t uniffi_breez_sdk_common_checksum_method_restclient_delete();
 uint32_t ffi_breez_sdk_common_uniffi_contract_version();
 }
 
@@ -2034,6 +2042,156 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace uniffi::breez_sdk_common::cb::callbackinterfacerestclientmethod1
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceRestClientMethod2
+
+// Callback function:
+// uniffi::breez_sdk_common::cb::callbackinterfacerestclientmethod2::UniffiCallbackInterfaceRestClientMethod2
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_common::cb::callbackinterfacerestclientmethod2 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer, RustBuffer, RustBuffer,
+                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_url,
+                 RustBuffer rs_headers, RustBuffer rs_body,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_url = uniffi::breez_sdk_common::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_url);
+  auto js_headers = uniffi::breez_sdk_common::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_headers);
+  auto js_body = uniffi::breez_sdk_common::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_body);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_common::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult =
+        cb.call(rt, js_uniffiHandle, js_url, js_headers, js_body,
+                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn = uniffi::breez_sdk_common::Bridging<
+        ReferenceHolder<UniffiForeignFuture>>::fromJs(rt, callInvoker,
+                                                      uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback UniffiCallbackInterfaceRestClientMethod2: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_url, RustBuffer rs_headers,
+         RustBuffer rs_body,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_url, rs_headers, rs_body,
+           rs_uniffiFutureCallback, rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceRestClientMethod2
+makeCallbackFunction( // uniffi::breez_sdk_common::cb::callbackinterfacerestclientmethod2
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_url,
+                 RustBuffer rs_headers, RustBuffer rs_body,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_url, rs_headers,
+         rs_body, rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_url,
+               rs_headers, rs_body, rs_uniffiFutureCallback,
+               rs_uniffiCallbackData, rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkCommon, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace uniffi::breez_sdk_common::cb::callbackinterfacerestclientmethod2
 namespace uniffi::breez_sdk_common {
 using namespace facebook;
 using CallInvoker = uniffi_runtime::UniffiCallInvoker;
@@ -2061,6 +2219,9 @@ template <> struct Bridging<UniffiVTableCallbackInterfaceRestClient> {
     rsObject.post = uniffi::breez_sdk_common::cb::
         callbackinterfacerestclientmethod1::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "post"));
+    rsObject.delete = uniffi::breez_sdk_common::cb::
+        callbackinterfacerestclientmethod2::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "delete"));
     rsObject.uniffi_free =
         uniffi::breez_sdk_common::st::vtablecallbackinterfacerestclient::
             vtablecallbackinterfacerestclient::free::makeCallbackFunction(
@@ -2172,6 +2333,18 @@ NativeBreezSdkCommon::NativeBreezSdkCommon(
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this->cpp_uniffi_breez_sdk_common_fn_method_restclient_post(
                 rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_common_fn_method_restclient_delete"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_common_fn_method_restclient_delete"),
+          4,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_common_fn_method_restclient_delete(
+                    rt, thisVal, args, count);
           });
   props["ubrn_ffi_breez_sdk_common_rust_future_poll_u8"] =
       jsi::Function::createFromHostFunction(
@@ -2773,6 +2946,19 @@ NativeBreezSdkCommon::NativeBreezSdkCommon(
                 ->cpp_uniffi_breez_sdk_common_checksum_method_restclient_post(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_common_checksum_method_restclient_delete"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_breez_sdk_common_checksum_method_restclient_delete"),
+          0,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_common_checksum_method_restclient_delete(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_ffi_breez_sdk_common_uniffi_contract_version"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -2858,6 +3044,8 @@ NativeBreezSdkCommon::~NativeBreezSdkCommon() {
   uniffi::breez_sdk_common::cb::callbackinterfacerestclientmethod0::cleanup();
   // Cleanup for callback function CallbackInterfaceRestClientMethod1
   uniffi::breez_sdk_common::cb::callbackinterfacerestclientmethod1::cleanup();
+  // Cleanup for callback function CallbackInterfaceRestClientMethod2
+  uniffi::breez_sdk_common::cb::callbackinterfacerestclientmethod2::cleanup();
 }
 
 // Utility functions for serialization/deserialization of strings.
@@ -2943,6 +3131,22 @@ NativeBreezSdkCommon::cpp_uniffi_breez_sdk_common_fn_method_restclient_post(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
   auto value = uniffi_breez_sdk_common_fn_method_restclient_post(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_common::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                             args[1]),
+      uniffi::breez_sdk_common::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                             args[2]),
+      uniffi::breez_sdk_common::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                             args[3]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value
+NativeBreezSdkCommon::cpp_uniffi_breez_sdk_common_fn_method_restclient_delete(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  auto value = uniffi_breez_sdk_common_fn_method_restclient_delete(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_common::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                              args[1]),
@@ -3594,6 +3798,14 @@ jsi::Value NativeBreezSdkCommon::
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value = uniffi_breez_sdk_common_checksum_method_restclient_post();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkCommon::
+    cpp_uniffi_breez_sdk_common_checksum_method_restclient_delete(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_common_checksum_method_restclient_delete();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
