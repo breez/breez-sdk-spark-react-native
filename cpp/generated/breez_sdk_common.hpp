@@ -34,13 +34,13 @@ protected:
   jsi::Value cpp_uniffi_breez_sdk_common_fn_free_restclient(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_common_fn_method_restclient_get(
+  jsi::Value cpp_uniffi_breez_sdk_common_fn_method_restclient_get_request(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_common_fn_method_restclient_post(
+  jsi::Value cpp_uniffi_breez_sdk_common_fn_method_restclient_post_request(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_common_fn_method_restclient_delete(
+  jsi::Value cpp_uniffi_breez_sdk_common_fn_method_restclient_delete_request(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_ffi_breez_sdk_common_rust_future_poll_u8(
@@ -199,13 +199,15 @@ protected:
   jsi::Value cpp_ffi_breez_sdk_common_rust_future_complete_void(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_common_checksum_method_restclient_get(
+  jsi::Value cpp_uniffi_breez_sdk_common_checksum_method_restclient_get_request(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_common_checksum_method_restclient_post(
+  jsi::Value
+  cpp_uniffi_breez_sdk_common_checksum_method_restclient_post_request(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_common_checksum_method_restclient_delete(
+  jsi::Value
+  cpp_uniffi_breez_sdk_common_checksum_method_restclient_delete_request(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_ffi_breez_sdk_common_uniffi_contract_version(

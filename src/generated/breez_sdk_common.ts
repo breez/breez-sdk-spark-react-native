@@ -4880,7 +4880,7 @@ export interface RestClient {
    * - `url`: the URL on which GET will be called
    * - `headers`: optional headers that will be set on the request
    */
-  get(
+  getRequest(
     url: string,
     headers: Map<string, string> | undefined,
     asyncOpts_?: { signal: AbortSignal }
@@ -4892,7 +4892,7 @@ export interface RestClient {
    * - `headers`: the optional POST headers
    * - `body`: the optional POST body
    */
-  post(
+  postRequest(
     url: string,
     headers: Map<string, string> | undefined,
     body: string | undefined,
@@ -4905,7 +4905,7 @@ export interface RestClient {
    * - `headers`: the optional DELETE headers
    * - `body`: the optional DELETE body
    */
-  delete_(
+  deleteRequest(
     url: string,
     headers: Map<string, string> | undefined,
     body: string | undefined,
@@ -4931,7 +4931,7 @@ export class RestClientImpl extends UniffiAbstractObject implements RestClient {
    * - `url`: the URL on which GET will be called
    * - `headers`: optional headers that will be set on the request
    */
-  public async get(
+  public async getRequest(
     url: string,
     headers: Map<string, string> | undefined,
     asyncOpts_?: { signal: AbortSignal }
@@ -4941,7 +4941,7 @@ export class RestClientImpl extends UniffiAbstractObject implements RestClient {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_restclient_get(
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_restclient_get_request(
             uniffiTypeRestClientImplObjectFactory.clonePointer(this),
             FfiConverterString.lower(url),
             FfiConverterOptionalMapStringString.lower(headers)
@@ -4979,7 +4979,7 @@ export class RestClientImpl extends UniffiAbstractObject implements RestClient {
    * - `headers`: the optional POST headers
    * - `body`: the optional POST body
    */
-  public async post(
+  public async postRequest(
     url: string,
     headers: Map<string, string> | undefined,
     body: string | undefined,
@@ -4990,7 +4990,7 @@ export class RestClientImpl extends UniffiAbstractObject implements RestClient {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_restclient_post(
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_restclient_post_request(
             uniffiTypeRestClientImplObjectFactory.clonePointer(this),
             FfiConverterString.lower(url),
             FfiConverterOptionalMapStringString.lower(headers),
@@ -5029,7 +5029,7 @@ export class RestClientImpl extends UniffiAbstractObject implements RestClient {
    * - `headers`: the optional DELETE headers
    * - `body`: the optional DELETE body
    */
-  public async delete_(
+  public async deleteRequest(
     url: string,
     headers: Map<string, string> | undefined,
     body: string | undefined,
@@ -5040,7 +5040,7 @@ export class RestClientImpl extends UniffiAbstractObject implements RestClient {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_restclient_delete(
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_restclient_delete_request(
             uniffiTypeRestClientImplObjectFactory.clonePointer(this),
             FfiConverterString.lower(url),
             FfiConverterOptionalMapStringString.lower(headers),
@@ -5166,7 +5166,7 @@ const uniffiCallbackInterfaceRestClient: {
   // Create the VTable using a series of closures.
   // ts automatically converts these into C callback functions.
   vtable: {
-    get: (
+    getRequest: (
       uniffiHandle: bigint,
       url: Uint8Array,
       headers: Uint8Array,
@@ -5177,7 +5177,7 @@ const uniffiCallbackInterfaceRestClient: {
         signal: AbortSignal
       ): Promise<RestResponse> => {
         const jsCallback = FfiConverterTypeRestClient.lift(uniffiHandle);
-        return await jsCallback.get(
+        return await jsCallback.getRequest(
           FfiConverterString.lift(url),
           FfiConverterOptionalMapStringString.lift(headers),
           { signal }
@@ -5214,7 +5214,7 @@ const uniffiCallbackInterfaceRestClient: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    post: (
+    postRequest: (
       uniffiHandle: bigint,
       url: Uint8Array,
       headers: Uint8Array,
@@ -5226,7 +5226,7 @@ const uniffiCallbackInterfaceRestClient: {
         signal: AbortSignal
       ): Promise<RestResponse> => {
         const jsCallback = FfiConverterTypeRestClient.lift(uniffiHandle);
-        return await jsCallback.post(
+        return await jsCallback.postRequest(
           FfiConverterString.lift(url),
           FfiConverterOptionalMapStringString.lift(headers),
           FfiConverterOptionalString.lift(body),
@@ -5264,7 +5264,7 @@ const uniffiCallbackInterfaceRestClient: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    delete_: (
+    deleteRequest: (
       uniffiHandle: bigint,
       url: Uint8Array,
       headers: Uint8Array,
@@ -5276,7 +5276,7 @@ const uniffiCallbackInterfaceRestClient: {
         signal: AbortSignal
       ): Promise<RestResponse> => {
         const jsCallback = FfiConverterTypeRestClient.lift(uniffiHandle);
-        return await jsCallback.delete_(
+        return await jsCallback.deleteRequest(
           FfiConverterString.lift(url),
           FfiConverterOptionalMapStringString.lift(headers),
           FfiConverterOptionalString.lift(body),
@@ -5423,27 +5423,27 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_restclient_get() !==
-    32450
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_restclient_get_request() !==
+    1702
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_common_checksum_method_restclient_get'
+      'uniffi_breez_sdk_common_checksum_method_restclient_get_request'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_restclient_post() !==
-    14213
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_restclient_post_request() !==
+    38998
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_common_checksum_method_restclient_post'
+      'uniffi_breez_sdk_common_checksum_method_restclient_post_request'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_restclient_delete() !==
-    56210
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_restclient_delete_request() !==
+    26893
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_common_checksum_method_restclient_delete'
+      'uniffi_breez_sdk_common_checksum_method_restclient_delete_request'
     );
   }
 

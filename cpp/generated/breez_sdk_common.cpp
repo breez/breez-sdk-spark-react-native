@@ -113,9 +113,9 @@ typedef void (*UniffiCallbackInterfaceRestClientMethod2)(
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef struct UniffiVTableCallbackInterfaceRestClient {
-  UniffiCallbackInterfaceRestClientMethod0 get;
-  UniffiCallbackInterfaceRestClientMethod1 post;
-  UniffiCallbackInterfaceRestClientMethod2 delete;
+  UniffiCallbackInterfaceRestClientMethod0 get_request;
+  UniffiCallbackInterfaceRestClientMethod1 post_request;
+  UniffiCallbackInterfaceRestClientMethod2 delete_request;
   UniffiCallbackInterfaceFree uniffi_free;
 } UniffiVTableCallbackInterfaceRestClient;
 void *
@@ -125,12 +125,11 @@ void uniffi_breez_sdk_common_fn_free_restclient(void *ptr,
                                                 RustCallStatus *uniffi_out_err);
 void uniffi_breez_sdk_common_fn_init_callback_vtable_restclient(
     UniffiVTableCallbackInterfaceRestClient *vtable);
-/*handle*/ uint64_t
-uniffi_breez_sdk_common_fn_method_restclient_get(void *ptr, RustBuffer url,
-                                                 RustBuffer headers);
-/*handle*/ uint64_t uniffi_breez_sdk_common_fn_method_restclient_post(
+/*handle*/ uint64_t uniffi_breez_sdk_common_fn_method_restclient_get_request(
+    void *ptr, RustBuffer url, RustBuffer headers);
+/*handle*/ uint64_t uniffi_breez_sdk_common_fn_method_restclient_post_request(
     void *ptr, RustBuffer url, RustBuffer headers, RustBuffer body);
-/*handle*/ uint64_t uniffi_breez_sdk_common_fn_method_restclient_delete(
+/*handle*/ uint64_t uniffi_breez_sdk_common_fn_method_restclient_delete_request(
     void *ptr, RustBuffer url, RustBuffer headers, RustBuffer body);
 RustBuffer
 ffi_breez_sdk_common_rustbuffer_alloc(uint64_t size,
@@ -260,9 +259,9 @@ void ffi_breez_sdk_common_rust_future_free_void(
     /*handle*/ uint64_t handle);
 void ffi_breez_sdk_common_rust_future_complete_void(
     /*handle*/ uint64_t handle, RustCallStatus *uniffi_out_err);
-uint16_t uniffi_breez_sdk_common_checksum_method_restclient_get();
-uint16_t uniffi_breez_sdk_common_checksum_method_restclient_post();
-uint16_t uniffi_breez_sdk_common_checksum_method_restclient_delete();
+uint16_t uniffi_breez_sdk_common_checksum_method_restclient_get_request();
+uint16_t uniffi_breez_sdk_common_checksum_method_restclient_post_request();
+uint16_t uniffi_breez_sdk_common_checksum_method_restclient_delete_request();
 uint32_t ffi_breez_sdk_common_uniffi_contract_version();
 }
 
@@ -2213,15 +2212,15 @@ template <> struct Bridging<UniffiVTableCallbackInterfaceRestClient> {
     UniffiVTableCallbackInterfaceRestClient rsObject;
 
     // Create the vtable from the js callbacks.
-    rsObject.get = uniffi::breez_sdk_common::cb::
+    rsObject.get_request = uniffi::breez_sdk_common::cb::
         callbackinterfacerestclientmethod0::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "get"));
-    rsObject.post = uniffi::breez_sdk_common::cb::
+            rt, callInvoker, jsObject.getProperty(rt, "getRequest"));
+    rsObject.post_request = uniffi::breez_sdk_common::cb::
         callbackinterfacerestclientmethod1::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "post"));
-    rsObject.delete = uniffi::breez_sdk_common::cb::
+            rt, callInvoker, jsObject.getProperty(rt, "postRequest"));
+    rsObject.delete_request = uniffi::breez_sdk_common::cb::
         callbackinterfacerestclientmethod2::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "delete"));
+            rt, callInvoker, jsObject.getProperty(rt, "deleteRequest"));
     rsObject.uniffi_free =
         uniffi::breez_sdk_common::st::vtablecallbackinterfacerestclient::
             vtablecallbackinterfacerestclient::free::makeCallbackFunction(
@@ -2312,38 +2311,42 @@ NativeBreezSdkCommon::NativeBreezSdkCommon(
             return this->cpp_uniffi_breez_sdk_common_fn_free_restclient(
                 rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_common_fn_method_restclient_get"] =
+  props["ubrn_uniffi_breez_sdk_common_fn_method_restclient_get_request"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_common_fn_method_restclient_get"),
+              rt,
+              "ubrn_uniffi_breez_sdk_common_fn_method_restclient_get_request"),
           3,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
-            return this->cpp_uniffi_breez_sdk_common_fn_method_restclient_get(
-                rt, thisVal, args, count);
+            return this
+                ->cpp_uniffi_breez_sdk_common_fn_method_restclient_get_request(
+                    rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_common_fn_method_restclient_post"] =
+  props["ubrn_uniffi_breez_sdk_common_fn_method_restclient_post_request"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_common_fn_method_restclient_post"),
-          4,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this->cpp_uniffi_breez_sdk_common_fn_method_restclient_post(
-                rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_common_fn_method_restclient_delete"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_common_fn_method_restclient_delete"),
+              rt,
+              "ubrn_uniffi_breez_sdk_common_fn_method_restclient_post_request"),
           4,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_common_fn_method_restclient_delete(
+                ->cpp_uniffi_breez_sdk_common_fn_method_restclient_post_request(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_common_fn_method_restclient_delete_request"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_common_fn_"
+                                        "method_restclient_delete_request"),
+          4,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_common_fn_method_restclient_delete_request(
                     rt, thisVal, args, count);
           });
   props["ubrn_ffi_breez_sdk_common_rust_future_poll_u8"] =
@@ -2920,45 +2923,42 @@ NativeBreezSdkCommon::NativeBreezSdkCommon(
             return this->cpp_ffi_breez_sdk_common_rust_future_complete_void(
                 rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_common_checksum_method_restclient_get"] =
+  props["ubrn_uniffi_breez_sdk_common_checksum_method_restclient_get_request"] =
       jsi::Function::createFromHostFunction(
           rt,
-          jsi::PropNameID::forAscii(
-              rt,
-              "ubrn_uniffi_breez_sdk_common_checksum_method_restclient_get"),
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_common_checksum_"
+                                        "method_restclient_get_request"),
           0,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_common_checksum_method_restclient_get(
+                ->cpp_uniffi_breez_sdk_common_checksum_method_restclient_get_request(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_common_checksum_method_restclient_post"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt,
-              "ubrn_uniffi_breez_sdk_common_checksum_method_restclient_post"),
-          0,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_common_checksum_method_restclient_post(
-                    rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_common_checksum_method_restclient_delete"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt,
-              "ubrn_uniffi_breez_sdk_common_checksum_method_restclient_delete"),
-          0,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_common_checksum_method_restclient_delete(
-                    rt, thisVal, args, count);
-          });
+  props["ubrn_uniffi_breez_sdk_common_checksum_method_restclient_post_"
+        "request"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_common_checksum_"
+                                    "method_restclient_post_request"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_common_checksum_method_restclient_post_request(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_common_checksum_method_restclient_delete_"
+        "request"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_common_checksum_"
+                                    "method_restclient_delete_request"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_common_checksum_method_restclient_delete_request(
+                rt, thisVal, args, count);
+      });
   props["ubrn_ffi_breez_sdk_common_uniffi_contract_version"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -3112,11 +3112,11 @@ jsi::Value NativeBreezSdkCommon::cpp_uniffi_breez_sdk_common_fn_free_restclient(
 
   return jsi::Value::undefined();
 }
-jsi::Value
-NativeBreezSdkCommon::cpp_uniffi_breez_sdk_common_fn_method_restclient_get(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  auto value = uniffi_breez_sdk_common_fn_method_restclient_get(
+jsi::Value NativeBreezSdkCommon::
+    cpp_uniffi_breez_sdk_common_fn_method_restclient_get_request(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_common_fn_method_restclient_get_request(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_common::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                              args[1]),
@@ -3126,11 +3126,11 @@ NativeBreezSdkCommon::cpp_uniffi_breez_sdk_common_fn_method_restclient_get(
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
-jsi::Value
-NativeBreezSdkCommon::cpp_uniffi_breez_sdk_common_fn_method_restclient_post(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  auto value = uniffi_breez_sdk_common_fn_method_restclient_post(
+jsi::Value NativeBreezSdkCommon::
+    cpp_uniffi_breez_sdk_common_fn_method_restclient_post_request(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_common_fn_method_restclient_post_request(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_common::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                              args[1]),
@@ -3142,11 +3142,11 @@ NativeBreezSdkCommon::cpp_uniffi_breez_sdk_common_fn_method_restclient_post(
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
-jsi::Value
-NativeBreezSdkCommon::cpp_uniffi_breez_sdk_common_fn_method_restclient_delete(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  auto value = uniffi_breez_sdk_common_fn_method_restclient_delete(
+jsi::Value NativeBreezSdkCommon::
+    cpp_uniffi_breez_sdk_common_fn_method_restclient_delete_request(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_common_fn_method_restclient_delete_request(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_common::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                              args[1]),
@@ -3786,26 +3786,28 @@ NativeBreezSdkCommon::cpp_ffi_breez_sdk_common_rust_future_complete_void(
   return jsi::Value::undefined();
 }
 jsi::Value NativeBreezSdkCommon::
-    cpp_uniffi_breez_sdk_common_checksum_method_restclient_get(
+    cpp_uniffi_breez_sdk_common_checksum_method_restclient_get_request(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value = uniffi_breez_sdk_common_checksum_method_restclient_get();
+  auto value = uniffi_breez_sdk_common_checksum_method_restclient_get_request();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkCommon::
-    cpp_uniffi_breez_sdk_common_checksum_method_restclient_post(
+    cpp_uniffi_breez_sdk_common_checksum_method_restclient_post_request(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value = uniffi_breez_sdk_common_checksum_method_restclient_post();
+  auto value =
+      uniffi_breez_sdk_common_checksum_method_restclient_post_request();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkCommon::
-    cpp_uniffi_breez_sdk_common_checksum_method_restclient_delete(
+    cpp_uniffi_breez_sdk_common_checksum_method_restclient_delete_request(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value = uniffi_breez_sdk_common_checksum_method_restclient_delete();
+  auto value =
+      uniffi_breez_sdk_common_checksum_method_restclient_delete_request();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }

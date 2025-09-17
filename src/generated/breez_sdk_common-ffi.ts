@@ -31,18 +31,18 @@ interface NativeModuleInterface {
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): void;
-  ubrn_uniffi_breez_sdk_common_fn_method_restclient_get(
+  ubrn_uniffi_breez_sdk_common_fn_method_restclient_get_request(
     ptr: bigint,
     url: Uint8Array,
     headers: Uint8Array
   ): bigint;
-  ubrn_uniffi_breez_sdk_common_fn_method_restclient_post(
+  ubrn_uniffi_breez_sdk_common_fn_method_restclient_post_request(
     ptr: bigint,
     url: Uint8Array,
     headers: Uint8Array,
     body: Uint8Array
   ): bigint;
-  ubrn_uniffi_breez_sdk_common_fn_method_restclient_delete(
+  ubrn_uniffi_breez_sdk_common_fn_method_restclient_delete_request(
     ptr: bigint,
     url: Uint8Array,
     headers: Uint8Array,
@@ -193,9 +193,9 @@ interface NativeModuleInterface {
     handle: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): void;
-  ubrn_uniffi_breez_sdk_common_checksum_method_restclient_get(): number;
-  ubrn_uniffi_breez_sdk_common_checksum_method_restclient_post(): number;
-  ubrn_uniffi_breez_sdk_common_checksum_method_restclient_delete(): number;
+  ubrn_uniffi_breez_sdk_common_checksum_method_restclient_get_request(): number;
+  ubrn_uniffi_breez_sdk_common_checksum_method_restclient_post_request(): number;
+  ubrn_uniffi_breez_sdk_common_checksum_method_restclient_delete_request(): number;
   ubrn_ffi_breez_sdk_common_uniffi_contract_version(): number;
   ubrn_uniffi_breez_sdk_common_fn_init_callback_vtable_restclient(
     vtable: UniffiVTableCallbackInterfaceRestClient
@@ -353,9 +353,9 @@ type UniffiCallbackInterfaceRestClientMethod2 = (
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
 export type UniffiVTableCallbackInterfaceRestClient = {
-  get: UniffiCallbackInterfaceRestClientMethod0;
-  post: UniffiCallbackInterfaceRestClientMethod1;
-  delete_: UniffiCallbackInterfaceRestClientMethod2;
+  getRequest: UniffiCallbackInterfaceRestClientMethod0;
+  postRequest: UniffiCallbackInterfaceRestClientMethod1;
+  deleteRequest: UniffiCallbackInterfaceRestClientMethod2;
   uniffiFree: UniffiCallbackInterfaceFree;
 };
 
