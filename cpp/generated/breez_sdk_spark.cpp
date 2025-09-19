@@ -328,8 +328,9 @@ void uniffi_breez_sdk_spark_fn_init_callback_vtable_logger(
 RustBuffer
 uniffi_breez_sdk_spark_fn_func_default_config(RustBuffer network,
                                               RustCallStatus *uniffi_out_err);
-/*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_func_default_storage(RustBuffer data_dir);
+void *
+uniffi_breez_sdk_spark_fn_func_default_storage(RustBuffer data_dir,
+                                               RustCallStatus *uniffi_out_err);
 void uniffi_breez_sdk_spark_fn_func_init_logging(
     RustBuffer log_dir, RustBuffer app_logger, RustBuffer log_filter,
     RustCallStatus *uniffi_out_err);
@@ -7599,12 +7600,16 @@ jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_default_storage(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
   auto value = uniffi_breez_sdk_spark_fn_func_default_storage(
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[0]));
+                                                            args[0]),
+      &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
 
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_init_logging(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,

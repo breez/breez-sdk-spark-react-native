@@ -15,9 +15,7 @@ export declare function connect(request: ConnectRequest, asyncOpts_?: {
     signal: AbortSignal;
 }): Promise<BreezSdkInterface>;
 export declare function defaultConfig(network: Network): Config;
-export declare function defaultStorage(dataDir: string, asyncOpts_?: {
-    signal: AbortSignal;
-}): Promise<Storage>;
+export declare function defaultStorage(dataDir: string): Storage;
 export declare function initLogging(logDir: string | undefined, appLogger: Logger | undefined, logFilter: string | undefined): void;
 export declare function parse(input: string, asyncOpts_?: {
     signal: AbortSignal;

@@ -54,7 +54,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_storage_update_deposit(ptr: bigint, txid: Uint8Array, vout: number, payload: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_connect(request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_default_config(network: Uint8Array, uniffi_out_err: UniffiRustCallStatus): Uint8Array;
-    ubrn_uniffi_breez_sdk_spark_fn_func_default_storage(dataDir: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_func_default_storage(dataDir: Uint8Array, uniffi_out_err: UniffiRustCallStatus): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_init_logging(logDir: Uint8Array, appLogger: Uint8Array, logFilter: Uint8Array, uniffi_out_err: UniffiRustCallStatus): void;
     ubrn_uniffi_breez_sdk_spark_fn_func_parse(input: Uint8Array): bigint;
     ubrn_ffi_breez_sdk_spark_rust_future_poll_u8(handle: bigint, callback: UniffiRustFutureContinuationCallback, callbackData: bigint): void;

@@ -162,40 +162,21 @@ export function defaultConfig(network: Network): Config {
     )
   );
 }
-export async function defaultStorage(
-  dataDir: string,
-  asyncOpts_?: { signal: AbortSignal }
-): Promise<Storage> /*throws*/ {
-  const __stack = uniffiIsDebug ? new Error().stack : undefined;
-  try {
-    return await uniffiRustCallAsync(
-      /*rustCaller:*/ uniffiCaller,
-      /*rustFutureFunc:*/ () => {
+export function defaultStorage(dataDir: string): Storage /*throws*/ {
+  return FfiConverterTypeStorage.lift(
+    uniffiCaller.rustCallWithError(
+      /*liftError:*/ FfiConverterTypeSdkError.lift.bind(
+        FfiConverterTypeSdkError
+      ),
+      /*caller:*/ (callStatus) => {
         return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_default_storage(
-          FfiConverterString.lower(dataDir)
+          FfiConverterString.lower(dataDir),
+          callStatus
         );
       },
-      /*pollFunc:*/ nativeModule()
-        .ubrn_ffi_breez_sdk_spark_rust_future_poll_pointer,
-      /*cancelFunc:*/ nativeModule()
-        .ubrn_ffi_breez_sdk_spark_rust_future_cancel_pointer,
-      /*completeFunc:*/ nativeModule()
-        .ubrn_ffi_breez_sdk_spark_rust_future_complete_pointer,
-      /*freeFunc:*/ nativeModule()
-        .ubrn_ffi_breez_sdk_spark_rust_future_free_pointer,
-      /*liftFunc:*/ FfiConverterTypeStorage.lift.bind(FfiConverterTypeStorage),
-      /*liftString:*/ FfiConverterString.lift,
-      /*asyncOpts:*/ asyncOpts_,
-      /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
-        FfiConverterTypeSdkError
-      )
-    );
-  } catch (__error: any) {
-    if (uniffiIsDebug && __error instanceof Error) {
-      __error.stack = __stack;
-    }
-    throw __error;
-  }
+      /*liftString:*/ FfiConverterString.lift
+    )
+  );
 }
 export function initLogging(
   logDir: string | undefined,
@@ -8744,7 +8725,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_default_storage() !==
-    30804
+    46285
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_func_default_storage'

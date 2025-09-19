@@ -234,7 +234,8 @@ interface NativeModuleInterface {
     uniffi_out_err: UniffiRustCallStatus
   ): Uint8Array;
   ubrn_uniffi_breez_sdk_spark_fn_func_default_storage(
-    dataDir: Uint8Array
+    dataDir: Uint8Array,
+    uniffi_out_err: UniffiRustCallStatus
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_func_init_logging(
     logDir: Uint8Array,
