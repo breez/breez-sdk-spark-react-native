@@ -508,6 +508,12 @@ export type Config = {
    * The domain used for receiving through lnurl-pay and lightning address.
    */
   lnurlDomain: string | undefined;
+  /**
+   * When this is set to `true` we will prefer to use spark payments over
+   * lightning when sending and receiving. This has the benefit of lower fees
+   * but is at the cost of privacy.
+   */
+  preferSparkOverLightning: boolean;
 };
 
 /**
@@ -548,6 +554,7 @@ const FfiConverterTypeConfig = (() => {
         syncIntervalSecs: FfiConverterUInt32.read(from),
         maxDepositClaimFee: FfiConverterOptionalTypeFee.read(from),
         lnurlDomain: FfiConverterOptionalString.read(from),
+        preferSparkOverLightning: FfiConverterBool.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -556,6 +563,7 @@ const FfiConverterTypeConfig = (() => {
       FfiConverterUInt32.write(value.syncIntervalSecs, into);
       FfiConverterOptionalTypeFee.write(value.maxDepositClaimFee, into);
       FfiConverterOptionalString.write(value.lnurlDomain, into);
+      FfiConverterBool.write(value.preferSparkOverLightning, into);
     }
     allocationSize(value: TypeName): number {
       return (
@@ -563,7 +571,8 @@ const FfiConverterTypeConfig = (() => {
         FfiConverterTypeNetwork.allocationSize(value.network) +
         FfiConverterUInt32.allocationSize(value.syncIntervalSecs) +
         FfiConverterOptionalTypeFee.allocationSize(value.maxDepositClaimFee) +
-        FfiConverterOptionalString.allocationSize(value.lnurlDomain)
+        FfiConverterOptionalString.allocationSize(value.lnurlDomain) +
+        FfiConverterBool.allocationSize(value.preferSparkOverLightning)
       );
     }
   }
@@ -3327,6 +3336,55 @@ const FfiConverterTypeFee = (() => {
   return new FFIConverter();
 })();
 
+export enum KeySetType {
+  Default,
+  Taproot,
+  NativeSegwit,
+  WrappedSegwit,
+  Legacy,
+}
+
+const FfiConverterTypeKeySetType = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = KeySetType;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return KeySetType.Default;
+        case 2:
+          return KeySetType.Taproot;
+        case 3:
+          return KeySetType.NativeSegwit;
+        case 4:
+          return KeySetType.WrappedSegwit;
+        case 5:
+          return KeySetType.Legacy;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case KeySetType.Default:
+          return ordinalConverter.write(1, into);
+        case KeySetType.Taproot:
+          return ordinalConverter.write(2, into);
+        case KeySetType.NativeSegwit:
+          return ordinalConverter.write(3, into);
+        case KeySetType.WrappedSegwit:
+          return ordinalConverter.write(4, into);
+        case KeySetType.Legacy:
+          return ordinalConverter.write(5, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
 export enum Network {
   Mainnet,
   Regtest,
@@ -4642,6 +4700,7 @@ export enum SdkEvent_Tags {
   ClaimDepositsFailed = 'ClaimDepositsFailed',
   ClaimDepositsSucceeded = 'ClaimDepositsSucceeded',
   PaymentSucceeded = 'PaymentSucceeded',
+  PaymentFailed = 'PaymentFailed',
 }
 /**
  * Events emitted by the SDK
@@ -4771,6 +4830,33 @@ export const SdkEvent = (() => {
     }
   }
 
+  type PaymentFailed__interface = {
+    tag: SdkEvent_Tags.PaymentFailed;
+    inner: Readonly<{ payment: Payment }>;
+  };
+
+  class PaymentFailed_ extends UniffiEnum implements PaymentFailed__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SdkEvent';
+    readonly tag = SdkEvent_Tags.PaymentFailed;
+    readonly inner: Readonly<{ payment: Payment }>;
+    constructor(inner: { payment: Payment }) {
+      super('SdkEvent', 'PaymentFailed');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { payment: Payment }): PaymentFailed_ {
+      return new PaymentFailed_(inner);
+    }
+
+    static instanceOf(obj: any): obj is PaymentFailed_ {
+      return obj.tag === SdkEvent_Tags.PaymentFailed;
+    }
+  }
+
   function instanceOf(obj: any): obj is SdkEvent {
     return obj[uniffiTypeNameSymbol] === 'SdkEvent';
   }
@@ -4781,6 +4867,7 @@ export const SdkEvent = (() => {
     ClaimDepositsFailed: ClaimDepositsFailed_,
     ClaimDepositsSucceeded: ClaimDepositsSucceeded_,
     PaymentSucceeded: PaymentSucceeded_,
+    PaymentFailed: PaymentFailed_,
   });
 })();
 
@@ -4813,6 +4900,10 @@ const FfiConverterTypeSdkEvent = (() => {
           return new SdkEvent.PaymentSucceeded({
             payment: FfiConverterTypePayment.read(from),
           });
+        case 5:
+          return new SdkEvent.PaymentFailed({
+            payment: FfiConverterTypePayment.read(from),
+          });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
@@ -4837,6 +4928,12 @@ const FfiConverterTypeSdkEvent = (() => {
         }
         case SdkEvent_Tags.PaymentSucceeded: {
           ordinalConverter.write(4, into);
+          const inner = value.inner;
+          FfiConverterTypePayment.write(inner.payment, into);
+          return;
+        }
+        case SdkEvent_Tags.PaymentFailed: {
+          ordinalConverter.write(5, into);
           const inner = value.inner;
           FfiConverterTypePayment.write(inner.payment, into);
           return;
@@ -4870,6 +4967,12 @@ const FfiConverterTypeSdkEvent = (() => {
         case SdkEvent_Tags.PaymentSucceeded: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(4);
+          size += FfiConverterTypePayment.allocationSize(inner.payment);
+          return size;
+        }
+        case SdkEvent_Tags.PaymentFailed: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(5);
           size += FfiConverterTypePayment.allocationSize(inner.payment);
           return size;
         }
@@ -6093,7 +6196,7 @@ export interface BreezSdkInterface {
     request: LnurlPayRequest,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<LnurlPayResponse>;
-  pollLightningSendPayment(paymentId: string): void;
+  pollLightningSendPayment(payment: Payment, sspId: string): void;
   prepareLnurlPay(
     request: PrepareLnurlPayRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -6579,12 +6682,13 @@ export class BreezSdk
     }
   }
 
-  public pollLightningSendPayment(paymentId: string): void {
+  public pollLightningSendPayment(payment: Payment, sspId: string): void {
     uniffiCaller.rustCall(
       /*caller:*/ (callStatus) => {
         nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_poll_lightning_send_payment(
           uniffiTypeBreezSdkObjectFactory.clonePointer(this),
-          FfiConverterString.lower(paymentId),
+          FfiConverterTypePayment.lower(payment),
+          FfiConverterString.lower(sspId),
           callStatus
         );
       },
@@ -7057,6 +7161,17 @@ export interface SdkBuilderInterface {
     chainService: BitcoinChainService,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void>;
+  /**
+   * Sets the key set type to be used by the SDK.
+   * Arguments:
+   * - `key_set_type`: The key set type which determines the derivation path.
+   * - `use_address_index`: Controls the structure of the BIP derivation path.
+   */
+  withKeySet(
+    keySetType: KeySetType,
+    useAddressIndex: boolean,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void>;
   withLnurlClient(
     lnurlClient: RestClient,
     asyncOpts_?: { signal: AbortSignal }
@@ -7166,6 +7281,48 @@ export class SdkBuilder
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_chain_service(
             uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
             FfiConverterTypeBitcoinChainService.lower(chainService)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Sets the key set type to be used by the SDK.
+   * Arguments:
+   * - `key_set_type`: The key set type which determines the derivation path.
+   * - `use_address_index`: Controls the structure of the BIP derivation path.
+   */
+  public async withKeySet(
+    keySetType: KeySetType,
+    useAddressIndex: boolean,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(
+            uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
+            FfiConverterTypeKeySetType.lower(keySetType),
+            FfiConverterBool.lower(useAddressIndex)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -8860,7 +9017,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_poll_lightning_send_payment() !==
-    5478
+    57601
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_poll_lightning_send_payment'
@@ -8960,6 +9117,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_chain_service'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set() !==
+    55523
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set'
     );
   }
   if (
@@ -9115,6 +9280,7 @@ export default Object.freeze({
     FfiConverterTypeGetInfoResponse,
     FfiConverterTypeGetPaymentRequest,
     FfiConverterTypeGetPaymentResponse,
+    FfiConverterTypeKeySetType,
     FfiConverterTypeLightningAddressInfo,
     FfiConverterTypeListPaymentsRequest,
     FfiConverterTypeListPaymentsResponse,

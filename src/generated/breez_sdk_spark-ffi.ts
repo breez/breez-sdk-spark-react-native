@@ -96,7 +96,8 @@ interface NativeModuleInterface {
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_poll_lightning_send_payment(
     ptr: bigint,
-    paymentId: Uint8Array,
+    payment: Uint8Array,
+    sspId: Uint8Array,
     uniffi_out_err: UniffiRustCallStatus
   ): void;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_lnurl_pay(
@@ -159,6 +160,11 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_chain_service(
     ptr: bigint,
     chainService: bigint
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(
+    ptr: bigint,
+    keySetType: Uint8Array,
+    useAddressIndex: number
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_lnurl_client(
     ptr: bigint,
@@ -419,6 +425,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_build(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_chain_service(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_lnurl_client(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_cached_item(): number;

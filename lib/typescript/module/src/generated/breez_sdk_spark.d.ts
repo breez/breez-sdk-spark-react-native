@@ -109,6 +109,12 @@ export type Config = {
      * The domain used for receiving through lnurl-pay and lightning address.
      */
     lnurlDomain: string | undefined;
+    /**
+     * When this is set to `true` we will prefer to use spark payments over
+     * lightning when sending and receiving. This has the benefit of lower fees
+     * but is at the cost of privacy.
+     */
+    preferSparkOverLightning: boolean;
 };
 /**
  * Generated factory for {@link Config} record objects.
@@ -1462,6 +1468,13 @@ export declare const Fee: Readonly<{
     };
 }>;
 export type Fee = InstanceType<(typeof Fee)[keyof Omit<typeof Fee, 'instanceOf'>]>;
+export declare enum KeySetType {
+    Default = 0,
+    Taproot = 1,
+    NativeSegwit = 2,
+    WrappedSegwit = 3,
+    Legacy = 4
+}
 export declare enum Network {
     Mainnet = 0,
     Regtest = 1
@@ -2619,7 +2632,8 @@ export declare enum SdkEvent_Tags {
     Synced = "Synced",
     ClaimDepositsFailed = "ClaimDepositsFailed",
     ClaimDepositsSucceeded = "ClaimDepositsSucceeded",
-    PaymentSucceeded = "PaymentSucceeded"
+    PaymentSucceeded = "PaymentSucceeded",
+    PaymentFailed = "PaymentFailed"
 }
 /**
  * Events emitted by the SDK
@@ -2759,6 +2773,45 @@ export declare const SdkEvent: Readonly<{
         };
         instanceOf(obj: any): obj is {
             readonly tag: SdkEvent_Tags.PaymentSucceeded;
+            readonly inner: Readonly<{
+                payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+    };
+    PaymentFailed: {
+        new (inner: {
+            payment: Payment;
+        }): {
+            readonly tag: SdkEvent_Tags.PaymentFailed;
+            readonly inner: Readonly<{
+                payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+        "new"(inner: {
+            payment: Payment;
+        }): {
+            readonly tag: SdkEvent_Tags.PaymentFailed;
+            readonly inner: Readonly<{
+                payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkEvent_Tags.PaymentFailed;
             readonly inner: Readonly<{
                 payment: Payment;
             }>;
@@ -3430,7 +3483,7 @@ export interface BreezSdkInterface {
     lnurlPay(request: LnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LnurlPayResponse>;
-    pollLightningSendPayment(paymentId: string): void;
+    pollLightningSendPayment(payment: Payment, sspId: string): void;
     prepareLnurlPay(request: PrepareLnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareLnurlPayResponse>;
@@ -3553,7 +3606,7 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     lnurlPay(request: LnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LnurlPayResponse>;
-    pollLightningSendPayment(paymentId: string): void;
+    pollLightningSendPayment(payment: Payment, sspId: string): void;
     prepareLnurlPay(request: PrepareLnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareLnurlPayResponse>;
@@ -3621,6 +3674,15 @@ export interface SdkBuilderInterface {
     withChainService(chainService: BitcoinChainService, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
+    /**
+     * Sets the key set type to be used by the SDK.
+     * Arguments:
+     * - `key_set_type`: The key set type which determines the derivation path.
+     * - `use_address_index`: Controls the structure of the BIP derivation path.
+     */
+    withKeySet(keySetType: KeySetType, useAddressIndex: boolean, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     withLnurlClient(lnurlClient: RestClient, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
@@ -3661,6 +3723,15 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
      * - `chain_service`: The chain service to be used.
      */
     withChainService(chainService: BitcoinChainService, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Sets the key set type to be used by the SDK.
+     * Arguments:
+     * - `key_set_type`: The key set type which determines the derivation path.
+     * - `use_address_index`: Controls the structure of the BIP derivation path.
+     */
+    withKeySet(keySetType: KeySetType, useAddressIndex: boolean, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     withLnurlClient(lnurlClient: RestClient, asyncOpts_?: {
@@ -4044,6 +4115,13 @@ declare const _default: Readonly<{
             allocationSize(value: GetPaymentResponse): number;
             lift(value: UniffiByteArray): GetPaymentResponse;
             lower(value: GetPaymentResponse): UniffiByteArray;
+        };
+        FfiConverterTypeKeySetType: {
+            read(from: RustBuffer): KeySetType;
+            write(value: KeySetType, into: RustBuffer): void;
+            allocationSize(value: KeySetType): number;
+            lift(value: UniffiByteArray): KeySetType;
+            lower(value: KeySetType): UniffiByteArray;
         };
         FfiConverterTypeLightningAddressInfo: {
             read(from: RustBuffer): LightningAddressInfo;
