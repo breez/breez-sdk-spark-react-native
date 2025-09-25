@@ -2795,6 +2795,49 @@ export declare const SuccessActionProcessed: Readonly<{
  * Contents are identical to [`SuccessAction`], except for AES where the ciphertext is decrypted.
  */
 export type SuccessActionProcessed = InstanceType<(typeof SuccessActionProcessed)[keyof Omit<typeof SuccessActionProcessed, 'instanceOf'>]>;
+/**
+ * Trait covering fiat-related functionality
+ */
+export interface FiatService {
+    /**
+     * List all supported fiat currencies for which there is a known exchange rate.
+     */
+    fetchFiatCurrencies(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<FiatCurrency>>;
+    /**
+     * Get the live rates from the server.
+     */
+    fetchFiatRates(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<Rate>>;
+}
+/**
+ * Trait covering fiat-related functionality
+ */
+export declare class FiatServiceImpl extends UniffiAbstractObject implements FiatService {
+    readonly [uniffiTypeNameSymbol] = "FiatServiceImpl";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    /**
+     * List all supported fiat currencies for which there is a known exchange rate.
+     */
+    fetchFiatCurrencies(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<FiatCurrency>>;
+    /**
+     * Get the live rates from the server.
+     */
+    fetchFiatRates(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<Rate>>;
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is FiatServiceImpl;
+}
 export interface RestClient {
     /**
      * Makes a GET request and logs on DEBUG.
@@ -3020,6 +3063,7 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): FiatCurrency;
             lower(value: FiatCurrency): UniffiByteArray;
         };
+        FfiConverterTypeFiatService: FfiConverterObjectWithCallbacks<FiatService>;
         FfiConverterTypeInputType: {
             read(from: RustBuffer): InputType;
             write(value: InputType, into: RustBuffer): void;

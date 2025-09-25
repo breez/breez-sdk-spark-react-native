@@ -82,6 +82,12 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_list_fiat_currencies(
+    ptr: bigint
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_list_fiat_rates(
+    ptr: bigint
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_list_payments(
     ptr: bigint,
     request: Uint8Array
@@ -152,7 +158,7 @@ interface NativeModuleInterface {
   ): void;
   ubrn_uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new(
     config: Uint8Array,
-    mnemonic: Uint8Array,
+    seed: Uint8Array,
     storage: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): bigint;
@@ -160,6 +166,10 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_chain_service(
     ptr: bigint,
     chainService: bigint
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_fiat_service(
+    ptr: bigint,
+    fiatService: bigint
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(
     ptr: bigint,
@@ -409,6 +419,8 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_lightning_address(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_payment(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_currencies(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_rates(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_payments(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_unclaimed_deposits(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_pay(): number;
@@ -425,6 +437,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_build(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_chain_service(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_fiat_service(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_lnurl_client(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service(): number;

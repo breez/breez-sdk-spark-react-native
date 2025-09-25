@@ -23,6 +23,20 @@ interface NativeModuleInterface {
     buffer: Uint8Array,
     uniffi_out_err: UniffiRustCallStatus
   ): string;
+  ubrn_uniffi_breez_sdk_common_fn_clone_fiatservice(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): bigint;
+  ubrn_uniffi_breez_sdk_common_fn_free_fiatservice(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): void;
+  ubrn_uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_currencies(
+    ptr: bigint
+  ): bigint;
+  ubrn_uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_rates(
+    ptr: bigint
+  ): bigint;
   ubrn_uniffi_breez_sdk_common_fn_clone_restclient(
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
@@ -193,13 +207,22 @@ interface NativeModuleInterface {
     handle: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): void;
+  ubrn_uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_currencies(): number;
+  ubrn_uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_rates(): number;
   ubrn_uniffi_breez_sdk_common_checksum_method_restclient_get_request(): number;
   ubrn_uniffi_breez_sdk_common_checksum_method_restclient_post_request(): number;
   ubrn_uniffi_breez_sdk_common_checksum_method_restclient_delete_request(): number;
   ubrn_ffi_breez_sdk_common_uniffi_contract_version(): number;
+  ubrn_uniffi_breez_sdk_common_fn_init_callback_vtable_fiatservice(
+    vtable: UniffiVTableCallbackInterfaceFiatService
+  ): void;
   ubrn_uniffi_breez_sdk_common_fn_init_callback_vtable_restclient(
     vtable: UniffiVTableCallbackInterfaceRestClient
   ): void;
+  ubrn_uniffi_internal_fn_method_fiatservice_ffi__bless_pointer(
+    pointer: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): UniffiRustArcPtr;
   ubrn_uniffi_internal_fn_method_restclient_ffi__bless_pointer(
     pointer: bigint,
     uniffi_out_err: UniffiRustCallStatus
@@ -329,6 +352,16 @@ export type UniffiForeignFutureCompleteVoid = (
   callbackData: bigint,
   result: UniffiForeignFutureStructVoid
 ) => void;
+type UniffiCallbackInterfaceFiatServiceMethod0 = (
+  uniffiHandle: bigint,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceFiatServiceMethod1 = (
+  uniffiHandle: bigint,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceRestClientMethod0 = (
   uniffiHandle: bigint,
   url: Uint8Array,
@@ -352,6 +385,11 @@ type UniffiCallbackInterfaceRestClientMethod2 = (
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
+export type UniffiVTableCallbackInterfaceFiatService = {
+  fetchFiatCurrencies: UniffiCallbackInterfaceFiatServiceMethod0;
+  fetchFiatRates: UniffiCallbackInterfaceFiatServiceMethod1;
+  uniffiFree: UniffiCallbackInterfaceFree;
+};
 export type UniffiVTableCallbackInterfaceRestClient = {
   getRequest: UniffiCallbackInterfaceRestClientMethod0;
   postRequest: UniffiCallbackInterfaceRestClientMethod1;

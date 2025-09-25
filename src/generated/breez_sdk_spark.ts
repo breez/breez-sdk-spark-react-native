@@ -37,7 +37,10 @@ import nativeModule, {
 import {
   type BitcoinAddressDetails,
   type Bolt11InvoiceDetails,
+  type FiatCurrency,
+  type FiatService,
   type LnurlPayRequestDetails,
+  type Rate,
   type RestClient,
   InputType,
   SuccessAction,
@@ -54,6 +57,7 @@ import {
   type UnsafeMutableRawPointer,
   AbstractFfiConverterByteArray,
   FfiConverterArray,
+  FfiConverterArrayBuffer,
   FfiConverterBool,
   FfiConverterCallback,
   FfiConverterInt32,
@@ -85,8 +89,11 @@ import uniffiBreezSdkCommonModule from './breez_sdk_common';
 const {
   FfiConverterTypeBitcoinAddressDetails,
   FfiConverterTypeBolt11InvoiceDetails,
+  FfiConverterTypeFiatCurrency,
+  FfiConverterTypeFiatService,
   FfiConverterTypeInputType,
   FfiConverterTypeLnurlPayRequestDetails,
+  FfiConverterTypeRate,
   FfiConverterTypeRestClient,
   FfiConverterTypeSuccessAction,
   FfiConverterTypeSuccessActionProcessed,
@@ -581,7 +588,7 @@ const FfiConverterTypeConfig = (() => {
 
 export type ConnectRequest = {
   config: Config;
-  mnemonic: string;
+  seed: Seed;
   storageDir: string;
 };
 
@@ -621,19 +628,19 @@ const FfiConverterTypeConnectRequest = (() => {
     read(from: RustBuffer): TypeName {
       return {
         config: FfiConverterTypeConfig.read(from),
-        mnemonic: FfiConverterString.read(from),
+        seed: FfiConverterTypeSeed.read(from),
         storageDir: FfiConverterString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterTypeConfig.write(value.config, into);
-      FfiConverterString.write(value.mnemonic, into);
+      FfiConverterTypeSeed.write(value.seed, into);
       FfiConverterString.write(value.storageDir, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterTypeConfig.allocationSize(value.config) +
-        FfiConverterString.allocationSize(value.mnemonic) +
+        FfiConverterTypeSeed.allocationSize(value.seed) +
         FfiConverterString.allocationSize(value.storageDir)
       );
     }
@@ -1048,6 +1055,125 @@ const FfiConverterTypeLightningAddressInfo = (() => {
         FfiConverterString.allocationSize(value.lnurl) +
         FfiConverterString.allocationSize(value.username)
       );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Response from listing fiat currencies
+ */
+export type ListFiatCurrenciesResponse = {
+  /**
+   * The list of fiat currencies
+   */
+  currencies: Array<FiatCurrency>;
+};
+
+/**
+ * Generated factory for {@link ListFiatCurrenciesResponse} record objects.
+ */
+export const ListFiatCurrenciesResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ListFiatCurrenciesResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ListFiatCurrenciesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ListFiatCurrenciesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ListFiatCurrenciesResponse>,
+  });
+})();
+
+const FfiConverterTypeListFiatCurrenciesResponse = (() => {
+  type TypeName = ListFiatCurrenciesResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        currencies: FfiConverterArrayTypeFiatCurrency.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayTypeFiatCurrency.write(value.currencies, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayTypeFiatCurrency.allocationSize(value.currencies);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Response from listing fiat rates
+ */
+export type ListFiatRatesResponse = {
+  /**
+   * The list of fiat rates
+   */
+  rates: Array<Rate>;
+};
+
+/**
+ * Generated factory for {@link ListFiatRatesResponse} record objects.
+ */
+export const ListFiatRatesResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ListFiatRatesResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ListFiatRatesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ListFiatRatesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ListFiatRatesResponse>,
+  });
+})();
+
+const FfiConverterTypeListFiatRatesResponse = (() => {
+  type TypeName = ListFiatRatesResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        rates: FfiConverterArrayTypeRate.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayTypeRate.write(value.rates, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayTypeRate.allocationSize(value.rates);
     }
   }
   return new FFIConverter();
@@ -4984,6 +5110,174 @@ const FfiConverterTypeSdkEvent = (() => {
   return new FFIConverter();
 })();
 
+// Enum: Seed
+export enum Seed_Tags {
+  Mnemonic = 'Mnemonic',
+  Entropy = 'Entropy',
+}
+/**
+ * Represents the seed for wallet generation, either as a mnemonic phrase with an optional
+ * passphrase or as raw entropy bytes.
+ */
+export const Seed = (() => {
+  type Mnemonic__interface = {
+    tag: Seed_Tags.Mnemonic;
+    inner: Readonly<{ mnemonic: string; passphrase: string | undefined }>;
+  };
+
+  /**
+   * A BIP-39 mnemonic phrase with an optional passphrase.
+   */
+  class Mnemonic_ extends UniffiEnum implements Mnemonic__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'Seed';
+    readonly tag = Seed_Tags.Mnemonic;
+    readonly inner: Readonly<{
+      mnemonic: string;
+      passphrase: string | undefined;
+    }>;
+    constructor(inner: {
+      /**
+       * The mnemonic phrase. 12 or 24 words.
+       */ mnemonic: string;
+      /**
+       * An optional passphrase for the mnemonic.
+       */ passphrase: string | undefined;
+    }) {
+      super('Seed', 'Mnemonic');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * The mnemonic phrase. 12 or 24 words.
+       */ mnemonic: string;
+      /**
+       * An optional passphrase for the mnemonic.
+       */ passphrase: string | undefined;
+    }): Mnemonic_ {
+      return new Mnemonic_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Mnemonic_ {
+      return obj.tag === Seed_Tags.Mnemonic;
+    }
+  }
+
+  type Entropy__interface = {
+    tag: Seed_Tags.Entropy;
+    inner: Readonly<[ArrayBuffer]>;
+  };
+
+  /**
+   * Raw entropy bytes.
+   */
+  class Entropy_ extends UniffiEnum implements Entropy__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'Seed';
+    readonly tag = Seed_Tags.Entropy;
+    readonly inner: Readonly<[ArrayBuffer]>;
+    constructor(v0: ArrayBuffer) {
+      super('Seed', 'Entropy');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: ArrayBuffer): Entropy_ {
+      return new Entropy_(v0);
+    }
+
+    static instanceOf(obj: any): obj is Entropy_ {
+      return obj.tag === Seed_Tags.Entropy;
+    }
+  }
+
+  function instanceOf(obj: any): obj is Seed {
+    return obj[uniffiTypeNameSymbol] === 'Seed';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Mnemonic: Mnemonic_,
+    Entropy: Entropy_,
+  });
+})();
+
+/**
+ * Represents the seed for wallet generation, either as a mnemonic phrase with an optional
+ * passphrase or as raw entropy bytes.
+ */
+
+export type Seed = InstanceType<
+  (typeof Seed)[keyof Omit<typeof Seed, 'instanceOf'>]
+>;
+
+// FfiConverter for enum Seed
+const FfiConverterTypeSeed = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = Seed;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new Seed.Mnemonic({
+            mnemonic: FfiConverterString.read(from),
+            passphrase: FfiConverterOptionalString.read(from),
+          });
+        case 2:
+          return new Seed.Entropy(FfiConverterArrayBuffer.read(from));
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case Seed_Tags.Mnemonic: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.mnemonic, into);
+          FfiConverterOptionalString.write(inner.passphrase, into);
+          return;
+        }
+        case Seed_Tags.Entropy: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterArrayBuffer.write(inner[0], into);
+          return;
+        }
+        default:
+          // Throwing from here means that Seed_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case Seed_Tags.Mnemonic: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterString.allocationSize(inner.mnemonic);
+          size += FfiConverterOptionalString.allocationSize(inner.passphrase);
+          return size;
+        }
+        case Seed_Tags.Entropy: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterArrayBuffer.allocationSize(inner[0]);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
 // Enum: SendPaymentMethod
 export enum SendPaymentMethod_Tags {
   BitcoinAddress = 'BitcoinAddress',
@@ -5261,7 +5555,7 @@ export const SendPaymentOptions = (() => {
 
   type Bolt11Invoice__interface = {
     tag: SendPaymentOptions_Tags.Bolt11Invoice;
-    inner: Readonly<{ useSpark: boolean }>;
+    inner: Readonly<{ preferSpark: boolean }>;
   };
 
   class Bolt11Invoice_ extends UniffiEnum implements Bolt11Invoice__interface {
@@ -5271,13 +5565,13 @@ export const SendPaymentOptions = (() => {
      */
     readonly [uniffiTypeNameSymbol] = 'SendPaymentOptions';
     readonly tag = SendPaymentOptions_Tags.Bolt11Invoice;
-    readonly inner: Readonly<{ useSpark: boolean }>;
-    constructor(inner: { useSpark: boolean }) {
+    readonly inner: Readonly<{ preferSpark: boolean }>;
+    constructor(inner: { preferSpark: boolean }) {
       super('SendPaymentOptions', 'Bolt11Invoice');
       this.inner = Object.freeze(inner);
     }
 
-    static new(inner: { useSpark: boolean }): Bolt11Invoice_ {
+    static new(inner: { preferSpark: boolean }): Bolt11Invoice_ {
       return new Bolt11Invoice_(inner);
     }
 
@@ -5318,7 +5612,7 @@ const FfiConverterTypeSendPaymentOptions = (() => {
           });
         case 2:
           return new SendPaymentOptions.Bolt11Invoice({
-            useSpark: FfiConverterBool.read(from),
+            preferSpark: FfiConverterBool.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -5338,7 +5632,7 @@ const FfiConverterTypeSendPaymentOptions = (() => {
         case SendPaymentOptions_Tags.Bolt11Invoice: {
           ordinalConverter.write(2, into);
           const inner = value.inner;
-          FfiConverterBool.write(inner.useSpark, into);
+          FfiConverterBool.write(inner.preferSpark, into);
           return;
         }
         default:
@@ -5359,7 +5653,7 @@ const FfiConverterTypeSendPaymentOptions = (() => {
         case SendPaymentOptions_Tags.Bolt11Invoice: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
-          size += FfiConverterBool.allocationSize(inner.useSpark);
+          size += FfiConverterBool.allocationSize(inner.preferSpark);
           return size;
         }
         default:
@@ -6169,6 +6463,19 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<GetPaymentResponse>;
   /**
+   * List fiat currencies for which there is a known exchange rate,
+   * sorted by the canonical name of the currency.
+   */
+  listFiatCurrencies(asyncOpts_?: {
+    signal: AbortSignal;
+  }) /*throws*/ : Promise<ListFiatCurrenciesResponse>;
+  /**
+   * List the latest rates of fiat currencies, sorted by name.
+   */
+  listFiatRates(asyncOpts_?: {
+    signal: AbortSignal;
+  }) /*throws*/ : Promise<ListFiatRatesResponse>;
+  /**
      * Lists payments from the storage with pagination
      *
      * This method provides direct access to the payment history stored in the database.
@@ -6534,6 +6841,87 @@ export class BreezSdk
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypeGetPaymentResponse.lift.bind(
           FfiConverterTypeGetPaymentResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * List fiat currencies for which there is a known exchange rate,
+   * sorted by the canonical name of the currency.
+   */
+  public async listFiatCurrencies(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<ListFiatCurrenciesResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_list_fiat_currencies(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeListFiatCurrenciesResponse.lift.bind(
+          FfiConverterTypeListFiatCurrenciesResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * List the latest rates of fiat currencies, sorted by name.
+   */
+  public async listFiatRates(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<ListFiatRatesResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_list_fiat_rates(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeListFiatRatesResponse.lift.bind(
+          FfiConverterTypeListFiatRatesResponse
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -7162,6 +7550,15 @@ export interface SdkBuilderInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void>;
   /**
+   * Sets the fiat service to be used by the SDK.
+   * Arguments:
+   * - `fiat_service`: The fiat service to be used.
+   */
+  withFiatService(
+    fiatService: FiatService,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void>;
+  /**
    * Sets the key set type to be used by the SDK.
    * Arguments:
    * - `key_set_type`: The key set type which determines the derivation path.
@@ -7203,16 +7600,16 @@ export class SdkBuilder
    * Creates a new `SdkBuilder` with the provided configuration.
    * Arguments:
    * - `config`: The configuration to be used.
-   * - `mnemonic`: The mnemonic phrase for the wallet.
+   * - `seed`: The seed for wallet generation.
    * - `storage`: The storage backend to be used.
    */
-  constructor(config: Config, mnemonic: string, storage: Storage) {
+  constructor(config: Config, seed: Seed, storage: Storage) {
     super();
     const pointer = uniffiCaller.rustCall(
       /*caller:*/ (callStatus) => {
         return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new(
           FfiConverterTypeConfig.lower(config),
-          FfiConverterString.lower(mnemonic),
+          FfiConverterTypeSeed.lower(seed),
           FfiConverterTypeStorage.lower(storage),
           callStatus
         );
@@ -7281,6 +7678,45 @@ export class SdkBuilder
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_chain_service(
             uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
             FfiConverterTypeBitcoinChainService.lower(chainService)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Sets the fiat service to be used by the SDK.
+   * Arguments:
+   * - `fiat_service`: The fiat service to be used.
+   */
+  public async withFiatService(
+    fiatService: FiatService,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_fiat_service(
+            uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
+            FfiConverterTypeFiatService.lower(fiatService)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -8810,6 +9246,14 @@ const FfiConverterOptionalUInt32 = new FfiConverterOptional(FfiConverterUInt32);
 // FfiConverter for /*u64*/bigint | undefined
 const FfiConverterOptionalUInt64 = new FfiConverterOptional(FfiConverterUInt64);
 
+// FfiConverter for Array<FiatCurrency>
+const FfiConverterArrayTypeFiatCurrency = new FfiConverterArray(
+  FfiConverterTypeFiatCurrency
+);
+
+// FfiConverter for Array<Rate>
+const FfiConverterArrayTypeRate = new FfiConverterArray(FfiConverterTypeRate);
+
 // FfiConverter for Array<DepositInfo>
 const FfiConverterArrayTypeDepositInfo = new FfiConverterArray(
   FfiConverterTypeDepositInfo
@@ -8992,6 +9436,22 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_currencies() !==
+    63366
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_currencies'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_rates() !==
+    5904
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_rates'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_payments() !==
     16156
   ) {
@@ -9120,6 +9580,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_fiat_service() !==
+    41113
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_fiat_service'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set() !==
     55523
   ) {
@@ -9233,7 +9701,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new() !==
-    52744
+    53882
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new'
@@ -9282,6 +9750,8 @@ export default Object.freeze({
     FfiConverterTypeGetPaymentResponse,
     FfiConverterTypeKeySetType,
     FfiConverterTypeLightningAddressInfo,
+    FfiConverterTypeListFiatCurrenciesResponse,
+    FfiConverterTypeListFiatRatesResponse,
     FfiConverterTypeListPaymentsRequest,
     FfiConverterTypeListPaymentsResponse,
     FfiConverterTypeListUnclaimedDepositsRequest,
@@ -9310,6 +9780,7 @@ export default Object.freeze({
     FfiConverterTypeRegisterLightningAddressRequest,
     FfiConverterTypeSdkBuilder,
     FfiConverterTypeSdkEvent,
+    FfiConverterTypeSeed,
     FfiConverterTypeSendOnchainFeeQuote,
     FfiConverterTypeSendOnchainSpeedFeeQuote,
     FfiConverterTypeSendPaymentMethod,

@@ -29,6 +29,7 @@ import nativeModule, {
   type UniffiForeignFutureCompleteRustBuffer,
   type UniffiForeignFutureStructVoid,
   type UniffiForeignFutureCompleteVoid,
+  type UniffiVTableCallbackInterfaceFiatService,
   type UniffiVTableCallbackInterfaceRestClient,
 } from './breez_sdk_common-ffi';
 import {
@@ -4873,6 +4874,313 @@ const FfiConverterMapStringString = new FfiConverterMap(
   FfiConverterString
 );
 
+/**
+ * Trait covering fiat-related functionality
+ */
+export interface FiatService {
+  /**
+   * List all supported fiat currencies for which there is a known exchange rate.
+   */
+  fetchFiatCurrencies(asyncOpts_?: {
+    signal: AbortSignal;
+  }) /*throws*/ : Promise<Array<FiatCurrency>>;
+  /**
+   * Get the live rates from the server.
+   */
+  fetchFiatRates(asyncOpts_?: {
+    signal: AbortSignal;
+  }) /*throws*/ : Promise<Array<Rate>>;
+}
+
+/**
+ * Trait covering fiat-related functionality
+ */
+export class FiatServiceImpl
+  extends UniffiAbstractObject
+  implements FiatService
+{
+  readonly [uniffiTypeNameSymbol] = 'FiatServiceImpl';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypeFiatServiceImplObjectFactory.bless(pointer);
+  }
+
+  /**
+   * List all supported fiat currencies for which there is a known exchange rate.
+   */
+  public async fetchFiatCurrencies(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<Array<FiatCurrency>> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_currencies(
+            uniffiTypeFiatServiceImplObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterArrayTypeFiatCurrency.lift.bind(
+          FfiConverterArrayTypeFiatCurrency
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeServiceConnectivityError.lift.bind(
+          FfiConverterTypeServiceConnectivityError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Get the live rates from the server.
+   */
+  public async fetchFiatRates(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<Array<Rate>> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_rates(
+            uniffiTypeFiatServiceImplObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterArrayTypeRate.lift.bind(
+          FfiConverterArrayTypeRate
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeServiceConnectivityError.lift.bind(
+          FfiConverterTypeServiceConnectivityError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer = uniffiTypeFiatServiceImplObjectFactory.pointer(this);
+      uniffiTypeFiatServiceImplObjectFactory.freePointer(pointer);
+      uniffiTypeFiatServiceImplObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is FiatServiceImpl {
+    return uniffiTypeFiatServiceImplObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypeFiatServiceImplObjectFactory: UniffiObjectFactory<FiatService> =
+  {
+    create(pointer: UnsafeMutableRawPointer): FiatService {
+      const instance = Object.create(FiatServiceImpl.prototype);
+      instance[pointerLiteralSymbol] = pointer;
+      instance[destructorGuardSymbol] = this.bless(pointer);
+      instance[uniffiTypeNameSymbol] = 'FiatServiceImpl';
+      return instance;
+    },
+
+    bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+      return uniffiCaller.rustCall(
+        /*caller:*/ (status) =>
+          nativeModule().ubrn_uniffi_internal_fn_method_fiatservice_ffi__bless_pointer(
+            p,
+            status
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
+
+    unbless(ptr: UniffiRustArcPtr) {
+      ptr.markDestroyed();
+    },
+
+    pointer(obj: FiatService): UnsafeMutableRawPointer {
+      if ((obj as any)[destructorGuardSymbol] === undefined) {
+        throw new UniffiInternalError.UnexpectedNullPointer();
+      }
+      return (obj as any)[pointerLiteralSymbol];
+    },
+
+    clonePointer(obj: FiatService): UnsafeMutableRawPointer {
+      const pointer = this.pointer(obj);
+      return uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_common_fn_clone_fiatservice(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
+
+    freePointer(pointer: UnsafeMutableRawPointer): void {
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_common_fn_free_fiatservice(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
+
+    isConcreteType(obj: any): obj is FiatService {
+      return (
+        obj[destructorGuardSymbol] &&
+        obj[uniffiTypeNameSymbol] === 'FiatServiceImpl'
+      );
+    },
+  };
+// FfiConverter for FiatService
+const FfiConverterTypeFiatService = new FfiConverterObjectWithCallbacks(
+  uniffiTypeFiatServiceImplObjectFactory
+);
+
+// Add a vtavble for the callbacks that go in FiatService.
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+const uniffiCallbackInterfaceFiatService: {
+  vtable: UniffiVTableCallbackInterfaceFiatService;
+  register: () => void;
+} = {
+  // Create the VTable using a series of closures.
+  // ts automatically converts these into C callback functions.
+  vtable: {
+    fetchFiatCurrencies: (
+      uniffiHandle: bigint,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<Array<FiatCurrency>> => {
+        const jsCallback = FfiConverterTypeFiatService.lift(uniffiHandle);
+        return await jsCallback.fetchFiatCurrencies({ signal });
+      };
+      const uniffiHandleSuccess = (returnValue: Array<FiatCurrency>) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterArrayTypeFiatCurrency.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ ServiceConnectivityError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeServiceConnectivityError.lower.bind(
+          FfiConverterTypeServiceConnectivityError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    fetchFiatRates: (
+      uniffiHandle: bigint,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<Array<Rate>> => {
+        const jsCallback = FfiConverterTypeFiatService.lift(uniffiHandle);
+        return await jsCallback.fetchFiatRates({ signal });
+      };
+      const uniffiHandleSuccess = (returnValue: Array<Rate>) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterArrayTypeRate.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ ServiceConnectivityError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeServiceConnectivityError.lower.bind(
+          FfiConverterTypeServiceConnectivityError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    uniffiFree: (uniffiHandle: UniffiHandle): void => {
+      // FiatService: this will throw a stale handle error if the handle isn't found.
+      FfiConverterTypeFiatService.drop(uniffiHandle);
+    },
+  },
+  register: () => {
+    nativeModule().ubrn_uniffi_breez_sdk_common_fn_init_callback_vtable_fiatservice(
+      uniffiCallbackInterfaceFiatService.vtable
+    );
+  },
+};
+
 export interface RestClient {
   /**
    * Makes a GET request and logs on DEBUG.
@@ -5368,6 +5676,11 @@ const FfiConverterArrayTypeBolt12OfferBlindedPath = new FfiConverterArray(
   FfiConverterTypeBolt12OfferBlindedPath
 );
 
+// FfiConverter for Array<FiatCurrency>
+const FfiConverterArrayTypeFiatCurrency = new FfiConverterArray(
+  FfiConverterTypeFiatCurrency
+);
+
 // FfiConverter for Array<LocaleOverrides>
 const FfiConverterArrayTypeLocaleOverrides = new FfiConverterArray(
   FfiConverterTypeLocaleOverrides
@@ -5377,6 +5690,9 @@ const FfiConverterArrayTypeLocaleOverrides = new FfiConverterArray(
 const FfiConverterArrayTypeLocalizedName = new FfiConverterArray(
   FfiConverterTypeLocalizedName
 );
+
+// FfiConverter for Array<Rate>
+const FfiConverterArrayTypeRate = new FfiConverterArray(FfiConverterTypeRate);
 
 // FfiConverter for Array<string>
 const FfiConverterArrayString = new FfiConverterArray(FfiConverterString);
@@ -5423,6 +5739,22 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_currencies() !==
+    63089
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_currencies'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_rates() !==
+    48636
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_rates'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_restclient_get_request() !==
     1702
   ) {
@@ -5447,6 +5779,7 @@ function uniffiEnsureInitialized() {
     );
   }
 
+  uniffiCallbackInterfaceFiatService.register();
   uniffiCallbackInterfaceRestClient.register();
 }
 
@@ -5473,6 +5806,7 @@ export default Object.freeze({
     FfiConverterTypeBolt12OfferDetails,
     FfiConverterTypeCurrencyInfo,
     FfiConverterTypeFiatCurrency,
+    FfiConverterTypeFiatService,
     FfiConverterTypeInputType,
     FfiConverterTypeLightningAddressDetails,
     FfiConverterTypeLnurlAuthRequestDetails,

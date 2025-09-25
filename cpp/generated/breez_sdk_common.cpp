@@ -100,6 +100,14 @@ typedef struct UniffiForeignFutureStructVoid {
 } UniffiForeignFutureStructVoid;
 typedef void (*UniffiForeignFutureCompleteVoid)(
     uint64_t callback_data, UniffiForeignFutureStructVoid result);
+typedef void (*UniffiCallbackInterfaceFiatServiceMethod0)(
+    uint64_t uniffi_handle,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfaceFiatServiceMethod1)(
+    uint64_t uniffi_handle,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef void (*UniffiCallbackInterfaceRestClientMethod0)(
     uint64_t uniffi_handle, RustBuffer url, RustBuffer headers,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
@@ -112,12 +120,28 @@ typedef void (*UniffiCallbackInterfaceRestClientMethod2)(
     uint64_t uniffi_handle, RustBuffer url, RustBuffer headers, RustBuffer body,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef struct UniffiVTableCallbackInterfaceFiatService {
+  UniffiCallbackInterfaceFiatServiceMethod0 fetch_fiat_currencies;
+  UniffiCallbackInterfaceFiatServiceMethod1 fetch_fiat_rates;
+  UniffiCallbackInterfaceFree uniffi_free;
+} UniffiVTableCallbackInterfaceFiatService;
 typedef struct UniffiVTableCallbackInterfaceRestClient {
   UniffiCallbackInterfaceRestClientMethod0 get_request;
   UniffiCallbackInterfaceRestClientMethod1 post_request;
   UniffiCallbackInterfaceRestClientMethod2 delete_request;
   UniffiCallbackInterfaceFree uniffi_free;
 } UniffiVTableCallbackInterfaceRestClient;
+void *
+uniffi_breez_sdk_common_fn_clone_fiatservice(void *ptr,
+                                             RustCallStatus *uniffi_out_err);
+void uniffi_breez_sdk_common_fn_free_fiatservice(
+    void *ptr, RustCallStatus *uniffi_out_err);
+void uniffi_breez_sdk_common_fn_init_callback_vtable_fiatservice(
+    UniffiVTableCallbackInterfaceFiatService *vtable);
+/*handle*/ uint64_t
+uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_currencies(void *ptr);
+/*handle*/ uint64_t
+uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_rates(void *ptr);
 void *
 uniffi_breez_sdk_common_fn_clone_restclient(void *ptr,
                                             RustCallStatus *uniffi_out_err);
@@ -259,6 +283,9 @@ void ffi_breez_sdk_common_rust_future_free_void(
     /*handle*/ uint64_t handle);
 void ffi_breez_sdk_common_rust_future_complete_void(
     /*handle*/ uint64_t handle, RustCallStatus *uniffi_out_err);
+uint16_t
+uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_currencies();
+uint16_t uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_rates();
 uint16_t uniffi_breez_sdk_common_checksum_method_restclient_get_request();
 uint16_t uniffi_breez_sdk_common_checksum_method_restclient_post_request();
 uint16_t uniffi_breez_sdk_common_checksum_method_restclient_delete_request();
@@ -729,6 +756,118 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace uniffi::breez_sdk_common::st::foreignfuture::foreignfuture::free
+
+// Callback function:
+// uniffi::breez_sdk_common::st::vtablecallbackinterfacefiatservice::vtablecallbackinterfacefiatservice::free::UniffiCallbackInterfaceFree
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_common::st::vtablecallbackinterfacefiatservice::
+    vtablecallbackinterfacefiatservice::free {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t)> rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_handle) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_handle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_handle);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_handle);
+
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback UniffiCallbackInterfaceFree: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void callback(uint64_t rs_handle) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_handle);
+}
+
+static UniffiCallbackInterfaceFree
+makeCallbackFunction( // uniffi::breez_sdk_common::st::vtablecallbackinterfacefiatservice::vtablecallbackinterfacefiatservice::free
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](uint64_t rs_handle) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_handle](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_handle);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+
+    callInvoker->invokeNonBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkCommon, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_common::st::vtablecallbackinterfacefiatservice::vtablecallbackinterfacefiatservice::free
 
 // Callback function:
 // uniffi::breez_sdk_common::st::vtablecallbackinterfacerestclient::vtablecallbackinterfacerestclient::free::UniffiCallbackInterfaceFree
@@ -1746,6 +1885,282 @@ template <> struct Bridging<UniffiForeignFutureCompleteVoid> {
 };
 } // namespace uniffi::breez_sdk_common
   // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceFiatServiceMethod0
+
+// Callback function:
+// uniffi::breez_sdk_common::cb::callbackinterfacefiatservicemethod0::UniffiCallbackInterfaceFiatServiceMethod0
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_common::cb::callbackinterfacefiatservicemethod0 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, UniffiForeignFutureCompleteRustBuffer,
+                          uint64_t, UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_common::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_uniffiFutureCallback,
+                                js_uniffiCallbackData);
+
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn = uniffi::breez_sdk_common::Bridging<
+        ReferenceHolder<UniffiForeignFuture>>::fromJs(rt, callInvoker,
+                                                      uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback UniffiCallbackInterfaceFiatServiceMethod0: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_uniffiFutureCallback, rs_uniffiCallbackData,
+           rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceFiatServiceMethod0
+makeCallbackFunction( // uniffi::breez_sdk_common::cb::callbackinterfacefiatservicemethod0
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_uniffiFutureCallback,
+         rs_uniffiCallbackData, rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkCommon, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace uniffi::breez_sdk_common::cb::callbackinterfacefiatservicemethod0
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceFiatServiceMethod1
+
+// Callback function:
+// uniffi::breez_sdk_common::cb::callbackinterfacefiatservicemethod1::UniffiCallbackInterfaceFiatServiceMethod1
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_common::cb::callbackinterfacefiatservicemethod1 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, UniffiForeignFutureCompleteRustBuffer,
+                          uint64_t, UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_common::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_uniffiFutureCallback,
+                                js_uniffiCallbackData);
+
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn = uniffi::breez_sdk_common::Bridging<
+        ReferenceHolder<UniffiForeignFuture>>::fromJs(rt, callInvoker,
+                                                      uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback UniffiCallbackInterfaceFiatServiceMethod1: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_uniffiFutureCallback, rs_uniffiCallbackData,
+           rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceFiatServiceMethod1
+makeCallbackFunction( // uniffi::breez_sdk_common::cb::callbackinterfacefiatservicemethod1
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_uniffiFutureCallback,
+         rs_uniffiCallbackData, rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkCommon, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace uniffi::breez_sdk_common::cb::callbackinterfacefiatservicemethod1
+  // Implementation of callback function calling from Rust to JS
   // CallbackInterfaceRestClientMethod0
 
 // Callback function:
@@ -2195,6 +2610,44 @@ namespace uniffi::breez_sdk_common {
 using namespace facebook;
 using CallInvoker = uniffi_runtime::UniffiCallInvoker;
 
+template <> struct Bridging<UniffiVTableCallbackInterfaceFiatService> {
+  static UniffiVTableCallbackInterfaceFiatService
+  fromJs(jsi::Runtime &rt, std::shared_ptr<CallInvoker> callInvoker,
+         const jsi::Value &jsValue) {
+    // Check if the input is an object
+    if (!jsValue.isObject()) {
+      throw jsi::JSError(
+          rt,
+          "Expected an object for UniffiVTableCallbackInterfaceFiatService");
+    }
+
+    // Get the object from the jsi::Value
+    auto jsObject = jsValue.getObject(rt);
+
+    // Create the vtable struct
+    UniffiVTableCallbackInterfaceFiatService rsObject;
+
+    // Create the vtable from the js callbacks.
+    rsObject.fetch_fiat_currencies = uniffi::breez_sdk_common::cb::
+        callbackinterfacefiatservicemethod0::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "fetchFiatCurrencies"));
+    rsObject.fetch_fiat_rates = uniffi::breez_sdk_common::cb::
+        callbackinterfacefiatservicemethod1::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "fetchFiatRates"));
+    rsObject.uniffi_free =
+        uniffi::breez_sdk_common::st::vtablecallbackinterfacefiatservice::
+            vtablecallbackinterfacefiatservice::free::makeCallbackFunction(
+                rt, callInvoker, jsObject.getProperty(rt, "uniffiFree"));
+
+    return rsObject;
+  }
+};
+
+} // namespace uniffi::breez_sdk_common
+namespace uniffi::breez_sdk_common {
+using namespace facebook;
+using CallInvoker = uniffi_runtime::UniffiCallInvoker;
+
 template <> struct Bridging<UniffiVTableCallbackInterfaceRestClient> {
   static UniffiVTableCallbackInterfaceRestClient
   fromJs(jsi::Runtime &rt, std::shared_ptr<CallInvoker> callInvoker,
@@ -2288,6 +2741,52 @@ NativeBreezSdkCommon::NativeBreezSdkCommon(
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this->cpp_uniffi_internal_fn_func_ffi__arraybuffer_to_string(
                 rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_common_fn_clone_fiatservice"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_common_fn_clone_fiatservice"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_common_fn_clone_fiatservice(
+                rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_common_fn_free_fiatservice"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_common_fn_free_fiatservice"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_common_fn_free_fiatservice(
+                rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_"
+        "currencies"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_common_fn_method_"
+                                    "fiatservice_fetch_fiat_currencies"),
+      1,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_currencies(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_rates"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_common_fn_"
+                                        "method_fiatservice_fetch_fiat_rates"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_rates(
+                    rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_common_fn_clone_restclient"] =
       jsi::Function::createFromHostFunction(
@@ -2923,6 +3422,30 @@ NativeBreezSdkCommon::NativeBreezSdkCommon(
             return this->cpp_ffi_breez_sdk_common_rust_future_complete_void(
                 rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_"
+        "currencies"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_common_checksum_"
+                                    "method_fiatservice_fetch_fiat_currencies"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_currencies(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_"
+        "rates"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_common_checksum_"
+                                    "method_fiatservice_fetch_fiat_rates"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_rates(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_common_checksum_method_restclient_get_request"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -2970,6 +3493,18 @@ NativeBreezSdkCommon::NativeBreezSdkCommon(
             return this->cpp_ffi_breez_sdk_common_uniffi_contract_version(
                 rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_common_fn_init_callback_vtable_fiatservice"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_common_fn_init_"
+                                        "callback_vtable_fiatservice"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_common_fn_init_callback_vtable_fiatservice(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_common_fn_init_callback_vtable_restclient"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -2980,6 +3515,19 @@ NativeBreezSdkCommon::NativeBreezSdkCommon(
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
                 ->cpp_uniffi_breez_sdk_common_fn_init_callback_vtable_restclient(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_internal_fn_method_fiatservice_ffi__bless_pointer"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_internal_fn_method_fiatservice_ffi__bless_pointer"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_internal_fn_method_fiatservice_ffi__bless_pointer(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_internal_fn_method_restclient_ffi__bless_pointer"] =
@@ -3038,8 +3586,14 @@ NativeBreezSdkCommon::~NativeBreezSdkCommon() {
   uniffi::breez_sdk_common::cb::rustfuturecontinuationcallback::cleanup();
   // Cleanup for "free" callback function CallbackInterfaceFree
   uniffi::breez_sdk_common::st::foreignfuture::foreignfuture::free::cleanup();
+  uniffi::breez_sdk_common::st::vtablecallbackinterfacefiatservice::
+      vtablecallbackinterfacefiatservice::free::cleanup();
   uniffi::breez_sdk_common::st::vtablecallbackinterfacerestclient::
       vtablecallbackinterfacerestclient::free::cleanup();
+  // Cleanup for callback function CallbackInterfaceFiatServiceMethod0
+  uniffi::breez_sdk_common::cb::callbackinterfacefiatservicemethod0::cleanup();
+  // Cleanup for callback function CallbackInterfaceFiatServiceMethod1
+  uniffi::breez_sdk_common::cb::callbackinterfacefiatservicemethod1::cleanup();
   // Cleanup for callback function CallbackInterfaceRestClientMethod0
   uniffi::breez_sdk_common::cb::callbackinterfacerestclientmethod0::cleanup();
   // Cleanup for callback function CallbackInterfaceRestClientMethod1
@@ -3070,6 +3624,22 @@ NativeBreezSdkCommon::cpp_uniffi_internal_fn_func_ffi__arraybuffer_to_string(
   return uniffi_jsi::Bridging<std::string>::arraybuffer_to_string(rt, args[0]);
 }
 jsi::Value NativeBreezSdkCommon::
+    cpp_uniffi_internal_fn_method_fiatservice_ffi__bless_pointer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto pointer =
+      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[0]);
+  auto static destructor = [](uint64_t p) {
+    auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
+    RustCallStatus status = {0};
+    uniffi_breez_sdk_common_fn_free_fiatservice(pointer, &status);
+  };
+  auto ptrObj =
+      std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
+  auto obj = jsi::Object::createFromHostObject(rt, ptrObj);
+  return jsi::Value(rt, obj);
+}
+jsi::Value NativeBreezSdkCommon::
     cpp_uniffi_internal_fn_method_restclient_ffi__bless_pointer(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -3087,6 +3657,53 @@ jsi::Value NativeBreezSdkCommon::
 }
 
 // Methods calling directly into the uniffi generated C API of the Rust crate.
+jsi::Value
+NativeBreezSdkCommon::cpp_uniffi_breez_sdk_common_fn_clone_fiatservice(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_common::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_common_fn_clone_fiatservice(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_common::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+}
+jsi::Value
+NativeBreezSdkCommon::cpp_uniffi_breez_sdk_common_fn_free_fiatservice(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_common::Bridging<RustCallStatus>::rustSuccess(rt);
+  uniffi_breez_sdk_common_fn_free_fiatservice(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_common::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return jsi::Value::undefined();
+}
+jsi::Value NativeBreezSdkCommon::
+    cpp_uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_currencies(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_currencies(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkCommon::
+    cpp_uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_rates(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_common_fn_method_fiatservice_fetch_fiat_rates(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
 jsi::Value
 NativeBreezSdkCommon::cpp_uniffi_breez_sdk_common_fn_clone_restclient(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -3786,6 +4403,24 @@ NativeBreezSdkCommon::cpp_ffi_breez_sdk_common_rust_future_complete_void(
   return jsi::Value::undefined();
 }
 jsi::Value NativeBreezSdkCommon::
+    cpp_uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_currencies(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_currencies();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkCommon::
+    cpp_uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_rates(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_common_checksum_method_fiatservice_fetch_fiat_rates();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkCommon::
     cpp_uniffi_breez_sdk_common_checksum_method_restclient_get_request(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -3818,6 +4453,21 @@ NativeBreezSdkCommon::cpp_ffi_breez_sdk_common_uniffi_contract_version(
   auto value = ffi_breez_sdk_common_uniffi_contract_version();
 
   return uniffi_jsi::Bridging<uint32_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkCommon::
+    cpp_uniffi_breez_sdk_common_fn_init_callback_vtable_fiatservice(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto vtableInstance = uniffi::breez_sdk_common::Bridging<
+      UniffiVTableCallbackInterfaceFiatService>::fromJs(rt, callInvoker,
+                                                        args[0]);
+
+  std::lock_guard<std::mutex> lock(
+      uniffi::breez_sdk_common::registry::vtableMutex);
+  uniffi_breez_sdk_common_fn_init_callback_vtable_fiatservice(
+      uniffi::breez_sdk_common::registry::putTable(
+          "UniffiVTableCallbackInterfaceFiatService", vtableInstance));
+  return jsi::Value::undefined();
 }
 jsi::Value NativeBreezSdkCommon::
     cpp_uniffi_breez_sdk_common_fn_init_callback_vtable_restclient(

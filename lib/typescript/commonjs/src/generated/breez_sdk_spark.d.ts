@@ -1,4 +1,4 @@
-import { type BitcoinAddressDetails, type Bolt11InvoiceDetails, type LnurlPayRequestDetails, type RestClient, InputType, SuccessAction, SuccessActionProcessed } from './breez_sdk_common';
+import { type BitcoinAddressDetails, type Bolt11InvoiceDetails, type FiatCurrency, type FiatService, type LnurlPayRequestDetails, type Rate, type RestClient, InputType, SuccessAction, SuccessActionProcessed } from './breez_sdk_common';
 import { type UniffiByteArray, type UniffiRustArcPtr, type UnsafeMutableRawPointer, FfiConverterObject, FfiConverterObjectWithCallbacks, RustBuffer, UniffiAbstractObject, destructorGuardSymbol, pointerLiteralSymbol, uniffiTypeNameSymbol } from 'uniffi-bindgen-react-native';
 /**
  * Connects to the Spark network using the provided configuration and mnemonic.
@@ -137,7 +137,7 @@ export declare const Config: Readonly<{
 }>;
 export type ConnectRequest = {
     config: Config;
-    mnemonic: string;
+    seed: Seed;
     storageDir: string;
 };
 /**
@@ -328,6 +328,62 @@ export declare const LightningAddressInfo: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<LightningAddressInfo>;
+}>;
+/**
+ * Response from listing fiat currencies
+ */
+export type ListFiatCurrenciesResponse = {
+    /**
+     * The list of fiat currencies
+     */
+    currencies: Array<FiatCurrency>;
+};
+/**
+ * Generated factory for {@link ListFiatCurrenciesResponse} record objects.
+ */
+export declare const ListFiatCurrenciesResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link ListFiatCurrenciesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ListFiatCurrenciesResponse> & Required<Omit<ListFiatCurrenciesResponse, never>>) => ListFiatCurrenciesResponse;
+    /**
+     * Create a frozen instance of {@link ListFiatCurrenciesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ListFiatCurrenciesResponse> & Required<Omit<ListFiatCurrenciesResponse, never>>) => ListFiatCurrenciesResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ListFiatCurrenciesResponse>;
+}>;
+/**
+ * Response from listing fiat rates
+ */
+export type ListFiatRatesResponse = {
+    /**
+     * The list of fiat rates
+     */
+    rates: Array<Rate>;
+};
+/**
+ * Generated factory for {@link ListFiatRatesResponse} record objects.
+ */
+export declare const ListFiatRatesResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link ListFiatRatesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ListFiatRatesResponse> & Required<Omit<ListFiatRatesResponse, never>>) => ListFiatRatesResponse;
+    /**
+     * Create a frozen instance of {@link ListFiatRatesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ListFiatRatesResponse> & Required<Omit<ListFiatRatesResponse, never>>) => ListFiatRatesResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ListFiatRatesResponse>;
 }>;
 /**
  * Request to list payments with pagination
@@ -2827,6 +2883,103 @@ export declare const SdkEvent: Readonly<{
  * Events emitted by the SDK
  */
 export type SdkEvent = InstanceType<(typeof SdkEvent)[keyof Omit<typeof SdkEvent, 'instanceOf'>]>;
+export declare enum Seed_Tags {
+    Mnemonic = "Mnemonic",
+    Entropy = "Entropy"
+}
+/**
+ * Represents the seed for wallet generation, either as a mnemonic phrase with an optional
+ * passphrase or as raw entropy bytes.
+ */
+export declare const Seed: Readonly<{
+    instanceOf: (obj: any) => obj is Seed;
+    Mnemonic: {
+        new (inner: {
+            /**
+             * The mnemonic phrase. 12 or 24 words.
+             */ mnemonic: string;
+            /**
+             * An optional passphrase for the mnemonic.
+             */ passphrase: string | undefined;
+        }): {
+            readonly tag: Seed_Tags.Mnemonic;
+            readonly inner: Readonly<{
+                mnemonic: string;
+                passphrase: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "Seed";
+        };
+        "new"(inner: {
+            /**
+             * The mnemonic phrase. 12 or 24 words.
+             */ mnemonic: string;
+            /**
+             * An optional passphrase for the mnemonic.
+             */ passphrase: string | undefined;
+        }): {
+            readonly tag: Seed_Tags.Mnemonic;
+            readonly inner: Readonly<{
+                mnemonic: string;
+                passphrase: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "Seed";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: Seed_Tags.Mnemonic;
+            readonly inner: Readonly<{
+                mnemonic: string;
+                passphrase: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "Seed";
+        };
+    };
+    Entropy: {
+        new (v0: ArrayBuffer): {
+            readonly tag: Seed_Tags.Entropy;
+            readonly inner: Readonly<[ArrayBuffer]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "Seed";
+        };
+        "new"(v0: ArrayBuffer): {
+            readonly tag: Seed_Tags.Entropy;
+            readonly inner: Readonly<[ArrayBuffer]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "Seed";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: Seed_Tags.Entropy;
+            readonly inner: Readonly<[ArrayBuffer]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "Seed";
+        };
+    };
+}>;
+/**
+ * Represents the seed for wallet generation, either as a mnemonic phrase with an optional
+ * passphrase or as raw entropy bytes.
+ */
+export type Seed = InstanceType<(typeof Seed)[keyof Omit<typeof Seed, 'instanceOf'>]>;
 export declare enum SendPaymentMethod_Tags {
     BitcoinAddress = "BitcoinAddress",
     Bolt11Invoice = "Bolt11Invoice",
@@ -3020,11 +3173,11 @@ export declare const SendPaymentOptions: Readonly<{
     };
     Bolt11Invoice: {
         new (inner: {
-            useSpark: boolean;
+            preferSpark: boolean;
         }): {
             readonly tag: SendPaymentOptions_Tags.Bolt11Invoice;
             readonly inner: Readonly<{
-                useSpark: boolean;
+                preferSpark: boolean;
             }>;
             /**
              * @private
@@ -3033,11 +3186,11 @@ export declare const SendPaymentOptions: Readonly<{
             readonly [uniffiTypeNameSymbol]: "SendPaymentOptions";
         };
         "new"(inner: {
-            useSpark: boolean;
+            preferSpark: boolean;
         }): {
             readonly tag: SendPaymentOptions_Tags.Bolt11Invoice;
             readonly inner: Readonly<{
-                useSpark: boolean;
+                preferSpark: boolean;
             }>;
             /**
              * @private
@@ -3048,7 +3201,7 @@ export declare const SendPaymentOptions: Readonly<{
         instanceOf(obj: any): obj is {
             readonly tag: SendPaymentOptions_Tags.Bolt11Invoice;
             readonly inner: Readonly<{
-                useSpark: boolean;
+                preferSpark: boolean;
             }>;
             /**
              * @private
@@ -3459,6 +3612,19 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<GetPaymentResponse>;
     /**
+     * List fiat currencies for which there is a known exchange rate,
+     * sorted by the canonical name of the currency.
+     */
+    listFiatCurrencies(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ListFiatCurrenciesResponse>;
+    /**
+     * List the latest rates of fiat currencies, sorted by name.
+     */
+    listFiatRates(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ListFiatRatesResponse>;
+    /**
        * Lists payments from the storage with pagination
        *
        * This method provides direct access to the payment history stored in the database.
@@ -3582,6 +3748,19 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<GetPaymentResponse>;
     /**
+     * List fiat currencies for which there is a known exchange rate,
+     * sorted by the canonical name of the currency.
+     */
+    listFiatCurrencies(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ListFiatCurrenciesResponse>;
+    /**
+     * List the latest rates of fiat currencies, sorted by name.
+     */
+    listFiatRates(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ListFiatRatesResponse>;
+    /**
        * Lists payments from the storage with pagination
        *
        * This method provides direct access to the payment history stored in the database.
@@ -3675,6 +3854,14 @@ export interface SdkBuilderInterface {
         signal: AbortSignal;
     }): Promise<void>;
     /**
+     * Sets the fiat service to be used by the SDK.
+     * Arguments:
+     * - `fiat_service`: The fiat service to be used.
+     */
+    withFiatService(fiatService: FiatService, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
      * Sets the key set type to be used by the SDK.
      * Arguments:
      * - `key_set_type`: The key set type which determines the derivation path.
@@ -3707,10 +3894,10 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
      * Creates a new `SdkBuilder` with the provided configuration.
      * Arguments:
      * - `config`: The configuration to be used.
-     * - `mnemonic`: The mnemonic phrase for the wallet.
+     * - `seed`: The seed for wallet generation.
      * - `storage`: The storage backend to be used.
      */
-    constructor(config: Config, mnemonic: string, storage: Storage);
+    constructor(config: Config, seed: Seed, storage: Storage);
     /**
      * Builds the `BreezSdk` instance with the configured components.
      */
@@ -3723,6 +3910,14 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
      * - `chain_service`: The chain service to be used.
      */
     withChainService(chainService: BitcoinChainService, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Sets the fiat service to be used by the SDK.
+     * Arguments:
+     * - `fiat_service`: The fiat service to be used.
+     */
+    withFiatService(fiatService: FiatService, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -4130,6 +4325,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): LightningAddressInfo;
             lower(value: LightningAddressInfo): UniffiByteArray;
         };
+        FfiConverterTypeListFiatCurrenciesResponse: {
+            read(from: RustBuffer): ListFiatCurrenciesResponse;
+            write(value: ListFiatCurrenciesResponse, into: RustBuffer): void;
+            allocationSize(value: ListFiatCurrenciesResponse): number;
+            lift(value: UniffiByteArray): ListFiatCurrenciesResponse;
+            lower(value: ListFiatCurrenciesResponse): UniffiByteArray;
+        };
+        FfiConverterTypeListFiatRatesResponse: {
+            read(from: RustBuffer): ListFiatRatesResponse;
+            write(value: ListFiatRatesResponse, into: RustBuffer): void;
+            allocationSize(value: ListFiatRatesResponse): number;
+            lift(value: UniffiByteArray): ListFiatRatesResponse;
+            lower(value: ListFiatRatesResponse): UniffiByteArray;
+        };
         FfiConverterTypeListPaymentsRequest: {
             read(from: RustBuffer): ListPaymentsRequest;
             write(value: ListPaymentsRequest, into: RustBuffer): void;
@@ -4319,6 +4528,13 @@ declare const _default: Readonly<{
             allocationSize(value: SdkEvent): number;
             lift(value: UniffiByteArray): SdkEvent;
             lower(value: SdkEvent): UniffiByteArray;
+        };
+        FfiConverterTypeSeed: {
+            read(from: RustBuffer): Seed;
+            write(value: Seed, into: RustBuffer): void;
+            allocationSize(value: Seed): number;
+            lift(value: UniffiByteArray): Seed;
+            lower(value: Seed): UniffiByteArray;
         };
         FfiConverterTypeSendOnchainFeeQuote: {
             read(from: RustBuffer): SendOnchainFeeQuote;
