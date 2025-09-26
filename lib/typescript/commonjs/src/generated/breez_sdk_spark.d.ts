@@ -647,6 +647,7 @@ export declare const Payment: Readonly<{
  */
 export type PaymentMetadata = {
     lnurlPayInfo: LnurlPayInfo | undefined;
+    lnurlDescription: string | undefined;
 };
 /**
  * Generated factory for {@link PaymentMetadata} record objects.
@@ -860,7 +861,7 @@ export declare const RefundDepositResponse: Readonly<{
 }>;
 export type RegisterLightningAddressRequest = {
     username: string;
-    description: string;
+    description: string | undefined;
 };
 /**
  * Generated factory for {@link RegisterLightningAddressRequest} record objects.
@@ -870,12 +871,12 @@ export declare const RegisterLightningAddressRequest: Readonly<{
      * Create a frozen instance of {@link RegisterLightningAddressRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<RegisterLightningAddressRequest> & Required<Omit<RegisterLightningAddressRequest, never>>) => RegisterLightningAddressRequest;
+    create: (partial: Partial<RegisterLightningAddressRequest> & Required<Omit<RegisterLightningAddressRequest, "description">>) => RegisterLightningAddressRequest;
     /**
      * Create a frozen instance of {@link RegisterLightningAddressRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<RegisterLightningAddressRequest> & Required<Omit<RegisterLightningAddressRequest, never>>) => RegisterLightningAddressRequest;
+    new: (partial: Partial<RegisterLightningAddressRequest> & Required<Omit<RegisterLightningAddressRequest, "description">>) => RegisterLightningAddressRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */

@@ -1782,6 +1782,7 @@ const FfiConverterTypePayment = (() => {
  */
 export type PaymentMetadata = {
   lnurlPayInfo: LnurlPayInfo | undefined;
+  lnurlDescription: string | undefined;
 };
 
 /**
@@ -1820,14 +1821,18 @@ const FfiConverterTypePaymentMetadata = (() => {
     read(from: RustBuffer): TypeName {
       return {
         lnurlPayInfo: FfiConverterOptionalTypeLnurlPayInfo.read(from),
+        lnurlDescription: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterOptionalTypeLnurlPayInfo.write(value.lnurlPayInfo, into);
+      FfiConverterOptionalString.write(value.lnurlDescription, into);
     }
     allocationSize(value: TypeName): number {
-      return FfiConverterOptionalTypeLnurlPayInfo.allocationSize(
-        value.lnurlPayInfo
+      return (
+        FfiConverterOptionalTypeLnurlPayInfo.allocationSize(
+          value.lnurlPayInfo
+        ) + FfiConverterOptionalString.allocationSize(value.lnurlDescription)
       );
     }
   }
@@ -2352,14 +2357,14 @@ const FfiConverterTypeRefundDepositResponse = (() => {
 
 export type RegisterLightningAddressRequest = {
   username: string;
-  description: string;
+  description: string | undefined;
 };
 
 /**
  * Generated factory for {@link RegisterLightningAddressRequest} record objects.
  */
 export const RegisterLightningAddressRequest = (() => {
-  const defaults = () => ({});
+  const defaults = () => ({ description: undefined });
   const create = (() => {
     return uniffiCreateRecord<
       RegisterLightningAddressRequest,
@@ -2393,17 +2398,17 @@ const FfiConverterTypeRegisterLightningAddressRequest = (() => {
     read(from: RustBuffer): TypeName {
       return {
         username: FfiConverterString.read(from),
-        description: FfiConverterString.read(from),
+        description: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterString.write(value.username, into);
-      FfiConverterString.write(value.description, into);
+      FfiConverterOptionalString.write(value.description, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterString.allocationSize(value.username) +
-        FfiConverterString.allocationSize(value.description)
+        FfiConverterOptionalString.allocationSize(value.description)
       );
     }
   }
