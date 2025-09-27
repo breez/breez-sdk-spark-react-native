@@ -3536,6 +3536,9 @@ export interface BitcoinChainService {
     getAddressUtxos(address: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Array<Utxo>>;
+    getTransactionStatus(txid: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<TxStatus>;
     getTransactionHex(txid: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<string>;
@@ -3551,6 +3554,9 @@ export declare class BitcoinChainServiceImpl extends UniffiAbstractObject implem
     getAddressUtxos(address: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Array<Utxo>>;
+    getTransactionStatus(txid: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<TxStatus>;
     getTransactionHex(txid: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<string>;

@@ -6033,6 +6033,10 @@ export interface BitcoinChainService {
     address: string,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<Array<Utxo>>;
+  getTransactionStatus(
+    txid: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<TxStatus>;
   getTransactionHex(
     txid: string,
     asyncOpts_?: { signal: AbortSignal }
@@ -6082,6 +6086,45 @@ export class BitcoinChainServiceImpl
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterArrayTypeUtxo.lift.bind(
           FfiConverterArrayTypeUtxo
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeChainServiceError.lift.bind(
+          FfiConverterTypeChainServiceError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async getTransactionStatus(
+    txid: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<TxStatus> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_transaction_status(
+            uniffiTypeBitcoinChainServiceImplObjectFactory.clonePointer(this),
+            FfiConverterString.lower(txid)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeTxStatus.lift.bind(
+          FfiConverterTypeTxStatus
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -6288,6 +6331,51 @@ const uniffiCallbackInterfaceBitcoinChainService: {
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterArrayTypeUtxo.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ ChainServiceError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeChainServiceError.lower.bind(
+          FfiConverterTypeChainServiceError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    getTransactionStatus: (
+      uniffiHandle: bigint,
+      txid: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<TxStatus> => {
+        const jsCallback =
+          FfiConverterTypeBitcoinChainService.lift(uniffiHandle);
+        return await jsCallback.getTransactionStatus(
+          FfiConverterString.lift(txid),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: TxStatus) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypeTxStatus.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -9361,8 +9449,16 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_status() !==
+    23018
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_status'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_hex() !==
-    19571
+    59376
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_hex'
@@ -9370,7 +9466,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_broadcast_transaction() !==
-    61083
+    65179
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_broadcast_transaction'

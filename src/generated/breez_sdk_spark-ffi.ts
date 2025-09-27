@@ -35,6 +35,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     address: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_transaction_status(
+    ptr: bigint,
+    txid: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_transaction_hex(
     ptr: bigint,
     txid: Uint8Array
@@ -409,6 +413,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_func_init_logging(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_parse(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_utxos(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_status(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_hex(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_broadcast_transaction(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener(): number;
@@ -631,6 +636,12 @@ type UniffiCallbackInterfaceBitcoinChainServiceMethod1 = (
 ) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceBitcoinChainServiceMethod2 = (
   uniffiHandle: bigint,
+  txid: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceBitcoinChainServiceMethod3 = (
+  uniffiHandle: bigint,
   tx: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
@@ -718,8 +729,9 @@ export type UniffiVTableCallbackInterfaceLogger = {
 };
 export type UniffiVTableCallbackInterfaceBitcoinChainService = {
   getAddressUtxos: UniffiCallbackInterfaceBitcoinChainServiceMethod0;
-  getTransactionHex: UniffiCallbackInterfaceBitcoinChainServiceMethod1;
-  broadcastTransaction: UniffiCallbackInterfaceBitcoinChainServiceMethod2;
+  getTransactionStatus: UniffiCallbackInterfaceBitcoinChainServiceMethod1;
+  getTransactionHex: UniffiCallbackInterfaceBitcoinChainServiceMethod2;
+  broadcastTransaction: UniffiCallbackInterfaceBitcoinChainServiceMethod3;
   uniffiFree: UniffiCallbackInterfaceFree;
 };
 export type UniffiVTableCallbackInterfaceStorage = {
