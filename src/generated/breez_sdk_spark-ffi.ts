@@ -178,7 +178,8 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(
     ptr: bigint,
     keySetType: Uint8Array,
-    useAddressIndex: number
+    useAddressIndex: number,
+    accountNumber: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_lnurl_client(
     ptr: bigint,

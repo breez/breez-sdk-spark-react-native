@@ -41,7 +41,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_build(ptr: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_chain_service(ptr: bigint, chainService: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_fiat_service(ptr: bigint, fiatService: bigint): bigint;
-    ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(ptr: bigint, keySetType: Uint8Array, useAddressIndex: number): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(ptr: bigint, keySetType: Uint8Array, useAddressIndex: number, accountNumber: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_lnurl_client(ptr: bigint, lnurlClient: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_rest_chain_service(ptr: bigint, url: Uint8Array, credentials: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_clone_storage(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): bigint;

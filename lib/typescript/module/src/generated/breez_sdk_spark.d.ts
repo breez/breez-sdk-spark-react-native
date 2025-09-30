@@ -3874,7 +3874,7 @@ export interface SdkBuilderInterface {
      * - `key_set_type`: The key set type which determines the derivation path.
      * - `use_address_index`: Controls the structure of the BIP derivation path.
      */
-    withKeySet(keySetType: KeySetType, useAddressIndex: boolean, asyncOpts_?: {
+    withKeySet(keySetType: KeySetType, useAddressIndex: boolean, accountNumber: /*u32*/ number | undefined, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     withLnurlClient(lnurlClient: RestClient, asyncOpts_?: {
@@ -3933,7 +3933,7 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
      * - `key_set_type`: The key set type which determines the derivation path.
      * - `use_address_index`: Controls the structure of the BIP derivation path.
      */
-    withKeySet(keySetType: KeySetType, useAddressIndex: boolean, asyncOpts_?: {
+    withKeySet(keySetType: KeySetType, useAddressIndex: boolean, accountNumber: /*u32*/ number | undefined, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     withLnurlClient(lnurlClient: RestClient, asyncOpts_?: {

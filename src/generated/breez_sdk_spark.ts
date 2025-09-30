@@ -7660,6 +7660,7 @@ export interface SdkBuilderInterface {
   withKeySet(
     keySetType: KeySetType,
     useAddressIndex: boolean,
+    accountNumber: /*u32*/ number | undefined,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void>;
   withLnurlClient(
@@ -7841,6 +7842,7 @@ export class SdkBuilder
   public async withKeySet(
     keySetType: KeySetType,
     useAddressIndex: boolean,
+    accountNumber: /*u32*/ number | undefined,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void> {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
@@ -7851,7 +7853,8 @@ export class SdkBuilder
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(
             uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
             FfiConverterTypeKeySetType.lower(keySetType),
-            FfiConverterBool.lower(useAddressIndex)
+            FfiConverterBool.lower(useAddressIndex),
+            FfiConverterOptionalUInt32.lower(accountNumber)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -9690,7 +9693,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set() !==
-    55523
+    42926
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set'

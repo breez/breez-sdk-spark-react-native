@@ -298,7 +298,8 @@ uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_chain_service(
 uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_fiat_service(
     void *ptr, void *fiat_service);
 /*handle*/ uint64_t uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(
-    void *ptr, RustBuffer key_set_type, int8_t use_address_index);
+    void *ptr, RustBuffer key_set_type, int8_t use_address_index,
+    RustBuffer account_number);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_lnurl_client(
     void *ptr, void *lnurl_client);
@@ -5493,7 +5494,7 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
           jsi::PropNameID::forAscii(
               rt,
               "ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set"),
-          3,
+          4,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
@@ -7731,7 +7732,9 @@ jsi::Value NativeBreezSdkSpark::
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[1]),
-      uniffi_jsi::Bridging<int8_t>::fromJs(rt, callInvoker, args[2]));
+      uniffi_jsi::Bridging<int8_t>::fromJs(rt, callInvoker, args[2]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[3]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
