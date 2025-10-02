@@ -79,6 +79,7 @@ import {
   uniffiCreateRecord,
   uniffiRustCallAsync,
   uniffiTraitInterfaceCall,
+  uniffiTraitInterfaceCallAsync,
   uniffiTraitInterfaceCallAsyncWithError,
   uniffiTypeNameSymbol,
   variantOrdinalSymbol,
@@ -248,7 +249,7 @@ export interface EventListener {
   /**
    * Called when an event occurs
    */
-  onEvent(event: SdkEvent): void;
+  onEvent(event: SdkEvent, asyncOpts_?: { signal: AbortSignal }): Promise<void>;
 }
 
 // Put the implementation in a struct so we don't pollute the top-level namespace
@@ -259,23 +260,42 @@ const uniffiCallbackInterfaceEventListener: {
   // Create the VTable using a series of closures.
   // ts automatically converts these into C callback functions.
   vtable: {
-    onEvent: (uniffiHandle: bigint, event: Uint8Array) => {
-      const uniffiMakeCall = (): void => {
+    onEvent: (
+      uniffiHandle: bigint,
+      event: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<void> => {
         const jsCallback = FfiConverterTypeEventListener.lift(uniffiHandle);
-        return jsCallback.onEvent(FfiConverterTypeSdkEvent.lift(event));
+        return await jsCallback.onEvent(FfiConverterTypeSdkEvent.lift(event), {
+          signal,
+        });
       };
-      const uniffiResult = UniffiResult.ready<void>();
-      const uniffiHandleSuccess = (obj: any) => {};
-      const uniffiHandleError = (code: number, errBuf: UniffiByteArray) => {
-        UniffiResult.writeError(uniffiResult, code, errBuf);
+      const uniffiHandleSuccess = (returnValue: void) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
       };
-      uniffiTraitInterfaceCall(
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsync(
         /*makeCall:*/ uniffiMakeCall,
         /*handleSuccess:*/ uniffiHandleSuccess,
         /*handleError:*/ uniffiHandleError,
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiResult;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
       // EventListener: this will throw a stale handle error if the handle isn't found.
@@ -785,7 +805,9 @@ const FfiConverterTypeDepositInfo = (() => {
 /**
  * Request to get the balance of the wallet
  */
-export type GetInfoRequest = {};
+export type GetInfoRequest = {
+  ensureSynced: boolean | undefined;
+};
 
 /**
  * Generated factory for {@link GetInfoRequest} record objects.
@@ -821,11 +843,15 @@ const FfiConverterTypeGetInfoRequest = (() => {
   type TypeName = GetInfoRequest;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
-      return {};
+      return {
+        ensureSynced: FfiConverterOptionalBool.read(from),
+      };
     }
-    write(value: TypeName, into: RustBuffer): void {}
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalBool.write(value.ensureSynced, into);
+    }
     allocationSize(value: TypeName): number {
-      return 0;
+      return FfiConverterOptionalBool.allocationSize(value.ensureSynced);
     }
   }
   return new FFIConverter();
@@ -6518,7 +6544,10 @@ export interface BreezSdkInterface {
    *
    * A unique identifier for the listener, which can be used to remove it later
    */
-  addEventListener(listener: EventListener): string;
+  addEventListener(
+    listener: EventListener,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<string>;
   checkLightningAddressAvailable(
     req: CheckLightningAddressRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -6634,7 +6663,10 @@ export interface BreezSdkInterface {
    *
    * `true` if the listener was found and removed, `false` otherwise
    */
-  removeEventListener(id: string): boolean;
+  removeEventListener(
+    id: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<boolean>;
   sendPayment(
     request: SendPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -6647,7 +6679,10 @@ export interface BreezSdkInterface {
   /**
    * Synchronizes the wallet with the Spark network
    */
-  syncWallet(request: SyncWalletRequest) /*throws*/ : SyncWalletResponse;
+  syncWallet(
+    request: SyncWalletRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<SyncWalletResponse>;
 }
 
 /**
@@ -6680,19 +6715,38 @@ export class BreezSdk
    *
    * A unique identifier for the listener, which can be used to remove it later
    */
-  public addEventListener(listener: EventListener): string {
-    return FfiConverterString.lift(
-      uniffiCaller.rustCall(
-        /*caller:*/ (callStatus) => {
+  public async addEventListener(
+    listener: EventListener,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<string> {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_add_event_listener(
             uniffiTypeBreezSdkObjectFactory.clonePointer(this),
-            FfiConverterTypeEventListener.lower(listener),
-            callStatus
+            FfiConverterTypeEventListener.lower(listener)
           );
         },
-        /*liftString:*/ FfiConverterString.lift
-      )
-    );
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterString.lift.bind(FfiConverterString),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
   }
 
   public async checkLightningAddressAvailable(
@@ -7423,19 +7477,38 @@ export class BreezSdk
    *
    * `true` if the listener was found and removed, `false` otherwise
    */
-  public removeEventListener(id: string): boolean {
-    return FfiConverterBool.lift(
-      uniffiCaller.rustCall(
-        /*caller:*/ (callStatus) => {
+  public async removeEventListener(
+    id: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<boolean> {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(
             uniffiTypeBreezSdkObjectFactory.clonePointer(this),
-            FfiConverterString.lower(id),
-            callStatus
+            FfiConverterString.lower(id)
           );
         },
-        /*liftString:*/ FfiConverterString.lift
-      )
-    );
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_i8,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_i8,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_i8,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_i8,
+        /*liftFunc:*/ FfiConverterBool.lift.bind(FfiConverterBool),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
   }
 
   public async sendPayment(
@@ -7521,22 +7594,43 @@ export class BreezSdk
   /**
    * Synchronizes the wallet with the Spark network
    */
-  public syncWallet(request: SyncWalletRequest): SyncWalletResponse /*throws*/ {
-    return FfiConverterTypeSyncWalletResponse.lift(
-      uniffiCaller.rustCallWithError(
-        /*liftError:*/ FfiConverterTypeSdkError.lift.bind(
-          FfiConverterTypeSdkError
-        ),
-        /*caller:*/ (callStatus) => {
+  public async syncWallet(
+    request: SyncWalletRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<SyncWalletResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
             uniffiTypeBreezSdkObjectFactory.clonePointer(this),
-            FfiConverterTypeSyncWalletRequest.lower(request),
-            callStatus
+            FfiConverterTypeSyncWalletRequest.lower(request)
           );
         },
-        /*liftString:*/ FfiConverterString.lift
-      )
-    );
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeSyncWalletResponse.lift.bind(
+          FfiConverterTypeSyncWalletResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
   }
 
   /**
@@ -9477,7 +9571,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener() !==
-    61844
+    37737
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener'
@@ -9637,7 +9731,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener() !==
-    60980
+    41066
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener'
@@ -9661,7 +9755,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet() !==
-    36066
+    30368
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet'
@@ -9813,7 +9907,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_eventlistener_on_event() !==
-    10824
+    24807
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_eventlistener_on_event'

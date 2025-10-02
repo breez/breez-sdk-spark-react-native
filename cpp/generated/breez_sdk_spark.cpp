@@ -101,8 +101,9 @@ typedef struct UniffiForeignFutureStructVoid {
 typedef void (*UniffiForeignFutureCompleteVoid)(
     uint64_t callback_data, UniffiForeignFutureStructVoid result);
 typedef void (*UniffiCallbackInterfaceEventListenerMethod0)(
-    uint64_t uniffi_handle, RustBuffer event, void *uniffi_out_return,
-    RustCallStatus *rust_call_status);
+    uint64_t uniffi_handle, RustBuffer event,
+    UniffiForeignFutureCompleteVoid uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef void (*UniffiCallbackInterfaceLoggerMethod0)(
     uint64_t uniffi_handle, RustBuffer l, void *uniffi_out_return,
     RustCallStatus *rust_call_status);
@@ -218,8 +219,9 @@ void *uniffi_breez_sdk_spark_fn_clone_breezsdk(void *ptr,
                                                RustCallStatus *uniffi_out_err);
 void uniffi_breez_sdk_spark_fn_free_breezsdk(void *ptr,
                                              RustCallStatus *uniffi_out_err);
-RustBuffer uniffi_breez_sdk_spark_fn_method_breezsdk_add_event_listener(
-    void *ptr, uint64_t listener, RustCallStatus *uniffi_out_err);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_add_event_listener(void *ptr,
+                                                             uint64_t listener);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_check_lightning_address_available(
     void *ptr, RustBuffer req);
@@ -271,16 +273,18 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_refund_deposit(void *ptr,
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_register_lightning_address(
     void *ptr, RustBuffer request);
-int8_t uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(
-    void *ptr, RustBuffer id, RustCallStatus *uniffi_out_err);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(void *ptr,
+                                                                RustBuffer id);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment(void *ptr,
                                                        RustBuffer request);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment_internal(
     void *ptr, RustBuffer request, int8_t suppress_payment_event);
-RustBuffer uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
-    void *ptr, RustBuffer request, RustCallStatus *uniffi_out_err);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(void *ptr,
+                                                      RustBuffer request);
 void *
 uniffi_breez_sdk_spark_fn_clone_sdkbuilder(void *ptr,
                                            RustCallStatus *uniffi_out_err);
@@ -2396,7 +2400,8 @@ using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
 // a function pointer. The function pointer is passed to Rust.
-static std::function<void(uint64_t, RustBuffer, void *, RustCallStatus *)>
+static std::function<void(uint64_t, RustBuffer, UniffiForeignFutureCompleteVoid,
+                          uint64_t, UniffiForeignFuture *)>
     rsLambda = nullptr;
 
 // This is the main body of the callback. It's called from the lambda,
@@ -2405,7 +2410,9 @@ static void body(jsi::Runtime &rt,
                  std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
                  std::shared_ptr<jsi::Value> callbackValue,
                  uint64_t rs_uniffiHandle, RustBuffer rs_event,
-                 void *rs_uniffiOutReturn, RustCallStatus *uniffi_call_status) {
+                 UniffiForeignFutureCompleteVoid rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
 
   // Convert the arguments from Rust, into jsi::Values.
   // We'll use the Bridging class to do this…
@@ -2413,6 +2420,11 @@ static void body(jsi::Runtime &rt,
       uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
   auto js_event = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
       rt, callInvoker, rs_event);
+  auto js_uniffiFutureCallback =
+      uniffi::breez_sdk_spark::Bridging<UniffiForeignFutureCompleteVoid>::toJs(
+          rt, callInvoker, rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
 
   // Now we are ready to call the callback.
   // We are already on the JS thread, because this `body` function was
@@ -2420,18 +2432,13 @@ static void body(jsi::Runtime &rt,
   try {
     // Getting the callback function
     auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_event);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_event,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
 
-    // Now copy the result back from JS into the RustCallStatus object.
-    uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyFromJs(
-        rt, callInvoker, uniffiResult, uniffi_call_status);
-
-    if (uniffi_call_status->code != UNIFFI_CALL_STATUS_OK) {
-      // The JS callback finished abnormally, so we cannot retrieve the return
-      // value.
-      return;
-    }
-
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn = uniffi::breez_sdk_spark::Bridging<
+        ReferenceHolder<UniffiForeignFuture>>::fromJs(rt, callInvoker,
+                                                      uniffiResult);
   } catch (const jsi::JSError &error) {
     std::cout
         << "Error in callback UniffiCallbackInterfaceEventListenerMethod0: "
@@ -2441,8 +2448,9 @@ static void body(jsi::Runtime &rt,
 }
 
 static void callback(uint64_t rs_uniffiHandle, RustBuffer rs_event,
-                     void *rs_uniffiOutReturn,
-                     RustCallStatus *uniffi_call_status) {
+                     UniffiForeignFutureCompleteVoid rs_uniffiFutureCallback,
+                     uint64_t rs_uniffiCallbackData,
+                     UniffiForeignFuture *rs_uniffiOutReturn) {
   // If the runtime has shutdown, then there is no point in trying to
   // call into Javascript. BUT how do we tell if the runtime has shutdown?
   //
@@ -2458,7 +2466,8 @@ static void callback(uint64_t rs_uniffiHandle, RustBuffer rs_event,
 
   // The runtime, the actual callback jsi::funtion, and the callInvoker
   // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_event, rs_uniffiOutReturn, uniffi_call_status);
+  rsLambda(rs_uniffiHandle, rs_event, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
 static UniffiCallbackInterfaceEventListenerMethod0
@@ -2482,14 +2491,18 @@ makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceeventlist
   auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
   rsLambda = [&rt, callInvoker, callbackValue](
                  uint64_t rs_uniffiHandle, RustBuffer rs_event,
-                 void *rs_uniffiOutReturn, RustCallStatus *uniffi_call_status) {
+                 UniffiForeignFutureCompleteVoid rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
     // We immediately make a lambda which will do the work of transforming the
     // arguments into JSI values and calling the callback.
     uniffi_runtime::UniffiCallFunc jsLambda =
         [callInvoker, callbackValue, rs_uniffiHandle, rs_event,
-         rs_uniffiOutReturn, uniffi_call_status](jsi::Runtime &rt) mutable {
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
           body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_event,
-               rs_uniffiOutReturn, uniffi_call_status);
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
         };
     // We'll then call that lambda from the callInvoker which will
     // look after calling it on the correct thread.
@@ -7351,17 +7364,12 @@ jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_add_event_listener(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
   auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_add_event_listener(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[1]),
-      &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
+      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[1]));
 
-  return uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(rt, callInvoker,
-                                                             value);
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
 }
 jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_check_lightning_address_available(
@@ -7597,17 +7605,13 @@ jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
   auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[1]),
-      &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
+                                                            args[1]));
 
-  return uniffi_jsi::Bridging<int8_t>::toJs(rt, callInvoker, value);
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
 }
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment(
@@ -7638,18 +7642,13 @@ jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
   auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[1]),
-      &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
+                                                            args[1]));
 
-  return uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(rt, callInvoker,
-                                                             value);
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
 }
 jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_sdkbuilder(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,

@@ -27,7 +27,9 @@ export interface EventListener {
     /**
      * Called when an event occurs
      */
-    onEvent(event: SdkEvent): void;
+    onEvent(event: SdkEvent, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
 }
 export interface Logger {
     log(l: LogEntry): void;
@@ -212,7 +214,9 @@ export declare const DepositInfo: Readonly<{
 /**
  * Request to get the balance of the wallet
  */
-export type GetInfoRequest = {};
+export type GetInfoRequest = {
+    ensureSynced: boolean | undefined;
+};
 /**
  * Generated factory for {@link GetInfoRequest} record objects.
  */
@@ -3585,7 +3589,9 @@ export interface BreezSdkInterface {
      *
      * A unique identifier for the listener, which can be used to remove it later
      */
-    addEventListener(listener: EventListener): string;
+    addEventListener(listener: EventListener, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<string>;
     checkLightningAddressAvailable(req: CheckLightningAddressRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
@@ -3689,7 +3695,9 @@ export interface BreezSdkInterface {
      *
      * `true` if the listener was found and removed, `false` otherwise
      */
-    removeEventListener(id: string): boolean;
+    removeEventListener(id: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<boolean>;
     sendPayment(request: SendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SendPaymentResponse>;
@@ -3699,7 +3707,9 @@ export interface BreezSdkInterface {
     /**
      * Synchronizes the wallet with the Spark network
      */
-    syncWallet(request: SyncWalletRequest): SyncWalletResponse;
+    syncWallet(request: SyncWalletRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SyncWalletResponse>;
 }
 /**
  * `BreezSDK` is a wrapper around `SparkSDK` that provides a more structured API
@@ -3721,7 +3731,9 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
      *
      * A unique identifier for the listener, which can be used to remove it later
      */
-    addEventListener(listener: EventListener): string;
+    addEventListener(listener: EventListener, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<string>;
     checkLightningAddressAvailable(req: CheckLightningAddressRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
@@ -3825,7 +3837,9 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
      *
      * `true` if the listener was found and removed, `false` otherwise
      */
-    removeEventListener(id: string): boolean;
+    removeEventListener(id: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<boolean>;
     sendPayment(request: SendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SendPaymentResponse>;
@@ -3835,7 +3849,9 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     /**
      * Synchronizes the wallet with the Spark network
      */
-    syncWallet(request: SyncWalletRequest): SyncWalletResponse;
+    syncWallet(request: SyncWalletRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SyncWalletResponse>;
     /**
      * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
      */

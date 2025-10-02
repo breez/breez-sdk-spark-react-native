@@ -57,9 +57,8 @@ interface NativeModuleInterface {
   ): void;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_add_event_listener(
     ptr: bigint,
-    listener: bigint,
-    uniffi_out_err: UniffiRustCallStatus
-  ): Uint8Array;
+    listener: bigint
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_check_lightning_address_available(
     ptr: bigint,
     req: Uint8Array
@@ -135,9 +134,8 @@ interface NativeModuleInterface {
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(
     ptr: bigint,
-    id: Uint8Array,
-    uniffi_out_err: UniffiRustCallStatus
-  ): number;
+    id: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment(
     ptr: bigint,
     request: Uint8Array
@@ -149,9 +147,8 @@ interface NativeModuleInterface {
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
     ptr: bigint,
-    request: Uint8Array,
-    uniffi_out_err: UniffiRustCallStatus
-  ): Uint8Array;
+    request: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_clone_sdkbuilder(
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
@@ -617,8 +614,10 @@ export type UniffiForeignFutureCompleteVoid = (
 ) => void;
 type UniffiCallbackInterfaceEventListenerMethod0 = (
   uniffiHandle: bigint,
-  event: Uint8Array
-) => UniffiResult<void>;
+  event: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+  uniffiCallbackData: bigint
+) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceLoggerMethod0 = (
   uniffiHandle: bigint,
   l: Uint8Array
