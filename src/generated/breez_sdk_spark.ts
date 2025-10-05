@@ -2912,6 +2912,115 @@ const FfiConverterTypeUtxo = (() => {
   return new FFIConverter();
 })();
 
+export type WaitForPaymentRequest = {
+  identifier: WaitForPaymentIdentifier;
+};
+
+/**
+ * Generated factory for {@link WaitForPaymentRequest} record objects.
+ */
+export const WaitForPaymentRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      WaitForPaymentRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link WaitForPaymentRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link WaitForPaymentRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<WaitForPaymentRequest>,
+  });
+})();
+
+const FfiConverterTypeWaitForPaymentRequest = (() => {
+  type TypeName = WaitForPaymentRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        identifier: FfiConverterTypeWaitForPaymentIdentifier.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeWaitForPaymentIdentifier.write(value.identifier, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterTypeWaitForPaymentIdentifier.allocationSize(
+        value.identifier
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type WaitForPaymentResponse = {
+  payment: Payment;
+};
+
+/**
+ * Generated factory for {@link WaitForPaymentResponse} record objects.
+ */
+export const WaitForPaymentResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      WaitForPaymentResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link WaitForPaymentResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link WaitForPaymentResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<WaitForPaymentResponse>,
+  });
+})();
+
+const FfiConverterTypeWaitForPaymentResponse = (() => {
+  type TypeName = WaitForPaymentResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        payment: FfiConverterTypePayment.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypePayment.write(value.payment, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterTypePayment.allocationSize(value.payment);
+    }
+  }
+  return new FFIConverter();
+})();
+
 const stringConverter = {
   stringToBytes: (s: string) =>
     uniffiCaller.rustCall((status) =>
@@ -5586,7 +5695,10 @@ export const SendPaymentOptions = (() => {
 
   type Bolt11Invoice__interface = {
     tag: SendPaymentOptions_Tags.Bolt11Invoice;
-    inner: Readonly<{ preferSpark: boolean }>;
+    inner: Readonly<{
+      preferSpark: boolean;
+      completionTimeoutSecs: /*u32*/ number | undefined;
+    }>;
   };
 
   class Bolt11Invoice_ extends UniffiEnum implements Bolt11Invoice__interface {
@@ -5596,13 +5708,28 @@ export const SendPaymentOptions = (() => {
      */
     readonly [uniffiTypeNameSymbol] = 'SendPaymentOptions';
     readonly tag = SendPaymentOptions_Tags.Bolt11Invoice;
-    readonly inner: Readonly<{ preferSpark: boolean }>;
-    constructor(inner: { preferSpark: boolean }) {
+    readonly inner: Readonly<{
+      preferSpark: boolean;
+      completionTimeoutSecs: /*u32*/ number | undefined;
+    }>;
+    constructor(inner: {
+      preferSpark: boolean;
+      /**
+       * If set, the function will return the payment if it is still pending after this
+       * number of seconds. If unset, the function will return immediately after initiating the payment.
+       */ completionTimeoutSecs: /*u32*/ number | undefined;
+    }) {
       super('SendPaymentOptions', 'Bolt11Invoice');
       this.inner = Object.freeze(inner);
     }
 
-    static new(inner: { preferSpark: boolean }): Bolt11Invoice_ {
+    static new(inner: {
+      preferSpark: boolean;
+      /**
+       * If set, the function will return the payment if it is still pending after this
+       * number of seconds. If unset, the function will return immediately after initiating the payment.
+       */ completionTimeoutSecs: /*u32*/ number | undefined;
+    }): Bolt11Invoice_ {
       return new Bolt11Invoice_(inner);
     }
 
@@ -5644,6 +5771,7 @@ const FfiConverterTypeSendPaymentOptions = (() => {
         case 2:
           return new SendPaymentOptions.Bolt11Invoice({
             preferSpark: FfiConverterBool.read(from),
+            completionTimeoutSecs: FfiConverterOptionalUInt32.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -5664,6 +5792,7 @@ const FfiConverterTypeSendPaymentOptions = (() => {
           ordinalConverter.write(2, into);
           const inner = value.inner;
           FfiConverterBool.write(inner.preferSpark, into);
+          FfiConverterOptionalUInt32.write(inner.completionTimeoutSecs, into);
           return;
         }
         default:
@@ -5685,6 +5814,9 @@ const FfiConverterTypeSendPaymentOptions = (() => {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
           size += FfiConverterBool.allocationSize(inner.preferSpark);
+          size += FfiConverterOptionalUInt32.allocationSize(
+            inner.completionTimeoutSecs
+          );
           return size;
         }
         default:
@@ -6044,6 +6176,147 @@ const FfiConverterTypeUpdateDepositPayload = (() => {
           let size = ordinalConverter.allocationSize(2);
           size += FfiConverterString.allocationSize(inner.refundTxid);
           size += FfiConverterString.allocationSize(inner.refundTx);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: WaitForPaymentIdentifier
+export enum WaitForPaymentIdentifier_Tags {
+  PaymentId = 'PaymentId',
+  PaymentRequest = 'PaymentRequest',
+}
+export const WaitForPaymentIdentifier = (() => {
+  type PaymentId__interface = {
+    tag: WaitForPaymentIdentifier_Tags.PaymentId;
+    inner: Readonly<[string]>;
+  };
+
+  class PaymentId_ extends UniffiEnum implements PaymentId__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'WaitForPaymentIdentifier';
+    readonly tag = WaitForPaymentIdentifier_Tags.PaymentId;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('WaitForPaymentIdentifier', 'PaymentId');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): PaymentId_ {
+      return new PaymentId_(v0);
+    }
+
+    static instanceOf(obj: any): obj is PaymentId_ {
+      return obj.tag === WaitForPaymentIdentifier_Tags.PaymentId;
+    }
+  }
+
+  type PaymentRequest__interface = {
+    tag: WaitForPaymentIdentifier_Tags.PaymentRequest;
+    inner: Readonly<[string]>;
+  };
+
+  class PaymentRequest_
+    extends UniffiEnum
+    implements PaymentRequest__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'WaitForPaymentIdentifier';
+    readonly tag = WaitForPaymentIdentifier_Tags.PaymentRequest;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('WaitForPaymentIdentifier', 'PaymentRequest');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): PaymentRequest_ {
+      return new PaymentRequest_(v0);
+    }
+
+    static instanceOf(obj: any): obj is PaymentRequest_ {
+      return obj.tag === WaitForPaymentIdentifier_Tags.PaymentRequest;
+    }
+  }
+
+  function instanceOf(obj: any): obj is WaitForPaymentIdentifier {
+    return obj[uniffiTypeNameSymbol] === 'WaitForPaymentIdentifier';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    PaymentId: PaymentId_,
+    PaymentRequest: PaymentRequest_,
+  });
+})();
+
+export type WaitForPaymentIdentifier = InstanceType<
+  (typeof WaitForPaymentIdentifier)[keyof Omit<
+    typeof WaitForPaymentIdentifier,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum WaitForPaymentIdentifier
+const FfiConverterTypeWaitForPaymentIdentifier = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = WaitForPaymentIdentifier;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new WaitForPaymentIdentifier.PaymentId(
+            FfiConverterString.read(from)
+          );
+        case 2:
+          return new WaitForPaymentIdentifier.PaymentRequest(
+            FfiConverterString.read(from)
+          );
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case WaitForPaymentIdentifier_Tags.PaymentId: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case WaitForPaymentIdentifier_Tags.PaymentRequest: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        default:
+          // Throwing from here means that WaitForPaymentIdentifier_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case WaitForPaymentIdentifier_Tags.PaymentId: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case WaitForPaymentIdentifier_Tags.PaymentRequest: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
         default:
@@ -6569,7 +6842,7 @@ export interface BreezSdkInterface {
    *
    * Result containing either success or an `SdkError` if the background task couldn't be stopped
    */
-  disconnect() /*throws*/ : void;
+  disconnect(asyncOpts_?: { signal: AbortSignal }) /*throws*/ : Promise<void>;
   /**
    * Returns the balance of the wallet in satoshis
    */
@@ -6667,6 +6940,19 @@ export interface BreezSdkInterface {
     id: string,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<boolean>;
+  sendBitcoinAddress(
+    address: BitcoinAddressDetails,
+    feeQuote: SendOnchainFeeQuote,
+    request: SendPaymentRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<SendPaymentResponse>;
+  sendBolt11Invoice(
+    invoiceDetails: Bolt11InvoiceDetails,
+    sparkTransferFeeSats: /*u64*/ bigint | undefined,
+    lightningFeeSats: /*u64*/ bigint,
+    request: SendPaymentRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<SendPaymentResponse>;
   sendPayment(
     request: SendPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -6676,6 +6962,11 @@ export interface BreezSdkInterface {
     suppressPaymentEvent: boolean,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<SendPaymentResponse>;
+  sendSparkAddress(
+    address: string,
+    request: SendPaymentRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<SendPaymentResponse>;
   /**
    * Synchronizes the wallet with the Spark network
    */
@@ -6683,6 +6974,10 @@ export interface BreezSdkInterface {
     request: SyncWalletRequest,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<SyncWalletResponse>;
+  waitForPayment(
+    request: WaitForPaymentRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<WaitForPaymentResponse>;
 }
 
 /**
@@ -6870,19 +7165,39 @@ export class BreezSdk
    *
    * Result containing either success or an `SdkError` if the background task couldn't be stopped
    */
-  public disconnect(): void /*throws*/ {
-    uniffiCaller.rustCallWithError(
-      /*liftError:*/ FfiConverterTypeSdkError.lift.bind(
-        FfiConverterTypeSdkError
-      ),
-      /*caller:*/ (callStatus) => {
-        nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(
-          uniffiTypeBreezSdkObjectFactory.clonePointer(this),
-          callStatus
-        );
-      },
-      /*liftString:*/ FfiConverterString.lift
-    );
+  public async disconnect(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<void> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
   }
 
   /**
@@ -7511,6 +7826,94 @@ export class BreezSdk
     }
   }
 
+  public async sendBitcoinAddress(
+    address: BitcoinAddressDetails,
+    feeQuote: SendOnchainFeeQuote,
+    request: SendPaymentRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<SendPaymentResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_bitcoin_address(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeBitcoinAddressDetails.lower(address),
+            FfiConverterTypeSendOnchainFeeQuote.lower(feeQuote),
+            FfiConverterTypeSendPaymentRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeSendPaymentResponse.lift.bind(
+          FfiConverterTypeSendPaymentResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async sendBolt11Invoice(
+    invoiceDetails: Bolt11InvoiceDetails,
+    sparkTransferFeeSats: /*u64*/ bigint | undefined,
+    lightningFeeSats: /*u64*/ bigint,
+    request: SendPaymentRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<SendPaymentResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_bolt11_invoice(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeBolt11InvoiceDetails.lower(invoiceDetails),
+            FfiConverterOptionalUInt64.lower(sparkTransferFeeSats),
+            FfiConverterUInt64.lower(lightningFeeSats),
+            FfiConverterTypeSendPaymentRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeSendPaymentResponse.lift.bind(
+          FfiConverterTypeSendPaymentResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
   public async sendPayment(
     request: SendPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -7591,6 +7994,47 @@ export class BreezSdk
     }
   }
 
+  public async sendSparkAddress(
+    address: string,
+    request: SendPaymentRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<SendPaymentResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_spark_address(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterString.lower(address),
+            FfiConverterTypeSendPaymentRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeSendPaymentResponse.lift.bind(
+          FfiConverterTypeSendPaymentResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
   /**
    * Synchronizes the wallet with the Spark network
    */
@@ -7618,6 +8062,45 @@ export class BreezSdk
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypeSyncWalletResponse.lift.bind(
           FfiConverterTypeSyncWalletResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async waitForPayment(
+    request: WaitForPaymentRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<WaitForPaymentResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_wait_for_payment(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeWaitForPaymentRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeWaitForPaymentResponse.lift.bind(
+          FfiConverterTypeWaitForPaymentResponse
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -8212,6 +8695,19 @@ export interface Storage {
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<Payment>;
   /**
+   * Gets a payment by its invoice
+   * # Arguments
+   *
+   * * `invoice` - The invoice of the payment to retrieve
+   * # Returns
+   *
+   * The payment if found or None if not found
+   */
+  getPaymentByInvoice(
+    invoice: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<Payment | undefined>;
+  /**
    * Add a deposit to storage
    * # Arguments
    *
@@ -8590,6 +9086,54 @@ export class StorageImpl extends UniffiAbstractObject implements Storage {
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypePayment.lift.bind(
           FfiConverterTypePayment
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeStorageError.lift.bind(
+          FfiConverterTypeStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Gets a payment by its invoice
+   * # Arguments
+   *
+   * * `invoice` - The invoice of the payment to retrieve
+   * # Returns
+   *
+   * The payment if found or None if not found
+   */
+  public async getPaymentByInvoice(
+    invoice: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<Payment | undefined> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_storage_get_payment_by_invoice(
+            uniffiTypeStorageImplObjectFactory.clonePointer(this),
+            FfiConverterString.lower(invoice)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterOptionalTypePayment.lift.bind(
+          FfiConverterOptionalTypePayment
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -9204,6 +9748,52 @@ const uniffiCallbackInterfaceStorage: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
+    getPaymentByInvoice: (
+      uniffiHandle: bigint,
+      invoice: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<Payment | undefined> => {
+        const jsCallback = FfiConverterTypeStorage.lift(uniffiHandle);
+        return await jsCallback.getPaymentByInvoice(
+          FfiConverterString.lift(invoice),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: Payment | undefined) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterOptionalTypePayment.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ StorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeStorageError.lower.bind(
+          FfiConverterTypeStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
     addDeposit: (
       uniffiHandle: bigint,
       txid: Uint8Array,
@@ -9427,6 +10017,11 @@ const FfiConverterOptionalTypeLnurlPayInfo = new FfiConverterOptional(
   FfiConverterTypeLnurlPayInfo
 );
 
+// FfiConverter for Payment | undefined
+const FfiConverterOptionalTypePayment = new FfiConverterOptional(
+  FfiConverterTypePayment
+);
+
 // FfiConverter for string | undefined
 const FfiConverterOptionalString = new FfiConverterOptional(FfiConverterString);
 
@@ -9603,7 +10198,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect() !==
-    30986
+    330
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect'
@@ -9738,6 +10333,22 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bitcoin_address() !==
+    5926
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bitcoin_address'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bolt11_invoice() !==
+    21785
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bolt11_invoice'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment() !==
     54349
   ) {
@@ -9754,11 +10365,27 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_spark_address() !==
+    63147
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_send_spark_address'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet() !==
     30368
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_wait_for_payment() !==
+    64922
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_wait_for_payment'
     );
   }
   if (
@@ -9866,8 +10493,16 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_invoice() !==
+    57075
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_invoice'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_add_deposit() !==
-    55082
+    60240
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_add_deposit'
@@ -9875,7 +10510,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_deposit() !==
-    13111
+    60586
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_delete_deposit'
@@ -9883,7 +10518,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_deposits() !==
-    22806
+    54118
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_list_deposits'
@@ -9891,7 +10526,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_update_deposit() !==
-    48478
+    39803
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_update_deposit'
@@ -9991,5 +10626,8 @@ export default Object.freeze({
     FfiConverterTypeTxStatus,
     FfiConverterTypeUpdateDepositPayload,
     FfiConverterTypeUtxo,
+    FfiConverterTypeWaitForPaymentIdentifier,
+    FfiConverterTypeWaitForPaymentRequest,
+    FfiConverterTypeWaitForPaymentResponse,
   },
 });

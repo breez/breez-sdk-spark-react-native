@@ -15,7 +15,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_check_lightning_address_available(ptr: bigint, req: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_claim_deposit(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_delete_lightning_address(ptr: bigint): bigint;
-    ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): void;
+    ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(ptr: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_info(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_lightning_address(ptr: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_payment(ptr: bigint, request: Uint8Array): bigint;
@@ -32,9 +32,13 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_refund_deposit(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_register_lightning_address(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(ptr: bigint, id: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_bitcoin_address(ptr: bigint, address: Uint8Array, feeQuote: Uint8Array, request: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_bolt11_invoice(ptr: bigint, invoiceDetails: Uint8Array, sparkTransferFeeSats: Uint8Array, lightningFeeSats: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment_internal(ptr: bigint, request: Uint8Array, suppressPaymentEvent: number): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_spark_address(ptr: bigint, address: Uint8Array, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(ptr: bigint, request: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_wait_for_payment(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_clone_sdkbuilder(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_free_sdkbuilder(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): void;
     ubrn_uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new(config: Uint8Array, seed: Uint8Array, storage: bigint, uniffi_out_err: UniffiRustCallStatus): bigint;
@@ -53,6 +57,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_storage_insert_payment(ptr: bigint, payment: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_storage_set_payment_metadata(ptr: bigint, paymentId: Uint8Array, metadata: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_storage_get_payment_by_id(ptr: bigint, id: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_storage_get_payment_by_invoice(ptr: bigint, invoice: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_storage_add_deposit(ptr: bigint, txid: Uint8Array, vout: number, amountSats: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_storage_delete_deposit(ptr: bigint, txid: Uint8Array, vout: number): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_storage_list_deposits(ptr: bigint): bigint;
@@ -144,9 +149,13 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_deposit(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_register_lightning_address(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bitcoin_address(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bolt11_invoice(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment_internal(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_spark_address(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_wait_for_payment(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_build(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_chain_service(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_fiat_service(): number;
@@ -160,6 +169,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_checksum_method_storage_insert_payment(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_storage_set_payment_metadata(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_id(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_invoice(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_storage_add_deposit(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_deposit(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_deposits(): number;
@@ -263,10 +273,11 @@ type UniffiCallbackInterfaceStorageMethod3 = (uniffiHandle: bigint, offset: Uint
 type UniffiCallbackInterfaceStorageMethod4 = (uniffiHandle: bigint, payment: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceStorageMethod5 = (uniffiHandle: bigint, paymentId: Uint8Array, metadata: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceStorageMethod6 = (uniffiHandle: bigint, id: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
-type UniffiCallbackInterfaceStorageMethod7 = (uniffiHandle: bigint, txid: Uint8Array, vout: number, amountSats: bigint, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
-type UniffiCallbackInterfaceStorageMethod8 = (uniffiHandle: bigint, txid: Uint8Array, vout: number, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
-type UniffiCallbackInterfaceStorageMethod9 = (uniffiHandle: bigint, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
-type UniffiCallbackInterfaceStorageMethod10 = (uniffiHandle: bigint, txid: Uint8Array, vout: number, payload: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceStorageMethod7 = (uniffiHandle: bigint, invoice: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceStorageMethod8 = (uniffiHandle: bigint, txid: Uint8Array, vout: number, amountSats: bigint, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceStorageMethod9 = (uniffiHandle: bigint, txid: Uint8Array, vout: number, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceStorageMethod10 = (uniffiHandle: bigint, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceStorageMethod11 = (uniffiHandle: bigint, txid: Uint8Array, vout: number, payload: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
 export type UniffiVTableCallbackInterfaceEventListener = {
     onEvent: UniffiCallbackInterfaceEventListenerMethod0;
     uniffiFree: UniffiCallbackInterfaceFree;
@@ -290,10 +301,11 @@ export type UniffiVTableCallbackInterfaceStorage = {
     insertPayment: UniffiCallbackInterfaceStorageMethod4;
     setPaymentMetadata: UniffiCallbackInterfaceStorageMethod5;
     getPaymentById: UniffiCallbackInterfaceStorageMethod6;
-    addDeposit: UniffiCallbackInterfaceStorageMethod7;
-    deleteDeposit: UniffiCallbackInterfaceStorageMethod8;
-    listDeposits: UniffiCallbackInterfaceStorageMethod9;
-    updateDeposit: UniffiCallbackInterfaceStorageMethod10;
+    getPaymentByInvoice: UniffiCallbackInterfaceStorageMethod7;
+    addDeposit: UniffiCallbackInterfaceStorageMethod8;
+    deleteDeposit: UniffiCallbackInterfaceStorageMethod9;
+    listDeposits: UniffiCallbackInterfaceStorageMethod10;
+    updateDeposit: UniffiCallbackInterfaceStorageMethod11;
     uniffiFree: UniffiCallbackInterfaceFree;
 };
 //# sourceMappingURL=breez_sdk_spark-ffi.d.ts.map

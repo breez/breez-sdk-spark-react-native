@@ -152,19 +152,23 @@ typedef void (*UniffiCallbackInterfaceStorageMethod6)(
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef void (*UniffiCallbackInterfaceStorageMethod7)(
+    uint64_t uniffi_handle, RustBuffer invoice,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfaceStorageMethod8)(
     uint64_t uniffi_handle, RustBuffer txid, uint32_t vout,
     uint64_t amount_sats,
     UniffiForeignFutureCompleteVoid uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceStorageMethod8)(
+typedef void (*UniffiCallbackInterfaceStorageMethod9)(
     uint64_t uniffi_handle, RustBuffer txid, uint32_t vout,
     UniffiForeignFutureCompleteVoid uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceStorageMethod9)(
+typedef void (*UniffiCallbackInterfaceStorageMethod10)(
     uint64_t uniffi_handle,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceStorageMethod10)(
+typedef void (*UniffiCallbackInterfaceStorageMethod11)(
     uint64_t uniffi_handle, RustBuffer txid, uint32_t vout, RustBuffer payload,
     UniffiForeignFutureCompleteVoid uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
@@ -191,10 +195,11 @@ typedef struct UniffiVTableCallbackInterfaceStorage {
   UniffiCallbackInterfaceStorageMethod4 insert_payment;
   UniffiCallbackInterfaceStorageMethod5 set_payment_metadata;
   UniffiCallbackInterfaceStorageMethod6 get_payment_by_id;
-  UniffiCallbackInterfaceStorageMethod7 add_deposit;
-  UniffiCallbackInterfaceStorageMethod8 delete_deposit;
-  UniffiCallbackInterfaceStorageMethod9 list_deposits;
-  UniffiCallbackInterfaceStorageMethod10 update_deposit;
+  UniffiCallbackInterfaceStorageMethod7 get_payment_by_invoice;
+  UniffiCallbackInterfaceStorageMethod8 add_deposit;
+  UniffiCallbackInterfaceStorageMethod9 delete_deposit;
+  UniffiCallbackInterfaceStorageMethod10 list_deposits;
+  UniffiCallbackInterfaceStorageMethod11 update_deposit;
   UniffiCallbackInterfaceFree uniffi_free;
 } UniffiVTableCallbackInterfaceStorage;
 void *uniffi_breez_sdk_spark_fn_clone_bitcoinchainservice(
@@ -230,8 +235,8 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_claim_deposit(void *ptr,
                                                         RustBuffer request);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_delete_lightning_address(void *ptr);
-void uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(
-    void *ptr, RustCallStatus *uniffi_out_err);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(void *ptr);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_get_info(void *ptr,
                                                    RustBuffer request);
@@ -277,14 +282,27 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_register_lightning_address(
 uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(void *ptr,
                                                                 RustBuffer id);
 /*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_send_bitcoin_address(
+    void *ptr, RustBuffer address, RustBuffer fee_quote, RustBuffer request);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_send_bolt11_invoice(
+    void *ptr, RustBuffer invoice_details, RustBuffer spark_transfer_fee_sats,
+    uint64_t lightning_fee_sats, RustBuffer request);
+/*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment(void *ptr,
                                                        RustBuffer request);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment_internal(
     void *ptr, RustBuffer request, int8_t suppress_payment_event);
 /*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_send_spark_address(
+    void *ptr, RustBuffer address, RustBuffer request);
+/*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(void *ptr,
                                                       RustBuffer request);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_wait_for_payment(void *ptr,
+                                                           RustBuffer request);
 void *
 uniffi_breez_sdk_spark_fn_clone_sdkbuilder(void *ptr,
                                            RustCallStatus *uniffi_out_err);
@@ -335,6 +353,9 @@ uniffi_breez_sdk_spark_fn_method_storage_set_payment_metadata(
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_storage_get_payment_by_id(void *ptr,
                                                            RustBuffer id);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_storage_get_payment_by_invoice(
+    void *ptr, RustBuffer invoice);
 /*handle*/ uint64_t uniffi_breez_sdk_spark_fn_method_storage_add_deposit(
     void *ptr, RustBuffer txid, uint32_t vout, uint64_t amount_sats);
 /*handle*/ uint64_t uniffi_breez_sdk_spark_fn_method_storage_delete_deposit(
@@ -527,10 +548,14 @@ uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_register_lightning_address();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener();
+uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bitcoin_address();
+uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bolt11_invoice();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment_internal();
+uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_send_spark_address();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet();
+uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_wait_for_payment();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_build();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_chain_service();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_fiat_service();
@@ -545,6 +570,8 @@ uint16_t uniffi_breez_sdk_spark_checksum_method_storage_list_payments();
 uint16_t uniffi_breez_sdk_spark_checksum_method_storage_insert_payment();
 uint16_t uniffi_breez_sdk_spark_checksum_method_storage_set_payment_metadata();
 uint16_t uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_id();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_invoice();
 uint16_t uniffi_breez_sdk_spark_checksum_method_storage_add_deposit();
 uint16_t uniffi_breez_sdk_spark_checksum_method_storage_delete_deposit();
 uint16_t uniffi_breez_sdk_spark_checksum_method_storage_list_deposits();
@@ -4253,6 +4280,148 @@ using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
 // a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer,
+                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_invoice,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_invoice = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_invoice);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_invoice,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn = uniffi::breez_sdk_spark::Bridging<
+        ReferenceHolder<UniffiForeignFuture>>::fromJs(rt, callInvoker,
+                                                      uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback UniffiCallbackInterfaceStorageMethod7: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_invoice,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_invoice, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceStorageMethod7
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod7
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_invoice,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_invoice,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_invoice,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod7
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceStorageMethod8
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod8::UniffiCallbackInterfaceStorageMethod8
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod8 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
 static std::function<void(uint64_t, RustBuffer, uint32_t, uint64_t,
                           UniffiForeignFutureCompleteVoid, uint64_t,
                           UniffiForeignFuture *)>
@@ -4299,7 +4468,7 @@ static void body(jsi::Runtime &rt,
         ReferenceHolder<UniffiForeignFuture>>::fromJs(rt, callInvoker,
                                                       uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout << "Error in callback UniffiCallbackInterfaceStorageMethod7: "
+    std::cout << "Error in callback UniffiCallbackInterfaceStorageMethod8: "
               << error.what() << std::endl;
     throw error;
   }
@@ -4329,8 +4498,8 @@ static void callback(uint64_t rs_uniffiHandle, RustBuffer rs_txid,
            rs_uniffiFutureCallback, rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceStorageMethod7
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod7
+static UniffiCallbackInterfaceStorageMethod8
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod8
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -4378,12 +4547,12 @@ static void cleanup() {
   // out, then the pointer will no longer be left dangling.
   rsLambda = nullptr;
 }
-} // namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod7
+} // namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod8
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceStorageMethod8
+  // CallbackInterfaceStorageMethod9
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod8::UniffiCallbackInterfaceStorageMethod8
+// uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod9::UniffiCallbackInterfaceStorageMethod9
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -4396,7 +4565,7 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod8 {
+namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod9 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -4443,7 +4612,7 @@ static void body(jsi::Runtime &rt,
         ReferenceHolder<UniffiForeignFuture>>::fromJs(rt, callInvoker,
                                                       uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout << "Error in callback UniffiCallbackInterfaceStorageMethod8: "
+    std::cout << "Error in callback UniffiCallbackInterfaceStorageMethod9: "
               << error.what() << std::endl;
     throw error;
   }
@@ -4473,8 +4642,8 @@ static void callback(uint64_t rs_uniffiHandle, RustBuffer rs_txid,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceStorageMethod8
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod8
+static UniffiCallbackInterfaceStorageMethod9
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod9
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -4521,12 +4690,12 @@ static void cleanup() {
   // out, then the pointer will no longer be left dangling.
   rsLambda = nullptr;
 }
-} // namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod8
+} // namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod9
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceStorageMethod9
+  // CallbackInterfaceStorageMethod10
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod9::UniffiCallbackInterfaceStorageMethod9
+// uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod10::UniffiCallbackInterfaceStorageMethod10
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -4539,7 +4708,7 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod9 {
+namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod10 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -4582,7 +4751,7 @@ static void body(jsi::Runtime &rt,
         ReferenceHolder<UniffiForeignFuture>>::fromJs(rt, callInvoker,
                                                       uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout << "Error in callback UniffiCallbackInterfaceStorageMethod9: "
+    std::cout << "Error in callback UniffiCallbackInterfaceStorageMethod10: "
               << error.what() << std::endl;
     throw error;
   }
@@ -4612,8 +4781,8 @@ callback(uint64_t rs_uniffiHandle,
            rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceStorageMethod9
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod9
+static UniffiCallbackInterfaceStorageMethod10
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod10
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -4659,12 +4828,12 @@ static void cleanup() {
   // out, then the pointer will no longer be left dangling.
   rsLambda = nullptr;
 }
-} // namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod9
+} // namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod10
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceStorageMethod10
+  // CallbackInterfaceStorageMethod11
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod10::UniffiCallbackInterfaceStorageMethod10
+// uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod11::UniffiCallbackInterfaceStorageMethod11
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -4677,7 +4846,7 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod10 {
+namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod11 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -4728,7 +4897,7 @@ static void body(jsi::Runtime &rt,
         ReferenceHolder<UniffiForeignFuture>>::fromJs(rt, callInvoker,
                                                       uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout << "Error in callback UniffiCallbackInterfaceStorageMethod10: "
+    std::cout << "Error in callback UniffiCallbackInterfaceStorageMethod11: "
               << error.what() << std::endl;
     throw error;
   }
@@ -4758,8 +4927,8 @@ static void callback(uint64_t rs_uniffiHandle, RustBuffer rs_txid,
            rs_uniffiFutureCallback, rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceStorageMethod10
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod10
+static UniffiCallbackInterfaceStorageMethod11
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod11
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -4807,7 +4976,7 @@ static void cleanup() {
   // out, then the pointer will no longer be left dangling.
   rsLambda = nullptr;
 }
-} // namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod10
+} // namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod11
 namespace uniffi::breez_sdk_spark {
 using namespace facebook;
 using CallInvoker = uniffi_runtime::UniffiCallInvoker;
@@ -4963,17 +5132,20 @@ template <> struct Bridging<UniffiVTableCallbackInterfaceStorage> {
     rsObject.get_payment_by_id = uniffi::breez_sdk_spark::cb::
         callbackinterfacestoragemethod6::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "getPaymentById"));
-    rsObject.add_deposit = uniffi::breez_sdk_spark::cb::
+    rsObject.get_payment_by_invoice = uniffi::breez_sdk_spark::cb::
         callbackinterfacestoragemethod7::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "getPaymentByInvoice"));
+    rsObject.add_deposit = uniffi::breez_sdk_spark::cb::
+        callbackinterfacestoragemethod8::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "addDeposit"));
     rsObject.delete_deposit = uniffi::breez_sdk_spark::cb::
-        callbackinterfacestoragemethod8::makeCallbackFunction(
+        callbackinterfacestoragemethod9::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "deleteDeposit"));
     rsObject.list_deposits = uniffi::breez_sdk_spark::cb::
-        callbackinterfacestoragemethod9::makeCallbackFunction(
+        callbackinterfacestoragemethod10::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "listDeposits"));
     rsObject.update_deposit = uniffi::breez_sdk_spark::cb::
-        callbackinterfacestoragemethod10::makeCallbackFunction(
+        callbackinterfacestoragemethod11::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "updateDeposit"));
     rsObject.uniffi_free =
         uniffi::breez_sdk_spark::st::vtablecallbackinterfacestorage::
@@ -5395,6 +5567,30 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_bitcoin_address"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                        "breezsdk_send_bitcoin_address"),
+          4,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_send_bitcoin_address(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_bolt11_invoice"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                        "breezsdk_send_bolt11_invoice"),
+          5,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_send_bolt11_invoice(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -5420,6 +5616,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment_internal(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_spark_address"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                        "breezsdk_send_spark_address"),
+          3,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_send_spark_address(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -5430,6 +5638,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_wait_for_payment"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                        "breezsdk_wait_for_payment"),
+          2,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_wait_for_payment(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_fn_clone_sdkbuilder"] =
@@ -5648,6 +5868,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_storage_get_payment_by_id(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_storage_get_payment_by_"
+        "invoice"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "storage_get_payment_by_invoice"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_storage_get_payment_by_invoice(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_storage_add_deposit"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -6694,6 +6926,30 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bitcoin_"
+        "address"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_breezsdk_send_bitcoin_address"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bitcoin_address(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bolt11_"
+        "invoice"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_breezsdk_send_bolt11_invoice"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bolt11_invoice(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -6718,6 +6974,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment_internal(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_spark_"
+        "address"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_breezsdk_send_spark_address"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_spark_address(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -6730,6 +6998,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_wait_for_"
+        "payment"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_breezsdk_wait_for_payment"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_wait_for_payment(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_build"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -6886,6 +7166,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
             ->cpp_uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_id(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_"
+        "invoice"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_storage_get_payment_by_invoice"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_invoice(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_storage_add_deposit"] =
@@ -7169,6 +7461,8 @@ NativeBreezSdkSpark::~NativeBreezSdkSpark() {
   uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod9::cleanup();
   // Cleanup for callback function CallbackInterfaceStorageMethod10
   uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod10::cleanup();
+  // Cleanup for callback function CallbackInterfaceStorageMethod11
+  uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod11::cleanup();
 }
 
 // Utility functions for serialization/deserialization of strings.
@@ -7411,14 +7705,11 @@ jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
+  auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
 
-  return jsi::Value::undefined();
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
 }
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_info(
@@ -7613,6 +7904,39 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_send_bitcoin_address(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_send_bitcoin_address(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[2]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[3]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_send_bolt11_invoice(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_send_bolt11_invoice(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[2]),
+      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[3]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[4]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -7638,11 +7962,37 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_send_spark_address(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_send_spark_address(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[2]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
   auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_wait_for_payment(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_wait_for_payment(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[1]));
@@ -7871,6 +8221,18 @@ jsi::Value NativeBreezSdkSpark::
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value = uniffi_breez_sdk_spark_fn_method_storage_get_payment_by_id(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_storage_get_payment_by_invoice(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_storage_get_payment_by_invoice(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[1]));
@@ -8873,6 +9235,24 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bitcoin_address(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bitcoin_address();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bolt11_invoice(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bolt11_invoice();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -8890,10 +9270,28 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_spark_address(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_send_spark_address();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value = uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_wait_for_payment(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_wait_for_payment();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -9005,6 +9403,15 @@ jsi::Value NativeBreezSdkSpark::
         size_t count) {
   auto value =
       uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_id();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_invoice(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_invoice();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }

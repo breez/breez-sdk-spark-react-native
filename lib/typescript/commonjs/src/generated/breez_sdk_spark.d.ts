@@ -1075,6 +1075,50 @@ export declare const Utxo: Readonly<{
      */
     defaults: () => Partial<Utxo>;
 }>;
+export type WaitForPaymentRequest = {
+    identifier: WaitForPaymentIdentifier;
+};
+/**
+ * Generated factory for {@link WaitForPaymentRequest} record objects.
+ */
+export declare const WaitForPaymentRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link WaitForPaymentRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<WaitForPaymentRequest> & Required<Omit<WaitForPaymentRequest, never>>) => WaitForPaymentRequest;
+    /**
+     * Create a frozen instance of {@link WaitForPaymentRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<WaitForPaymentRequest> & Required<Omit<WaitForPaymentRequest, never>>) => WaitForPaymentRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<WaitForPaymentRequest>;
+}>;
+export type WaitForPaymentResponse = {
+    payment: Payment;
+};
+/**
+ * Generated factory for {@link WaitForPaymentResponse} record objects.
+ */
+export declare const WaitForPaymentResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link WaitForPaymentResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<WaitForPaymentResponse> & Required<Omit<WaitForPaymentResponse, never>>) => WaitForPaymentResponse;
+    /**
+     * Create a frozen instance of {@link WaitForPaymentResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<WaitForPaymentResponse> & Required<Omit<WaitForPaymentResponse, never>>) => WaitForPaymentResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<WaitForPaymentResponse>;
+}>;
 export declare enum ChainServiceError_Tags {
     InvalidAddress = "InvalidAddress",
     ServiceConnectivity = "ServiceConnectivity",
@@ -3179,10 +3223,15 @@ export declare const SendPaymentOptions: Readonly<{
     Bolt11Invoice: {
         new (inner: {
             preferSpark: boolean;
+            /**
+             * If set, the function will return the payment if it is still pending after this
+             * number of seconds. If unset, the function will return immediately after initiating the payment.
+             */ completionTimeoutSecs: /*u32*/ number | undefined;
         }): {
             readonly tag: SendPaymentOptions_Tags.Bolt11Invoice;
             readonly inner: Readonly<{
                 preferSpark: boolean;
+                completionTimeoutSecs: /*u32*/ number | undefined;
             }>;
             /**
              * @private
@@ -3192,10 +3241,15 @@ export declare const SendPaymentOptions: Readonly<{
         };
         "new"(inner: {
             preferSpark: boolean;
+            /**
+             * If set, the function will return the payment if it is still pending after this
+             * number of seconds. If unset, the function will return immediately after initiating the payment.
+             */ completionTimeoutSecs: /*u32*/ number | undefined;
         }): {
             readonly tag: SendPaymentOptions_Tags.Bolt11Invoice;
             readonly inner: Readonly<{
                 preferSpark: boolean;
+                completionTimeoutSecs: /*u32*/ number | undefined;
             }>;
             /**
              * @private
@@ -3207,6 +3261,7 @@ export declare const SendPaymentOptions: Readonly<{
             readonly tag: SendPaymentOptions_Tags.Bolt11Invoice;
             readonly inner: Readonly<{
                 preferSpark: boolean;
+                completionTimeoutSecs: /*u32*/ number | undefined;
             }>;
             /**
              * @private
@@ -3536,6 +3591,72 @@ export declare const UpdateDepositPayload: Readonly<{
     };
 }>;
 export type UpdateDepositPayload = InstanceType<(typeof UpdateDepositPayload)[keyof Omit<typeof UpdateDepositPayload, 'instanceOf'>]>;
+export declare enum WaitForPaymentIdentifier_Tags {
+    PaymentId = "PaymentId",
+    PaymentRequest = "PaymentRequest"
+}
+export declare const WaitForPaymentIdentifier: Readonly<{
+    instanceOf: (obj: any) => obj is WaitForPaymentIdentifier;
+    PaymentId: {
+        new (v0: string): {
+            readonly tag: WaitForPaymentIdentifier_Tags.PaymentId;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WaitForPaymentIdentifier";
+        };
+        "new"(v0: string): {
+            readonly tag: WaitForPaymentIdentifier_Tags.PaymentId;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WaitForPaymentIdentifier";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: WaitForPaymentIdentifier_Tags.PaymentId;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WaitForPaymentIdentifier";
+        };
+    };
+    PaymentRequest: {
+        new (v0: string): {
+            readonly tag: WaitForPaymentIdentifier_Tags.PaymentRequest;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WaitForPaymentIdentifier";
+        };
+        "new"(v0: string): {
+            readonly tag: WaitForPaymentIdentifier_Tags.PaymentRequest;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WaitForPaymentIdentifier";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: WaitForPaymentIdentifier_Tags.PaymentRequest;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WaitForPaymentIdentifier";
+        };
+    };
+}>;
+export type WaitForPaymentIdentifier = InstanceType<(typeof WaitForPaymentIdentifier)[keyof Omit<typeof WaitForPaymentIdentifier, 'instanceOf'>]>;
 export interface BitcoinChainService {
     getAddressUtxos(address: string, asyncOpts_?: {
         signal: AbortSignal;
@@ -3611,7 +3732,9 @@ export interface BreezSdkInterface {
      *
      * Result containing either success or an `SdkError` if the background task couldn't be stopped
      */
-    disconnect(): void;
+    disconnect(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     /**
      * Returns the balance of the wallet in satoshis
      */
@@ -3698,10 +3821,19 @@ export interface BreezSdkInterface {
     removeEventListener(id: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
+    sendBitcoinAddress(address: BitcoinAddressDetails, feeQuote: SendOnchainFeeQuote, request: SendPaymentRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SendPaymentResponse>;
+    sendBolt11Invoice(invoiceDetails: Bolt11InvoiceDetails, sparkTransferFeeSats: /*u64*/ bigint | undefined, lightningFeeSats: bigint, request: SendPaymentRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SendPaymentResponse>;
     sendPayment(request: SendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SendPaymentResponse>;
     sendPaymentInternal(request: SendPaymentRequest, suppressPaymentEvent: boolean, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SendPaymentResponse>;
+    sendSparkAddress(address: string, request: SendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SendPaymentResponse>;
     /**
@@ -3710,6 +3842,9 @@ export interface BreezSdkInterface {
     syncWallet(request: SyncWalletRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SyncWalletResponse>;
+    waitForPayment(request: WaitForPaymentRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<WaitForPaymentResponse>;
 }
 /**
  * `BreezSDK` is a wrapper around `SparkSDK` that provides a more structured API
@@ -3753,7 +3888,9 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
      *
      * Result containing either success or an `SdkError` if the background task couldn't be stopped
      */
-    disconnect(): void;
+    disconnect(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     /**
      * Returns the balance of the wallet in satoshis
      */
@@ -3840,10 +3977,19 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     removeEventListener(id: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
+    sendBitcoinAddress(address: BitcoinAddressDetails, feeQuote: SendOnchainFeeQuote, request: SendPaymentRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SendPaymentResponse>;
+    sendBolt11Invoice(invoiceDetails: Bolt11InvoiceDetails, sparkTransferFeeSats: /*u64*/ bigint | undefined, lightningFeeSats: bigint, request: SendPaymentRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SendPaymentResponse>;
     sendPayment(request: SendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SendPaymentResponse>;
     sendPaymentInternal(request: SendPaymentRequest, suppressPaymentEvent: boolean, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SendPaymentResponse>;
+    sendSparkAddress(address: string, request: SendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SendPaymentResponse>;
     /**
@@ -3852,6 +3998,9 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     syncWallet(request: SyncWalletRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SyncWalletResponse>;
+    waitForPayment(request: WaitForPaymentRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<WaitForPaymentResponse>;
     /**
      * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
      */
@@ -4041,6 +4190,18 @@ export interface Storage {
         signal: AbortSignal;
     }): Promise<Payment>;
     /**
+     * Gets a payment by its invoice
+     * # Arguments
+     *
+     * * `invoice` - The invoice of the payment to retrieve
+     * # Returns
+     *
+     * The payment if found or None if not found
+     */
+    getPaymentByInvoice(invoice: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Payment | undefined>;
+    /**
      * Add a deposit to storage
      * # Arguments
      *
@@ -4168,6 +4329,18 @@ export declare class StorageImpl extends UniffiAbstractObject implements Storage
     getPaymentById(id: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Payment>;
+    /**
+     * Gets a payment by its invoice
+     * # Arguments
+     *
+     * * `invoice` - The invoice of the payment to retrieve
+     * # Returns
+     *
+     * The payment if found or None if not found
+     */
+    getPaymentByInvoice(invoice: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Payment | undefined>;
     /**
      * Add a deposit to storage
      * # Arguments
@@ -4636,6 +4809,27 @@ declare const _default: Readonly<{
             allocationSize(value: Utxo): number;
             lift(value: UniffiByteArray): Utxo;
             lower(value: Utxo): UniffiByteArray;
+        };
+        FfiConverterTypeWaitForPaymentIdentifier: {
+            read(from: RustBuffer): WaitForPaymentIdentifier;
+            write(value: WaitForPaymentIdentifier, into: RustBuffer): void;
+            allocationSize(value: WaitForPaymentIdentifier): number;
+            lift(value: UniffiByteArray): WaitForPaymentIdentifier;
+            lower(value: WaitForPaymentIdentifier): UniffiByteArray;
+        };
+        FfiConverterTypeWaitForPaymentRequest: {
+            read(from: RustBuffer): WaitForPaymentRequest;
+            write(value: WaitForPaymentRequest, into: RustBuffer): void;
+            allocationSize(value: WaitForPaymentRequest): number;
+            lift(value: UniffiByteArray): WaitForPaymentRequest;
+            lower(value: WaitForPaymentRequest): UniffiByteArray;
+        };
+        FfiConverterTypeWaitForPaymentResponse: {
+            read(from: RustBuffer): WaitForPaymentResponse;
+            write(value: WaitForPaymentResponse, into: RustBuffer): void;
+            allocationSize(value: WaitForPaymentResponse): number;
+            lift(value: UniffiByteArray): WaitForPaymentResponse;
+            lower(value: WaitForPaymentResponse): UniffiByteArray;
         };
     };
 }>;
