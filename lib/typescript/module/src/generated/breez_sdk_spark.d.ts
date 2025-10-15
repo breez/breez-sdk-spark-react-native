@@ -244,6 +244,10 @@ export type GetInfoResponse = {
      * The balance in satoshis
      */
     balanceSats: bigint;
+    /**
+     * The balances of the tokens in the wallet keyed by the token identifier
+     */
+    tokenBalances: Map<string, TokenBalance>;
 };
 /**
  * Generated factory for {@link GetInfoResponse} record objects.
@@ -307,6 +311,50 @@ export declare const GetPaymentResponse: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<GetPaymentResponse>;
+}>;
+export type GetTokensMetadataRequest = {
+    tokenIdentifiers: Array<string>;
+};
+/**
+ * Generated factory for {@link GetTokensMetadataRequest} record objects.
+ */
+export declare const GetTokensMetadataRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link GetTokensMetadataRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<GetTokensMetadataRequest> & Required<Omit<GetTokensMetadataRequest, never>>) => GetTokensMetadataRequest;
+    /**
+     * Create a frozen instance of {@link GetTokensMetadataRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<GetTokensMetadataRequest> & Required<Omit<GetTokensMetadataRequest, never>>) => GetTokensMetadataRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<GetTokensMetadataRequest>;
+}>;
+export type GetTokensMetadataResponse = {
+    tokensMetadata: Array<TokenMetadata>;
+};
+/**
+ * Generated factory for {@link GetTokensMetadataResponse} record objects.
+ */
+export declare const GetTokensMetadataResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link GetTokensMetadataResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<GetTokensMetadataResponse> & Required<Omit<GetTokensMetadataResponse, never>>) => GetTokensMetadataResponse;
+    /**
+     * Create a frozen instance of {@link GetTokensMetadataResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<GetTokensMetadataResponse> & Required<Omit<GetTokensMetadataResponse, never>>) => GetTokensMetadataResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<GetTokensMetadataResponse>;
 }>;
 export type LightningAddressInfo = {
     description: string;
@@ -390,9 +438,20 @@ export declare const ListFiatRatesResponse: Readonly<{
     defaults: () => Partial<ListFiatRatesResponse>;
 }>;
 /**
- * Request to list payments with pagination
+ * Request to list payments with optional filters and pagination
  */
 export type ListPaymentsRequest = {
+    typeFilter: Array<PaymentType> | undefined;
+    statusFilter: Array<PaymentStatus> | undefined;
+    assetFilter: AssetFilter | undefined;
+    /**
+     * Only include payments created after this timestamp (inclusive)
+     */
+    fromTimestamp: /*u64*/ bigint | undefined;
+    /**
+     * Only include payments created before this timestamp (exclusive)
+     */
+    toTimestamp: /*u64*/ bigint | undefined;
     /**
      * Number of records to skip
      */
@@ -401,6 +460,7 @@ export type ListPaymentsRequest = {
      * Maximum number of records to return
      */
     limit: /*u32*/ number | undefined;
+    sortAscending: boolean | undefined;
 };
 /**
  * Generated factory for {@link ListPaymentsRequest} record objects.
@@ -410,12 +470,12 @@ export declare const ListPaymentsRequest: Readonly<{
      * Create a frozen instance of {@link ListPaymentsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "offset" | "limit">>) => ListPaymentsRequest;
+    create: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => ListPaymentsRequest;
     /**
      * Create a frozen instance of {@link ListPaymentsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "offset" | "limit">>) => ListPaymentsRequest;
+    new: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => ListPaymentsRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -608,11 +668,11 @@ export type Payment = {
     /**
      * Amount in satoshis
      */
-    amount: bigint;
+    amount: U128;
     /**
      * Fee paid in satoshis
      */
-    fees: bigint;
+    fees: U128;
     /**
      * Timestamp of when the payment was created
      */
@@ -726,7 +786,16 @@ export declare const PrepareLnurlPayResponse: Readonly<{
 }>;
 export type PrepareSendPaymentRequest = {
     paymentRequest: string;
-    amountSats: /*u64*/ bigint | undefined;
+    /**
+     * Amount to send. By default is denominated in sats.
+     * If a token identifier is provided, the amount will be denominated in the token base units.
+     */
+    amount: U128 | undefined;
+    /**
+     * If provided, the payment will be for a token
+     * May only be provided if the payment request is a spark address
+     */
+    tokenIdentifier: string | undefined;
 };
 /**
  * Generated factory for {@link PrepareSendPaymentRequest} record objects.
@@ -736,12 +805,12 @@ export declare const PrepareSendPaymentRequest: Readonly<{
      * Create a frozen instance of {@link PrepareSendPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amountSats">>) => PrepareSendPaymentRequest;
+    create: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier">>) => PrepareSendPaymentRequest;
     /**
      * Create a frozen instance of {@link PrepareSendPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amountSats">>) => PrepareSendPaymentRequest;
+    new: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier">>) => PrepareSendPaymentRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -749,7 +818,16 @@ export declare const PrepareSendPaymentRequest: Readonly<{
 }>;
 export type PrepareSendPaymentResponse = {
     paymentMethod: SendPaymentMethod;
-    amountSats: bigint;
+    /**
+     * Amount to send. By default is denominated in sats.
+     * If a token identifier is provided, the amount will be denominated in the token base units.
+     */
+    amount: U128;
+    /**
+     * The presence of this field indicates that the payment is for a token
+     * If empty, it is a Bitcoin payment
+     */
+    tokenIdentifier: string | undefined;
 };
 /**
  * Generated factory for {@link PrepareSendPaymentResponse} record objects.
@@ -1026,6 +1104,63 @@ export declare const SyncWalletResponse: Readonly<{
      */
     defaults: () => Partial<SyncWalletResponse>;
 }>;
+export type TokenBalance = {
+    balance: U128;
+    tokenMetadata: TokenMetadata;
+};
+/**
+ * Generated factory for {@link TokenBalance} record objects.
+ */
+export declare const TokenBalance: Readonly<{
+    /**
+     * Create a frozen instance of {@link TokenBalance}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<TokenBalance> & Required<Omit<TokenBalance, never>>) => TokenBalance;
+    /**
+     * Create a frozen instance of {@link TokenBalance}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<TokenBalance> & Required<Omit<TokenBalance, never>>) => TokenBalance;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<TokenBalance>;
+}>;
+export type TokenMetadata = {
+    identifier: string;
+    /**
+     * Hex representation of the issuer public key
+     */
+    issuerPublicKey: string;
+    name: string;
+    ticker: string;
+    /**
+     * Number of decimals the token uses
+     */
+    decimals: number;
+    maxSupply: U128;
+    isFreezable: boolean;
+};
+/**
+ * Generated factory for {@link TokenMetadata} record objects.
+ */
+export declare const TokenMetadata: Readonly<{
+    /**
+     * Create a frozen instance of {@link TokenMetadata}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<TokenMetadata> & Required<Omit<TokenMetadata, never>>) => TokenMetadata;
+    /**
+     * Create a frozen instance of {@link TokenMetadata}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<TokenMetadata> & Required<Omit<TokenMetadata, never>>) => TokenMetadata;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<TokenMetadata>;
+}>;
 export type TxStatus = {
     confirmed: boolean;
     blockHeight: /*u32*/ number | undefined;
@@ -1119,6 +1254,94 @@ export declare const WaitForPaymentResponse: Readonly<{
      */
     defaults: () => Partial<WaitForPaymentResponse>;
 }>;
+/**
+ * Typealias from the type name used in the UDL file to the custom type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+export type U128 = bigint;
+export declare enum AssetFilter_Tags {
+    Bitcoin = "Bitcoin",
+    Token = "Token"
+}
+/**
+ * A field of [`ListPaymentsRequest`] when listing payments filtered by asset
+ */
+export declare const AssetFilter: Readonly<{
+    instanceOf: (obj: any) => obj is AssetFilter;
+    Bitcoin: {
+        new (): {
+            readonly tag: AssetFilter_Tags.Bitcoin;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AssetFilter";
+        };
+        "new"(): {
+            readonly tag: AssetFilter_Tags.Bitcoin;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AssetFilter";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: AssetFilter_Tags.Bitcoin;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AssetFilter";
+        };
+    };
+    Token: {
+        new (inner: {
+            /**
+             * Optional token identifier to filter by
+             */ tokenIdentifier: string | undefined;
+        }): {
+            readonly tag: AssetFilter_Tags.Token;
+            readonly inner: Readonly<{
+                tokenIdentifier: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AssetFilter";
+        };
+        "new"(inner: {
+            /**
+             * Optional token identifier to filter by
+             */ tokenIdentifier: string | undefined;
+        }): {
+            readonly tag: AssetFilter_Tags.Token;
+            readonly inner: Readonly<{
+                tokenIdentifier: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AssetFilter";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: AssetFilter_Tags.Token;
+            readonly inner: Readonly<{
+                tokenIdentifier: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AssetFilter";
+        };
+    };
+}>;
+/**
+ * A field of [`ListPaymentsRequest`] when listing payments filtered by asset
+ */
+export type AssetFilter = InstanceType<(typeof AssetFilter)[keyof Omit<typeof AssetFilter, 'instanceOf'>]>;
 export declare enum ChainServiceError_Tags {
     InvalidAddress = "InvalidAddress",
     ServiceConnectivity = "ServiceConnectivity",
@@ -1591,6 +1814,7 @@ export declare enum OnchainConfirmationSpeed {
 }
 export declare enum PaymentDetails_Tags {
     Spark = "Spark",
+    Token = "Token",
     Lightning = "Lightning",
     Withdraw = "Withdraw",
     Deposit = "Deposit"
@@ -1616,6 +1840,50 @@ export declare const PaymentDetails: Readonly<{
         };
         instanceOf(obj: any): obj is {
             readonly tag: PaymentDetails_Tags.Spark;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentDetails";
+        };
+    };
+    Token: {
+        new (inner: {
+            metadata: TokenMetadata;
+            txHash: string;
+        }): {
+            readonly tag: PaymentDetails_Tags.Token;
+            readonly inner: Readonly<{
+                metadata: TokenMetadata;
+                txHash: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentDetails";
+        };
+        "new"(inner: {
+            metadata: TokenMetadata;
+            txHash: string;
+        }): {
+            readonly tag: PaymentDetails_Tags.Token;
+            readonly inner: Readonly<{
+                metadata: TokenMetadata;
+                txHash: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentDetails";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PaymentDetails_Tags.Token;
+            readonly inner: Readonly<{
+                metadata: TokenMetadata;
+                txHash: string;
+            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -1798,9 +2066,10 @@ export type PaymentDetails = InstanceType<(typeof PaymentDetails)[keyof Omit<typ
 export declare enum PaymentMethod {
     Lightning = 0,
     Spark = 1,
-    Deposit = 2,
-    Withdraw = 3,
-    Unknown = 4
+    Token = 2,
+    Deposit = 3,
+    Withdraw = 4,
+    Unknown = 5
 }
 /**
  * The status of a payment
@@ -3132,12 +3401,20 @@ export declare const SendPaymentMethod: Readonly<{
     SparkAddress: {
         new (inner: {
             address: string;
-            feeSats: bigint;
+            /**
+             * Fee to pay for the transaction
+             * Denominated in sats if token identifier is empty, otherwise in the token base units
+             */ fee: U128;
+            /**
+             * The presence of this field indicates that the payment is for a token
+             * If empty, it is a Bitcoin payment
+             */ tokenIdentifier: string | undefined;
         }): {
             readonly tag: SendPaymentMethod_Tags.SparkAddress;
             readonly inner: Readonly<{
                 address: string;
-                feeSats: bigint;
+                fee: U128;
+                tokenIdentifier: string | undefined;
             }>;
             /**
              * @private
@@ -3147,12 +3424,20 @@ export declare const SendPaymentMethod: Readonly<{
         };
         "new"(inner: {
             address: string;
-            feeSats: bigint;
+            /**
+             * Fee to pay for the transaction
+             * Denominated in sats if token identifier is empty, otherwise in the token base units
+             */ fee: U128;
+            /**
+             * The presence of this field indicates that the payment is for a token
+             * If empty, it is a Bitcoin payment
+             */ tokenIdentifier: string | undefined;
         }): {
             readonly tag: SendPaymentMethod_Tags.SparkAddress;
             readonly inner: Readonly<{
                 address: string;
-                feeSats: bigint;
+                fee: U128;
+                tokenIdentifier: string | undefined;
             }>;
             /**
              * @private
@@ -3164,7 +3449,8 @@ export declare const SendPaymentMethod: Readonly<{
             readonly tag: SendPaymentMethod_Tags.SparkAddress;
             readonly inner: Readonly<{
                 address: string;
-                feeSats: bigint;
+                fee: U128;
+                tokenIdentifier: string | undefined;
             }>;
             /**
              * @private
@@ -3748,6 +4034,17 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<GetPaymentResponse>;
     /**
+     * Returns the metadata for the given token identifiers.
+     *
+     * Results are not guaranteed to be in the same order as the input token identifiers.
+     *
+     * If the metadata is not found locally in cache, it will be queried from
+     * the Spark network and then cached.
+     */
+    getTokensMetadata(request: GetTokensMetadataRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<GetTokensMetadataResponse>;
+    /**
      * List fiat currencies for which there is a known exchange rate,
      * sorted by the canonical name of the currency.
      */
@@ -3785,7 +4082,6 @@ export interface BreezSdkInterface {
     lnurlPay(request: LnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LnurlPayResponse>;
-    pollLightningSendPayment(payment: Payment, sspId: string): void;
     prepareLnurlPay(request: PrepareLnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareLnurlPayResponse>;
@@ -3795,12 +4091,6 @@ export interface BreezSdkInterface {
     receivePayment(request: ReceivePaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ReceivePaymentResponse>;
-    /**
-     * Attempts to recover a lightning address from the lnurl server.
-     */
-    recoverLightningAddress(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<LightningAddressInfo | undefined>;
     refundDeposit(request: RefundDepositRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<RefundDepositResponse>;
@@ -3821,19 +4111,7 @@ export interface BreezSdkInterface {
     removeEventListener(id: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
-    sendBitcoinAddress(address: BitcoinAddressDetails, feeQuote: SendOnchainFeeQuote, request: SendPaymentRequest, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<SendPaymentResponse>;
-    sendBolt11Invoice(invoiceDetails: Bolt11InvoiceDetails, sparkTransferFeeSats: /*u64*/ bigint | undefined, lightningFeeSats: bigint, request: SendPaymentRequest, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<SendPaymentResponse>;
     sendPayment(request: SendPaymentRequest, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<SendPaymentResponse>;
-    sendPaymentInternal(request: SendPaymentRequest, suppressPaymentEvent: boolean, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<SendPaymentResponse>;
-    sendSparkAddress(address: string, request: SendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SendPaymentResponse>;
     /**
@@ -3904,6 +4182,17 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<GetPaymentResponse>;
     /**
+     * Returns the metadata for the given token identifiers.
+     *
+     * Results are not guaranteed to be in the same order as the input token identifiers.
+     *
+     * If the metadata is not found locally in cache, it will be queried from
+     * the Spark network and then cached.
+     */
+    getTokensMetadata(request: GetTokensMetadataRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<GetTokensMetadataResponse>;
+    /**
      * List fiat currencies for which there is a known exchange rate,
      * sorted by the canonical name of the currency.
      */
@@ -3941,7 +4230,6 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     lnurlPay(request: LnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LnurlPayResponse>;
-    pollLightningSendPayment(payment: Payment, sspId: string): void;
     prepareLnurlPay(request: PrepareLnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareLnurlPayResponse>;
@@ -3951,12 +4239,6 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     receivePayment(request: ReceivePaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ReceivePaymentResponse>;
-    /**
-     * Attempts to recover a lightning address from the lnurl server.
-     */
-    recoverLightningAddress(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<LightningAddressInfo | undefined>;
     refundDeposit(request: RefundDepositRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<RefundDepositResponse>;
@@ -3977,19 +4259,7 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     removeEventListener(id: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
-    sendBitcoinAddress(address: BitcoinAddressDetails, feeQuote: SendOnchainFeeQuote, request: SendPaymentRequest, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<SendPaymentResponse>;
-    sendBolt11Invoice(invoiceDetails: Bolt11InvoiceDetails, sparkTransferFeeSats: /*u64*/ bigint | undefined, lightningFeeSats: bigint, request: SendPaymentRequest, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<SendPaymentResponse>;
     sendPayment(request: SendPaymentRequest, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<SendPaymentResponse>;
-    sendPaymentInternal(request: SendPaymentRequest, suppressPaymentEvent: boolean, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<SendPaymentResponse>;
-    sendSparkAddress(address: string, request: SendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SendPaymentResponse>;
     /**
@@ -4133,18 +4403,17 @@ export interface Storage {
         signal: AbortSignal;
     }): Promise<void>;
     /**
-     * Lists payments with pagination
+     * Lists payments with optional filters and pagination
      *
      * # Arguments
      *
-     * * `offset` - Number of records to skip
-     * * `limit` - Maximum number of records to return
+     * * `list_payments_request` - The request to list payments
      *
      * # Returns
      *
      * A vector of payments or a `StorageError`
      */
-    listPayments(offset: /*u32*/ number | undefined, limit: /*u32*/ number | undefined, asyncOpts_?: {
+    listPayments(request: ListPaymentsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Array<Payment>>;
     /**
@@ -4273,18 +4542,17 @@ export declare class StorageImpl extends UniffiAbstractObject implements Storage
         signal: AbortSignal;
     }): Promise<void>;
     /**
-     * Lists payments with pagination
+     * Lists payments with optional filters and pagination
      *
      * # Arguments
      *
-     * * `offset` - Number of records to skip
-     * * `limit` - Maximum number of records to return
+     * * `list_payments_request` - The request to list payments
      *
      * # Returns
      *
      * A vector of payments or a `StorageError`
      */
-    listPayments(offset: /*u32*/ number | undefined, limit: /*u32*/ number | undefined, asyncOpts_?: {
+    listPayments(request: ListPaymentsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Array<Payment>>;
     /**
@@ -4414,6 +4682,13 @@ declare function uniffiEnsureInitialized(): void;
 declare const _default: Readonly<{
     initialize: typeof uniffiEnsureInitialized;
     converters: {
+        FfiConverterTypeAssetFilter: {
+            read(from: RustBuffer): AssetFilter;
+            write(value: AssetFilter, into: RustBuffer): void;
+            allocationSize(value: AssetFilter): number;
+            lift(value: UniffiByteArray): AssetFilter;
+            lower(value: AssetFilter): UniffiByteArray;
+        };
         FfiConverterTypeBitcoinChainService: FfiConverterObjectWithCallbacks<BitcoinChainService>;
         FfiConverterTypeBreezSdk: FfiConverterObject<BreezSdkInterface>;
         FfiConverterTypeCheckLightningAddressRequest: {
@@ -4506,6 +4781,20 @@ declare const _default: Readonly<{
             allocationSize(value: GetPaymentResponse): number;
             lift(value: UniffiByteArray): GetPaymentResponse;
             lower(value: GetPaymentResponse): UniffiByteArray;
+        };
+        FfiConverterTypeGetTokensMetadataRequest: {
+            read(from: RustBuffer): GetTokensMetadataRequest;
+            write(value: GetTokensMetadataRequest, into: RustBuffer): void;
+            allocationSize(value: GetTokensMetadataRequest): number;
+            lift(value: UniffiByteArray): GetTokensMetadataRequest;
+            lower(value: GetTokensMetadataRequest): UniffiByteArray;
+        };
+        FfiConverterTypeGetTokensMetadataResponse: {
+            read(from: RustBuffer): GetTokensMetadataResponse;
+            write(value: GetTokensMetadataResponse, into: RustBuffer): void;
+            allocationSize(value: GetTokensMetadataResponse): number;
+            lift(value: UniffiByteArray): GetTokensMetadataResponse;
+            lower(value: GetTokensMetadataResponse): UniffiByteArray;
         };
         FfiConverterTypeKeySetType: {
             read(from: RustBuffer): KeySetType;
@@ -4789,6 +5078,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SyncWalletResponse;
             lower(value: SyncWalletResponse): UniffiByteArray;
         };
+        FfiConverterTypeTokenBalance: {
+            read(from: RustBuffer): TokenBalance;
+            write(value: TokenBalance, into: RustBuffer): void;
+            allocationSize(value: TokenBalance): number;
+            lift(value: UniffiByteArray): TokenBalance;
+            lower(value: TokenBalance): UniffiByteArray;
+        };
+        FfiConverterTypeTokenMetadata: {
+            read(from: RustBuffer): TokenMetadata;
+            write(value: TokenMetadata, into: RustBuffer): void;
+            allocationSize(value: TokenMetadata): number;
+            lift(value: UniffiByteArray): TokenMetadata;
+            lower(value: TokenMetadata): UniffiByteArray;
+        };
         FfiConverterTypeTxStatus: {
             read(from: RustBuffer): TxStatus;
             write(value: TxStatus, into: RustBuffer): void;
@@ -4830,6 +5133,13 @@ declare const _default: Readonly<{
             allocationSize(value: WaitForPaymentResponse): number;
             lift(value: UniffiByteArray): WaitForPaymentResponse;
             lower(value: WaitForPaymentResponse): UniffiByteArray;
+        };
+        FfiConverterTypeu128: {
+            lift(value: Uint8Array<ArrayBufferLike>): bigint;
+            lower(value: bigint): Uint8Array<ArrayBufferLike>;
+            read(from: RustBuffer): bigint;
+            write(value: bigint, into: RustBuffer): void;
+            allocationSize(value: bigint): number;
         };
     };
 }>;

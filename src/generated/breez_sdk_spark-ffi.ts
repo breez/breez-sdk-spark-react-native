@@ -84,6 +84,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_tokens_metadata(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_list_fiat_currencies(
     ptr: bigint
   ): bigint;
@@ -102,12 +106,6 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_poll_lightning_send_payment(
-    ptr: bigint,
-    payment: Uint8Array,
-    sspId: Uint8Array,
-    uniffi_out_err: UniffiRustCallStatus
-  ): void;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_lnurl_pay(
     ptr: bigint,
     request: Uint8Array
@@ -119,9 +117,6 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_receive_payment(
     ptr: bigint,
     request: Uint8Array
-  ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_recover_lightning_address(
-    ptr: bigint
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_refund_deposit(
     ptr: bigint,
@@ -135,31 +130,8 @@ interface NativeModuleInterface {
     ptr: bigint,
     id: Uint8Array
   ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_bitcoin_address(
-    ptr: bigint,
-    address: Uint8Array,
-    feeQuote: Uint8Array,
-    request: Uint8Array
-  ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_bolt11_invoice(
-    ptr: bigint,
-    invoiceDetails: Uint8Array,
-    sparkTransferFeeSats: Uint8Array,
-    lightningFeeSats: bigint,
-    request: Uint8Array
-  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment(
     ptr: bigint,
-    request: Uint8Array
-  ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment_internal(
-    ptr: bigint,
-    request: Uint8Array,
-    suppressPaymentEvent: number
-  ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_spark_address(
-    ptr: bigint,
-    address: Uint8Array,
     request: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
@@ -231,8 +203,7 @@ interface NativeModuleInterface {
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_storage_list_payments(
     ptr: bigint,
-    offset: Uint8Array,
-    limit: Uint8Array
+    request: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_storage_insert_payment(
     ptr: bigint,
@@ -447,24 +418,19 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_lightning_address(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_payment(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_tokens_metadata(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_currencies(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_rates(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_payments(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_unclaimed_deposits(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_pay(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_poll_lightning_send_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_lnurl_pay(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_receive_payment(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_recover_lightning_address(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_deposit(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_register_lightning_address(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bitcoin_address(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_bolt11_invoice(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment_internal(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_spark_address(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_wait_for_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_build(): number;
@@ -697,8 +663,7 @@ type UniffiCallbackInterfaceStorageMethod2 = (
 ) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceStorageMethod3 = (
   uniffiHandle: bigint,
-  offset: Uint8Array,
-  limit: Uint8Array,
+  request: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;

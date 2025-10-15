@@ -957,7 +957,7 @@ export declare const Symbol: Readonly<{
 }>;
 export type TokensPaymentDetails = {
     tokenIdentifier: string | undefined;
-    amount: /*u64*/ bigint | undefined;
+    amount: CommonU128 | undefined;
 };
 /**
  * Generated factory for {@link TokensPaymentDetails} record objects.
@@ -1013,6 +1013,11 @@ export declare const UrlSuccessActionData: Readonly<{
      */
     defaults: () => Partial<UrlSuccessActionData>;
 }>;
+/**
+ * Typealias from the type name used in the UDL file to the custom type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+export type CommonU128 = bigint;
 export declare enum AesSuccessActionDataResult_Tags {
     Decrypted = "Decrypted",
     ErrorStatus = "ErrorStatus"
@@ -3232,6 +3237,13 @@ declare const _default: Readonly<{
             allocationSize(value: UrlSuccessActionData): number;
             lift(value: UniffiByteArray): UrlSuccessActionData;
             lower(value: UrlSuccessActionData): UniffiByteArray;
+        };
+        FfiConverterTypecommon_u128: {
+            lift(value: Uint8Array<ArrayBufferLike>): bigint;
+            lower(value: bigint): Uint8Array<ArrayBufferLike>;
+            read(from: RustBuffer): bigint;
+            write(value: bigint, into: RustBuffer): void;
+            allocationSize(value: bigint): number;
         };
     };
 }>;

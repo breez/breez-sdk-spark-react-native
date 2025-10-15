@@ -2402,7 +2402,7 @@ const FfiConverterTypeSymbol = (() => {
 
 export type TokensPaymentDetails = {
   tokenIdentifier: string | undefined;
-  amount: /*u64*/ bigint | undefined;
+  amount: CommonU128 | undefined;
 };
 
 /**
@@ -2442,17 +2442,17 @@ const FfiConverterTypeTokensPaymentDetails = (() => {
     read(from: RustBuffer): TypeName {
       return {
         tokenIdentifier: FfiConverterOptionalString.read(from),
-        amount: FfiConverterOptionalUInt64.read(from),
+        amount: FfiConverterOptionalTypecommon_u128.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterOptionalString.write(value.tokenIdentifier, into);
-      FfiConverterOptionalUInt64.write(value.amount, into);
+      FfiConverterOptionalTypecommon_u128.write(value.amount, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterOptionalString.allocationSize(value.tokenIdentifier) +
-        FfiConverterOptionalUInt64.allocationSize(value.amount)
+        FfiConverterOptionalTypecommon_u128.allocationSize(value.amount)
       );
     }
   }
@@ -2557,6 +2557,43 @@ const stringConverter = {
     ),
 };
 const FfiConverterString = uniffiCreateFfiConverterString(stringConverter);
+
+/**
+ * Typealias from the type name used in the UDL file to the custom type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+export type CommonU128 = bigint;
+
+// FfiConverter for CommonU128
+const FfiConverterTypecommon_u128 = (() => {
+  type TsType = CommonU128;
+  type FfiType = Uint8Array;
+  const intermediateConverter = FfiConverterString;
+  class FFIConverter implements FfiConverter<FfiType, TsType> {
+    lift(value: FfiType): TsType {
+      const intermediate = intermediateConverter.lift(value);
+      return BigInt(intermediate);
+    }
+    lower(value: TsType): FfiType {
+      const intermediate = value.toString();
+      return intermediateConverter.lower(intermediate);
+    }
+    read(from: RustBuffer): TsType {
+      const intermediate = intermediateConverter.read(from);
+      return BigInt(intermediate);
+    }
+    write(value: TsType, into: RustBuffer): void {
+      const intermediate = value.toString();
+      intermediateConverter.write(intermediate, into);
+    }
+    allocationSize(value: TsType): number {
+      const intermediate = value.toString();
+      return intermediateConverter.allocationSize(intermediate);
+    }
+  }
+
+  return new FFIConverter();
+})();
 
 // Enum: AesSuccessActionDataResult
 export enum AesSuccessActionDataResult_Tags {
@@ -5697,6 +5734,11 @@ const FfiConverterArrayTypeRate = new FfiConverterArray(FfiConverterTypeRate);
 // FfiConverter for Array<string>
 const FfiConverterArrayString = new FfiConverterArray(FfiConverterString);
 
+// FfiConverter for CommonU128 | undefined
+const FfiConverterOptionalTypecommon_u128 = new FfiConverterOptional(
+  FfiConverterTypecommon_u128
+);
+
 // FfiConverter for Amount | undefined
 const FfiConverterOptionalTypeAmount = new FfiConverterOptional(
   FfiConverterTypeAmount
@@ -5832,5 +5874,6 @@ export default Object.freeze({
     FfiConverterTypeSymbol,
     FfiConverterTypeTokensPaymentDetails,
     FfiConverterTypeUrlSuccessActionData,
+    FfiConverterTypecommon_u128,
   },
 });
