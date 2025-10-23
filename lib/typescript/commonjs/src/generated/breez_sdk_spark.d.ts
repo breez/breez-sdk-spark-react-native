@@ -1,4 +1,4 @@
-import { type BitcoinAddressDetails, type Bolt11InvoiceDetails, type FiatCurrency, type FiatService, type LnurlPayRequestDetails, type Rate, type RestClient, InputType, SuccessAction, SuccessActionProcessed } from './breez_sdk_common';
+import { type BitcoinAddressDetails, type Bolt11InvoiceDetails, type ExternalInputParser, type FiatCurrency, type FiatService, type LnurlPayRequestDetails, type Rate, type RestClient, InputType, SuccessAction, SuccessActionProcessed } from './breez_sdk_common';
 import { type UniffiByteArray, type UniffiRustArcPtr, type UnsafeMutableRawPointer, FfiConverterObject, FfiConverterObjectWithCallbacks, RustBuffer, UniffiAbstractObject, destructorGuardSymbol, pointerLiteralSymbol, uniffiTypeNameSymbol } from 'uniffi-bindgen-react-native';
 /**
  * Connects to the Spark network using the provided configuration and mnemonic.
@@ -17,9 +17,6 @@ export declare function connect(request: ConnectRequest, asyncOpts_?: {
 export declare function defaultConfig(network: Network): Config;
 export declare function defaultStorage(dataDir: string): Storage;
 export declare function initLogging(logDir: string | undefined, appLogger: Logger | undefined, logFilter: string | undefined): void;
-export declare function parse(input: string, asyncOpts_?: {
-    signal: AbortSignal;
-}): Promise<InputType>;
 /**
  * Trait for event listeners
  */
@@ -117,6 +114,18 @@ export type Config = {
      * but is at the cost of privacy.
      */
     preferSparkOverLightning: boolean;
+    /**
+     * A set of external input parsers that are used by [`BreezSdk::parse`](crate::sdk::BreezSdk::parse) when the input
+     * is not recognized. See [`ExternalInputParser`] for more details on how to configure
+     * external parsing.
+     */
+    externalInputParsers: Array<ExternalInputParser> | undefined;
+    /**
+     * The SDK includes some default external input parsers
+     * ([`DEFAULT_EXTERNAL_INPUT_PARSERS`]).
+     * Set this to false in order to prevent their use.
+     */
+    useDefaultExternalInputParsers: boolean;
 };
 /**
  * Generated factory for {@link Config} record objects.
@@ -666,11 +675,11 @@ export type Payment = {
      */
     status: PaymentStatus;
     /**
-     * Amount in satoshis
+     * Amount in satoshis or token base units
      */
     amount: U128;
     /**
-     * Fee paid in satoshis
+     * Fee paid in satoshis or token base units
      */
     fees: U128;
     /**
@@ -847,6 +856,39 @@ export declare const PrepareSendPaymentResponse: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<PrepareSendPaymentResponse>;
+}>;
+export type ProvisionalPayment = {
+    /**
+     * Unique identifier for the payment
+     */
+    paymentId: string;
+    /**
+     * Amount in satoshis or token base units
+     */
+    amount: U128;
+    /**
+     * Details of the payment
+     */
+    details: ProvisionalPaymentDetails;
+};
+/**
+ * Generated factory for {@link ProvisionalPayment} record objects.
+ */
+export declare const ProvisionalPayment: Readonly<{
+    /**
+     * Create a frozen instance of {@link ProvisionalPayment}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ProvisionalPayment> & Required<Omit<ProvisionalPayment, never>>) => ProvisionalPayment;
+    /**
+     * Create a frozen instance of {@link ProvisionalPayment}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ProvisionalPayment> & Required<Omit<ProvisionalPayment, never>>) => ProvisionalPayment;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ProvisionalPayment>;
 }>;
 export type ReceivePaymentRequest = {
     paymentMethod: ReceivePaymentMethod;
@@ -2071,6 +2113,156 @@ export declare enum PaymentMethod {
     Withdraw = 4,
     Unknown = 5
 }
+export declare enum PaymentObserverError_Tags {
+    ServiceConnectivity = "ServiceConnectivity",
+    Generic = "Generic"
+}
+export declare const PaymentObserverError: Readonly<{
+    instanceOf: (obj: any) => obj is PaymentObserverError;
+    ServiceConnectivity: {
+        new (v0: string): {
+            readonly tag: PaymentObserverError_Tags.ServiceConnectivity;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentObserverError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PaymentObserverError_Tags.ServiceConnectivity;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentObserverError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PaymentObserverError_Tags.ServiceConnectivity;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentObserverError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PaymentObserverError_Tags.ServiceConnectivity;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentObserverError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PaymentObserverError_Tags.ServiceConnectivity;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentObserverError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    Generic: {
+        new (v0: string): {
+            readonly tag: PaymentObserverError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentObserverError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PaymentObserverError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentObserverError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PaymentObserverError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentObserverError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PaymentObserverError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentObserverError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PaymentObserverError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentObserverError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+}>;
+export type PaymentObserverError = InstanceType<(typeof PaymentObserverError)[keyof Omit<typeof PaymentObserverError, 'instanceOf'>]>;
 /**
  * The status of a payment
  */
@@ -2101,6 +2293,197 @@ export declare enum PaymentType {
      */
     Receive = 1
 }
+export declare enum ProvisionalPaymentDetails_Tags {
+    Bitcoin = "Bitcoin",
+    Lightning = "Lightning",
+    Spark = "Spark",
+    Token = "Token"
+}
+export declare const ProvisionalPaymentDetails: Readonly<{
+    instanceOf: (obj: any) => obj is ProvisionalPaymentDetails;
+    Bitcoin: {
+        new (inner: {
+            /**
+             * Onchain Bitcoin address
+             */ withdrawalAddress: string;
+        }): {
+            readonly tag: ProvisionalPaymentDetails_Tags.Bitcoin;
+            readonly inner: Readonly<{
+                withdrawalAddress: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ProvisionalPaymentDetails";
+        };
+        "new"(inner: {
+            /**
+             * Onchain Bitcoin address
+             */ withdrawalAddress: string;
+        }): {
+            readonly tag: ProvisionalPaymentDetails_Tags.Bitcoin;
+            readonly inner: Readonly<{
+                withdrawalAddress: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ProvisionalPaymentDetails";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ProvisionalPaymentDetails_Tags.Bitcoin;
+            readonly inner: Readonly<{
+                withdrawalAddress: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ProvisionalPaymentDetails";
+        };
+    };
+    Lightning: {
+        new (inner: {
+            /**
+             * BOLT11 invoice
+             */ invoice: string;
+        }): {
+            readonly tag: ProvisionalPaymentDetails_Tags.Lightning;
+            readonly inner: Readonly<{
+                invoice: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ProvisionalPaymentDetails";
+        };
+        "new"(inner: {
+            /**
+             * BOLT11 invoice
+             */ invoice: string;
+        }): {
+            readonly tag: ProvisionalPaymentDetails_Tags.Lightning;
+            readonly inner: Readonly<{
+                invoice: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ProvisionalPaymentDetails";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ProvisionalPaymentDetails_Tags.Lightning;
+            readonly inner: Readonly<{
+                invoice: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ProvisionalPaymentDetails";
+        };
+    };
+    Spark: {
+        new (inner: {
+            /**
+             * Spark receiver address
+             */ receiverAddress: string;
+        }): {
+            readonly tag: ProvisionalPaymentDetails_Tags.Spark;
+            readonly inner: Readonly<{
+                receiverAddress: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ProvisionalPaymentDetails";
+        };
+        "new"(inner: {
+            /**
+             * Spark receiver address
+             */ receiverAddress: string;
+        }): {
+            readonly tag: ProvisionalPaymentDetails_Tags.Spark;
+            readonly inner: Readonly<{
+                receiverAddress: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ProvisionalPaymentDetails";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ProvisionalPaymentDetails_Tags.Spark;
+            readonly inner: Readonly<{
+                receiverAddress: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ProvisionalPaymentDetails";
+        };
+    };
+    Token: {
+        new (inner: {
+            /**
+             * Token identifier
+             */ tokenId: string;
+            /**
+             * Spark receiver address
+             */ receiverAddress: string;
+        }): {
+            readonly tag: ProvisionalPaymentDetails_Tags.Token;
+            readonly inner: Readonly<{
+                tokenId: string;
+                receiverAddress: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ProvisionalPaymentDetails";
+        };
+        "new"(inner: {
+            /**
+             * Token identifier
+             */ tokenId: string;
+            /**
+             * Spark receiver address
+             */ receiverAddress: string;
+        }): {
+            readonly tag: ProvisionalPaymentDetails_Tags.Token;
+            readonly inner: Readonly<{
+                tokenId: string;
+                receiverAddress: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ProvisionalPaymentDetails";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ProvisionalPaymentDetails_Tags.Token;
+            readonly inner: Readonly<{
+                tokenId: string;
+                receiverAddress: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ProvisionalPaymentDetails";
+        };
+    };
+}>;
+export type ProvisionalPaymentDetails = InstanceType<(typeof ProvisionalPaymentDetails)[keyof Omit<typeof ProvisionalPaymentDetails, 'instanceOf'>]>;
 export declare enum ReceivePaymentMethod_Tags {
     SparkAddress = "SparkAddress",
     BitcoinAddress = "BitcoinAddress",
@@ -4082,6 +4465,9 @@ export interface BreezSdkInterface {
     lnurlPay(request: LnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LnurlPayResponse>;
+    parse(input: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<InputType>;
     prepareLnurlPay(request: PrepareLnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareLnurlPayResponse>;
@@ -4230,6 +4616,9 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     lnurlPay(request: LnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LnurlPayResponse>;
+    parse(input: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<InputType>;
     prepareLnurlPay(request: PrepareLnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareLnurlPayResponse>;
@@ -4278,6 +4667,39 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     static instanceOf(obj: any): obj is BreezSdk;
 }
 /**
+ * This interface is used to observe outgoing payments before Lightning, Spark and onchain Bitcoin payments.
+ * If the implementation returns an error, the payment is cancelled.
+ */
+export interface PaymentObserver {
+    /**
+     * Called before Lightning, Spark or onchain Bitcoin payments are made
+     */
+    beforeSend(payments: Array<ProvisionalPayment>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+}
+/**
+ * This interface is used to observe outgoing payments before Lightning, Spark and onchain Bitcoin payments.
+ * If the implementation returns an error, the payment is cancelled.
+ */
+export declare class PaymentObserverImpl extends UniffiAbstractObject implements PaymentObserver {
+    readonly [uniffiTypeNameSymbol] = "PaymentObserverImpl";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    /**
+     * Called before Lightning, Spark or onchain Bitcoin payments are made
+     */
+    beforeSend(payments: Array<ProvisionalPayment>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is PaymentObserverImpl;
+}
+/**
  * Builder for creating `BreezSdk` instances with customizable components.
  */
 export interface SdkBuilderInterface {
@@ -4313,6 +4735,14 @@ export interface SdkBuilderInterface {
         signal: AbortSignal;
     }): Promise<void>;
     withLnurlClient(lnurlClient: RestClient, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Sets the payment observer to be used by the SDK.
+     * Arguments:
+     * - `payment_observer`: The payment observer to be used.
+     */
+    withPaymentObserver(paymentObserver: PaymentObserver, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -4372,6 +4802,14 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
         signal: AbortSignal;
     }): Promise<void>;
     withLnurlClient(lnurlClient: RestClient, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Sets the payment observer to be used by the SDK.
+     * Arguments:
+     * - `payment_observer`: The payment observer to be used.
+     */
+    withPaymentObserver(paymentObserver: PaymentObserver, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -4922,6 +5360,7 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): PaymentMethod;
             lower(value: PaymentMethod): UniffiByteArray;
         };
+        FfiConverterTypePaymentObserver: FfiConverterObjectWithCallbacks<PaymentObserver>;
         FfiConverterTypePaymentStatus: {
             read(from: RustBuffer): PaymentStatus;
             write(value: PaymentStatus, into: RustBuffer): void;
@@ -4963,6 +5402,20 @@ declare const _default: Readonly<{
             allocationSize(value: PrepareSendPaymentResponse): number;
             lift(value: UniffiByteArray): PrepareSendPaymentResponse;
             lower(value: PrepareSendPaymentResponse): UniffiByteArray;
+        };
+        FfiConverterTypeProvisionalPayment: {
+            read(from: RustBuffer): ProvisionalPayment;
+            write(value: ProvisionalPayment, into: RustBuffer): void;
+            allocationSize(value: ProvisionalPayment): number;
+            lift(value: UniffiByteArray): ProvisionalPayment;
+            lower(value: ProvisionalPayment): UniffiByteArray;
+        };
+        FfiConverterTypeProvisionalPaymentDetails: {
+            read(from: RustBuffer): ProvisionalPaymentDetails;
+            write(value: ProvisionalPaymentDetails, into: RustBuffer): void;
+            allocationSize(value: ProvisionalPaymentDetails): number;
+            lift(value: UniffiByteArray): ProvisionalPaymentDetails;
+            lower(value: ProvisionalPaymentDetails): UniffiByteArray;
         };
         FfiConverterTypeReceivePaymentMethod: {
             read(from: RustBuffer): ReceivePaymentMethod;

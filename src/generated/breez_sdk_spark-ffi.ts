@@ -106,6 +106,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_parse(
+    ptr: bigint,
+    input: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_lnurl_pay(
     ptr: bigint,
     request: Uint8Array
@@ -142,6 +146,18 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_clone_paymentobserver(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_free_paymentobserver(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_method_paymentobserver_before_send(
+    ptr: bigint,
+    payments: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_clone_sdkbuilder(
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
@@ -174,6 +190,10 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_lnurl_client(
     ptr: bigint,
     lnurlClient: bigint
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_payment_observer(
+    ptr: bigint,
+    paymentObserver: bigint
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_rest_chain_service(
     ptr: bigint,
@@ -257,7 +277,6 @@ interface NativeModuleInterface {
     logFilter: Uint8Array,
     uniffi_out_err: UniffiRustCallStatus
   ): void;
-  ubrn_uniffi_breez_sdk_spark_fn_func_parse(input: Uint8Array): bigint;
   ubrn_ffi_breez_sdk_spark_rust_future_poll_u8(
     handle: bigint,
     callback: UniffiRustFutureContinuationCallback,
@@ -405,7 +424,6 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_func_default_config(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_default_storage(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_init_logging(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_func_parse(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_utxos(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_status(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_hex(): number;
@@ -424,6 +442,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_payments(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_unclaimed_deposits(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_pay(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_parse(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_lnurl_pay(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_receive_payment(): number;
@@ -433,11 +452,13 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_wait_for_payment(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_paymentobserver_before_send(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_build(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_chain_service(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_fiat_service(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_lnurl_client(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_payment_observer(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_cached_item(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_cached_item(): number;
@@ -464,6 +485,9 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_bitcoinchainservice(
     vtable: UniffiVTableCallbackInterfaceBitcoinChainService
   ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_paymentobserver(
+    vtable: UniffiVTableCallbackInterfacePaymentObserver
+  ): void;
   ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_storage(
     vtable: UniffiVTableCallbackInterfaceStorage
   ): void;
@@ -472,6 +496,10 @@ interface NativeModuleInterface {
     uniffi_out_err: UniffiRustCallStatus
   ): UniffiRustArcPtr;
   ubrn_uniffi_internal_fn_method_breezsdk_ffi__bless_pointer(
+    pointer: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): UniffiRustArcPtr;
+  ubrn_uniffi_internal_fn_method_paymentobserver_ffi__bless_pointer(
     pointer: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): UniffiRustArcPtr;
@@ -642,6 +670,12 @@ type UniffiCallbackInterfaceBitcoinChainServiceMethod3 = (
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfacePaymentObserverMethod0 = (
+  uniffiHandle: bigint,
+  payments: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+  uniffiCallbackData: bigint
+) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceStorageMethod0 = (
   uniffiHandle: bigint,
   key: Uint8Array,
@@ -733,6 +767,10 @@ export type UniffiVTableCallbackInterfaceBitcoinChainService = {
   getTransactionStatus: UniffiCallbackInterfaceBitcoinChainServiceMethod1;
   getTransactionHex: UniffiCallbackInterfaceBitcoinChainServiceMethod2;
   broadcastTransaction: UniffiCallbackInterfaceBitcoinChainServiceMethod3;
+  uniffiFree: UniffiCallbackInterfaceFree;
+};
+export type UniffiVTableCallbackInterfacePaymentObserver = {
+  beforeSend: UniffiCallbackInterfacePaymentObserverMethod0;
   uniffiFree: UniffiCallbackInterfaceFree;
 };
 export type UniffiVTableCallbackInterfaceStorage = {

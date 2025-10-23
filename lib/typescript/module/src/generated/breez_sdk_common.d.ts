@@ -440,6 +440,43 @@ export declare const CurrencyInfo: Readonly<{
     defaults: () => Partial<CurrencyInfo>;
 }>;
 /**
+ * Configuration for an external input parser
+ */
+export type ExternalInputParser = {
+    /**
+     * An arbitrary parser provider id
+     */
+    providerId: string;
+    /**
+     * The external parser will be used when an input conforms to this regex
+     */
+    inputRegex: string;
+    /**
+     * The URL of the parser containing a placeholder `<input>` that will be replaced with the
+     * input to be parsed. The input is sanitized using percent encoding.
+     */
+    parserUrl: string;
+};
+/**
+ * Generated factory for {@link ExternalInputParser} record objects.
+ */
+export declare const ExternalInputParser: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalInputParser}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create: (partial: Partial<ExternalInputParser> & Required<Omit<ExternalInputParser, never>>) => ExternalInputParser;
+    /**
+     * Create a frozen instance of {@link ExternalInputParser}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: (partial: Partial<ExternalInputParser> & Required<Omit<ExternalInputParser, never>>) => ExternalInputParser;
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () => Partial<ExternalInputParser>;
+}>;
+/**
  * Wrapper around the [`CurrencyInfo`] of a fiat currency
  */
 export type FiatCurrency = {
@@ -3060,6 +3097,13 @@ declare const _default: Readonly<{
             allocationSize(value: CurrencyInfo): number;
             lift(value: UniffiByteArray): CurrencyInfo;
             lower(value: CurrencyInfo): UniffiByteArray;
+        };
+        FfiConverterTypeExternalInputParser: {
+            read(from: RustBuffer): ExternalInputParser;
+            write(value: ExternalInputParser, into: RustBuffer): void;
+            allocationSize(value: ExternalInputParser): number;
+            lift(value: UniffiByteArray): ExternalInputParser;
+            lower(value: ExternalInputParser): UniffiByteArray;
         };
         FfiConverterTypeFiatCurrency: {
             read(from: RustBuffer): FiatCurrency;

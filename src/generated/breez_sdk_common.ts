@@ -1178,6 +1178,81 @@ const FfiConverterTypeCurrencyInfo = (() => {
 })();
 
 /**
+ * Configuration for an external input parser
+ */
+export type ExternalInputParser = {
+  /**
+   * An arbitrary parser provider id
+   */
+  providerId: string;
+  /**
+   * The external parser will be used when an input conforms to this regex
+   */
+  inputRegex: string;
+  /**
+   * The URL of the parser containing a placeholder `<input>` that will be replaced with the
+   * input to be parsed. The input is sanitized using percent encoding.
+   */
+  parserUrl: string;
+};
+
+/**
+ * Generated factory for {@link ExternalInputParser} record objects.
+ */
+export const ExternalInputParser = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<ExternalInputParser, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalInputParser}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalInputParser}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ExternalInputParser>,
+  });
+})();
+
+const FfiConverterTypeExternalInputParser = (() => {
+  type TypeName = ExternalInputParser;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        providerId: FfiConverterString.read(from),
+        inputRegex: FfiConverterString.read(from),
+        parserUrl: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.providerId, into);
+      FfiConverterString.write(value.inputRegex, into);
+      FfiConverterString.write(value.parserUrl, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.providerId) +
+        FfiConverterString.allocationSize(value.inputRegex) +
+        FfiConverterString.allocationSize(value.parserUrl)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
  * Wrapper around the [`CurrencyInfo`] of a fiat currency
  */
 export type FiatCurrency = {
@@ -5847,6 +5922,7 @@ export default Object.freeze({
     FfiConverterTypeBolt12OfferBlindedPath,
     FfiConverterTypeBolt12OfferDetails,
     FfiConverterTypeCurrencyInfo,
+    FfiConverterTypeExternalInputParser,
     FfiConverterTypeFiatCurrency,
     FfiConverterTypeFiatService,
     FfiConverterTypeInputType,
