@@ -842,28 +842,6 @@ export declare const RestResponse: Readonly<{
      */
     defaults: () => Partial<RestResponse>;
 }>;
-export type SatsPaymentDetails = {
-    amount: /*u64*/ bigint | undefined;
-};
-/**
- * Generated factory for {@link SatsPaymentDetails} record objects.
- */
-export declare const SatsPaymentDetails: Readonly<{
-    /**
-     * Create a frozen instance of {@link SatsPaymentDetails}, with defaults specified
-     * in Rust, in the {@link breez_sdk_common} crate.
-     */
-    create: (partial: Partial<SatsPaymentDetails> & Required<Omit<SatsPaymentDetails, never>>) => SatsPaymentDetails;
-    /**
-     * Create a frozen instance of {@link SatsPaymentDetails}, with defaults specified
-     * in Rust, in the {@link breez_sdk_common} crate.
-     */
-    new: (partial: Partial<SatsPaymentDetails> & Required<Omit<SatsPaymentDetails, never>>) => SatsPaymentDetails;
-    /**
-     * Defaults specified in the {@link breez_sdk_common} crate.
-     */
-    defaults: () => Partial<SatsPaymentDetails>;
-}>;
 export type SilentPaymentAddressDetails = {
     address: string;
     network: BitcoinNetwork;
@@ -888,34 +866,16 @@ export declare const SilentPaymentAddressDetails: Readonly<{
      */
     defaults: () => Partial<SilentPaymentAddressDetails>;
 }>;
-export type SparkAddress = {
+export type SparkAddressDetails = {
+    /**
+     * The raw address string
+     */
+    address: string;
+    /**
+     * The identity public key of the address owner
+     */
     identityPublicKey: string;
     network: BitcoinNetwork;
-    sparkInvoiceFields: SparkInvoiceFields | undefined;
-    signature: string | undefined;
-};
-/**
- * Generated factory for {@link SparkAddress} record objects.
- */
-export declare const SparkAddress: Readonly<{
-    /**
-     * Create a frozen instance of {@link SparkAddress}, with defaults specified
-     * in Rust, in the {@link breez_sdk_common} crate.
-     */
-    create: (partial: Partial<SparkAddress> & Required<Omit<SparkAddress, never>>) => SparkAddress;
-    /**
-     * Create a frozen instance of {@link SparkAddress}, with defaults specified
-     * in Rust, in the {@link breez_sdk_common} crate.
-     */
-    new: (partial: Partial<SparkAddress> & Required<Omit<SparkAddress, never>>) => SparkAddress;
-    /**
-     * Defaults specified in the {@link breez_sdk_common} crate.
-     */
-    defaults: () => Partial<SparkAddress>;
-}>;
-export type SparkAddressDetails = {
-    address: string;
-    decodedAddress: SparkAddress;
     source: PaymentRequestSource;
 };
 /**
@@ -937,32 +897,55 @@ export declare const SparkAddressDetails: Readonly<{
      */
     defaults: () => Partial<SparkAddressDetails>;
 }>;
-export type SparkInvoiceFields = {
-    id: string;
-    version: number;
-    memo: string | undefined;
-    senderPublicKey: string | undefined;
+export type SparkInvoiceDetails = {
+    /**
+     * The raw invoice string
+     */
+    invoice: string;
+    /**
+     * The identity public key of the invoice issuer
+     */
+    identityPublicKey: string;
+    network: BitcoinNetwork;
+    /**
+     * Optional amount denominated in sats if `token_identifier` is absent, otherwise in the token base units
+     */
+    amount: CommonU128 | undefined;
+    /**
+     * The token identifier of the token payment. Absence indicates a Bitcoin payment.
+     */
+    tokenIdentifier: string | undefined;
+    /**
+     * Optional expiry time. If not provided, the invoice will never expire.
+     */
     expiryTime: /*u64*/ bigint | undefined;
-    paymentType: SparkAddressPaymentType | undefined;
+    /**
+     * Optional description.
+     */
+    description: string | undefined;
+    /**
+     * If set, the invoice may only be fulfilled by a payer with this public key.
+     */
+    senderPublicKey: string | undefined;
 };
 /**
- * Generated factory for {@link SparkInvoiceFields} record objects.
+ * Generated factory for {@link SparkInvoiceDetails} record objects.
  */
-export declare const SparkInvoiceFields: Readonly<{
+export declare const SparkInvoiceDetails: Readonly<{
     /**
-     * Create a frozen instance of {@link SparkInvoiceFields}, with defaults specified
+     * Create a frozen instance of {@link SparkInvoiceDetails}, with defaults specified
      * in Rust, in the {@link breez_sdk_common} crate.
      */
-    create: (partial: Partial<SparkInvoiceFields> & Required<Omit<SparkInvoiceFields, never>>) => SparkInvoiceFields;
+    create: (partial: Partial<SparkInvoiceDetails> & Required<Omit<SparkInvoiceDetails, never>>) => SparkInvoiceDetails;
     /**
-     * Create a frozen instance of {@link SparkInvoiceFields}, with defaults specified
+     * Create a frozen instance of {@link SparkInvoiceDetails}, with defaults specified
      * in Rust, in the {@link breez_sdk_common} crate.
      */
-    new: (partial: Partial<SparkInvoiceFields> & Required<Omit<SparkInvoiceFields, never>>) => SparkInvoiceFields;
+    new: (partial: Partial<SparkInvoiceDetails> & Required<Omit<SparkInvoiceDetails, never>>) => SparkInvoiceDetails;
     /**
      * Defaults specified in the {@link breez_sdk_common} crate.
      */
-    defaults: () => Partial<SparkInvoiceFields>;
+    defaults: () => Partial<SparkInvoiceDetails>;
 }>;
 /**
  * Settings for the symbol representation of a currency
@@ -991,29 +974,6 @@ export declare const Symbol: Readonly<{
      * Defaults specified in the {@link breez_sdk_common} crate.
      */
     defaults: () => Partial<Symbol>;
-}>;
-export type TokensPaymentDetails = {
-    tokenIdentifier: string | undefined;
-    amount: CommonU128 | undefined;
-};
-/**
- * Generated factory for {@link TokensPaymentDetails} record objects.
- */
-export declare const TokensPaymentDetails: Readonly<{
-    /**
-     * Create a frozen instance of {@link TokensPaymentDetails}, with defaults specified
-     * in Rust, in the {@link breez_sdk_common} crate.
-     */
-    create: (partial: Partial<TokensPaymentDetails> & Required<Omit<TokensPaymentDetails, never>>) => TokensPaymentDetails;
-    /**
-     * Create a frozen instance of {@link TokensPaymentDetails}, with defaults specified
-     * in Rust, in the {@link breez_sdk_common} crate.
-     */
-    new: (partial: Partial<TokensPaymentDetails> & Required<Omit<TokensPaymentDetails, never>>) => TokensPaymentDetails;
-    /**
-     * Defaults specified in the {@link breez_sdk_common} crate.
-     */
-    defaults: () => Partial<TokensPaymentDetails>;
 }>;
 export type UrlSuccessActionData = {
     /**
@@ -1269,7 +1229,8 @@ export declare enum InputType_Tags {
     Bip21 = "Bip21",
     Bolt12InvoiceRequest = "Bolt12InvoiceRequest",
     LnurlWithdraw = "LnurlWithdraw",
-    SparkAddress = "SparkAddress"
+    SparkAddress = "SparkAddress",
+    SparkInvoice = "SparkInvoice"
 }
 export declare const InputType: Readonly<{
     instanceOf: (obj: any) => obj is InputType;
@@ -1643,6 +1604,35 @@ export declare const InputType: Readonly<{
         instanceOf(obj: any): obj is {
             readonly tag: InputType_Tags.SparkAddress;
             readonly inner: Readonly<[SparkAddressDetails]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "InputType";
+        };
+    };
+    SparkInvoice: {
+        new (v0: SparkInvoiceDetails): {
+            readonly tag: InputType_Tags.SparkInvoice;
+            readonly inner: Readonly<[SparkInvoiceDetails]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "InputType";
+        };
+        "new"(v0: SparkInvoiceDetails): {
+            readonly tag: InputType_Tags.SparkInvoice;
+            readonly inner: Readonly<[SparkInvoiceDetails]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "InputType";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: InputType_Tags.SparkInvoice;
+            readonly inner: Readonly<[SparkInvoiceDetails]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -2497,72 +2487,6 @@ export declare const ServiceConnectivityError: Readonly<{
     };
 }>;
 export type ServiceConnectivityError = InstanceType<(typeof ServiceConnectivityError)[keyof Omit<typeof ServiceConnectivityError, 'instanceOf'>]>;
-export declare enum SparkAddressPaymentType_Tags {
-    TokensPayment = "TokensPayment",
-    SatsPayment = "SatsPayment"
-}
-export declare const SparkAddressPaymentType: Readonly<{
-    instanceOf: (obj: any) => obj is SparkAddressPaymentType;
-    TokensPayment: {
-        new (v0: TokensPaymentDetails): {
-            readonly tag: SparkAddressPaymentType_Tags.TokensPayment;
-            readonly inner: Readonly<[TokensPaymentDetails]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SparkAddressPaymentType";
-        };
-        "new"(v0: TokensPaymentDetails): {
-            readonly tag: SparkAddressPaymentType_Tags.TokensPayment;
-            readonly inner: Readonly<[TokensPaymentDetails]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SparkAddressPaymentType";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: SparkAddressPaymentType_Tags.TokensPayment;
-            readonly inner: Readonly<[TokensPaymentDetails]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SparkAddressPaymentType";
-        };
-    };
-    SatsPayment: {
-        new (v0: SatsPaymentDetails): {
-            readonly tag: SparkAddressPaymentType_Tags.SatsPayment;
-            readonly inner: Readonly<[SatsPaymentDetails]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SparkAddressPaymentType";
-        };
-        "new"(v0: SatsPaymentDetails): {
-            readonly tag: SparkAddressPaymentType_Tags.SatsPayment;
-            readonly inner: Readonly<[SatsPaymentDetails]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SparkAddressPaymentType";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: SparkAddressPaymentType_Tags.SatsPayment;
-            readonly inner: Readonly<[SatsPaymentDetails]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SparkAddressPaymentType";
-        };
-    };
-}>;
-export type SparkAddressPaymentType = InstanceType<(typeof SparkAddressPaymentType)[keyof Omit<typeof SparkAddressPaymentType, 'instanceOf'>]>;
 export declare enum SuccessAction_Tags {
     Aes = "Aes",
     Message = "Message",
@@ -3205,26 +3129,12 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): RestResponse;
             lower(value: RestResponse): UniffiByteArray;
         };
-        FfiConverterTypeSatsPaymentDetails: {
-            read(from: RustBuffer): SatsPaymentDetails;
-            write(value: SatsPaymentDetails, into: RustBuffer): void;
-            allocationSize(value: SatsPaymentDetails): number;
-            lift(value: UniffiByteArray): SatsPaymentDetails;
-            lower(value: SatsPaymentDetails): UniffiByteArray;
-        };
         FfiConverterTypeSilentPaymentAddressDetails: {
             read(from: RustBuffer): SilentPaymentAddressDetails;
             write(value: SilentPaymentAddressDetails, into: RustBuffer): void;
             allocationSize(value: SilentPaymentAddressDetails): number;
             lift(value: UniffiByteArray): SilentPaymentAddressDetails;
             lower(value: SilentPaymentAddressDetails): UniffiByteArray;
-        };
-        FfiConverterTypeSparkAddress: {
-            read(from: RustBuffer): SparkAddress;
-            write(value: SparkAddress, into: RustBuffer): void;
-            allocationSize(value: SparkAddress): number;
-            lift(value: UniffiByteArray): SparkAddress;
-            lower(value: SparkAddress): UniffiByteArray;
         };
         FfiConverterTypeSparkAddressDetails: {
             read(from: RustBuffer): SparkAddressDetails;
@@ -3233,19 +3143,12 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SparkAddressDetails;
             lower(value: SparkAddressDetails): UniffiByteArray;
         };
-        FfiConverterTypeSparkAddressPaymentType: {
-            read(from: RustBuffer): SparkAddressPaymentType;
-            write(value: SparkAddressPaymentType, into: RustBuffer): void;
-            allocationSize(value: SparkAddressPaymentType): number;
-            lift(value: UniffiByteArray): SparkAddressPaymentType;
-            lower(value: SparkAddressPaymentType): UniffiByteArray;
-        };
-        FfiConverterTypeSparkInvoiceFields: {
-            read(from: RustBuffer): SparkInvoiceFields;
-            write(value: SparkInvoiceFields, into: RustBuffer): void;
-            allocationSize(value: SparkInvoiceFields): number;
-            lift(value: UniffiByteArray): SparkInvoiceFields;
-            lower(value: SparkInvoiceFields): UniffiByteArray;
+        FfiConverterTypeSparkInvoiceDetails: {
+            read(from: RustBuffer): SparkInvoiceDetails;
+            write(value: SparkInvoiceDetails, into: RustBuffer): void;
+            allocationSize(value: SparkInvoiceDetails): number;
+            lift(value: UniffiByteArray): SparkInvoiceDetails;
+            lower(value: SparkInvoiceDetails): UniffiByteArray;
         };
         FfiConverterTypeSuccessAction: {
             read(from: RustBuffer): SuccessAction;
@@ -3267,13 +3170,6 @@ declare const _default: Readonly<{
             allocationSize(value: Symbol): number;
             lift(value: UniffiByteArray): Symbol;
             lower(value: Symbol): UniffiByteArray;
-        };
-        FfiConverterTypeTokensPaymentDetails: {
-            read(from: RustBuffer): TokensPaymentDetails;
-            write(value: TokensPaymentDetails, into: RustBuffer): void;
-            allocationSize(value: TokensPaymentDetails): number;
-            lift(value: UniffiByteArray): TokensPaymentDetails;
-            lower(value: TokensPaymentDetails): UniffiByteArray;
         };
         FfiConverterTypeUrlSuccessActionData: {
             read(from: RustBuffer): UrlSuccessActionData;

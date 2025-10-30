@@ -63,6 +63,9 @@ protected:
   cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_check_lightning_address_available(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
+  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_check_message(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_claim_deposit(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
@@ -102,6 +105,9 @@ protected:
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_lnurl_pay(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
+  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_lnurl_withdraw(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_parse(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
@@ -126,6 +132,9 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
+  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_sign_message(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
@@ -422,6 +431,9 @@ protected:
   cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_lightning_address_available(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
+  jsi::Value cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_message(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_deposit(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
@@ -464,6 +476,9 @@ protected:
   jsi::Value cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_pay(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
+  jsi::Value cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_withdraw(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_parse(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
@@ -491,6 +506,9 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
+  jsi::Value cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet(

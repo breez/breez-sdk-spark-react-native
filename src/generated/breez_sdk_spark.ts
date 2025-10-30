@@ -42,8 +42,10 @@ import {
   type FiatCurrency,
   type FiatService,
   type LnurlPayRequestDetails,
+  type LnurlWithdrawRequestDetails,
   type Rate,
   type RestClient,
+  type SparkInvoiceDetails,
   InputType,
   SuccessAction,
   SuccessActionProcessed,
@@ -98,8 +100,10 @@ const {
   FfiConverterTypeFiatService,
   FfiConverterTypeInputType,
   FfiConverterTypeLnurlPayRequestDetails,
+  FfiConverterTypeLnurlWithdrawRequestDetails,
   FfiConverterTypeRate,
   FfiConverterTypeRestClient,
+  FfiConverterTypeSparkInvoiceDetails,
   FfiConverterTypeSuccessAction,
   FfiConverterTypeSuccessActionProcessed,
 } = uniffiBreezSdkCommonModule.converters;
@@ -373,6 +377,130 @@ const FfiConverterTypeCheckLightningAddressRequest = (() => {
     }
     allocationSize(value: TypeName): number {
       return FfiConverterString.allocationSize(value.username);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type CheckMessageRequest = {
+  /**
+   * The message that was signed
+   */
+  message: string;
+  /**
+   * The public key that signed the message
+   */
+  pubkey: string;
+  /**
+   * The DER or compact hex encoded signature
+   */
+  signature: string;
+};
+
+/**
+ * Generated factory for {@link CheckMessageRequest} record objects.
+ */
+export const CheckMessageRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<CheckMessageRequest, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link CheckMessageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link CheckMessageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<CheckMessageRequest>,
+  });
+})();
+
+const FfiConverterTypeCheckMessageRequest = (() => {
+  type TypeName = CheckMessageRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        message: FfiConverterString.read(from),
+        pubkey: FfiConverterString.read(from),
+        signature: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.message, into);
+      FfiConverterString.write(value.pubkey, into);
+      FfiConverterString.write(value.signature, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.message) +
+        FfiConverterString.allocationSize(value.pubkey) +
+        FfiConverterString.allocationSize(value.signature)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type CheckMessageResponse = {
+  isValid: boolean;
+};
+
+/**
+ * Generated factory for {@link CheckMessageResponse} record objects.
+ */
+export const CheckMessageResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      CheckMessageResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link CheckMessageResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link CheckMessageResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<CheckMessageResponse>,
+  });
+})();
+
+const FfiConverterTypeCheckMessageResponse = (() => {
+  type TypeName = CheckMessageResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        isValid: FfiConverterBool.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterBool.write(value.isValid, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterBool.allocationSize(value.isValid);
     }
   }
   return new FFIConverter();
@@ -1797,6 +1925,200 @@ const FfiConverterTypeLnurlPayResponse = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * Represents the withdraw LNURL info
+ */
+export type LnurlWithdrawInfo = {
+  withdrawUrl: string;
+};
+
+/**
+ * Generated factory for {@link LnurlWithdrawInfo} record objects.
+ */
+export const LnurlWithdrawInfo = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<LnurlWithdrawInfo, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link LnurlWithdrawInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link LnurlWithdrawInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<LnurlWithdrawInfo>,
+  });
+})();
+
+const FfiConverterTypeLnurlWithdrawInfo = (() => {
+  type TypeName = LnurlWithdrawInfo;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        withdrawUrl: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.withdrawUrl, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterString.allocationSize(value.withdrawUrl);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type LnurlWithdrawRequest = {
+  /**
+   * The amount to withdraw in satoshis
+   * Must be within the min and max withdrawable limits
+   */
+  amountSats: /*u64*/ bigint;
+  withdrawRequest: LnurlWithdrawRequestDetails;
+  /**
+   * If set, the function will return the payment if it is still pending after this
+   * number of seconds. If unset, the function will return immediately after
+   * initiating the LNURL withdraw.
+   */
+  completionTimeoutSecs: /*u32*/ number | undefined;
+};
+
+/**
+ * Generated factory for {@link LnurlWithdrawRequest} record objects.
+ */
+export const LnurlWithdrawRequest = (() => {
+  const defaults = () => ({ completionTimeoutSecs: undefined });
+  const create = (() => {
+    return uniffiCreateRecord<
+      LnurlWithdrawRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link LnurlWithdrawRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link LnurlWithdrawRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<LnurlWithdrawRequest>,
+  });
+})();
+
+const FfiConverterTypeLnurlWithdrawRequest = (() => {
+  type TypeName = LnurlWithdrawRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        amountSats: FfiConverterUInt64.read(from),
+        withdrawRequest: FfiConverterTypeLnurlWithdrawRequestDetails.read(from),
+        completionTimeoutSecs: FfiConverterOptionalUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterUInt64.write(value.amountSats, into);
+      FfiConverterTypeLnurlWithdrawRequestDetails.write(
+        value.withdrawRequest,
+        into
+      );
+      FfiConverterOptionalUInt32.write(value.completionTimeoutSecs, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterUInt64.allocationSize(value.amountSats) +
+        FfiConverterTypeLnurlWithdrawRequestDetails.allocationSize(
+          value.withdrawRequest
+        ) +
+        FfiConverterOptionalUInt32.allocationSize(value.completionTimeoutSecs)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type LnurlWithdrawResponse = {
+  /**
+   * The Lightning invoice generated for the LNURL withdraw
+   */
+  paymentRequest: string;
+  payment: Payment | undefined;
+};
+
+/**
+ * Generated factory for {@link LnurlWithdrawResponse} record objects.
+ */
+export const LnurlWithdrawResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      LnurlWithdrawResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link LnurlWithdrawResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link LnurlWithdrawResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<LnurlWithdrawResponse>,
+  });
+})();
+
+const FfiConverterTypeLnurlWithdrawResponse = (() => {
+  type TypeName = LnurlWithdrawResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        paymentRequest: FfiConverterString.read(from),
+        payment: FfiConverterOptionalTypePayment.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.paymentRequest, into);
+      FfiConverterOptionalTypePayment.write(value.payment, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.paymentRequest) +
+        FfiConverterOptionalTypePayment.allocationSize(value.payment)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type LogEntry = {
   line: string;
   level: string;
@@ -1966,6 +2288,7 @@ const FfiConverterTypePayment = (() => {
  */
 export type PaymentMetadata = {
   lnurlPayInfo: LnurlPayInfo | undefined;
+  lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
   lnurlDescription: string | undefined;
 };
 
@@ -2005,18 +2328,27 @@ const FfiConverterTypePaymentMetadata = (() => {
     read(from: RustBuffer): TypeName {
       return {
         lnurlPayInfo: FfiConverterOptionalTypeLnurlPayInfo.read(from),
+        lnurlWithdrawInfo: FfiConverterOptionalTypeLnurlWithdrawInfo.read(from),
         lnurlDescription: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterOptionalTypeLnurlPayInfo.write(value.lnurlPayInfo, into);
+      FfiConverterOptionalTypeLnurlWithdrawInfo.write(
+        value.lnurlWithdrawInfo,
+        into
+      );
       FfiConverterOptionalString.write(value.lnurlDescription, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterOptionalTypeLnurlPayInfo.allocationSize(
           value.lnurlPayInfo
-        ) + FfiConverterOptionalString.allocationSize(value.lnurlDescription)
+        ) +
+        FfiConverterOptionalTypeLnurlWithdrawInfo.allocationSize(
+          value.lnurlWithdrawInfo
+        ) +
+        FfiConverterOptionalString.allocationSize(value.lnurlDescription)
       );
     }
   }
@@ -2450,7 +2782,11 @@ const FfiConverterTypeReceivePaymentRequest = (() => {
 
 export type ReceivePaymentResponse = {
   paymentRequest: string;
-  feeSats: /*u64*/ bigint;
+  /**
+   * Fee to pay to receive the payment
+   * Denominated in sats or token base units
+   */
+  fee: U128;
 };
 
 /**
@@ -2491,17 +2827,17 @@ const FfiConverterTypeReceivePaymentResponse = (() => {
     read(from: RustBuffer): TypeName {
       return {
         paymentRequest: FfiConverterString.read(from),
-        feeSats: FfiConverterUInt64.read(from),
+        fee: FfiConverterTypeu128.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterString.write(value.paymentRequest, into);
-      FfiConverterUInt64.write(value.feeSats, into);
+      FfiConverterTypeu128.write(value.fee, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterString.allocationSize(value.paymentRequest) +
-        FfiConverterUInt64.allocationSize(value.feeSats)
+        FfiConverterTypeu128.allocationSize(value.fee)
       );
     }
   }
@@ -2938,6 +3274,194 @@ const FfiConverterTypeSendPaymentResponse = (() => {
     }
     allocationSize(value: TypeName): number {
       return FfiConverterTypePayment.allocationSize(value.payment);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type SignMessageRequest = {
+  message: string;
+  /**
+   * If true, the signature will be encoded in compact format instead of DER format
+   */
+  compact: boolean;
+};
+
+/**
+ * Generated factory for {@link SignMessageRequest} record objects.
+ */
+export const SignMessageRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<SignMessageRequest, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SignMessageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SignMessageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<SignMessageRequest>,
+  });
+})();
+
+const FfiConverterTypeSignMessageRequest = (() => {
+  type TypeName = SignMessageRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        message: FfiConverterString.read(from),
+        compact: FfiConverterBool.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.message, into);
+      FfiConverterBool.write(value.compact, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.message) +
+        FfiConverterBool.allocationSize(value.compact)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type SignMessageResponse = {
+  pubkey: string;
+  /**
+   * The DER or compact hex encoded signature
+   */
+  signature: string;
+};
+
+/**
+ * Generated factory for {@link SignMessageResponse} record objects.
+ */
+export const SignMessageResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<SignMessageResponse, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SignMessageResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SignMessageResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<SignMessageResponse>,
+  });
+})();
+
+const FfiConverterTypeSignMessageResponse = (() => {
+  type TypeName = SignMessageResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        pubkey: FfiConverterString.read(from),
+        signature: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.pubkey, into);
+      FfiConverterString.write(value.signature, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.pubkey) +
+        FfiConverterString.allocationSize(value.signature)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type SparkInvoicePaymentDetails = {
+  /**
+   * Represents the spark invoice description
+   */
+  description: string | undefined;
+  /**
+   * The raw spark invoice string
+   */
+  invoice: string;
+};
+
+/**
+ * Generated factory for {@link SparkInvoicePaymentDetails} record objects.
+ */
+export const SparkInvoicePaymentDetails = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      SparkInvoicePaymentDetails,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SparkInvoicePaymentDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SparkInvoicePaymentDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<SparkInvoicePaymentDetails>,
+  });
+})();
+
+const FfiConverterTypeSparkInvoicePaymentDetails = (() => {
+  type TypeName = SparkInvoicePaymentDetails;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        description: FfiConverterOptionalString.read(from),
+        invoice: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalString.write(value.description, into);
+      FfiConverterString.write(value.invoice, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalString.allocationSize(value.description) +
+        FfiConverterString.allocationSize(value.invoice)
+      );
     }
   }
   return new FFIConverter();
@@ -4309,6 +4833,7 @@ export enum PaymentDetails_Tags {
 export const PaymentDetails = (() => {
   type Spark__interface = {
     tag: PaymentDetails_Tags.Spark;
+    inner: Readonly<{ invoiceDetails: SparkInvoicePaymentDetails | undefined }>;
   };
 
   class Spark_ extends UniffiEnum implements Spark__interface {
@@ -4318,12 +4843,24 @@ export const PaymentDetails = (() => {
      */
     readonly [uniffiTypeNameSymbol] = 'PaymentDetails';
     readonly tag = PaymentDetails_Tags.Spark;
-    constructor() {
+    readonly inner: Readonly<{
+      invoiceDetails: SparkInvoicePaymentDetails | undefined;
+    }>;
+    constructor(inner: {
+      /**
+       * The invoice details if the payment fulfilled a spark invoice
+       */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+    }) {
       super('PaymentDetails', 'Spark');
+      this.inner = Object.freeze(inner);
     }
 
-    static new(): Spark_ {
-      return new Spark_();
+    static new(inner: {
+      /**
+       * The invoice details if the payment fulfilled a spark invoice
+       */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+    }): Spark_ {
+      return new Spark_(inner);
     }
 
     static instanceOf(obj: any): obj is Spark_ {
@@ -4333,7 +4870,11 @@ export const PaymentDetails = (() => {
 
   type Token__interface = {
     tag: PaymentDetails_Tags.Token;
-    inner: Readonly<{ metadata: TokenMetadata; txHash: string }>;
+    inner: Readonly<{
+      metadata: TokenMetadata;
+      txHash: string;
+      invoiceDetails: SparkInvoicePaymentDetails | undefined;
+    }>;
   };
 
   class Token_ extends UniffiEnum implements Token__interface {
@@ -4343,13 +4884,29 @@ export const PaymentDetails = (() => {
      */
     readonly [uniffiTypeNameSymbol] = 'PaymentDetails';
     readonly tag = PaymentDetails_Tags.Token;
-    readonly inner: Readonly<{ metadata: TokenMetadata; txHash: string }>;
-    constructor(inner: { metadata: TokenMetadata; txHash: string }) {
+    readonly inner: Readonly<{
+      metadata: TokenMetadata;
+      txHash: string;
+      invoiceDetails: SparkInvoicePaymentDetails | undefined;
+    }>;
+    constructor(inner: {
+      metadata: TokenMetadata;
+      txHash: string;
+      /**
+       * The invoice details if the payment fulfilled a spark invoice
+       */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+    }) {
       super('PaymentDetails', 'Token');
       this.inner = Object.freeze(inner);
     }
 
-    static new(inner: { metadata: TokenMetadata; txHash: string }): Token_ {
+    static new(inner: {
+      metadata: TokenMetadata;
+      txHash: string;
+      /**
+       * The invoice details if the payment fulfilled a spark invoice
+       */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+    }): Token_ {
       return new Token_(inner);
     }
 
@@ -4367,6 +4924,7 @@ export const PaymentDetails = (() => {
       paymentHash: string;
       destinationPubkey: string;
       lnurlPayInfo: LnurlPayInfo | undefined;
+      lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
     }>;
   };
 
@@ -4384,6 +4942,7 @@ export const PaymentDetails = (() => {
       paymentHash: string;
       destinationPubkey: string;
       lnurlPayInfo: LnurlPayInfo | undefined;
+      lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
     }>;
     constructor(inner: {
       /**
@@ -4406,6 +4965,9 @@ export const PaymentDetails = (() => {
       /**
        * Lnurl payment information if this was an lnurl payment.
        */ lnurlPayInfo: LnurlPayInfo | undefined;
+      /**
+       * Lnurl withdrawal information if this was an lnurl payment.
+       */ lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
     }) {
       super('PaymentDetails', 'Lightning');
       this.inner = Object.freeze(inner);
@@ -4432,6 +4994,9 @@ export const PaymentDetails = (() => {
       /**
        * Lnurl payment information if this was an lnurl payment.
        */ lnurlPayInfo: LnurlPayInfo | undefined;
+      /**
+       * Lnurl withdrawal information if this was an lnurl payment.
+       */ lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
     }): Lightning_ {
       return new Lightning_(inner);
     }
@@ -4521,11 +5086,16 @@ const FfiConverterTypePaymentDetails = (() => {
     read(from: RustBuffer): TypeName {
       switch (ordinalConverter.read(from)) {
         case 1:
-          return new PaymentDetails.Spark();
+          return new PaymentDetails.Spark({
+            invoiceDetails:
+              FfiConverterOptionalTypeSparkInvoicePaymentDetails.read(from),
+          });
         case 2:
           return new PaymentDetails.Token({
             metadata: FfiConverterTypeTokenMetadata.read(from),
             txHash: FfiConverterString.read(from),
+            invoiceDetails:
+              FfiConverterOptionalTypeSparkInvoicePaymentDetails.read(from),
           });
         case 3:
           return new PaymentDetails.Lightning({
@@ -4535,6 +5105,8 @@ const FfiConverterTypePaymentDetails = (() => {
             paymentHash: FfiConverterString.read(from),
             destinationPubkey: FfiConverterString.read(from),
             lnurlPayInfo: FfiConverterOptionalTypeLnurlPayInfo.read(from),
+            lnurlWithdrawInfo:
+              FfiConverterOptionalTypeLnurlWithdrawInfo.read(from),
           });
         case 4:
           return new PaymentDetails.Withdraw({
@@ -4552,6 +5124,11 @@ const FfiConverterTypePaymentDetails = (() => {
       switch (value.tag) {
         case PaymentDetails_Tags.Spark: {
           ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterOptionalTypeSparkInvoicePaymentDetails.write(
+            inner.invoiceDetails,
+            into
+          );
           return;
         }
         case PaymentDetails_Tags.Token: {
@@ -4559,6 +5136,10 @@ const FfiConverterTypePaymentDetails = (() => {
           const inner = value.inner;
           FfiConverterTypeTokenMetadata.write(inner.metadata, into);
           FfiConverterString.write(inner.txHash, into);
+          FfiConverterOptionalTypeSparkInvoicePaymentDetails.write(
+            inner.invoiceDetails,
+            into
+          );
           return;
         }
         case PaymentDetails_Tags.Lightning: {
@@ -4570,6 +5151,10 @@ const FfiConverterTypePaymentDetails = (() => {
           FfiConverterString.write(inner.paymentHash, into);
           FfiConverterString.write(inner.destinationPubkey, into);
           FfiConverterOptionalTypeLnurlPayInfo.write(inner.lnurlPayInfo, into);
+          FfiConverterOptionalTypeLnurlWithdrawInfo.write(
+            inner.lnurlWithdrawInfo,
+            into
+          );
           return;
         }
         case PaymentDetails_Tags.Withdraw: {
@@ -4592,13 +5177,23 @@ const FfiConverterTypePaymentDetails = (() => {
     allocationSize(value: TypeName): number {
       switch (value.tag) {
         case PaymentDetails_Tags.Spark: {
-          return ordinalConverter.allocationSize(1);
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size +=
+            FfiConverterOptionalTypeSparkInvoicePaymentDetails.allocationSize(
+              inner.invoiceDetails
+            );
+          return size;
         }
         case PaymentDetails_Tags.Token: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
           size += FfiConverterTypeTokenMetadata.allocationSize(inner.metadata);
           size += FfiConverterString.allocationSize(inner.txHash);
+          size +=
+            FfiConverterOptionalTypeSparkInvoicePaymentDetails.allocationSize(
+              inner.invoiceDetails
+            );
           return size;
         }
         case PaymentDetails_Tags.Lightning: {
@@ -4611,6 +5206,9 @@ const FfiConverterTypePaymentDetails = (() => {
           size += FfiConverterString.allocationSize(inner.destinationPubkey);
           size += FfiConverterOptionalTypeLnurlPayInfo.allocationSize(
             inner.lnurlPayInfo
+          );
+          size += FfiConverterOptionalTypeLnurlWithdrawInfo.allocationSize(
+            inner.lnurlWithdrawInfo
           );
           return size;
         }
@@ -5021,7 +5619,7 @@ export const ProvisionalPaymentDetails = (() => {
 
   type Spark__interface = {
     tag: ProvisionalPaymentDetails_Tags.Spark;
-    inner: Readonly<{ receiverAddress: string }>;
+    inner: Readonly<{ payRequest: string }>;
   };
 
   class Spark_ extends UniffiEnum implements Spark__interface {
@@ -5031,11 +5629,11 @@ export const ProvisionalPaymentDetails = (() => {
      */
     readonly [uniffiTypeNameSymbol] = 'ProvisionalPaymentDetails';
     readonly tag = ProvisionalPaymentDetails_Tags.Spark;
-    readonly inner: Readonly<{ receiverAddress: string }>;
+    readonly inner: Readonly<{ payRequest: string }>;
     constructor(inner: {
       /**
-       * Spark receiver address
-       */ receiverAddress: string;
+       * Spark pay request being paid (either a Spark address or a Spark invoice)
+       */ payRequest: string;
     }) {
       super('ProvisionalPaymentDetails', 'Spark');
       this.inner = Object.freeze(inner);
@@ -5043,8 +5641,8 @@ export const ProvisionalPaymentDetails = (() => {
 
     static new(inner: {
       /**
-       * Spark receiver address
-       */ receiverAddress: string;
+       * Spark pay request being paid (either a Spark address or a Spark invoice)
+       */ payRequest: string;
     }): Spark_ {
       return new Spark_(inner);
     }
@@ -5056,7 +5654,7 @@ export const ProvisionalPaymentDetails = (() => {
 
   type Token__interface = {
     tag: ProvisionalPaymentDetails_Tags.Token;
-    inner: Readonly<{ tokenId: string; receiverAddress: string }>;
+    inner: Readonly<{ tokenId: string; payRequest: string }>;
   };
 
   class Token_ extends UniffiEnum implements Token__interface {
@@ -5066,14 +5664,14 @@ export const ProvisionalPaymentDetails = (() => {
      */
     readonly [uniffiTypeNameSymbol] = 'ProvisionalPaymentDetails';
     readonly tag = ProvisionalPaymentDetails_Tags.Token;
-    readonly inner: Readonly<{ tokenId: string; receiverAddress: string }>;
+    readonly inner: Readonly<{ tokenId: string; payRequest: string }>;
     constructor(inner: {
       /**
        * Token identifier
        */ tokenId: string;
       /**
-       * Spark receiver address
-       */ receiverAddress: string;
+       * Spark pay request being paid (either a Spark address or a Spark invoice)
+       */ payRequest: string;
     }) {
       super('ProvisionalPaymentDetails', 'Token');
       this.inner = Object.freeze(inner);
@@ -5084,8 +5682,8 @@ export const ProvisionalPaymentDetails = (() => {
        * Token identifier
        */ tokenId: string;
       /**
-       * Spark receiver address
-       */ receiverAddress: string;
+       * Spark pay request being paid (either a Spark address or a Spark invoice)
+       */ payRequest: string;
     }): Token_ {
       return new Token_(inner);
     }
@@ -5132,12 +5730,12 @@ const FfiConverterTypeProvisionalPaymentDetails = (() => {
           });
         case 3:
           return new ProvisionalPaymentDetails.Spark({
-            receiverAddress: FfiConverterString.read(from),
+            payRequest: FfiConverterString.read(from),
           });
         case 4:
           return new ProvisionalPaymentDetails.Token({
             tokenId: FfiConverterString.read(from),
-            receiverAddress: FfiConverterString.read(from),
+            payRequest: FfiConverterString.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -5160,14 +5758,14 @@ const FfiConverterTypeProvisionalPaymentDetails = (() => {
         case ProvisionalPaymentDetails_Tags.Spark: {
           ordinalConverter.write(3, into);
           const inner = value.inner;
-          FfiConverterString.write(inner.receiverAddress, into);
+          FfiConverterString.write(inner.payRequest, into);
           return;
         }
         case ProvisionalPaymentDetails_Tags.Token: {
           ordinalConverter.write(4, into);
           const inner = value.inner;
           FfiConverterString.write(inner.tokenId, into);
-          FfiConverterString.write(inner.receiverAddress, into);
+          FfiConverterString.write(inner.payRequest, into);
           return;
         }
         default:
@@ -5192,14 +5790,14 @@ const FfiConverterTypeProvisionalPaymentDetails = (() => {
         case ProvisionalPaymentDetails_Tags.Spark: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(3);
-          size += FfiConverterString.allocationSize(inner.receiverAddress);
+          size += FfiConverterString.allocationSize(inner.payRequest);
           return size;
         }
         case ProvisionalPaymentDetails_Tags.Token: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(4);
           size += FfiConverterString.allocationSize(inner.tokenId);
-          size += FfiConverterString.allocationSize(inner.receiverAddress);
+          size += FfiConverterString.allocationSize(inner.payRequest);
           return size;
         }
         default:
@@ -5213,6 +5811,7 @@ const FfiConverterTypeProvisionalPaymentDetails = (() => {
 // Enum: ReceivePaymentMethod
 export enum ReceivePaymentMethod_Tags {
   SparkAddress = 'SparkAddress',
+  SparkInvoice = 'SparkInvoice',
   BitcoinAddress = 'BitcoinAddress',
   Bolt11Invoice = 'Bolt11Invoice',
 }
@@ -5238,6 +5837,79 @@ export const ReceivePaymentMethod = (() => {
 
     static instanceOf(obj: any): obj is SparkAddress_ {
       return obj.tag === ReceivePaymentMethod_Tags.SparkAddress;
+    }
+  }
+
+  type SparkInvoice__interface = {
+    tag: ReceivePaymentMethod_Tags.SparkInvoice;
+    inner: Readonly<{
+      amount: U128 | undefined;
+      tokenIdentifier: string | undefined;
+      expiryTime: /*u64*/ bigint | undefined;
+      description: string | undefined;
+      senderPublicKey: string | undefined;
+    }>;
+  };
+
+  class SparkInvoice_ extends UniffiEnum implements SparkInvoice__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ReceivePaymentMethod';
+    readonly tag = ReceivePaymentMethod_Tags.SparkInvoice;
+    readonly inner: Readonly<{
+      amount: U128 | undefined;
+      tokenIdentifier: string | undefined;
+      expiryTime: /*u64*/ bigint | undefined;
+      description: string | undefined;
+      senderPublicKey: string | undefined;
+    }>;
+    constructor(inner: {
+      /**
+       * Amount to receive. Denominated in sats if token identifier is empty, otherwise in the token base units
+       */ amount: U128 | undefined;
+      /**
+       * The presence of this field indicates that the payment is for a token
+       * If empty, it is a Bitcoin payment
+       */ tokenIdentifier: string | undefined;
+      /**
+       * The expiry time of the invoice in seconds since the Unix epoch
+       */ expiryTime: /*u64*/ bigint | undefined;
+      /**
+       * A description to embed in the invoice.
+       */ description: string | undefined;
+      /**
+       * If set, the invoice may only be fulfilled by a payer with this public key
+       */ senderPublicKey: string | undefined;
+    }) {
+      super('ReceivePaymentMethod', 'SparkInvoice');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * Amount to receive. Denominated in sats if token identifier is empty, otherwise in the token base units
+       */ amount: U128 | undefined;
+      /**
+       * The presence of this field indicates that the payment is for a token
+       * If empty, it is a Bitcoin payment
+       */ tokenIdentifier: string | undefined;
+      /**
+       * The expiry time of the invoice in seconds since the Unix epoch
+       */ expiryTime: /*u64*/ bigint | undefined;
+      /**
+       * A description to embed in the invoice.
+       */ description: string | undefined;
+      /**
+       * If set, the invoice may only be fulfilled by a payer with this public key
+       */ senderPublicKey: string | undefined;
+    }): SparkInvoice_ {
+      return new SparkInvoice_(inner);
+    }
+
+    static instanceOf(obj: any): obj is SparkInvoice_ {
+      return obj.tag === ReceivePaymentMethod_Tags.SparkInvoice;
     }
   }
 
@@ -5314,6 +5986,7 @@ export const ReceivePaymentMethod = (() => {
   return Object.freeze({
     instanceOf,
     SparkAddress: SparkAddress_,
+    SparkInvoice: SparkInvoice_,
     BitcoinAddress: BitcoinAddress_,
     Bolt11Invoice: Bolt11Invoice_,
   });
@@ -5336,8 +6009,16 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
         case 1:
           return new ReceivePaymentMethod.SparkAddress();
         case 2:
-          return new ReceivePaymentMethod.BitcoinAddress();
+          return new ReceivePaymentMethod.SparkInvoice({
+            amount: FfiConverterOptionalTypeu128.read(from),
+            tokenIdentifier: FfiConverterOptionalString.read(from),
+            expiryTime: FfiConverterOptionalUInt64.read(from),
+            description: FfiConverterOptionalString.read(from),
+            senderPublicKey: FfiConverterOptionalString.read(from),
+          });
         case 3:
+          return new ReceivePaymentMethod.BitcoinAddress();
+        case 4:
           return new ReceivePaymentMethod.Bolt11Invoice({
             description: FfiConverterString.read(from),
             amountSats: FfiConverterOptionalUInt64.read(from),
@@ -5352,12 +6033,22 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
           ordinalConverter.write(1, into);
           return;
         }
-        case ReceivePaymentMethod_Tags.BitcoinAddress: {
+        case ReceivePaymentMethod_Tags.SparkInvoice: {
           ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterOptionalTypeu128.write(inner.amount, into);
+          FfiConverterOptionalString.write(inner.tokenIdentifier, into);
+          FfiConverterOptionalUInt64.write(inner.expiryTime, into);
+          FfiConverterOptionalString.write(inner.description, into);
+          FfiConverterOptionalString.write(inner.senderPublicKey, into);
+          return;
+        }
+        case ReceivePaymentMethod_Tags.BitcoinAddress: {
+          ordinalConverter.write(3, into);
           return;
         }
         case ReceivePaymentMethod_Tags.Bolt11Invoice: {
-          ordinalConverter.write(3, into);
+          ordinalConverter.write(4, into);
           const inner = value.inner;
           FfiConverterString.write(inner.description, into);
           FfiConverterOptionalUInt64.write(inner.amountSats, into);
@@ -5373,12 +6064,26 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
         case ReceivePaymentMethod_Tags.SparkAddress: {
           return ordinalConverter.allocationSize(1);
         }
+        case ReceivePaymentMethod_Tags.SparkInvoice: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterOptionalTypeu128.allocationSize(inner.amount);
+          size += FfiConverterOptionalString.allocationSize(
+            inner.tokenIdentifier
+          );
+          size += FfiConverterOptionalUInt64.allocationSize(inner.expiryTime);
+          size += FfiConverterOptionalString.allocationSize(inner.description);
+          size += FfiConverterOptionalString.allocationSize(
+            inner.senderPublicKey
+          );
+          return size;
+        }
         case ReceivePaymentMethod_Tags.BitcoinAddress: {
-          return ordinalConverter.allocationSize(2);
+          return ordinalConverter.allocationSize(3);
         }
         case ReceivePaymentMethod_Tags.Bolt11Invoice: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(3);
+          let size = ordinalConverter.allocationSize(4);
           size += FfiConverterString.allocationSize(inner.description);
           size += FfiConverterOptionalUInt64.allocationSize(inner.amountSats);
           return size;
@@ -6478,6 +7183,7 @@ export enum SendPaymentMethod_Tags {
   BitcoinAddress = 'BitcoinAddress',
   Bolt11Invoice = 'Bolt11Invoice',
   SparkAddress = 'SparkAddress',
+  SparkInvoice = 'SparkInvoice',
 }
 export const SendPaymentMethod = (() => {
   type BitcoinAddress__interface = {
@@ -6620,6 +7326,61 @@ export const SendPaymentMethod = (() => {
     }
   }
 
+  type SparkInvoice__interface = {
+    tag: SendPaymentMethod_Tags.SparkInvoice;
+    inner: Readonly<{
+      sparkInvoiceDetails: SparkInvoiceDetails;
+      fee: U128;
+      tokenIdentifier: string | undefined;
+    }>;
+  };
+
+  class SparkInvoice_ extends UniffiEnum implements SparkInvoice__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SendPaymentMethod';
+    readonly tag = SendPaymentMethod_Tags.SparkInvoice;
+    readonly inner: Readonly<{
+      sparkInvoiceDetails: SparkInvoiceDetails;
+      fee: U128;
+      tokenIdentifier: string | undefined;
+    }>;
+    constructor(inner: {
+      sparkInvoiceDetails: SparkInvoiceDetails;
+      /**
+       * Fee to pay for the transaction
+       * Denominated in sats if token identifier is empty, otherwise in the token base units
+       */ fee: U128;
+      /**
+       * The presence of this field indicates that the payment is for a token
+       * If empty, it is a Bitcoin payment
+       */ tokenIdentifier: string | undefined;
+    }) {
+      super('SendPaymentMethod', 'SparkInvoice');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      sparkInvoiceDetails: SparkInvoiceDetails;
+      /**
+       * Fee to pay for the transaction
+       * Denominated in sats if token identifier is empty, otherwise in the token base units
+       */ fee: U128;
+      /**
+       * The presence of this field indicates that the payment is for a token
+       * If empty, it is a Bitcoin payment
+       */ tokenIdentifier: string | undefined;
+    }): SparkInvoice_ {
+      return new SparkInvoice_(inner);
+    }
+
+    static instanceOf(obj: any): obj is SparkInvoice_ {
+      return obj.tag === SendPaymentMethod_Tags.SparkInvoice;
+    }
+  }
+
   function instanceOf(obj: any): obj is SendPaymentMethod {
     return obj[uniffiTypeNameSymbol] === 'SendPaymentMethod';
   }
@@ -6629,6 +7390,7 @@ export const SendPaymentMethod = (() => {
     BitcoinAddress: BitcoinAddress_,
     Bolt11Invoice: Bolt11Invoice_,
     SparkAddress: SparkAddress_,
+    SparkInvoice: SparkInvoice_,
   });
 })();
 
@@ -6660,6 +7422,12 @@ const FfiConverterTypeSendPaymentMethod = (() => {
             fee: FfiConverterTypeu128.read(from),
             tokenIdentifier: FfiConverterOptionalString.read(from),
           });
+        case 4:
+          return new SendPaymentMethod.SparkInvoice({
+            sparkInvoiceDetails: FfiConverterTypeSparkInvoiceDetails.read(from),
+            fee: FfiConverterTypeu128.read(from),
+            tokenIdentifier: FfiConverterOptionalString.read(from),
+          });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
@@ -6688,6 +7456,17 @@ const FfiConverterTypeSendPaymentMethod = (() => {
           ordinalConverter.write(3, into);
           const inner = value.inner;
           FfiConverterString.write(inner.address, into);
+          FfiConverterTypeu128.write(inner.fee, into);
+          FfiConverterOptionalString.write(inner.tokenIdentifier, into);
+          return;
+        }
+        case SendPaymentMethod_Tags.SparkInvoice: {
+          ordinalConverter.write(4, into);
+          const inner = value.inner;
+          FfiConverterTypeSparkInvoiceDetails.write(
+            inner.sparkInvoiceDetails,
+            into
+          );
           FfiConverterTypeu128.write(inner.fee, into);
           FfiConverterOptionalString.write(inner.tokenIdentifier, into);
           return;
@@ -6726,6 +7505,18 @@ const FfiConverterTypeSendPaymentMethod = (() => {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(3);
           size += FfiConverterString.allocationSize(inner.address);
+          size += FfiConverterTypeu128.allocationSize(inner.fee);
+          size += FfiConverterOptionalString.allocationSize(
+            inner.tokenIdentifier
+          );
+          return size;
+        }
+        case SendPaymentMethod_Tags.SparkInvoice: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(4);
+          size += FfiConverterTypeSparkInvoiceDetails.allocationSize(
+            inner.sparkInvoiceDetails
+          );
           size += FfiConverterTypeu128.allocationSize(inner.fee);
           size += FfiConverterOptionalString.allocationSize(
             inner.tokenIdentifier
@@ -7916,6 +8707,15 @@ export interface BreezSdkInterface {
     req: CheckLightningAddressRequest,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<boolean>;
+  /**
+   * Verifies a message signature against the provided public key. The message
+   * is SHA256 hashed before verification. The signature can be hex encoded
+   * in either DER or compact format.
+   */
+  checkMessage(
+    request: CheckMessageRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<CheckMessageResponse>;
   claimDeposit(
     request: ClaimDepositRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -8001,6 +8801,37 @@ export interface BreezSdkInterface {
     request: LnurlPayRequest,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<LnurlPayResponse>;
+  /**
+   * Performs an LNURL withdraw operation for the amount of satoshis to
+   * withdraw and the LNURL withdraw request details. The LNURL withdraw request
+   * details can be obtained from calling [`BreezSdk::parse`].
+   *
+   * The method generates a Lightning invoice for the withdraw amount, stores
+   * the LNURL withdraw metadata, and performs the LNURL withdraw using  the generated
+   * invoice.
+   *
+   * If the `completion_timeout_secs` parameter is provided and greater than 0, the
+   * method will wait for the payment to be completed within that period. If the
+   * withdraw is completed within the timeout, the `payment` field in the response
+   * will be set with the payment details. If the `completion_timeout_secs`
+   * parameter is not provided or set to 0, the method will not wait for the payment
+   * to be completed. If the withdraw is not completed within the
+   * timeout, the `payment` field will be empty.
+   *
+   * # Arguments
+   *
+   * * `request` - The LNURL withdraw request
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `LnurlWithdrawResponse` - The payment details if the withdraw request was successful
+   * * `SdkError` - If there was an error during the withdraw process
+   */
+  lnurlWithdraw(
+    request: LnurlWithdrawRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<LnurlWithdrawResponse>;
   parse(
     input: string,
     asyncOpts_?: { signal: AbortSignal }
@@ -8044,6 +8875,15 @@ export interface BreezSdkInterface {
     request: SendPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<SendPaymentResponse>;
+  /**
+   * Signs a message with the wallet's identity key. The message is SHA256
+   * hashed before signing. The returned signature will be hex encoded in
+   * DER format by default, or compact format if specified.
+   */
+  signMessage(
+    request: SignMessageRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<SignMessageResponse>;
   /**
    * Synchronizes the wallet with the Spark network
    */
@@ -8144,6 +8984,50 @@ export class BreezSdk
         /*freeFunc:*/ nativeModule()
           .ubrn_ffi_breez_sdk_spark_rust_future_free_i8,
         /*liftFunc:*/ FfiConverterBool.lift.bind(FfiConverterBool),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Verifies a message signature against the provided public key. The message
+   * is SHA256 hashed before verification. The signature can be hex encoded
+   * in either DER or compact format.
+   */
+  public async checkMessage(
+    request: CheckMessageRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<CheckMessageResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_check_message(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeCheckMessageRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeCheckMessageResponse.lift.bind(
+          FfiConverterTypeCheckMessageResponse
+        ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
         /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
@@ -8656,6 +9540,72 @@ export class BreezSdk
     }
   }
 
+  /**
+   * Performs an LNURL withdraw operation for the amount of satoshis to
+   * withdraw and the LNURL withdraw request details. The LNURL withdraw request
+   * details can be obtained from calling [`BreezSdk::parse`].
+   *
+   * The method generates a Lightning invoice for the withdraw amount, stores
+   * the LNURL withdraw metadata, and performs the LNURL withdraw using  the generated
+   * invoice.
+   *
+   * If the `completion_timeout_secs` parameter is provided and greater than 0, the
+   * method will wait for the payment to be completed within that period. If the
+   * withdraw is completed within the timeout, the `payment` field in the response
+   * will be set with the payment details. If the `completion_timeout_secs`
+   * parameter is not provided or set to 0, the method will not wait for the payment
+   * to be completed. If the withdraw is not completed within the
+   * timeout, the `payment` field will be empty.
+   *
+   * # Arguments
+   *
+   * * `request` - The LNURL withdraw request
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `LnurlWithdrawResponse` - The payment details if the withdraw request was successful
+   * * `SdkError` - If there was an error during the withdraw process
+   */
+  public async lnurlWithdraw(
+    request: LnurlWithdrawRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<LnurlWithdrawResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_lnurl_withdraw(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeLnurlWithdrawRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeLnurlWithdrawResponse.lift.bind(
+          FfiConverterTypeLnurlWithdrawResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
   public async parse(
     input: string,
     asyncOpts_?: { signal: AbortSignal }
@@ -8959,6 +9909,50 @@ export class BreezSdk
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypeSendPaymentResponse.lift.bind(
           FfiConverterTypeSendPaymentResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Signs a message with the wallet's identity key. The message is SHA256
+   * hashed before signing. The returned signature will be hex encoded in
+   * DER format by default, or compact format if specified.
+   */
+  public async signMessage(
+    request: SignMessageRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<SignMessageResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_sign_message(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeSignMessageRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeSignMessageResponse.lift.bind(
+          FfiConverterTypeSignMessageResponse
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -11219,10 +12213,19 @@ const FfiConverterOptionalTypeLnurlPayInfo = new FfiConverterOptional(
   FfiConverterTypeLnurlPayInfo
 );
 
+// FfiConverter for LnurlWithdrawInfo | undefined
+const FfiConverterOptionalTypeLnurlWithdrawInfo = new FfiConverterOptional(
+  FfiConverterTypeLnurlWithdrawInfo
+);
+
 // FfiConverter for Payment | undefined
 const FfiConverterOptionalTypePayment = new FfiConverterOptional(
   FfiConverterTypePayment
 );
+
+// FfiConverter for SparkInvoicePaymentDetails | undefined
+const FfiConverterOptionalTypeSparkInvoicePaymentDetails =
+  new FfiConverterOptional(FfiConverterTypeSparkInvoicePaymentDetails);
 
 // FfiConverter for string | undefined
 const FfiConverterOptionalString = new FfiConverterOptional(FfiConverterString);
@@ -11428,6 +12431,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_message() !==
+    4385
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_check_message'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_deposit() !==
     43529
   ) {
@@ -11524,6 +12535,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_withdraw() !==
+    45652
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_withdraw'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_parse() !==
     195
   ) {
@@ -11585,6 +12604,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message() !==
+    57563
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message'
     );
   }
   if (
@@ -11802,6 +12829,8 @@ export default Object.freeze({
     FfiConverterTypeBitcoinChainService,
     FfiConverterTypeBreezSdk,
     FfiConverterTypeCheckLightningAddressRequest,
+    FfiConverterTypeCheckMessageRequest,
+    FfiConverterTypeCheckMessageResponse,
     FfiConverterTypeClaimDepositRequest,
     FfiConverterTypeClaimDepositResponse,
     FfiConverterTypeConfig,
@@ -11827,6 +12856,9 @@ export default Object.freeze({
     FfiConverterTypeLnurlPayInfo,
     FfiConverterTypeLnurlPayRequest,
     FfiConverterTypeLnurlPayResponse,
+    FfiConverterTypeLnurlWithdrawInfo,
+    FfiConverterTypeLnurlWithdrawRequest,
+    FfiConverterTypeLnurlWithdrawResponse,
     FfiConverterTypeLogEntry,
     FfiConverterTypeNetwork,
     FfiConverterTypeOnchainConfirmationSpeed,
@@ -11858,6 +12890,9 @@ export default Object.freeze({
     FfiConverterTypeSendPaymentOptions,
     FfiConverterTypeSendPaymentRequest,
     FfiConverterTypeSendPaymentResponse,
+    FfiConverterTypeSignMessageRequest,
+    FfiConverterTypeSignMessageResponse,
+    FfiConverterTypeSparkInvoicePaymentDetails,
     FfiConverterTypeStorage,
     FfiConverterTypeSyncWalletRequest,
     FfiConverterTypeSyncWalletResponse,

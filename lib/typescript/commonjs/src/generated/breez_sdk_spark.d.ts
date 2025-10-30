@@ -1,4 +1,4 @@
-import { type BitcoinAddressDetails, type Bolt11InvoiceDetails, type ExternalInputParser, type FiatCurrency, type FiatService, type LnurlPayRequestDetails, type Rate, type RestClient, InputType, SuccessAction, SuccessActionProcessed } from './breez_sdk_common';
+import { type BitcoinAddressDetails, type Bolt11InvoiceDetails, type ExternalInputParser, type FiatCurrency, type FiatService, type LnurlPayRequestDetails, type LnurlWithdrawRequestDetails, type Rate, type RestClient, type SparkInvoiceDetails, InputType, SuccessAction, SuccessActionProcessed } from './breez_sdk_common';
 import { type UniffiByteArray, type UniffiRustArcPtr, type UnsafeMutableRawPointer, FfiConverterObject, FfiConverterObjectWithCallbacks, RustBuffer, UniffiAbstractObject, destructorGuardSymbol, pointerLiteralSymbol, uniffiTypeNameSymbol } from 'uniffi-bindgen-react-native';
 /**
  * Connects to the Spark network using the provided configuration and mnemonic.
@@ -52,6 +52,61 @@ export declare const CheckLightningAddressRequest: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<CheckLightningAddressRequest>;
+}>;
+export type CheckMessageRequest = {
+    /**
+     * The message that was signed
+     */
+    message: string;
+    /**
+     * The public key that signed the message
+     */
+    pubkey: string;
+    /**
+     * The DER or compact hex encoded signature
+     */
+    signature: string;
+};
+/**
+ * Generated factory for {@link CheckMessageRequest} record objects.
+ */
+export declare const CheckMessageRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link CheckMessageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CheckMessageRequest> & Required<Omit<CheckMessageRequest, never>>) => CheckMessageRequest;
+    /**
+     * Create a frozen instance of {@link CheckMessageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CheckMessageRequest> & Required<Omit<CheckMessageRequest, never>>) => CheckMessageRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CheckMessageRequest>;
+}>;
+export type CheckMessageResponse = {
+    isValid: boolean;
+};
+/**
+ * Generated factory for {@link CheckMessageResponse} record objects.
+ */
+export declare const CheckMessageResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link CheckMessageResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CheckMessageResponse> & Required<Omit<CheckMessageResponse, never>>) => CheckMessageResponse;
+    /**
+     * Create a frozen instance of {@link CheckMessageResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CheckMessageResponse> & Required<Omit<CheckMessageResponse, never>>) => CheckMessageResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CheckMessageResponse>;
 }>;
 export type ClaimDepositRequest = {
     txid: string;
@@ -635,6 +690,90 @@ export declare const LnurlPayResponse: Readonly<{
      */
     defaults: () => Partial<LnurlPayResponse>;
 }>;
+/**
+ * Represents the withdraw LNURL info
+ */
+export type LnurlWithdrawInfo = {
+    withdrawUrl: string;
+};
+/**
+ * Generated factory for {@link LnurlWithdrawInfo} record objects.
+ */
+export declare const LnurlWithdrawInfo: Readonly<{
+    /**
+     * Create a frozen instance of {@link LnurlWithdrawInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<LnurlWithdrawInfo> & Required<Omit<LnurlWithdrawInfo, never>>) => LnurlWithdrawInfo;
+    /**
+     * Create a frozen instance of {@link LnurlWithdrawInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<LnurlWithdrawInfo> & Required<Omit<LnurlWithdrawInfo, never>>) => LnurlWithdrawInfo;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<LnurlWithdrawInfo>;
+}>;
+export type LnurlWithdrawRequest = {
+    /**
+     * The amount to withdraw in satoshis
+     * Must be within the min and max withdrawable limits
+     */
+    amountSats: bigint;
+    withdrawRequest: LnurlWithdrawRequestDetails;
+    /**
+     * If set, the function will return the payment if it is still pending after this
+     * number of seconds. If unset, the function will return immediately after
+     * initiating the LNURL withdraw.
+     */
+    completionTimeoutSecs: /*u32*/ number | undefined;
+};
+/**
+ * Generated factory for {@link LnurlWithdrawRequest} record objects.
+ */
+export declare const LnurlWithdrawRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link LnurlWithdrawRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<LnurlWithdrawRequest> & Required<Omit<LnurlWithdrawRequest, "completionTimeoutSecs">>) => LnurlWithdrawRequest;
+    /**
+     * Create a frozen instance of {@link LnurlWithdrawRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<LnurlWithdrawRequest> & Required<Omit<LnurlWithdrawRequest, "completionTimeoutSecs">>) => LnurlWithdrawRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<LnurlWithdrawRequest>;
+}>;
+export type LnurlWithdrawResponse = {
+    /**
+     * The Lightning invoice generated for the LNURL withdraw
+     */
+    paymentRequest: string;
+    payment: Payment | undefined;
+};
+/**
+ * Generated factory for {@link LnurlWithdrawResponse} record objects.
+ */
+export declare const LnurlWithdrawResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link LnurlWithdrawResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<LnurlWithdrawResponse> & Required<Omit<LnurlWithdrawResponse, never>>) => LnurlWithdrawResponse;
+    /**
+     * Create a frozen instance of {@link LnurlWithdrawResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<LnurlWithdrawResponse> & Required<Omit<LnurlWithdrawResponse, never>>) => LnurlWithdrawResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<LnurlWithdrawResponse>;
+}>;
 export type LogEntry = {
     line: string;
     level: string;
@@ -720,6 +859,7 @@ export declare const Payment: Readonly<{
  */
 export type PaymentMetadata = {
     lnurlPayInfo: LnurlPayInfo | undefined;
+    lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
     lnurlDescription: string | undefined;
 };
 /**
@@ -914,7 +1054,11 @@ export declare const ReceivePaymentRequest: Readonly<{
 }>;
 export type ReceivePaymentResponse = {
     paymentRequest: string;
-    feeSats: bigint;
+    /**
+     * Fee to pay to receive the payment
+     * Denominated in sats or token base units
+     */
+    fee: U128;
 };
 /**
  * Generated factory for {@link ReceivePaymentResponse} record objects.
@@ -1099,6 +1243,87 @@ export declare const SendPaymentResponse: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<SendPaymentResponse>;
+}>;
+export type SignMessageRequest = {
+    message: string;
+    /**
+     * If true, the signature will be encoded in compact format instead of DER format
+     */
+    compact: boolean;
+};
+/**
+ * Generated factory for {@link SignMessageRequest} record objects.
+ */
+export declare const SignMessageRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link SignMessageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SignMessageRequest> & Required<Omit<SignMessageRequest, never>>) => SignMessageRequest;
+    /**
+     * Create a frozen instance of {@link SignMessageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SignMessageRequest> & Required<Omit<SignMessageRequest, never>>) => SignMessageRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SignMessageRequest>;
+}>;
+export type SignMessageResponse = {
+    pubkey: string;
+    /**
+     * The DER or compact hex encoded signature
+     */
+    signature: string;
+};
+/**
+ * Generated factory for {@link SignMessageResponse} record objects.
+ */
+export declare const SignMessageResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link SignMessageResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SignMessageResponse> & Required<Omit<SignMessageResponse, never>>) => SignMessageResponse;
+    /**
+     * Create a frozen instance of {@link SignMessageResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SignMessageResponse> & Required<Omit<SignMessageResponse, never>>) => SignMessageResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SignMessageResponse>;
+}>;
+export type SparkInvoicePaymentDetails = {
+    /**
+     * Represents the spark invoice description
+     */
+    description: string | undefined;
+    /**
+     * The raw spark invoice string
+     */
+    invoice: string;
+};
+/**
+ * Generated factory for {@link SparkInvoicePaymentDetails} record objects.
+ */
+export declare const SparkInvoicePaymentDetails: Readonly<{
+    /**
+     * Create a frozen instance of {@link SparkInvoicePaymentDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SparkInvoicePaymentDetails> & Required<Omit<SparkInvoicePaymentDetails, never>>) => SparkInvoicePaymentDetails;
+    /**
+     * Create a frozen instance of {@link SparkInvoicePaymentDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SparkInvoicePaymentDetails> & Required<Omit<SparkInvoicePaymentDetails, never>>) => SparkInvoicePaymentDetails;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SparkInvoicePaymentDetails>;
 }>;
 /**
  * Request to sync the wallet with the Spark network
@@ -1864,16 +2089,30 @@ export declare enum PaymentDetails_Tags {
 export declare const PaymentDetails: Readonly<{
     instanceOf: (obj: any) => obj is PaymentDetails;
     Spark: {
-        new (): {
+        new (inner: {
+            /**
+             * The invoice details if the payment fulfilled a spark invoice
+             */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+        }): {
             readonly tag: PaymentDetails_Tags.Spark;
+            readonly inner: Readonly<{
+                invoiceDetails: SparkInvoicePaymentDetails | undefined;
+            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
             readonly [uniffiTypeNameSymbol]: "PaymentDetails";
         };
-        "new"(): {
+        "new"(inner: {
+            /**
+             * The invoice details if the payment fulfilled a spark invoice
+             */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+        }): {
             readonly tag: PaymentDetails_Tags.Spark;
+            readonly inner: Readonly<{
+                invoiceDetails: SparkInvoicePaymentDetails | undefined;
+            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -1882,6 +2121,9 @@ export declare const PaymentDetails: Readonly<{
         };
         instanceOf(obj: any): obj is {
             readonly tag: PaymentDetails_Tags.Spark;
+            readonly inner: Readonly<{
+                invoiceDetails: SparkInvoicePaymentDetails | undefined;
+            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -1893,11 +2135,15 @@ export declare const PaymentDetails: Readonly<{
         new (inner: {
             metadata: TokenMetadata;
             txHash: string;
+            /**
+             * The invoice details if the payment fulfilled a spark invoice
+             */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Token;
             readonly inner: Readonly<{
                 metadata: TokenMetadata;
                 txHash: string;
+                invoiceDetails: SparkInvoicePaymentDetails | undefined;
             }>;
             /**
              * @private
@@ -1908,11 +2154,15 @@ export declare const PaymentDetails: Readonly<{
         "new"(inner: {
             metadata: TokenMetadata;
             txHash: string;
+            /**
+             * The invoice details if the payment fulfilled a spark invoice
+             */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Token;
             readonly inner: Readonly<{
                 metadata: TokenMetadata;
                 txHash: string;
+                invoiceDetails: SparkInvoicePaymentDetails | undefined;
             }>;
             /**
              * @private
@@ -1925,6 +2175,7 @@ export declare const PaymentDetails: Readonly<{
             readonly inner: Readonly<{
                 metadata: TokenMetadata;
                 txHash: string;
+                invoiceDetails: SparkInvoicePaymentDetails | undefined;
             }>;
             /**
              * @private
@@ -1955,6 +2206,9 @@ export declare const PaymentDetails: Readonly<{
             /**
              * Lnurl payment information if this was an lnurl payment.
              */ lnurlPayInfo: LnurlPayInfo | undefined;
+            /**
+             * Lnurl withdrawal information if this was an lnurl payment.
+             */ lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Lightning;
             readonly inner: Readonly<{
@@ -1964,6 +2218,7 @@ export declare const PaymentDetails: Readonly<{
                 paymentHash: string;
                 destinationPubkey: string;
                 lnurlPayInfo: LnurlPayInfo | undefined;
+                lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
             }>;
             /**
              * @private
@@ -1992,6 +2247,9 @@ export declare const PaymentDetails: Readonly<{
             /**
              * Lnurl payment information if this was an lnurl payment.
              */ lnurlPayInfo: LnurlPayInfo | undefined;
+            /**
+             * Lnurl withdrawal information if this was an lnurl payment.
+             */ lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Lightning;
             readonly inner: Readonly<{
@@ -2001,6 +2259,7 @@ export declare const PaymentDetails: Readonly<{
                 paymentHash: string;
                 destinationPubkey: string;
                 lnurlPayInfo: LnurlPayInfo | undefined;
+                lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
             }>;
             /**
              * @private
@@ -2017,6 +2276,7 @@ export declare const PaymentDetails: Readonly<{
                 paymentHash: string;
                 destinationPubkey: string;
                 lnurlPayInfo: LnurlPayInfo | undefined;
+                lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
             }>;
             /**
              * @private
@@ -2390,12 +2650,12 @@ export declare const ProvisionalPaymentDetails: Readonly<{
     Spark: {
         new (inner: {
             /**
-             * Spark receiver address
-             */ receiverAddress: string;
+             * Spark pay request being paid (either a Spark address or a Spark invoice)
+             */ payRequest: string;
         }): {
             readonly tag: ProvisionalPaymentDetails_Tags.Spark;
             readonly inner: Readonly<{
-                receiverAddress: string;
+                payRequest: string;
             }>;
             /**
              * @private
@@ -2405,12 +2665,12 @@ export declare const ProvisionalPaymentDetails: Readonly<{
         };
         "new"(inner: {
             /**
-             * Spark receiver address
-             */ receiverAddress: string;
+             * Spark pay request being paid (either a Spark address or a Spark invoice)
+             */ payRequest: string;
         }): {
             readonly tag: ProvisionalPaymentDetails_Tags.Spark;
             readonly inner: Readonly<{
-                receiverAddress: string;
+                payRequest: string;
             }>;
             /**
              * @private
@@ -2421,7 +2681,7 @@ export declare const ProvisionalPaymentDetails: Readonly<{
         instanceOf(obj: any): obj is {
             readonly tag: ProvisionalPaymentDetails_Tags.Spark;
             readonly inner: Readonly<{
-                receiverAddress: string;
+                payRequest: string;
             }>;
             /**
              * @private
@@ -2436,13 +2696,13 @@ export declare const ProvisionalPaymentDetails: Readonly<{
              * Token identifier
              */ tokenId: string;
             /**
-             * Spark receiver address
-             */ receiverAddress: string;
+             * Spark pay request being paid (either a Spark address or a Spark invoice)
+             */ payRequest: string;
         }): {
             readonly tag: ProvisionalPaymentDetails_Tags.Token;
             readonly inner: Readonly<{
                 tokenId: string;
-                receiverAddress: string;
+                payRequest: string;
             }>;
             /**
              * @private
@@ -2455,13 +2715,13 @@ export declare const ProvisionalPaymentDetails: Readonly<{
              * Token identifier
              */ tokenId: string;
             /**
-             * Spark receiver address
-             */ receiverAddress: string;
+             * Spark pay request being paid (either a Spark address or a Spark invoice)
+             */ payRequest: string;
         }): {
             readonly tag: ProvisionalPaymentDetails_Tags.Token;
             readonly inner: Readonly<{
                 tokenId: string;
-                receiverAddress: string;
+                payRequest: string;
             }>;
             /**
              * @private
@@ -2473,7 +2733,7 @@ export declare const ProvisionalPaymentDetails: Readonly<{
             readonly tag: ProvisionalPaymentDetails_Tags.Token;
             readonly inner: Readonly<{
                 tokenId: string;
-                receiverAddress: string;
+                payRequest: string;
             }>;
             /**
              * @private
@@ -2486,6 +2746,7 @@ export declare const ProvisionalPaymentDetails: Readonly<{
 export type ProvisionalPaymentDetails = InstanceType<(typeof ProvisionalPaymentDetails)[keyof Omit<typeof ProvisionalPaymentDetails, 'instanceOf'>]>;
 export declare enum ReceivePaymentMethod_Tags {
     SparkAddress = "SparkAddress",
+    SparkInvoice = "SparkInvoice",
     BitcoinAddress = "BitcoinAddress",
     Bolt11Invoice = "Bolt11Invoice"
 }
@@ -2510,6 +2771,87 @@ export declare const ReceivePaymentMethod: Readonly<{
         };
         instanceOf(obj: any): obj is {
             readonly tag: ReceivePaymentMethod_Tags.SparkAddress;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ReceivePaymentMethod";
+        };
+    };
+    SparkInvoice: {
+        new (inner: {
+            /**
+             * Amount to receive. Denominated in sats if token identifier is empty, otherwise in the token base units
+             */ amount: U128 | undefined;
+            /**
+             * The presence of this field indicates that the payment is for a token
+             * If empty, it is a Bitcoin payment
+             */ tokenIdentifier: string | undefined;
+            /**
+             * The expiry time of the invoice in seconds since the Unix epoch
+             */ expiryTime: /*u64*/ bigint | undefined;
+            /**
+             * A description to embed in the invoice.
+             */ description: string | undefined;
+            /**
+             * If set, the invoice may only be fulfilled by a payer with this public key
+             */ senderPublicKey: string | undefined;
+        }): {
+            readonly tag: ReceivePaymentMethod_Tags.SparkInvoice;
+            readonly inner: Readonly<{
+                amount: U128 | undefined;
+                tokenIdentifier: string | undefined;
+                expiryTime: /*u64*/ bigint | undefined;
+                description: string | undefined;
+                senderPublicKey: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ReceivePaymentMethod";
+        };
+        "new"(inner: {
+            /**
+             * Amount to receive. Denominated in sats if token identifier is empty, otherwise in the token base units
+             */ amount: U128 | undefined;
+            /**
+             * The presence of this field indicates that the payment is for a token
+             * If empty, it is a Bitcoin payment
+             */ tokenIdentifier: string | undefined;
+            /**
+             * The expiry time of the invoice in seconds since the Unix epoch
+             */ expiryTime: /*u64*/ bigint | undefined;
+            /**
+             * A description to embed in the invoice.
+             */ description: string | undefined;
+            /**
+             * If set, the invoice may only be fulfilled by a payer with this public key
+             */ senderPublicKey: string | undefined;
+        }): {
+            readonly tag: ReceivePaymentMethod_Tags.SparkInvoice;
+            readonly inner: Readonly<{
+                amount: U128 | undefined;
+                tokenIdentifier: string | undefined;
+                expiryTime: /*u64*/ bigint | undefined;
+                description: string | undefined;
+                senderPublicKey: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ReceivePaymentMethod";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ReceivePaymentMethod_Tags.SparkInvoice;
+            readonly inner: Readonly<{
+                amount: U128 | undefined;
+                tokenIdentifier: string | undefined;
+                expiryTime: /*u64*/ bigint | undefined;
+                description: string | undefined;
+                senderPublicKey: string | undefined;
+            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -3684,7 +4026,8 @@ export type Seed = InstanceType<(typeof Seed)[keyof Omit<typeof Seed, 'instanceO
 export declare enum SendPaymentMethod_Tags {
     BitcoinAddress = "BitcoinAddress",
     Bolt11Invoice = "Bolt11Invoice",
-    SparkAddress = "SparkAddress"
+    SparkAddress = "SparkAddress",
+    SparkInvoice = "SparkInvoice"
 }
 export declare const SendPaymentMethod: Readonly<{
     instanceOf: (obj: any) => obj is SendPaymentMethod;
@@ -3832,6 +4175,67 @@ export declare const SendPaymentMethod: Readonly<{
             readonly tag: SendPaymentMethod_Tags.SparkAddress;
             readonly inner: Readonly<{
                 address: string;
+                fee: U128;
+                tokenIdentifier: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SendPaymentMethod";
+        };
+    };
+    SparkInvoice: {
+        new (inner: {
+            sparkInvoiceDetails: SparkInvoiceDetails;
+            /**
+             * Fee to pay for the transaction
+             * Denominated in sats if token identifier is empty, otherwise in the token base units
+             */ fee: U128;
+            /**
+             * The presence of this field indicates that the payment is for a token
+             * If empty, it is a Bitcoin payment
+             */ tokenIdentifier: string | undefined;
+        }): {
+            readonly tag: SendPaymentMethod_Tags.SparkInvoice;
+            readonly inner: Readonly<{
+                sparkInvoiceDetails: SparkInvoiceDetails;
+                fee: U128;
+                tokenIdentifier: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SendPaymentMethod";
+        };
+        "new"(inner: {
+            sparkInvoiceDetails: SparkInvoiceDetails;
+            /**
+             * Fee to pay for the transaction
+             * Denominated in sats if token identifier is empty, otherwise in the token base units
+             */ fee: U128;
+            /**
+             * The presence of this field indicates that the payment is for a token
+             * If empty, it is a Bitcoin payment
+             */ tokenIdentifier: string | undefined;
+        }): {
+            readonly tag: SendPaymentMethod_Tags.SparkInvoice;
+            readonly inner: Readonly<{
+                sparkInvoiceDetails: SparkInvoiceDetails;
+                fee: U128;
+                tokenIdentifier: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SendPaymentMethod";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SendPaymentMethod_Tags.SparkInvoice;
+            readonly inner: Readonly<{
+                sparkInvoiceDetails: SparkInvoiceDetails;
                 fee: U128;
                 tokenIdentifier: string | undefined;
             }>;
@@ -4385,6 +4789,14 @@ export interface BreezSdkInterface {
     checkLightningAddressAvailable(req: CheckLightningAddressRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
+    /**
+     * Verifies a message signature against the provided public key. The message
+     * is SHA256 hashed before verification. The signature can be hex encoded
+     * in either DER or compact format.
+     */
+    checkMessage(request: CheckMessageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<CheckMessageResponse>;
     claimDeposit(request: ClaimDepositRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ClaimDepositResponse>;
@@ -4465,6 +4877,36 @@ export interface BreezSdkInterface {
     lnurlPay(request: LnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LnurlPayResponse>;
+    /**
+     * Performs an LNURL withdraw operation for the amount of satoshis to
+     * withdraw and the LNURL withdraw request details. The LNURL withdraw request
+     * details can be obtained from calling [`BreezSdk::parse`].
+     *
+     * The method generates a Lightning invoice for the withdraw amount, stores
+     * the LNURL withdraw metadata, and performs the LNURL withdraw using  the generated
+     * invoice.
+     *
+     * If the `completion_timeout_secs` parameter is provided and greater than 0, the
+     * method will wait for the payment to be completed within that period. If the
+     * withdraw is completed within the timeout, the `payment` field in the response
+     * will be set with the payment details. If the `completion_timeout_secs`
+     * parameter is not provided or set to 0, the method will not wait for the payment
+     * to be completed. If the withdraw is not completed within the
+     * timeout, the `payment` field will be empty.
+     *
+     * # Arguments
+     *
+     * * `request` - The LNURL withdraw request
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `LnurlWithdrawResponse` - The payment details if the withdraw request was successful
+     * * `SdkError` - If there was an error during the withdraw process
+     */
+    lnurlWithdraw(request: LnurlWithdrawRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<LnurlWithdrawResponse>;
     parse(input: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<InputType>;
@@ -4500,6 +4942,14 @@ export interface BreezSdkInterface {
     sendPayment(request: SendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SendPaymentResponse>;
+    /**
+     * Signs a message with the wallet's identity key. The message is SHA256
+     * hashed before signing. The returned signature will be hex encoded in
+     * DER format by default, or compact format if specified.
+     */
+    signMessage(request: SignMessageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SignMessageResponse>;
     /**
      * Synchronizes the wallet with the Spark network
      */
@@ -4536,6 +4986,14 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     checkLightningAddressAvailable(req: CheckLightningAddressRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
+    /**
+     * Verifies a message signature against the provided public key. The message
+     * is SHA256 hashed before verification. The signature can be hex encoded
+     * in either DER or compact format.
+     */
+    checkMessage(request: CheckMessageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<CheckMessageResponse>;
     claimDeposit(request: ClaimDepositRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ClaimDepositResponse>;
@@ -4616,6 +5074,36 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     lnurlPay(request: LnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LnurlPayResponse>;
+    /**
+     * Performs an LNURL withdraw operation for the amount of satoshis to
+     * withdraw and the LNURL withdraw request details. The LNURL withdraw request
+     * details can be obtained from calling [`BreezSdk::parse`].
+     *
+     * The method generates a Lightning invoice for the withdraw amount, stores
+     * the LNURL withdraw metadata, and performs the LNURL withdraw using  the generated
+     * invoice.
+     *
+     * If the `completion_timeout_secs` parameter is provided and greater than 0, the
+     * method will wait for the payment to be completed within that period. If the
+     * withdraw is completed within the timeout, the `payment` field in the response
+     * will be set with the payment details. If the `completion_timeout_secs`
+     * parameter is not provided or set to 0, the method will not wait for the payment
+     * to be completed. If the withdraw is not completed within the
+     * timeout, the `payment` field will be empty.
+     *
+     * # Arguments
+     *
+     * * `request` - The LNURL withdraw request
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `LnurlWithdrawResponse` - The payment details if the withdraw request was successful
+     * * `SdkError` - If there was an error during the withdraw process
+     */
+    lnurlWithdraw(request: LnurlWithdrawRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<LnurlWithdrawResponse>;
     parse(input: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<InputType>;
@@ -4651,6 +5139,14 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     sendPayment(request: SendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SendPaymentResponse>;
+    /**
+     * Signs a message with the wallet's identity key. The message is SHA256
+     * hashed before signing. The returned signature will be hex encoded in
+     * DER format by default, or compact format if specified.
+     */
+    signMessage(request: SignMessageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SignMessageResponse>;
     /**
      * Synchronizes the wallet with the Spark network
      */
@@ -5136,6 +5632,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): CheckLightningAddressRequest;
             lower(value: CheckLightningAddressRequest): UniffiByteArray;
         };
+        FfiConverterTypeCheckMessageRequest: {
+            read(from: RustBuffer): CheckMessageRequest;
+            write(value: CheckMessageRequest, into: RustBuffer): void;
+            allocationSize(value: CheckMessageRequest): number;
+            lift(value: UniffiByteArray): CheckMessageRequest;
+            lower(value: CheckMessageRequest): UniffiByteArray;
+        };
+        FfiConverterTypeCheckMessageResponse: {
+            read(from: RustBuffer): CheckMessageResponse;
+            write(value: CheckMessageResponse, into: RustBuffer): void;
+            allocationSize(value: CheckMessageResponse): number;
+            lift(value: UniffiByteArray): CheckMessageResponse;
+            lower(value: CheckMessageResponse): UniffiByteArray;
+        };
         FfiConverterTypeClaimDepositRequest: {
             read(from: RustBuffer): ClaimDepositRequest;
             write(value: ClaimDepositRequest, into: RustBuffer): void;
@@ -5310,6 +5820,27 @@ declare const _default: Readonly<{
             allocationSize(value: LnurlPayResponse): number;
             lift(value: UniffiByteArray): LnurlPayResponse;
             lower(value: LnurlPayResponse): UniffiByteArray;
+        };
+        FfiConverterTypeLnurlWithdrawInfo: {
+            read(from: RustBuffer): LnurlWithdrawInfo;
+            write(value: LnurlWithdrawInfo, into: RustBuffer): void;
+            allocationSize(value: LnurlWithdrawInfo): number;
+            lift(value: UniffiByteArray): LnurlWithdrawInfo;
+            lower(value: LnurlWithdrawInfo): UniffiByteArray;
+        };
+        FfiConverterTypeLnurlWithdrawRequest: {
+            read(from: RustBuffer): LnurlWithdrawRequest;
+            write(value: LnurlWithdrawRequest, into: RustBuffer): void;
+            allocationSize(value: LnurlWithdrawRequest): number;
+            lift(value: UniffiByteArray): LnurlWithdrawRequest;
+            lower(value: LnurlWithdrawRequest): UniffiByteArray;
+        };
+        FfiConverterTypeLnurlWithdrawResponse: {
+            read(from: RustBuffer): LnurlWithdrawResponse;
+            write(value: LnurlWithdrawResponse, into: RustBuffer): void;
+            allocationSize(value: LnurlWithdrawResponse): number;
+            lift(value: UniffiByteArray): LnurlWithdrawResponse;
+            lower(value: LnurlWithdrawResponse): UniffiByteArray;
         };
         FfiConverterTypeLogEntry: {
             read(from: RustBuffer): LogEntry;
@@ -5515,6 +6046,27 @@ declare const _default: Readonly<{
             allocationSize(value: SendPaymentResponse): number;
             lift(value: UniffiByteArray): SendPaymentResponse;
             lower(value: SendPaymentResponse): UniffiByteArray;
+        };
+        FfiConverterTypeSignMessageRequest: {
+            read(from: RustBuffer): SignMessageRequest;
+            write(value: SignMessageRequest, into: RustBuffer): void;
+            allocationSize(value: SignMessageRequest): number;
+            lift(value: UniffiByteArray): SignMessageRequest;
+            lower(value: SignMessageRequest): UniffiByteArray;
+        };
+        FfiConverterTypeSignMessageResponse: {
+            read(from: RustBuffer): SignMessageResponse;
+            write(value: SignMessageResponse, into: RustBuffer): void;
+            allocationSize(value: SignMessageResponse): number;
+            lift(value: UniffiByteArray): SignMessageResponse;
+            lower(value: SignMessageResponse): UniffiByteArray;
+        };
+        FfiConverterTypeSparkInvoicePaymentDetails: {
+            read(from: RustBuffer): SparkInvoicePaymentDetails;
+            write(value: SparkInvoicePaymentDetails, into: RustBuffer): void;
+            allocationSize(value: SparkInvoicePaymentDetails): number;
+            lift(value: UniffiByteArray): SparkInvoicePaymentDetails;
+            lower(value: SparkInvoicePaymentDetails): UniffiByteArray;
         };
         FfiConverterTypeStorage: FfiConverterObjectWithCallbacks<Storage>;
         FfiConverterTypeSyncWalletRequest: {
