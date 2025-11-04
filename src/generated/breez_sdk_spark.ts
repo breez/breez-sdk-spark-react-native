@@ -46,6 +46,7 @@ import {
   type Rate,
   type RestClient,
   type SparkInvoiceDetails,
+  type SyncStorage,
   InputType,
   SuccessAction,
   SuccessActionProcessed,
@@ -106,6 +107,7 @@ const {
   FfiConverterTypeSparkInvoiceDetails,
   FfiConverterTypeSuccessAction,
   FfiConverterTypeSuccessActionProcessed,
+  FfiConverterTypeSyncStorage,
 } = uniffiBreezSdkCommonModule.converters;
 const uniffiCaller = new UniffiRustCaller();
 
@@ -186,6 +188,22 @@ export function defaultStorage(dataDir: string): Storage /*throws*/ {
       ),
       /*caller:*/ (callStatus) => {
         return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_default_storage(
+          FfiConverterString.lower(dataDir),
+          callStatus
+        );
+      },
+      /*liftString:*/ FfiConverterString.lift
+    )
+  );
+}
+export function defaultSyncStorage(dataDir: string): SyncStorage /*throws*/ {
+  return FfiConverterTypeSyncStorage.lift(
+    uniffiCaller.rustCallWithError(
+      /*liftError:*/ FfiConverterTypeSdkError.lift.bind(
+        FfiConverterTypeSdkError
+      ),
+      /*caller:*/ (callStatus) => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_default_sync_storage(
           FfiConverterString.lower(dataDir),
           callStatus
         );
@@ -648,6 +666,10 @@ export type Config = {
    * Set this to false in order to prevent their use.
    */
   useDefaultExternalInputParsers: boolean;
+  /**
+   * Url to use for the real-time sync server. Defaults to the Breez real-time sync server.
+   */
+  realTimeSyncServerUrl: string | undefined;
 };
 
 /**
@@ -692,6 +714,7 @@ const FfiConverterTypeConfig = (() => {
         externalInputParsers:
           FfiConverterOptionalArrayTypeExternalInputParser.read(from),
         useDefaultExternalInputParsers: FfiConverterBool.read(from),
+        realTimeSyncServerUrl: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -706,6 +729,7 @@ const FfiConverterTypeConfig = (() => {
         into
       );
       FfiConverterBool.write(value.useDefaultExternalInputParsers, into);
+      FfiConverterOptionalString.write(value.realTimeSyncServerUrl, into);
     }
     allocationSize(value: TypeName): number {
       return (
@@ -718,7 +742,8 @@ const FfiConverterTypeConfig = (() => {
         FfiConverterOptionalArrayTypeExternalInputParser.allocationSize(
           value.externalInputParsers
         ) +
-        FfiConverterBool.allocationSize(value.useDefaultExternalInputParsers)
+        FfiConverterBool.allocationSize(value.useDefaultExternalInputParsers) +
+        FfiConverterOptionalString.allocationSize(value.realTimeSyncServerUrl)
       );
     }
   }
@@ -4366,7 +4391,7 @@ export const DepositClaimError = (() => {
     inner: Readonly<{
       tx: string;
       vout: /*u32*/ number;
-      maxFee: Fee;
+      maxFee: Fee | undefined;
       actualFee: /*u64*/ bigint;
     }>;
   };
@@ -4384,13 +4409,13 @@ export const DepositClaimError = (() => {
     readonly inner: Readonly<{
       tx: string;
       vout: /*u32*/ number;
-      maxFee: Fee;
+      maxFee: Fee | undefined;
       actualFee: /*u64*/ bigint;
     }>;
     constructor(inner: {
       tx: string;
       vout: /*u32*/ number;
-      maxFee: Fee;
+      maxFee: Fee | undefined;
       actualFee: /*u64*/ bigint;
     }) {
       super('DepositClaimError', 'DepositClaimFeeExceeded');
@@ -4400,7 +4425,7 @@ export const DepositClaimError = (() => {
     static new(inner: {
       tx: string;
       vout: /*u32*/ number;
-      maxFee: Fee;
+      maxFee: Fee | undefined;
       actualFee: /*u64*/ bigint;
     }): DepositClaimFeeExceeded_ {
       return new DepositClaimFeeExceeded_(inner);
@@ -4492,7 +4517,7 @@ const FfiConverterTypeDepositClaimError = (() => {
           return new DepositClaimError.DepositClaimFeeExceeded({
             tx: FfiConverterString.read(from),
             vout: FfiConverterUInt32.read(from),
-            maxFee: FfiConverterTypeFee.read(from),
+            maxFee: FfiConverterOptionalTypeFee.read(from),
             actualFee: FfiConverterUInt64.read(from),
           });
         case 2:
@@ -4515,7 +4540,7 @@ const FfiConverterTypeDepositClaimError = (() => {
           const inner = value.inner;
           FfiConverterString.write(inner.tx, into);
           FfiConverterUInt32.write(inner.vout, into);
-          FfiConverterTypeFee.write(inner.maxFee, into);
+          FfiConverterOptionalTypeFee.write(inner.maxFee, into);
           FfiConverterUInt64.write(inner.actualFee, into);
           return;
         }
@@ -4544,7 +4569,7 @@ const FfiConverterTypeDepositClaimError = (() => {
           let size = ordinalConverter.allocationSize(1);
           size += FfiConverterString.allocationSize(inner.tx);
           size += FfiConverterUInt32.allocationSize(inner.vout);
-          size += FfiConverterTypeFee.allocationSize(inner.maxFee);
+          size += FfiConverterOptionalTypeFee.allocationSize(inner.maxFee);
           size += FfiConverterUInt64.allocationSize(inner.actualFee);
           return size;
         }
@@ -6342,7 +6367,7 @@ export const SdkError = (() => {
     inner: Readonly<{
       tx: string;
       vout: /*u32*/ number;
-      maxFee: Fee;
+      maxFee: Fee | undefined;
       actualFee: /*u64*/ bigint;
     }>;
   };
@@ -6360,13 +6385,13 @@ export const SdkError = (() => {
     readonly inner: Readonly<{
       tx: string;
       vout: /*u32*/ number;
-      maxFee: Fee;
+      maxFee: Fee | undefined;
       actualFee: /*u64*/ bigint;
     }>;
     constructor(inner: {
       tx: string;
       vout: /*u32*/ number;
-      maxFee: Fee;
+      maxFee: Fee | undefined;
       actualFee: /*u64*/ bigint;
     }) {
       super('SdkError', 'DepositClaimFeeExceeded');
@@ -6376,7 +6401,7 @@ export const SdkError = (() => {
     static new(inner: {
       tx: string;
       vout: /*u32*/ number;
-      maxFee: Fee;
+      maxFee: Fee | undefined;
       actualFee: /*u64*/ bigint;
     }): DepositClaimFeeExceeded_ {
       return new DepositClaimFeeExceeded_(inner);
@@ -6395,7 +6420,7 @@ export const SdkError = (() => {
     ): Readonly<{
       tx: string;
       vout: /*u32*/ number;
-      maxFee: Fee;
+      maxFee: Fee | undefined;
       actualFee: /*u64*/ bigint;
     }> {
       return obj.inner;
@@ -6559,7 +6584,7 @@ const FfiConverterTypeSdkError = (() => {
           return new SdkError.DepositClaimFeeExceeded({
             tx: FfiConverterString.read(from),
             vout: FfiConverterUInt32.read(from),
-            maxFee: FfiConverterTypeFee.read(from),
+            maxFee: FfiConverterOptionalTypeFee.read(from),
             actualFee: FfiConverterUInt64.read(from),
           });
         case 8:
@@ -6618,7 +6643,7 @@ const FfiConverterTypeSdkError = (() => {
           const inner = value.inner;
           FfiConverterString.write(inner.tx, into);
           FfiConverterUInt32.write(inner.vout, into);
-          FfiConverterTypeFee.write(inner.maxFee, into);
+          FfiConverterOptionalTypeFee.write(inner.maxFee, into);
           FfiConverterUInt64.write(inner.actualFee, into);
           return;
         }
@@ -6689,7 +6714,7 @@ const FfiConverterTypeSdkError = (() => {
           let size = ordinalConverter.allocationSize(7);
           size += FfiConverterString.allocationSize(inner.tx);
           size += FfiConverterUInt32.allocationSize(inner.vout);
-          size += FfiConverterTypeFee.allocationSize(inner.maxFee);
+          size += FfiConverterOptionalTypeFee.allocationSize(inner.maxFee);
           size += FfiConverterUInt64.allocationSize(inner.actualFee);
           return size;
         }
@@ -6723,8 +6748,9 @@ const FfiConverterTypeSdkError = (() => {
 // Enum: SdkEvent
 export enum SdkEvent_Tags {
   Synced = 'Synced',
-  ClaimDepositsFailed = 'ClaimDepositsFailed',
-  ClaimDepositsSucceeded = 'ClaimDepositsSucceeded',
+  DataSynced = 'DataSynced',
+  UnclaimedDeposits = 'UnclaimedDeposits',
+  ClaimedDeposits = 'ClaimedDeposits',
   PaymentSucceeded = 'PaymentSucceeded',
   PaymentFailed = 'PaymentFailed',
 }
@@ -6759,70 +6785,108 @@ export const SdkEvent = (() => {
     }
   }
 
-  type ClaimDepositsFailed__interface = {
-    tag: SdkEvent_Tags.ClaimDepositsFailed;
+  type DataSynced__interface = {
+    tag: SdkEvent_Tags.DataSynced;
+    inner: Readonly<{ didPullNewRecords: boolean }>;
+  };
+
+  /**
+   * Emitted when data was pushed and/or pulled to/from real-time sync storage.
+   */
+  class DataSynced_ extends UniffiEnum implements DataSynced__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SdkEvent';
+    readonly tag = SdkEvent_Tags.DataSynced;
+    readonly inner: Readonly<{ didPullNewRecords: boolean }>;
+    constructor(inner: {
+      /**
+       * Value indicating whether new data was pulled through real-time sync.
+       */ didPullNewRecords: boolean;
+    }) {
+      super('SdkEvent', 'DataSynced');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * Value indicating whether new data was pulled through real-time sync.
+       */ didPullNewRecords: boolean;
+    }): DataSynced_ {
+      return new DataSynced_(inner);
+    }
+
+    static instanceOf(obj: any): obj is DataSynced_ {
+      return obj.tag === SdkEvent_Tags.DataSynced;
+    }
+  }
+
+  type UnclaimedDeposits__interface = {
+    tag: SdkEvent_Tags.UnclaimedDeposits;
     inner: Readonly<{ unclaimedDeposits: Array<DepositInfo> }>;
   };
 
   /**
-   * Emitted when the wallet failed to claim some deposits
+   * Emitted when the SDK was unable to claim deposits
    */
-  class ClaimDepositsFailed_
+  class UnclaimedDeposits_
     extends UniffiEnum
-    implements ClaimDepositsFailed__interface
+    implements UnclaimedDeposits__interface
   {
     /**
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
     readonly [uniffiTypeNameSymbol] = 'SdkEvent';
-    readonly tag = SdkEvent_Tags.ClaimDepositsFailed;
+    readonly tag = SdkEvent_Tags.UnclaimedDeposits;
     readonly inner: Readonly<{ unclaimedDeposits: Array<DepositInfo> }>;
     constructor(inner: { unclaimedDeposits: Array<DepositInfo> }) {
-      super('SdkEvent', 'ClaimDepositsFailed');
+      super('SdkEvent', 'UnclaimedDeposits');
       this.inner = Object.freeze(inner);
     }
 
     static new(inner: {
       unclaimedDeposits: Array<DepositInfo>;
-    }): ClaimDepositsFailed_ {
-      return new ClaimDepositsFailed_(inner);
+    }): UnclaimedDeposits_ {
+      return new UnclaimedDeposits_(inner);
     }
 
-    static instanceOf(obj: any): obj is ClaimDepositsFailed_ {
-      return obj.tag === SdkEvent_Tags.ClaimDepositsFailed;
+    static instanceOf(obj: any): obj is UnclaimedDeposits_ {
+      return obj.tag === SdkEvent_Tags.UnclaimedDeposits;
     }
   }
 
-  type ClaimDepositsSucceeded__interface = {
-    tag: SdkEvent_Tags.ClaimDepositsSucceeded;
+  type ClaimedDeposits__interface = {
+    tag: SdkEvent_Tags.ClaimedDeposits;
     inner: Readonly<{ claimedDeposits: Array<DepositInfo> }>;
   };
 
-  class ClaimDepositsSucceeded_
+  class ClaimedDeposits_
     extends UniffiEnum
-    implements ClaimDepositsSucceeded__interface
+    implements ClaimedDeposits__interface
   {
     /**
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
     readonly [uniffiTypeNameSymbol] = 'SdkEvent';
-    readonly tag = SdkEvent_Tags.ClaimDepositsSucceeded;
+    readonly tag = SdkEvent_Tags.ClaimedDeposits;
     readonly inner: Readonly<{ claimedDeposits: Array<DepositInfo> }>;
     constructor(inner: { claimedDeposits: Array<DepositInfo> }) {
-      super('SdkEvent', 'ClaimDepositsSucceeded');
+      super('SdkEvent', 'ClaimedDeposits');
       this.inner = Object.freeze(inner);
     }
 
     static new(inner: {
       claimedDeposits: Array<DepositInfo>;
-    }): ClaimDepositsSucceeded_ {
-      return new ClaimDepositsSucceeded_(inner);
+    }): ClaimedDeposits_ {
+      return new ClaimedDeposits_(inner);
     }
 
-    static instanceOf(obj: any): obj is ClaimDepositsSucceeded_ {
-      return obj.tag === SdkEvent_Tags.ClaimDepositsSucceeded;
+    static instanceOf(obj: any): obj is ClaimedDeposits_ {
+      return obj.tag === SdkEvent_Tags.ClaimedDeposits;
     }
   }
 
@@ -6890,8 +6954,9 @@ export const SdkEvent = (() => {
   return Object.freeze({
     instanceOf,
     Synced: Synced_,
-    ClaimDepositsFailed: ClaimDepositsFailed_,
-    ClaimDepositsSucceeded: ClaimDepositsSucceeded_,
+    DataSynced: DataSynced_,
+    UnclaimedDeposits: UnclaimedDeposits_,
+    ClaimedDeposits: ClaimedDeposits_,
     PaymentSucceeded: PaymentSucceeded_,
     PaymentFailed: PaymentFailed_,
   });
@@ -6915,18 +6980,22 @@ const FfiConverterTypeSdkEvent = (() => {
         case 1:
           return new SdkEvent.Synced();
         case 2:
-          return new SdkEvent.ClaimDepositsFailed({
-            unclaimedDeposits: FfiConverterArrayTypeDepositInfo.read(from),
+          return new SdkEvent.DataSynced({
+            didPullNewRecords: FfiConverterBool.read(from),
           });
         case 3:
-          return new SdkEvent.ClaimDepositsSucceeded({
-            claimedDeposits: FfiConverterArrayTypeDepositInfo.read(from),
+          return new SdkEvent.UnclaimedDeposits({
+            unclaimedDeposits: FfiConverterArrayTypeDepositInfo.read(from),
           });
         case 4:
+          return new SdkEvent.ClaimedDeposits({
+            claimedDeposits: FfiConverterArrayTypeDepositInfo.read(from),
+          });
+        case 5:
           return new SdkEvent.PaymentSucceeded({
             payment: FfiConverterTypePayment.read(from),
           });
-        case 5:
+        case 6:
           return new SdkEvent.PaymentFailed({
             payment: FfiConverterTypePayment.read(from),
           });
@@ -6940,26 +7009,32 @@ const FfiConverterTypeSdkEvent = (() => {
           ordinalConverter.write(1, into);
           return;
         }
-        case SdkEvent_Tags.ClaimDepositsFailed: {
+        case SdkEvent_Tags.DataSynced: {
           ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterBool.write(inner.didPullNewRecords, into);
+          return;
+        }
+        case SdkEvent_Tags.UnclaimedDeposits: {
+          ordinalConverter.write(3, into);
           const inner = value.inner;
           FfiConverterArrayTypeDepositInfo.write(inner.unclaimedDeposits, into);
           return;
         }
-        case SdkEvent_Tags.ClaimDepositsSucceeded: {
-          ordinalConverter.write(3, into);
+        case SdkEvent_Tags.ClaimedDeposits: {
+          ordinalConverter.write(4, into);
           const inner = value.inner;
           FfiConverterArrayTypeDepositInfo.write(inner.claimedDeposits, into);
           return;
         }
         case SdkEvent_Tags.PaymentSucceeded: {
-          ordinalConverter.write(4, into);
+          ordinalConverter.write(5, into);
           const inner = value.inner;
           FfiConverterTypePayment.write(inner.payment, into);
           return;
         }
         case SdkEvent_Tags.PaymentFailed: {
-          ordinalConverter.write(5, into);
+          ordinalConverter.write(6, into);
           const inner = value.inner;
           FfiConverterTypePayment.write(inner.payment, into);
           return;
@@ -6974,17 +7049,23 @@ const FfiConverterTypeSdkEvent = (() => {
         case SdkEvent_Tags.Synced: {
           return ordinalConverter.allocationSize(1);
         }
-        case SdkEvent_Tags.ClaimDepositsFailed: {
+        case SdkEvent_Tags.DataSynced: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterBool.allocationSize(inner.didPullNewRecords);
+          return size;
+        }
+        case SdkEvent_Tags.UnclaimedDeposits: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
           size += FfiConverterArrayTypeDepositInfo.allocationSize(
             inner.unclaimedDeposits
           );
           return size;
         }
-        case SdkEvent_Tags.ClaimDepositsSucceeded: {
+        case SdkEvent_Tags.ClaimedDeposits: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(3);
+          let size = ordinalConverter.allocationSize(4);
           size += FfiConverterArrayTypeDepositInfo.allocationSize(
             inner.claimedDeposits
           );
@@ -6992,13 +7073,13 @@ const FfiConverterTypeSdkEvent = (() => {
         }
         case SdkEvent_Tags.PaymentSucceeded: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(4);
+          let size = ordinalConverter.allocationSize(5);
           size += FfiConverterTypePayment.allocationSize(inner.payment);
           return size;
         }
         case SdkEvent_Tags.PaymentFailed: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(5);
+          let size = ordinalConverter.allocationSize(6);
           size += FfiConverterTypePayment.allocationSize(inner.payment);
           return size;
         }
@@ -10408,6 +10489,10 @@ export interface SdkBuilderInterface {
     paymentObserver: PaymentObserver,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void>;
+  withRealTimeSyncStorage(
+    storage: SyncStorage,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void>;
   /**
    * Sets the REST chain service to be used by the SDK.
    * Arguments:
@@ -10669,6 +10754,40 @@ export class SdkBuilder
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_payment_observer(
             uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
             FfiConverterTypePaymentObserver.lower(paymentObserver)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async withRealTimeSyncStorage(
+    storage: SyncStorage,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_real_time_sync_storage(
+            uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
+            FfiConverterTypeSyncStorage.lower(storage)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -12375,6 +12494,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_default_sync_storage() !==
+    62413
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_default_sync_storage'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_init_logging() !==
     8518
   ) {
@@ -12684,6 +12811,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_payment_observer'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_real_time_sync_storage() !==
+    36431
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_real_time_sync_storage'
     );
   }
   if (

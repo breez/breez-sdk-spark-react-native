@@ -50,6 +50,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(ptr: bigint, keySetType: Uint8Array, useAddressIndex: number, accountNumber: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_lnurl_client(ptr: bigint, lnurlClient: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_payment_observer(ptr: bigint, paymentObserver: bigint): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_real_time_sync_storage(ptr: bigint, storage: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_rest_chain_service(ptr: bigint, url: Uint8Array, credentials: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_clone_storage(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_free_storage(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): void;
@@ -68,6 +69,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_func_connect(request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_default_config(network: Uint8Array, uniffi_out_err: UniffiRustCallStatus): Uint8Array;
     ubrn_uniffi_breez_sdk_spark_fn_func_default_storage(dataDir: Uint8Array, uniffi_out_err: UniffiRustCallStatus): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_func_default_sync_storage(dataDir: Uint8Array, uniffi_out_err: UniffiRustCallStatus): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_init_logging(logDir: Uint8Array, appLogger: Uint8Array, logFilter: Uint8Array, uniffi_out_err: UniffiRustCallStatus): void;
     ubrn_ffi_breez_sdk_spark_rust_future_poll_u8(handle: bigint, callback: UniffiRustFutureContinuationCallback, callbackData: bigint): void;
     ubrn_ffi_breez_sdk_spark_rust_future_cancel_u8(handle: bigint): void;
@@ -124,6 +126,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_checksum_func_connect(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_func_default_config(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_func_default_storage(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_func_default_sync_storage(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_func_init_logging(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_utxos(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_status(): number;
@@ -163,6 +166,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_lnurl_client(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_payment_observer(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_real_time_sync_storage(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_cached_item(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_cached_item(): number;

@@ -12,6 +12,18 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_common_fn_method_restclient_get_request(ptr: bigint, url: Uint8Array, headers: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_common_fn_method_restclient_post_request(ptr: bigint, url: Uint8Array, headers: Uint8Array, body: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_common_fn_method_restclient_delete_request(ptr: bigint, url: Uint8Array, headers: Uint8Array, body: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_common_fn_clone_syncstorage(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): bigint;
+    ubrn_uniffi_breez_sdk_common_fn_free_syncstorage(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): void;
+    ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_add_outgoing_change(ptr: bigint, record: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_complete_outgoing_sync(ptr: bigint, record: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_get_pending_outgoing_changes(ptr: bigint, limit: number): bigint;
+    ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_get_last_revision(ptr: bigint): bigint;
+    ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_insert_incoming_records(ptr: bigint, records: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_delete_incoming_record(ptr: bigint, record: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_rebase_pending_outgoing_records(ptr: bigint, revision: bigint): bigint;
+    ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_get_incoming_records(ptr: bigint, limit: number): bigint;
+    ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_get_latest_outgoing_change(ptr: bigint): bigint;
+    ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_update_record_from_incoming(ptr: bigint, record: Uint8Array): bigint;
     ubrn_ffi_breez_sdk_common_rust_future_poll_u8(handle: bigint, callback: UniffiRustFutureContinuationCallback, callbackData: bigint): void;
     ubrn_ffi_breez_sdk_common_rust_future_cancel_u8(handle: bigint): void;
     ubrn_ffi_breez_sdk_common_rust_future_free_u8(handle: bigint): void;
@@ -69,11 +81,23 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_common_checksum_method_restclient_get_request(): number;
     ubrn_uniffi_breez_sdk_common_checksum_method_restclient_post_request(): number;
     ubrn_uniffi_breez_sdk_common_checksum_method_restclient_delete_request(): number;
+    ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_add_outgoing_change(): number;
+    ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_complete_outgoing_sync(): number;
+    ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_get_pending_outgoing_changes(): number;
+    ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_get_last_revision(): number;
+    ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_insert_incoming_records(): number;
+    ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_delete_incoming_record(): number;
+    ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_rebase_pending_outgoing_records(): number;
+    ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_get_incoming_records(): number;
+    ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_get_latest_outgoing_change(): number;
+    ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_update_record_from_incoming(): number;
     ubrn_ffi_breez_sdk_common_uniffi_contract_version(): number;
     ubrn_uniffi_breez_sdk_common_fn_init_callback_vtable_fiatservice(vtable: UniffiVTableCallbackInterfaceFiatService): void;
     ubrn_uniffi_breez_sdk_common_fn_init_callback_vtable_restclient(vtable: UniffiVTableCallbackInterfaceRestClient): void;
+    ubrn_uniffi_breez_sdk_common_fn_init_callback_vtable_syncstorage(vtable: UniffiVTableCallbackInterfaceSyncStorage): void;
     ubrn_uniffi_internal_fn_method_fiatservice_ffi__bless_pointer(pointer: bigint, uniffi_out_err: UniffiRustCallStatus): UniffiRustArcPtr;
     ubrn_uniffi_internal_fn_method_restclient_ffi__bless_pointer(pointer: bigint, uniffi_out_err: UniffiRustCallStatus): UniffiRustArcPtr;
+    ubrn_uniffi_internal_fn_method_syncstorage_ffi__bless_pointer(pointer: bigint, uniffi_out_err: UniffiRustCallStatus): UniffiRustArcPtr;
 }
 declare const getter: () => NativeModuleInterface;
 export default getter;
@@ -153,6 +177,16 @@ type UniffiCallbackInterfaceFiatServiceMethod1 = (uniffiHandle: bigint, uniffiFu
 type UniffiCallbackInterfaceRestClientMethod0 = (uniffiHandle: bigint, url: Uint8Array, headers: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceRestClientMethod1 = (uniffiHandle: bigint, url: Uint8Array, headers: Uint8Array, body: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceRestClientMethod2 = (uniffiHandle: bigint, url: Uint8Array, headers: Uint8Array, body: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceSyncStorageMethod0 = (uniffiHandle: bigint, record: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteU64, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceSyncStorageMethod1 = (uniffiHandle: bigint, record: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceSyncStorageMethod2 = (uniffiHandle: bigint, limit: number, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceSyncStorageMethod3 = (uniffiHandle: bigint, uniffiFutureCallback: UniffiForeignFutureCompleteU64, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceSyncStorageMethod4 = (uniffiHandle: bigint, records: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceSyncStorageMethod5 = (uniffiHandle: bigint, record: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceSyncStorageMethod6 = (uniffiHandle: bigint, revision: bigint, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceSyncStorageMethod7 = (uniffiHandle: bigint, limit: number, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceSyncStorageMethod8 = (uniffiHandle: bigint, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceSyncStorageMethod9 = (uniffiHandle: bigint, record: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
 export type UniffiVTableCallbackInterfaceFiatService = {
     fetchFiatCurrencies: UniffiCallbackInterfaceFiatServiceMethod0;
     fetchFiatRates: UniffiCallbackInterfaceFiatServiceMethod1;
@@ -162,6 +196,19 @@ export type UniffiVTableCallbackInterfaceRestClient = {
     getRequest: UniffiCallbackInterfaceRestClientMethod0;
     postRequest: UniffiCallbackInterfaceRestClientMethod1;
     deleteRequest: UniffiCallbackInterfaceRestClientMethod2;
+    uniffiFree: UniffiCallbackInterfaceFree;
+};
+export type UniffiVTableCallbackInterfaceSyncStorage = {
+    addOutgoingChange: UniffiCallbackInterfaceSyncStorageMethod0;
+    completeOutgoingSync: UniffiCallbackInterfaceSyncStorageMethod1;
+    getPendingOutgoingChanges: UniffiCallbackInterfaceSyncStorageMethod2;
+    getLastRevision: UniffiCallbackInterfaceSyncStorageMethod3;
+    insertIncomingRecords: UniffiCallbackInterfaceSyncStorageMethod4;
+    deleteIncomingRecord: UniffiCallbackInterfaceSyncStorageMethod5;
+    rebasePendingOutgoingRecords: UniffiCallbackInterfaceSyncStorageMethod6;
+    getIncomingRecords: UniffiCallbackInterfaceSyncStorageMethod7;
+    getLatestOutgoingChange: UniffiCallbackInterfaceSyncStorageMethod8;
+    updateRecordFromIncoming: UniffiCallbackInterfaceSyncStorageMethod9;
     uniffiFree: UniffiCallbackInterfaceFree;
 };
 //# sourceMappingURL=breez_sdk_common-ffi.d.ts.map

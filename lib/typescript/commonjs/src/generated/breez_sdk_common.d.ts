@@ -502,6 +502,29 @@ export declare const FiatCurrency: Readonly<{
      */
     defaults: () => Partial<FiatCurrency>;
 }>;
+export type IncomingChange = {
+    newState: Record;
+    oldState: Record | undefined;
+};
+/**
+ * Generated factory for {@link IncomingChange} record objects.
+ */
+export declare const IncomingChange: Readonly<{
+    /**
+     * Create a frozen instance of {@link IncomingChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create: (partial: Partial<IncomingChange> & Required<Omit<IncomingChange, never>>) => IncomingChange;
+    /**
+     * Create a frozen instance of {@link IncomingChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: (partial: Partial<IncomingChange> & Required<Omit<IncomingChange, never>>) => IncomingChange;
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () => Partial<IncomingChange>;
+}>;
 export type LightningAddressDetails = {
     address: string;
     payRequest: LnurlPayRequestDetails;
@@ -770,6 +793,29 @@ export declare const MessageSuccessActionData: Readonly<{
      */
     defaults: () => Partial<MessageSuccessActionData>;
 }>;
+export type OutgoingChange = {
+    change: RecordChange;
+    parent: Record | undefined;
+};
+/**
+ * Generated factory for {@link OutgoingChange} record objects.
+ */
+export declare const OutgoingChange: Readonly<{
+    /**
+     * Create a frozen instance of {@link OutgoingChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create: (partial: Partial<OutgoingChange> & Required<Omit<OutgoingChange, never>>) => OutgoingChange;
+    /**
+     * Create a frozen instance of {@link OutgoingChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: (partial: Partial<OutgoingChange> & Required<Omit<OutgoingChange, never>>) => OutgoingChange;
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () => Partial<OutgoingChange>;
+}>;
 export type PaymentRequestSource = {
     bip21Uri: string | undefined;
     bip353Address: string | undefined;
@@ -818,6 +864,79 @@ export declare const Rate: Readonly<{
      * Defaults specified in the {@link breez_sdk_common} crate.
      */
     defaults: () => Partial<Rate>;
+}>;
+export type Record = {
+    id: RecordId;
+    revision: bigint;
+    schemaVersion: string;
+    data: Map<string, string>;
+};
+/**
+ * Generated factory for {@link Record} record objects.
+ */
+export declare const Record: Readonly<{
+    /**
+     * Create a frozen instance of {@link Record}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create: (partial: Partial<Record> & Required<Omit<Record, never>>) => Record;
+    /**
+     * Create a frozen instance of {@link Record}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: (partial: Partial<Record> & Required<Omit<Record, never>>) => Record;
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () => Partial<Record>;
+}>;
+export type RecordChange = {
+    id: RecordId;
+    schemaVersion: string;
+    updatedFields: Map<string, string>;
+    revision: bigint;
+};
+/**
+ * Generated factory for {@link RecordChange} record objects.
+ */
+export declare const RecordChange: Readonly<{
+    /**
+     * Create a frozen instance of {@link RecordChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create: (partial: Partial<RecordChange> & Required<Omit<RecordChange, never>>) => RecordChange;
+    /**
+     * Create a frozen instance of {@link RecordChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: (partial: Partial<RecordChange> & Required<Omit<RecordChange, never>>) => RecordChange;
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () => Partial<RecordChange>;
+}>;
+export type RecordId = {
+    type: string;
+    dataId: string;
+};
+/**
+ * Generated factory for {@link RecordId} record objects.
+ */
+export declare const RecordId: Readonly<{
+    /**
+     * Create a frozen instance of {@link RecordId}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create: (partial: Partial<RecordId> & Required<Omit<RecordId, never>>) => RecordId;
+    /**
+     * Create a frozen instance of {@link RecordId}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: (partial: Partial<RecordId> & Required<Omit<RecordId, never>>) => RecordId;
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () => Partial<RecordId>;
 }>;
 export type RestResponse = {
     status: number;
@@ -974,6 +1093,30 @@ export declare const Symbol: Readonly<{
      * Defaults specified in the {@link breez_sdk_common} crate.
      */
     defaults: () => Partial<Symbol>;
+}>;
+export type UnversionedRecordChange = {
+    id: RecordId;
+    schemaVersion: string;
+    updatedFields: Map<string, string>;
+};
+/**
+ * Generated factory for {@link UnversionedRecordChange} record objects.
+ */
+export declare const UnversionedRecordChange: Readonly<{
+    /**
+     * Create a frozen instance of {@link UnversionedRecordChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create: (partial: Partial<UnversionedRecordChange> & Required<Omit<UnversionedRecordChange, never>>) => UnversionedRecordChange;
+    /**
+     * Create a frozen instance of {@link UnversionedRecordChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: (partial: Partial<UnversionedRecordChange> & Required<Omit<UnversionedRecordChange, never>>) => UnversionedRecordChange;
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () => Partial<UnversionedRecordChange>;
 }>;
 export type UrlSuccessActionData = {
     /**
@@ -2761,6 +2904,234 @@ export declare const SuccessActionProcessed: Readonly<{
  * Contents are identical to [`SuccessAction`], except for AES where the ciphertext is decrypted.
  */
 export type SuccessActionProcessed = InstanceType<(typeof SuccessActionProcessed)[keyof Omit<typeof SuccessActionProcessed, 'instanceOf'>]>;
+export declare enum SyncStorageError_Tags {
+    Implementation = "Implementation",
+    InitializationError = "InitializationError",
+    Serialization = "Serialization"
+}
+/**
+ * Errors that can occur during storage operations
+ */
+export declare const SyncStorageError: Readonly<{
+    instanceOf: (obj: any) => obj is SyncStorageError;
+    Implementation: {
+        new (v0: string): {
+            readonly tag: SyncStorageError_Tags.Implementation;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: SyncStorageError_Tags.Implementation;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SyncStorageError_Tags.Implementation;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SyncStorageError_Tags.Implementation;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SyncStorageError_Tags.Implementation;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    InitializationError: {
+        new (v0: string): {
+            readonly tag: SyncStorageError_Tags.InitializationError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: SyncStorageError_Tags.InitializationError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SyncStorageError_Tags.InitializationError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SyncStorageError_Tags.InitializationError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SyncStorageError_Tags.InitializationError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    Serialization: {
+        new (v0: string): {
+            readonly tag: SyncStorageError_Tags.Serialization;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: SyncStorageError_Tags.Serialization;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SyncStorageError_Tags.Serialization;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SyncStorageError_Tags.Serialization;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SyncStorageError_Tags.Serialization;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+}>;
+/**
+ * Errors that can occur during storage operations
+ */
+export type SyncStorageError = InstanceType<(typeof SyncStorageError)[keyof Omit<typeof SyncStorageError, 'instanceOf'>]>;
 /**
  * Trait covering fiat-related functionality
  */
@@ -2874,6 +3245,121 @@ export declare class RestClientImpl extends UniffiAbstractObject implements Rest
      */
     uniffiDestroy(): void;
     static instanceOf(obj: any): obj is RestClientImpl;
+}
+export interface SyncStorage {
+    addOutgoingChange(record: UnversionedRecordChange, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise</*u64*/ bigint>;
+    completeOutgoingSync(record: Record, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    getPendingOutgoingChanges(limit: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<OutgoingChange>>;
+    /**
+     * Get the revision number of the last synchronized record
+     */
+    getLastRevision(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise</*u64*/ bigint>;
+    /**
+     * Insert incoming records from remote sync
+     */
+    insertIncomingRecords(records: Array<Record>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Delete an incoming record after it has been processed
+     */
+    deleteIncomingRecord(record: Record, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Update revision numbers of pending outgoing records to be higher than the given revision
+     */
+    rebasePendingOutgoingRecords(revision: bigint, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Get incoming records that need to be processed, up to the specified limit
+     */
+    getIncomingRecords(limit: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<IncomingChange>>;
+    /**
+     * Get the latest outgoing record if any exists
+     */
+    getLatestOutgoingChange(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<OutgoingChange | undefined>;
+    /**
+     * Update the sync state record from an incoming record
+     */
+    updateRecordFromIncoming(record: Record, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+}
+export declare class SyncStorageImpl extends UniffiAbstractObject implements SyncStorage {
+    readonly [uniffiTypeNameSymbol] = "SyncStorageImpl";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    addOutgoingChange(record: UnversionedRecordChange, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise</*u64*/ bigint>;
+    completeOutgoingSync(record: Record, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    getPendingOutgoingChanges(limit: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<OutgoingChange>>;
+    /**
+     * Get the revision number of the last synchronized record
+     */
+    getLastRevision(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise</*u64*/ bigint>;
+    /**
+     * Insert incoming records from remote sync
+     */
+    insertIncomingRecords(records: Array<Record>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Delete an incoming record after it has been processed
+     */
+    deleteIncomingRecord(record: Record, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Update revision numbers of pending outgoing records to be higher than the given revision
+     */
+    rebasePendingOutgoingRecords(revision: bigint, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Get incoming records that need to be processed, up to the specified limit
+     */
+    getIncomingRecords(limit: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<IncomingChange>>;
+    /**
+     * Get the latest outgoing record if any exists
+     */
+    getLatestOutgoingChange(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<OutgoingChange | undefined>;
+    /**
+     * Update the sync state record from an incoming record
+     */
+    updateRecordFromIncoming(record: Record, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is SyncStorageImpl;
 }
 /**
  * This should be called before anything else.
@@ -3037,6 +3523,13 @@ declare const _default: Readonly<{
             lower(value: FiatCurrency): UniffiByteArray;
         };
         FfiConverterTypeFiatService: FfiConverterObjectWithCallbacks<FiatService>;
+        FfiConverterTypeIncomingChange: {
+            read(from: RustBuffer): IncomingChange;
+            write(value: IncomingChange, into: RustBuffer): void;
+            allocationSize(value: IncomingChange): number;
+            lift(value: UniffiByteArray): IncomingChange;
+            lower(value: IncomingChange): UniffiByteArray;
+        };
         FfiConverterTypeInputType: {
             read(from: RustBuffer): InputType;
             write(value: InputType, into: RustBuffer): void;
@@ -3107,6 +3600,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): MessageSuccessActionData;
             lower(value: MessageSuccessActionData): UniffiByteArray;
         };
+        FfiConverterTypeOutgoingChange: {
+            read(from: RustBuffer): OutgoingChange;
+            write(value: OutgoingChange, into: RustBuffer): void;
+            allocationSize(value: OutgoingChange): number;
+            lift(value: UniffiByteArray): OutgoingChange;
+            lower(value: OutgoingChange): UniffiByteArray;
+        };
         FfiConverterTypePaymentRequestSource: {
             read(from: RustBuffer): PaymentRequestSource;
             write(value: PaymentRequestSource, into: RustBuffer): void;
@@ -3120,6 +3620,27 @@ declare const _default: Readonly<{
             allocationSize(value: Rate): number;
             lift(value: UniffiByteArray): Rate;
             lower(value: Rate): UniffiByteArray;
+        };
+        FfiConverterTypeRecord: {
+            read(from: RustBuffer): Record;
+            write(value: Record, into: RustBuffer): void;
+            allocationSize(value: Record): number;
+            lift(value: UniffiByteArray): Record;
+            lower(value: Record): UniffiByteArray;
+        };
+        FfiConverterTypeRecordChange: {
+            read(from: RustBuffer): RecordChange;
+            write(value: RecordChange, into: RustBuffer): void;
+            allocationSize(value: RecordChange): number;
+            lift(value: UniffiByteArray): RecordChange;
+            lower(value: RecordChange): UniffiByteArray;
+        };
+        FfiConverterTypeRecordId: {
+            read(from: RustBuffer): RecordId;
+            write(value: RecordId, into: RustBuffer): void;
+            allocationSize(value: RecordId): number;
+            lift(value: UniffiByteArray): RecordId;
+            lower(value: RecordId): UniffiByteArray;
         };
         FfiConverterTypeRestClient: FfiConverterObjectWithCallbacks<RestClient>;
         FfiConverterTypeRestResponse: {
@@ -3170,6 +3691,14 @@ declare const _default: Readonly<{
             allocationSize(value: Symbol): number;
             lift(value: UniffiByteArray): Symbol;
             lower(value: Symbol): UniffiByteArray;
+        };
+        FfiConverterTypeSyncStorage: FfiConverterObjectWithCallbacks<SyncStorage>;
+        FfiConverterTypeUnversionedRecordChange: {
+            read(from: RustBuffer): UnversionedRecordChange;
+            write(value: UnversionedRecordChange, into: RustBuffer): void;
+            allocationSize(value: UnversionedRecordChange): number;
+            lift(value: UniffiByteArray): UnversionedRecordChange;
+            lower(value: UnversionedRecordChange): UniffiByteArray;
         };
         FfiConverterTypeUrlSuccessActionData: {
             read(from: RustBuffer): UrlSuccessActionData;

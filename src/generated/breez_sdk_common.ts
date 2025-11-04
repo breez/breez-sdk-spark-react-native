@@ -31,6 +31,7 @@ import nativeModule, {
   type UniffiForeignFutureCompleteVoid,
   type UniffiVTableCallbackInterfaceFiatService,
   type UniffiVTableCallbackInterfaceRestClient,
+  type UniffiVTableCallbackInterfaceSyncStorage,
 } from './breez_sdk_common-ffi';
 import {
   type FfiConverter,
@@ -1313,6 +1314,64 @@ const FfiConverterTypeFiatCurrency = (() => {
   return new FFIConverter();
 })();
 
+export type IncomingChange = {
+  newState: Record;
+  oldState: Record | undefined;
+};
+
+/**
+ * Generated factory for {@link IncomingChange} record objects.
+ */
+export const IncomingChange = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<IncomingChange, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link IncomingChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link IncomingChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<IncomingChange>,
+  });
+})();
+
+const FfiConverterTypeIncomingChange = (() => {
+  type TypeName = IncomingChange;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        newState: FfiConverterTypeRecord.read(from),
+        oldState: FfiConverterOptionalTypeRecord.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeRecord.write(value.newState, into);
+      FfiConverterOptionalTypeRecord.write(value.oldState, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeRecord.allocationSize(value.newState) +
+        FfiConverterOptionalTypeRecord.allocationSize(value.oldState)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type LightningAddressDetails = {
   address: string;
   payRequest: LnurlPayRequestDetails;
@@ -1903,6 +1962,64 @@ const FfiConverterTypeMessageSuccessActionData = (() => {
   return new FFIConverter();
 })();
 
+export type OutgoingChange = {
+  change: RecordChange;
+  parent: Record | undefined;
+};
+
+/**
+ * Generated factory for {@link OutgoingChange} record objects.
+ */
+export const OutgoingChange = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<OutgoingChange, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link OutgoingChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link OutgoingChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<OutgoingChange>,
+  });
+})();
+
+const FfiConverterTypeOutgoingChange = (() => {
+  type TypeName = OutgoingChange;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        change: FfiConverterTypeRecordChange.read(from),
+        parent: FfiConverterOptionalTypeRecord.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeRecordChange.write(value.change, into);
+      FfiConverterOptionalTypeRecord.write(value.parent, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeRecordChange.allocationSize(value.change) +
+        FfiConverterOptionalTypeRecord.allocationSize(value.parent)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type PaymentRequestSource = {
   bip21Uri: string | undefined;
   bip353Address: string | undefined;
@@ -2015,6 +2132,192 @@ const FfiConverterTypeRate = (() => {
       return (
         FfiConverterString.allocationSize(value.coin) +
         FfiConverterFloat64.allocationSize(value.value)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type Record = {
+  id: RecordId;
+  revision: /*u64*/ bigint;
+  schemaVersion: string;
+  data: Map<string, string>;
+};
+
+/**
+ * Generated factory for {@link Record} record objects.
+ */
+export const Record = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<Record, ReturnType<typeof defaults>>(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link Record}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link Record}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<Record>,
+  });
+})();
+
+const FfiConverterTypeRecord = (() => {
+  type TypeName = Record;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        id: FfiConverterTypeRecordId.read(from),
+        revision: FfiConverterUInt64.read(from),
+        schemaVersion: FfiConverterString.read(from),
+        data: FfiConverterMapStringString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeRecordId.write(value.id, into);
+      FfiConverterUInt64.write(value.revision, into);
+      FfiConverterString.write(value.schemaVersion, into);
+      FfiConverterMapStringString.write(value.data, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeRecordId.allocationSize(value.id) +
+        FfiConverterUInt64.allocationSize(value.revision) +
+        FfiConverterString.allocationSize(value.schemaVersion) +
+        FfiConverterMapStringString.allocationSize(value.data)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type RecordChange = {
+  id: RecordId;
+  schemaVersion: string;
+  updatedFields: Map<string, string>;
+  revision: /*u64*/ bigint;
+};
+
+/**
+ * Generated factory for {@link RecordChange} record objects.
+ */
+export const RecordChange = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<RecordChange, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link RecordChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link RecordChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<RecordChange>,
+  });
+})();
+
+const FfiConverterTypeRecordChange = (() => {
+  type TypeName = RecordChange;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        id: FfiConverterTypeRecordId.read(from),
+        schemaVersion: FfiConverterString.read(from),
+        updatedFields: FfiConverterMapStringString.read(from),
+        revision: FfiConverterUInt64.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeRecordId.write(value.id, into);
+      FfiConverterString.write(value.schemaVersion, into);
+      FfiConverterMapStringString.write(value.updatedFields, into);
+      FfiConverterUInt64.write(value.revision, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeRecordId.allocationSize(value.id) +
+        FfiConverterString.allocationSize(value.schemaVersion) +
+        FfiConverterMapStringString.allocationSize(value.updatedFields) +
+        FfiConverterUInt64.allocationSize(value.revision)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type RecordId = {
+  type: string;
+  dataId: string;
+};
+
+/**
+ * Generated factory for {@link RecordId} record objects.
+ */
+export const RecordId = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<RecordId, ReturnType<typeof defaults>>(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link RecordId}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link RecordId}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<RecordId>,
+  });
+})();
+
+const FfiConverterTypeRecordId = (() => {
+  type TypeName = RecordId;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        type: FfiConverterString.read(from),
+        dataId: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.type, into);
+      FfiConverterString.write(value.dataId, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.type) +
+        FfiConverterString.allocationSize(value.dataId)
       );
     }
   }
@@ -2379,6 +2682,70 @@ const FfiConverterTypeSymbol = (() => {
         FfiConverterOptionalString.allocationSize(value.template) +
         FfiConverterOptionalBool.allocationSize(value.rtl) +
         FfiConverterOptionalUInt32.allocationSize(value.position)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type UnversionedRecordChange = {
+  id: RecordId;
+  schemaVersion: string;
+  updatedFields: Map<string, string>;
+};
+
+/**
+ * Generated factory for {@link UnversionedRecordChange} record objects.
+ */
+export const UnversionedRecordChange = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      UnversionedRecordChange,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link UnversionedRecordChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link UnversionedRecordChange}, with defaults specified
+     * in Rust, in the {@link breez_sdk_common} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_common} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<UnversionedRecordChange>,
+  });
+})();
+
+const FfiConverterTypeUnversionedRecordChange = (() => {
+  type TypeName = UnversionedRecordChange;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        id: FfiConverterTypeRecordId.read(from),
+        schemaVersion: FfiConverterString.read(from),
+        updatedFields: FfiConverterMapStringString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeRecordId.write(value.id, into);
+      FfiConverterString.write(value.schemaVersion, into);
+      FfiConverterMapStringString.write(value.updatedFields, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeRecordId.allocationSize(value.id) +
+        FfiConverterString.allocationSize(value.schemaVersion) +
+        FfiConverterMapStringString.allocationSize(value.updatedFields)
       );
     }
   }
@@ -4738,6 +5105,228 @@ const FfiConverterTypeSuccessActionProcessed = (() => {
   return new FFIConverter();
 })();
 
+// Error type: SyncStorageError
+
+// Enum: SyncStorageError
+export enum SyncStorageError_Tags {
+  Implementation = 'Implementation',
+  InitializationError = 'InitializationError',
+  Serialization = 'Serialization',
+}
+/**
+ * Errors that can occur during storage operations
+ */
+export const SyncStorageError = (() => {
+  type Implementation__interface = {
+    tag: SyncStorageError_Tags.Implementation;
+    inner: Readonly<[string]>;
+  };
+
+  class Implementation_
+    extends UniffiError
+    implements Implementation__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SyncStorageError';
+    readonly tag = SyncStorageError_Tags.Implementation;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('SyncStorageError', 'Implementation');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): Implementation_ {
+      return new Implementation_(v0);
+    }
+
+    static instanceOf(obj: any): obj is Implementation_ {
+      return obj.tag === SyncStorageError_Tags.Implementation;
+    }
+
+    static hasInner(obj: any): obj is Implementation_ {
+      return Implementation_.instanceOf(obj);
+    }
+
+    static getInner(obj: Implementation_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  type InitializationError__interface = {
+    tag: SyncStorageError_Tags.InitializationError;
+    inner: Readonly<[string]>;
+  };
+
+  /**
+   * Database initialization error
+   */
+  class InitializationError_
+    extends UniffiError
+    implements InitializationError__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SyncStorageError';
+    readonly tag = SyncStorageError_Tags.InitializationError;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('SyncStorageError', 'InitializationError');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): InitializationError_ {
+      return new InitializationError_(v0);
+    }
+
+    static instanceOf(obj: any): obj is InitializationError_ {
+      return obj.tag === SyncStorageError_Tags.InitializationError;
+    }
+
+    static hasInner(obj: any): obj is InitializationError_ {
+      return InitializationError_.instanceOf(obj);
+    }
+
+    static getInner(obj: InitializationError_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  type Serialization__interface = {
+    tag: SyncStorageError_Tags.Serialization;
+    inner: Readonly<[string]>;
+  };
+
+  class Serialization_ extends UniffiError implements Serialization__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SyncStorageError';
+    readonly tag = SyncStorageError_Tags.Serialization;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('SyncStorageError', 'Serialization');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): Serialization_ {
+      return new Serialization_(v0);
+    }
+
+    static instanceOf(obj: any): obj is Serialization_ {
+      return obj.tag === SyncStorageError_Tags.Serialization;
+    }
+
+    static hasInner(obj: any): obj is Serialization_ {
+      return Serialization_.instanceOf(obj);
+    }
+
+    static getInner(obj: Serialization_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  function instanceOf(obj: any): obj is SyncStorageError {
+    return obj[uniffiTypeNameSymbol] === 'SyncStorageError';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Implementation: Implementation_,
+    InitializationError: InitializationError_,
+    Serialization: Serialization_,
+  });
+})();
+
+/**
+ * Errors that can occur during storage operations
+ */
+
+export type SyncStorageError = InstanceType<
+  (typeof SyncStorageError)[keyof Omit<typeof SyncStorageError, 'instanceOf'>]
+>;
+
+// FfiConverter for enum SyncStorageError
+const FfiConverterTypeSyncStorageError = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = SyncStorageError;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new SyncStorageError.Implementation(
+            FfiConverterString.read(from)
+          );
+        case 2:
+          return new SyncStorageError.InitializationError(
+            FfiConverterString.read(from)
+          );
+        case 3:
+          return new SyncStorageError.Serialization(
+            FfiConverterString.read(from)
+          );
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case SyncStorageError_Tags.Implementation: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case SyncStorageError_Tags.InitializationError: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case SyncStorageError_Tags.Serialization: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        default:
+          // Throwing from here means that SyncStorageError_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case SyncStorageError_Tags.Implementation: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case SyncStorageError_Tags.InitializationError: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case SyncStorageError_Tags.Serialization: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
 // FfiConverter for Map<string, string>
 const FfiConverterMapStringString = new FfiConverterMap(
   FfiConverterString,
@@ -5504,8 +6093,1028 @@ const uniffiCallbackInterfaceRestClient: {
   },
 };
 
+export interface SyncStorage {
+  addOutgoingChange(
+    record: UnversionedRecordChange,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise</*u64*/ bigint>;
+  completeOutgoingSync(
+    record: Record,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<void>;
+  getPendingOutgoingChanges(
+    limit: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<Array<OutgoingChange>>;
+  /**
+   * Get the revision number of the last synchronized record
+   */
+  getLastRevision(asyncOpts_?: {
+    signal: AbortSignal;
+  }) /*throws*/ : Promise</*u64*/ bigint>;
+  /**
+   * Insert incoming records from remote sync
+   */
+  insertIncomingRecords(
+    records: Array<Record>,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<void>;
+  /**
+   * Delete an incoming record after it has been processed
+   */
+  deleteIncomingRecord(
+    record: Record,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<void>;
+  /**
+   * Update revision numbers of pending outgoing records to be higher than the given revision
+   */
+  rebasePendingOutgoingRecords(
+    revision: /*u64*/ bigint,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<void>;
+  /**
+   * Get incoming records that need to be processed, up to the specified limit
+   */
+  getIncomingRecords(
+    limit: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<Array<IncomingChange>>;
+  /**
+   * Get the latest outgoing record if any exists
+   */
+  getLatestOutgoingChange(asyncOpts_?: {
+    signal: AbortSignal;
+  }) /*throws*/ : Promise<OutgoingChange | undefined>;
+  /**
+   * Update the sync state record from an incoming record
+   */
+  updateRecordFromIncoming(
+    record: Record,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<void>;
+}
+
+export class SyncStorageImpl
+  extends UniffiAbstractObject
+  implements SyncStorage
+{
+  readonly [uniffiTypeNameSymbol] = 'SyncStorageImpl';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypeSyncStorageImplObjectFactory.bless(pointer);
+  }
+
+  public async addOutgoingChange(
+    record: UnversionedRecordChange,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise</*u64*/ bigint> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_add_outgoing_change(
+            uniffiTypeSyncStorageImplObjectFactory.clonePointer(this),
+            FfiConverterTypeUnversionedRecordChange.lower(record)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_poll_u64,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_cancel_u64,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_complete_u64,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_free_u64,
+        /*liftFunc:*/ FfiConverterUInt64.lift.bind(FfiConverterUInt64),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSyncStorageError.lift.bind(
+          FfiConverterTypeSyncStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async completeOutgoingSync(
+    record: Record,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_complete_outgoing_sync(
+            uniffiTypeSyncStorageImplObjectFactory.clonePointer(this),
+            FfiConverterTypeRecord.lower(record)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSyncStorageError.lift.bind(
+          FfiConverterTypeSyncStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async getPendingOutgoingChanges(
+    limit: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<Array<OutgoingChange>> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_get_pending_outgoing_changes(
+            uniffiTypeSyncStorageImplObjectFactory.clonePointer(this),
+            FfiConverterUInt32.lower(limit)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterArrayTypeOutgoingChange.lift.bind(
+          FfiConverterArrayTypeOutgoingChange
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSyncStorageError.lift.bind(
+          FfiConverterTypeSyncStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Get the revision number of the last synchronized record
+   */
+  public async getLastRevision(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise</*u64*/ bigint> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_get_last_revision(
+            uniffiTypeSyncStorageImplObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_poll_u64,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_cancel_u64,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_complete_u64,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_free_u64,
+        /*liftFunc:*/ FfiConverterUInt64.lift.bind(FfiConverterUInt64),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSyncStorageError.lift.bind(
+          FfiConverterTypeSyncStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Insert incoming records from remote sync
+   */
+  public async insertIncomingRecords(
+    records: Array<Record>,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_insert_incoming_records(
+            uniffiTypeSyncStorageImplObjectFactory.clonePointer(this),
+            FfiConverterArrayTypeRecord.lower(records)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSyncStorageError.lift.bind(
+          FfiConverterTypeSyncStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Delete an incoming record after it has been processed
+   */
+  public async deleteIncomingRecord(
+    record: Record,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_delete_incoming_record(
+            uniffiTypeSyncStorageImplObjectFactory.clonePointer(this),
+            FfiConverterTypeRecord.lower(record)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSyncStorageError.lift.bind(
+          FfiConverterTypeSyncStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Update revision numbers of pending outgoing records to be higher than the given revision
+   */
+  public async rebasePendingOutgoingRecords(
+    revision: /*u64*/ bigint,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_rebase_pending_outgoing_records(
+            uniffiTypeSyncStorageImplObjectFactory.clonePointer(this),
+            FfiConverterUInt64.lower(revision)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSyncStorageError.lift.bind(
+          FfiConverterTypeSyncStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Get incoming records that need to be processed, up to the specified limit
+   */
+  public async getIncomingRecords(
+    limit: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<Array<IncomingChange>> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_get_incoming_records(
+            uniffiTypeSyncStorageImplObjectFactory.clonePointer(this),
+            FfiConverterUInt32.lower(limit)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterArrayTypeIncomingChange.lift.bind(
+          FfiConverterArrayTypeIncomingChange
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSyncStorageError.lift.bind(
+          FfiConverterTypeSyncStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Get the latest outgoing record if any exists
+   */
+  public async getLatestOutgoingChange(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<OutgoingChange | undefined> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_get_latest_outgoing_change(
+            uniffiTypeSyncStorageImplObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterOptionalTypeOutgoingChange.lift.bind(
+          FfiConverterOptionalTypeOutgoingChange
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSyncStorageError.lift.bind(
+          FfiConverterTypeSyncStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Update the sync state record from an incoming record
+   */
+  public async updateRecordFromIncoming(
+    record: Record,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_common_fn_method_syncstorage_update_record_from_incoming(
+            uniffiTypeSyncStorageImplObjectFactory.clonePointer(this),
+            FfiConverterTypeRecord.lower(record)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_common_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSyncStorageError.lift.bind(
+          FfiConverterTypeSyncStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer = uniffiTypeSyncStorageImplObjectFactory.pointer(this);
+      uniffiTypeSyncStorageImplObjectFactory.freePointer(pointer);
+      uniffiTypeSyncStorageImplObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is SyncStorageImpl {
+    return uniffiTypeSyncStorageImplObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypeSyncStorageImplObjectFactory: UniffiObjectFactory<SyncStorage> =
+  {
+    create(pointer: UnsafeMutableRawPointer): SyncStorage {
+      const instance = Object.create(SyncStorageImpl.prototype);
+      instance[pointerLiteralSymbol] = pointer;
+      instance[destructorGuardSymbol] = this.bless(pointer);
+      instance[uniffiTypeNameSymbol] = 'SyncStorageImpl';
+      return instance;
+    },
+
+    bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+      return uniffiCaller.rustCall(
+        /*caller:*/ (status) =>
+          nativeModule().ubrn_uniffi_internal_fn_method_syncstorage_ffi__bless_pointer(
+            p,
+            status
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
+
+    unbless(ptr: UniffiRustArcPtr) {
+      ptr.markDestroyed();
+    },
+
+    pointer(obj: SyncStorage): UnsafeMutableRawPointer {
+      if ((obj as any)[destructorGuardSymbol] === undefined) {
+        throw new UniffiInternalError.UnexpectedNullPointer();
+      }
+      return (obj as any)[pointerLiteralSymbol];
+    },
+
+    clonePointer(obj: SyncStorage): UnsafeMutableRawPointer {
+      const pointer = this.pointer(obj);
+      return uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_common_fn_clone_syncstorage(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
+
+    freePointer(pointer: UnsafeMutableRawPointer): void {
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_common_fn_free_syncstorage(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
+
+    isConcreteType(obj: any): obj is SyncStorage {
+      return (
+        obj[destructorGuardSymbol] &&
+        obj[uniffiTypeNameSymbol] === 'SyncStorageImpl'
+      );
+    },
+  };
+// FfiConverter for SyncStorage
+const FfiConverterTypeSyncStorage = new FfiConverterObjectWithCallbacks(
+  uniffiTypeSyncStorageImplObjectFactory
+);
+
+// Add a vtavble for the callbacks that go in SyncStorage.
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+const uniffiCallbackInterfaceSyncStorage: {
+  vtable: UniffiVTableCallbackInterfaceSyncStorage;
+  register: () => void;
+} = {
+  // Create the VTable using a series of closures.
+  // ts automatically converts these into C callback functions.
+  vtable: {
+    addOutgoingChange: (
+      uniffiHandle: bigint,
+      record: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteU64,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise</*u64*/ bigint> => {
+        const jsCallback = FfiConverterTypeSyncStorage.lift(uniffiHandle);
+        return await jsCallback.addOutgoingChange(
+          FfiConverterTypeUnversionedRecordChange.lift(record),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: /*u64*/ bigint) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructU64 */ {
+            returnValue: FfiConverterUInt64.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructU64 */ {
+            returnValue: 0n,
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SyncStorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSyncStorageError.lower.bind(
+          FfiConverterTypeSyncStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    completeOutgoingSync: (
+      uniffiHandle: bigint,
+      record: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<void> => {
+        const jsCallback = FfiConverterTypeSyncStorage.lift(uniffiHandle);
+        return await jsCallback.completeOutgoingSync(
+          FfiConverterTypeRecord.lift(record),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: void) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SyncStorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSyncStorageError.lower.bind(
+          FfiConverterTypeSyncStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    getPendingOutgoingChanges: (
+      uniffiHandle: bigint,
+      limit: number,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<Array<OutgoingChange>> => {
+        const jsCallback = FfiConverterTypeSyncStorage.lift(uniffiHandle);
+        return await jsCallback.getPendingOutgoingChanges(
+          FfiConverterUInt32.lift(limit),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: Array<OutgoingChange>) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterArrayTypeOutgoingChange.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SyncStorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSyncStorageError.lower.bind(
+          FfiConverterTypeSyncStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    getLastRevision: (
+      uniffiHandle: bigint,
+      uniffiFutureCallback: UniffiForeignFutureCompleteU64,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise</*u64*/ bigint> => {
+        const jsCallback = FfiConverterTypeSyncStorage.lift(uniffiHandle);
+        return await jsCallback.getLastRevision({ signal });
+      };
+      const uniffiHandleSuccess = (returnValue: /*u64*/ bigint) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructU64 */ {
+            returnValue: FfiConverterUInt64.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructU64 */ {
+            returnValue: 0n,
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SyncStorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSyncStorageError.lower.bind(
+          FfiConverterTypeSyncStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    insertIncomingRecords: (
+      uniffiHandle: bigint,
+      records: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<void> => {
+        const jsCallback = FfiConverterTypeSyncStorage.lift(uniffiHandle);
+        return await jsCallback.insertIncomingRecords(
+          FfiConverterArrayTypeRecord.lift(records),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: void) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SyncStorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSyncStorageError.lower.bind(
+          FfiConverterTypeSyncStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    deleteIncomingRecord: (
+      uniffiHandle: bigint,
+      record: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<void> => {
+        const jsCallback = FfiConverterTypeSyncStorage.lift(uniffiHandle);
+        return await jsCallback.deleteIncomingRecord(
+          FfiConverterTypeRecord.lift(record),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: void) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SyncStorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSyncStorageError.lower.bind(
+          FfiConverterTypeSyncStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    rebasePendingOutgoingRecords: (
+      uniffiHandle: bigint,
+      revision: bigint,
+      uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<void> => {
+        const jsCallback = FfiConverterTypeSyncStorage.lift(uniffiHandle);
+        return await jsCallback.rebasePendingOutgoingRecords(
+          FfiConverterUInt64.lift(revision),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: void) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SyncStorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSyncStorageError.lower.bind(
+          FfiConverterTypeSyncStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    getIncomingRecords: (
+      uniffiHandle: bigint,
+      limit: number,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<Array<IncomingChange>> => {
+        const jsCallback = FfiConverterTypeSyncStorage.lift(uniffiHandle);
+        return await jsCallback.getIncomingRecords(
+          FfiConverterUInt32.lift(limit),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: Array<IncomingChange>) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterArrayTypeIncomingChange.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SyncStorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSyncStorageError.lower.bind(
+          FfiConverterTypeSyncStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    getLatestOutgoingChange: (
+      uniffiHandle: bigint,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<OutgoingChange | undefined> => {
+        const jsCallback = FfiConverterTypeSyncStorage.lift(uniffiHandle);
+        return await jsCallback.getLatestOutgoingChange({ signal });
+      };
+      const uniffiHandleSuccess = (returnValue: OutgoingChange | undefined) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterOptionalTypeOutgoingChange.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SyncStorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSyncStorageError.lower.bind(
+          FfiConverterTypeSyncStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    updateRecordFromIncoming: (
+      uniffiHandle: bigint,
+      record: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<void> => {
+        const jsCallback = FfiConverterTypeSyncStorage.lift(uniffiHandle);
+        return await jsCallback.updateRecordFromIncoming(
+          FfiConverterTypeRecord.lift(record),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: void) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SyncStorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSyncStorageError.lower.bind(
+          FfiConverterTypeSyncStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    uniffiFree: (uniffiHandle: UniffiHandle): void => {
+      // SyncStorage: this will throw a stale handle error if the handle isn't found.
+      FfiConverterTypeSyncStorage.drop(uniffiHandle);
+    },
+  },
+  register: () => {
+    nativeModule().ubrn_uniffi_breez_sdk_common_fn_init_callback_vtable_syncstorage(
+      uniffiCallbackInterfaceSyncStorage.vtable
+    );
+  },
+};
+
 // FfiConverter for boolean | undefined
 const FfiConverterOptionalBool = new FfiConverterOptional(FfiConverterBool);
+
+// FfiConverter for OutgoingChange | undefined
+const FfiConverterOptionalTypeOutgoingChange = new FfiConverterOptional(
+  FfiConverterTypeOutgoingChange
+);
+
+// FfiConverter for Record | undefined
+const FfiConverterOptionalTypeRecord = new FfiConverterOptional(
+  FfiConverterTypeRecord
+);
 
 // FfiConverter for Symbol | undefined
 const FfiConverterOptionalTypeSymbol = new FfiConverterOptional(
@@ -5546,6 +7155,11 @@ const FfiConverterArrayTypeFiatCurrency = new FfiConverterArray(
   FfiConverterTypeFiatCurrency
 );
 
+// FfiConverter for Array<IncomingChange>
+const FfiConverterArrayTypeIncomingChange = new FfiConverterArray(
+  FfiConverterTypeIncomingChange
+);
+
 // FfiConverter for Array<LocaleOverrides>
 const FfiConverterArrayTypeLocaleOverrides = new FfiConverterArray(
   FfiConverterTypeLocaleOverrides
@@ -5556,8 +7170,18 @@ const FfiConverterArrayTypeLocalizedName = new FfiConverterArray(
   FfiConverterTypeLocalizedName
 );
 
+// FfiConverter for Array<OutgoingChange>
+const FfiConverterArrayTypeOutgoingChange = new FfiConverterArray(
+  FfiConverterTypeOutgoingChange
+);
+
 // FfiConverter for Array<Rate>
 const FfiConverterArrayTypeRate = new FfiConverterArray(FfiConverterTypeRate);
+
+// FfiConverter for Array<Record>
+const FfiConverterArrayTypeRecord = new FfiConverterArray(
+  FfiConverterTypeRecord
+);
 
 // FfiConverter for Array<string>
 const FfiConverterArrayString = new FfiConverterArray(FfiConverterString);
@@ -5644,9 +7268,90 @@ function uniffiEnsureInitialized() {
       'uniffi_breez_sdk_common_checksum_method_restclient_delete_request'
     );
   }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_add_outgoing_change() !==
+    18302
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_common_checksum_method_syncstorage_add_outgoing_change'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_complete_outgoing_sync() !==
+    1608
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_common_checksum_method_syncstorage_complete_outgoing_sync'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_get_pending_outgoing_changes() !==
+    43350
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_common_checksum_method_syncstorage_get_pending_outgoing_changes'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_get_last_revision() !==
+    11560
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_common_checksum_method_syncstorage_get_last_revision'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_insert_incoming_records() !==
+    65359
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_common_checksum_method_syncstorage_insert_incoming_records'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_delete_incoming_record() !==
+    6222
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_common_checksum_method_syncstorage_delete_incoming_record'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_rebase_pending_outgoing_records() !==
+    49312
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_common_checksum_method_syncstorage_rebase_pending_outgoing_records'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_get_incoming_records() !==
+    39529
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_common_checksum_method_syncstorage_get_incoming_records'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_get_latest_outgoing_change() !==
+    13979
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_common_checksum_method_syncstorage_get_latest_outgoing_change'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_common_checksum_method_syncstorage_update_record_from_incoming() !==
+    63333
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_common_checksum_method_syncstorage_update_record_from_incoming'
+    );
+  }
 
   uniffiCallbackInterfaceFiatService.register();
   uniffiCallbackInterfaceRestClient.register();
+  uniffiCallbackInterfaceSyncStorage.register();
 }
 
 export default Object.freeze({
@@ -5674,6 +7379,7 @@ export default Object.freeze({
     FfiConverterTypeExternalInputParser,
     FfiConverterTypeFiatCurrency,
     FfiConverterTypeFiatService,
+    FfiConverterTypeIncomingChange,
     FfiConverterTypeInputType,
     FfiConverterTypeLightningAddressDetails,
     FfiConverterTypeLnurlAuthRequestDetails,
@@ -5684,8 +7390,12 @@ export default Object.freeze({
     FfiConverterTypeLocaleOverrides,
     FfiConverterTypeLocalizedName,
     FfiConverterTypeMessageSuccessActionData,
+    FfiConverterTypeOutgoingChange,
     FfiConverterTypePaymentRequestSource,
     FfiConverterTypeRate,
+    FfiConverterTypeRecord,
+    FfiConverterTypeRecordChange,
+    FfiConverterTypeRecordId,
     FfiConverterTypeRestClient,
     FfiConverterTypeRestResponse,
     FfiConverterTypeSilentPaymentAddressDetails,
@@ -5694,6 +7404,8 @@ export default Object.freeze({
     FfiConverterTypeSuccessAction,
     FfiConverterTypeSuccessActionProcessed,
     FfiConverterTypeSymbol,
+    FfiConverterTypeSyncStorage,
+    FfiConverterTypeUnversionedRecordChange,
     FfiConverterTypeUrlSuccessActionData,
     FfiConverterTypecommon_u128,
   },

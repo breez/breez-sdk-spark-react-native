@@ -343,6 +343,9 @@ uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_lnurl_client(
 uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_payment_observer(
     void *ptr, void *payment_observer);
 /*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_real_time_sync_storage(
+    void *ptr, void *storage);
+/*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_rest_chain_service(
     void *ptr, RustBuffer url, RustBuffer credentials);
 void *uniffi_breez_sdk_spark_fn_clone_storage(void *ptr,
@@ -393,6 +396,8 @@ uniffi_breez_sdk_spark_fn_func_default_config(RustBuffer network,
 void *
 uniffi_breez_sdk_spark_fn_func_default_storage(RustBuffer data_dir,
                                                RustCallStatus *uniffi_out_err);
+void *uniffi_breez_sdk_spark_fn_func_default_sync_storage(
+    RustBuffer data_dir, RustCallStatus *uniffi_out_err);
 void uniffi_breez_sdk_spark_fn_func_init_logging(
     RustBuffer log_dir, RustBuffer app_logger, RustBuffer log_filter,
     RustCallStatus *uniffi_out_err);
@@ -526,6 +531,7 @@ void ffi_breez_sdk_spark_rust_future_complete_void(
 uint16_t uniffi_breez_sdk_spark_checksum_func_connect();
 uint16_t uniffi_breez_sdk_spark_checksum_func_default_config();
 uint16_t uniffi_breez_sdk_spark_checksum_func_default_storage();
+uint16_t uniffi_breez_sdk_spark_checksum_func_default_sync_storage();
 uint16_t uniffi_breez_sdk_spark_checksum_func_init_logging();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_utxos();
@@ -576,6 +582,8 @@ uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_lnurl_client();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_payment_observer();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_real_time_sync_storage();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service();
 uint16_t uniffi_breez_sdk_spark_checksum_method_storage_delete_cached_item();
@@ -6081,6 +6089,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_payment_observer(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_real_time_sync_"
+        "storage"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "sdkbuilder_with_real_time_sync_storage"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_real_time_sync_storage(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_rest_chain_"
         "service"] = jsi::Function::createFromHostFunction(
       rt,
@@ -6298,6 +6318,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this->cpp_uniffi_breez_sdk_spark_fn_func_default_storage(
                 rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_func_default_sync_storage"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_func_default_sync_storage"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_func_default_sync_storage(
+                    rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_fn_func_init_logging"] =
       jsi::Function::createFromHostFunction(
@@ -6918,6 +6950,19 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_func_default_storage(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_func_default_sync_storage"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_breez_sdk_spark_checksum_func_default_sync_storage"),
+          0,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_checksum_func_default_sync_storage(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_checksum_func_init_logging"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -7392,6 +7437,19 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
             ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_payment_observer(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_real_time_"
+        "sync_storage"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "sdkbuilder_with_real_time_sync_storage"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_real_time_sync_storage(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_"
@@ -8489,6 +8547,18 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_real_time_sync_storage(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_real_time_sync_storage(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_rest_chain_service(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -8712,6 +8782,21 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_default_storage(
   RustCallStatus status =
       uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
   auto value = uniffi_breez_sdk_spark_fn_func_default_storage(
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[0]),
+      &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_default_sync_storage(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_spark_fn_func_default_sync_storage(
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[0]),
       &status);
@@ -9378,6 +9463,14 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_checksum_func_default_storage(
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_func_default_sync_storage(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_checksum_func_default_sync_storage();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_checksum_func_init_logging(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -9710,6 +9803,15 @@ jsi::Value NativeBreezSdkSpark::
         size_t count) {
   auto value =
       uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_payment_observer();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_real_time_sync_storage(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_real_time_sync_storage();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }

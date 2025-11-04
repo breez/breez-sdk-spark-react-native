@@ -207,6 +207,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     paymentObserver: bigint
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_real_time_sync_storage(
+    ptr: bigint,
+    storage: bigint
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_rest_chain_service(
     ptr: bigint,
     url: Uint8Array,
@@ -280,6 +284,10 @@ interface NativeModuleInterface {
     uniffi_out_err: UniffiRustCallStatus
   ): Uint8Array;
   ubrn_uniffi_breez_sdk_spark_fn_func_default_storage(
+    dataDir: Uint8Array,
+    uniffi_out_err: UniffiRustCallStatus
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_func_default_sync_storage(
     dataDir: Uint8Array,
     uniffi_out_err: UniffiRustCallStatus
   ): bigint;
@@ -435,6 +443,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_func_connect(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_default_config(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_default_storage(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_func_default_sync_storage(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_init_logging(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_utxos(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_status(): number;
@@ -474,6 +483,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_lnurl_client(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_payment_observer(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_real_time_sync_storage(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_cached_item(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_cached_item(): number;

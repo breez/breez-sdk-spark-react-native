@@ -1,4 +1,4 @@
-import { type BitcoinAddressDetails, type Bolt11InvoiceDetails, type ExternalInputParser, type FiatCurrency, type FiatService, type LnurlPayRequestDetails, type LnurlWithdrawRequestDetails, type Rate, type RestClient, type SparkInvoiceDetails, InputType, SuccessAction, SuccessActionProcessed } from './breez_sdk_common';
+import { type BitcoinAddressDetails, type Bolt11InvoiceDetails, type ExternalInputParser, type FiatCurrency, type FiatService, type LnurlPayRequestDetails, type LnurlWithdrawRequestDetails, type Rate, type RestClient, type SparkInvoiceDetails, type SyncStorage, InputType, SuccessAction, SuccessActionProcessed } from './breez_sdk_common';
 import { type UniffiByteArray, type UniffiRustArcPtr, type UnsafeMutableRawPointer, FfiConverterObject, FfiConverterObjectWithCallbacks, RustBuffer, UniffiAbstractObject, destructorGuardSymbol, pointerLiteralSymbol, uniffiTypeNameSymbol } from 'uniffi-bindgen-react-native';
 /**
  * Connects to the Spark network using the provided configuration and mnemonic.
@@ -16,6 +16,7 @@ export declare function connect(request: ConnectRequest, asyncOpts_?: {
 }): Promise<BreezSdkInterface>;
 export declare function defaultConfig(network: Network): Config;
 export declare function defaultStorage(dataDir: string): Storage;
+export declare function defaultSyncStorage(dataDir: string): SyncStorage;
 export declare function initLogging(logDir: string | undefined, appLogger: Logger | undefined, logFilter: string | undefined): void;
 /**
  * Trait for event listeners
@@ -181,6 +182,10 @@ export type Config = {
      * Set this to false in order to prevent their use.
      */
     useDefaultExternalInputParsers: boolean;
+    /**
+     * Url to use for the real-time sync server. Defaults to the Breez real-time sync server.
+     */
+    realTimeSyncServerUrl: string | undefined;
 };
 /**
  * Generated factory for {@link Config} record objects.
@@ -1842,14 +1847,14 @@ export declare const DepositClaimError: Readonly<{
         new (inner: {
             tx: string;
             vout: number;
-            maxFee: Fee;
+            maxFee: Fee | undefined;
             actualFee: bigint;
         }): {
             readonly tag: DepositClaimError_Tags.DepositClaimFeeExceeded;
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
-                maxFee: Fee;
+                maxFee: Fee | undefined;
                 actualFee: bigint;
             }>;
             /**
@@ -1861,14 +1866,14 @@ export declare const DepositClaimError: Readonly<{
         "new"(inner: {
             tx: string;
             vout: number;
-            maxFee: Fee;
+            maxFee: Fee | undefined;
             actualFee: bigint;
         }): {
             readonly tag: DepositClaimError_Tags.DepositClaimFeeExceeded;
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
-                maxFee: Fee;
+                maxFee: Fee | undefined;
                 actualFee: bigint;
             }>;
             /**
@@ -1882,7 +1887,7 @@ export declare const DepositClaimError: Readonly<{
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
-                maxFee: Fee;
+                maxFee: Fee | undefined;
                 actualFee: bigint;
             }>;
             /**
@@ -3378,14 +3383,14 @@ export declare const SdkError: Readonly<{
         new (inner: {
             tx: string;
             vout: number;
-            maxFee: Fee;
+            maxFee: Fee | undefined;
             actualFee: bigint;
         }): {
             readonly tag: SdkError_Tags.DepositClaimFeeExceeded;
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
-                maxFee: Fee;
+                maxFee: Fee | undefined;
                 actualFee: bigint;
             }>;
             /**
@@ -3401,14 +3406,14 @@ export declare const SdkError: Readonly<{
         "new"(inner: {
             tx: string;
             vout: number;
-            maxFee: Fee;
+            maxFee: Fee | undefined;
             actualFee: bigint;
         }): {
             readonly tag: SdkError_Tags.DepositClaimFeeExceeded;
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
-                maxFee: Fee;
+                maxFee: Fee | undefined;
                 actualFee: bigint;
             }>;
             /**
@@ -3426,7 +3431,7 @@ export declare const SdkError: Readonly<{
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
-                maxFee: Fee;
+                maxFee: Fee | undefined;
                 actualFee: bigint;
             }>;
             /**
@@ -3444,7 +3449,7 @@ export declare const SdkError: Readonly<{
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
-                maxFee: Fee;
+                maxFee: Fee | undefined;
                 actualFee: bigint;
             }>;
             /**
@@ -3462,7 +3467,7 @@ export declare const SdkError: Readonly<{
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
-                maxFee: Fee;
+                maxFee: Fee | undefined;
                 actualFee: bigint;
             }>;
             /**
@@ -3477,7 +3482,7 @@ export declare const SdkError: Readonly<{
         }): Readonly<{
             tx: string;
             vout: number;
-            maxFee: Fee;
+            maxFee: Fee | undefined;
             actualFee: bigint;
         }>;
         isError(error: unknown): error is Error;
@@ -3729,8 +3734,9 @@ export declare const SdkError: Readonly<{
 export type SdkError = InstanceType<(typeof SdkError)[keyof Omit<typeof SdkError, 'instanceOf'>]>;
 export declare enum SdkEvent_Tags {
     Synced = "Synced",
-    ClaimDepositsFailed = "ClaimDepositsFailed",
-    ClaimDepositsSucceeded = "ClaimDepositsSucceeded",
+    DataSynced = "DataSynced",
+    UnclaimedDeposits = "UnclaimedDeposits",
+    ClaimedDeposits = "ClaimedDeposits",
     PaymentSucceeded = "PaymentSucceeded",
     PaymentFailed = "PaymentFailed"
 }
@@ -3765,11 +3771,54 @@ export declare const SdkEvent: Readonly<{
             readonly [uniffiTypeNameSymbol]: "SdkEvent";
         };
     };
-    ClaimDepositsFailed: {
+    DataSynced: {
+        new (inner: {
+            /**
+             * Value indicating whether new data was pulled through real-time sync.
+             */ didPullNewRecords: boolean;
+        }): {
+            readonly tag: SdkEvent_Tags.DataSynced;
+            readonly inner: Readonly<{
+                didPullNewRecords: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+        "new"(inner: {
+            /**
+             * Value indicating whether new data was pulled through real-time sync.
+             */ didPullNewRecords: boolean;
+        }): {
+            readonly tag: SdkEvent_Tags.DataSynced;
+            readonly inner: Readonly<{
+                didPullNewRecords: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkEvent_Tags.DataSynced;
+            readonly inner: Readonly<{
+                didPullNewRecords: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+    };
+    UnclaimedDeposits: {
         new (inner: {
             unclaimedDeposits: Array<DepositInfo>;
         }): {
-            readonly tag: SdkEvent_Tags.ClaimDepositsFailed;
+            readonly tag: SdkEvent_Tags.UnclaimedDeposits;
             readonly inner: Readonly<{
                 unclaimedDeposits: Array<DepositInfo>;
             }>;
@@ -3782,7 +3831,7 @@ export declare const SdkEvent: Readonly<{
         "new"(inner: {
             unclaimedDeposits: Array<DepositInfo>;
         }): {
-            readonly tag: SdkEvent_Tags.ClaimDepositsFailed;
+            readonly tag: SdkEvent_Tags.UnclaimedDeposits;
             readonly inner: Readonly<{
                 unclaimedDeposits: Array<DepositInfo>;
             }>;
@@ -3793,7 +3842,7 @@ export declare const SdkEvent: Readonly<{
             readonly [uniffiTypeNameSymbol]: "SdkEvent";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: SdkEvent_Tags.ClaimDepositsFailed;
+            readonly tag: SdkEvent_Tags.UnclaimedDeposits;
             readonly inner: Readonly<{
                 unclaimedDeposits: Array<DepositInfo>;
             }>;
@@ -3804,11 +3853,11 @@ export declare const SdkEvent: Readonly<{
             readonly [uniffiTypeNameSymbol]: "SdkEvent";
         };
     };
-    ClaimDepositsSucceeded: {
+    ClaimedDeposits: {
         new (inner: {
             claimedDeposits: Array<DepositInfo>;
         }): {
-            readonly tag: SdkEvent_Tags.ClaimDepositsSucceeded;
+            readonly tag: SdkEvent_Tags.ClaimedDeposits;
             readonly inner: Readonly<{
                 claimedDeposits: Array<DepositInfo>;
             }>;
@@ -3821,7 +3870,7 @@ export declare const SdkEvent: Readonly<{
         "new"(inner: {
             claimedDeposits: Array<DepositInfo>;
         }): {
-            readonly tag: SdkEvent_Tags.ClaimDepositsSucceeded;
+            readonly tag: SdkEvent_Tags.ClaimedDeposits;
             readonly inner: Readonly<{
                 claimedDeposits: Array<DepositInfo>;
             }>;
@@ -3832,7 +3881,7 @@ export declare const SdkEvent: Readonly<{
             readonly [uniffiTypeNameSymbol]: "SdkEvent";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: SdkEvent_Tags.ClaimDepositsSucceeded;
+            readonly tag: SdkEvent_Tags.ClaimedDeposits;
             readonly inner: Readonly<{
                 claimedDeposits: Array<DepositInfo>;
             }>;
@@ -5241,6 +5290,9 @@ export interface SdkBuilderInterface {
     withPaymentObserver(paymentObserver: PaymentObserver, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
+    withRealTimeSyncStorage(storage: SyncStorage, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     /**
      * Sets the REST chain service to be used by the SDK.
      * Arguments:
@@ -5306,6 +5358,9 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
      * - `payment_observer`: The payment observer to be used.
      */
     withPaymentObserver(paymentObserver: PaymentObserver, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    withRealTimeSyncStorage(storage: SyncStorage, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
