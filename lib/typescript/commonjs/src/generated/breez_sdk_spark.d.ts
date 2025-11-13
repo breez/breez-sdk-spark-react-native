@@ -438,6 +438,28 @@ export declare const Bolt12OfferDetails: Readonly<{
      */
     defaults: () => Partial<Bolt12OfferDetails>;
 }>;
+export type BurnIssuerTokenRequest = {
+    amount: U128;
+};
+/**
+ * Generated factory for {@link BurnIssuerTokenRequest} record objects.
+ */
+export declare const BurnIssuerTokenRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link BurnIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<BurnIssuerTokenRequest> & Required<Omit<BurnIssuerTokenRequest, never>>) => BurnIssuerTokenRequest;
+    /**
+     * Create a frozen instance of {@link BurnIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<BurnIssuerTokenRequest> & Required<Omit<BurnIssuerTokenRequest, never>>) => BurnIssuerTokenRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<BurnIssuerTokenRequest>;
+}>;
 export type CheckLightningAddressRequest = {
     username: string;
 };
@@ -643,6 +665,32 @@ export declare const ConnectRequest: Readonly<{
      */
     defaults: () => Partial<ConnectRequest>;
 }>;
+export type CreateIssuerTokenRequest = {
+    name: string;
+    ticker: string;
+    decimals: number;
+    isFreezable: boolean;
+    maxSupply: U128;
+};
+/**
+ * Generated factory for {@link CreateIssuerTokenRequest} record objects.
+ */
+export declare const CreateIssuerTokenRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link CreateIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CreateIssuerTokenRequest> & Required<Omit<CreateIssuerTokenRequest, never>>) => CreateIssuerTokenRequest;
+    /**
+     * Create a frozen instance of {@link CreateIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CreateIssuerTokenRequest> & Required<Omit<CreateIssuerTokenRequest, never>>) => CreateIssuerTokenRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CreateIssuerTokenRequest>;
+}>;
 export type Credentials = {
     username: string;
     password: string;
@@ -786,6 +834,51 @@ export declare const FiatCurrency: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<FiatCurrency>;
+}>;
+export type FreezeIssuerTokenRequest = {
+    address: string;
+};
+/**
+ * Generated factory for {@link FreezeIssuerTokenRequest} record objects.
+ */
+export declare const FreezeIssuerTokenRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link FreezeIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<FreezeIssuerTokenRequest> & Required<Omit<FreezeIssuerTokenRequest, never>>) => FreezeIssuerTokenRequest;
+    /**
+     * Create a frozen instance of {@link FreezeIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<FreezeIssuerTokenRequest> & Required<Omit<FreezeIssuerTokenRequest, never>>) => FreezeIssuerTokenRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<FreezeIssuerTokenRequest>;
+}>;
+export type FreezeIssuerTokenResponse = {
+    impactedOutputIds: Array<string>;
+    impactedTokenAmount: U128;
+};
+/**
+ * Generated factory for {@link FreezeIssuerTokenResponse} record objects.
+ */
+export declare const FreezeIssuerTokenResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link FreezeIssuerTokenResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<FreezeIssuerTokenResponse> & Required<Omit<FreezeIssuerTokenResponse, never>>) => FreezeIssuerTokenResponse;
+    /**
+     * Create a frozen instance of {@link FreezeIssuerTokenResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<FreezeIssuerTokenResponse> & Required<Omit<FreezeIssuerTokenResponse, never>>) => FreezeIssuerTokenResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<FreezeIssuerTokenResponse>;
 }>;
 /**
  * Request to get the balance of the wallet
@@ -1574,6 +1667,28 @@ export declare const MessageSuccessActionData: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<MessageSuccessActionData>;
+}>;
+export type MintIssuerTokenRequest = {
+    amount: U128;
+};
+/**
+ * Generated factory for {@link MintIssuerTokenRequest} record objects.
+ */
+export declare const MintIssuerTokenRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link MintIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<MintIssuerTokenRequest> & Required<Omit<MintIssuerTokenRequest, never>>) => MintIssuerTokenRequest;
+    /**
+     * Create a frozen instance of {@link MintIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<MintIssuerTokenRequest> & Required<Omit<MintIssuerTokenRequest, never>>) => MintIssuerTokenRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<MintIssuerTokenRequest>;
 }>;
 export type OutgoingChange = {
     change: RecordChange;
@@ -2530,6 +2645,51 @@ export declare const TxStatus: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<TxStatus>;
+}>;
+export type UnfreezeIssuerTokenRequest = {
+    address: string;
+};
+/**
+ * Generated factory for {@link UnfreezeIssuerTokenRequest} record objects.
+ */
+export declare const UnfreezeIssuerTokenRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link UnfreezeIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<UnfreezeIssuerTokenRequest> & Required<Omit<UnfreezeIssuerTokenRequest, never>>) => UnfreezeIssuerTokenRequest;
+    /**
+     * Create a frozen instance of {@link UnfreezeIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<UnfreezeIssuerTokenRequest> & Required<Omit<UnfreezeIssuerTokenRequest, never>>) => UnfreezeIssuerTokenRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<UnfreezeIssuerTokenRequest>;
+}>;
+export type UnfreezeIssuerTokenResponse = {
+    impactedOutputIds: Array<string>;
+    impactedTokenAmount: U128;
+};
+/**
+ * Generated factory for {@link UnfreezeIssuerTokenResponse} record objects.
+ */
+export declare const UnfreezeIssuerTokenResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link UnfreezeIssuerTokenResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<UnfreezeIssuerTokenResponse> & Required<Omit<UnfreezeIssuerTokenResponse, never>>) => UnfreezeIssuerTokenResponse;
+    /**
+     * Create a frozen instance of {@link UnfreezeIssuerTokenResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<UnfreezeIssuerTokenResponse> & Required<Omit<UnfreezeIssuerTokenResponse, never>>) => UnfreezeIssuerTokenResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<UnfreezeIssuerTokenResponse>;
 }>;
 export type UnversionedRecordChange = {
     id: RecordId;
@@ -7974,6 +8134,10 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<GetPaymentResponse>;
     /**
+     * Returns an instance of the [`TokenIssuer`] for managing token issuance.
+     */
+    getTokenIssuer(): TokenIssuerInterface;
+    /**
      * Returns the metadata for the given token identifiers.
      *
      * Results are not guaranteed to be in the same order as the input token identifiers.
@@ -8186,6 +8350,10 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     getPayment(request: GetPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<GetPaymentResponse>;
+    /**
+     * Returns an instance of the [`TokenIssuer`] for managing token issuance.
+     */
+    getTokenIssuer(): TokenIssuerInterface;
     /**
      * Returns the metadata for the given token identifiers.
      *
@@ -9059,6 +9227,227 @@ export declare class SyncStorageImpl extends UniffiAbstractObject implements Syn
     uniffiDestroy(): void;
     static instanceOf(obj: any): obj is SyncStorageImpl;
 }
+export interface TokenIssuerInterface {
+    /**
+     * Burns supply of the issuer token
+     *
+     * # Arguments
+     *
+     * * `request`: The request containing the amount of the supply to burn
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `Payment` - The payment representing the burn transaction
+     * * `SdkError` - If there was an error during the burn process
+     */
+    burnIssuerToken(request: BurnIssuerTokenRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Payment>;
+    /**
+     * Creates a new issuer token
+     *
+     * # Arguments
+     *
+     * * `request`: The request containing the token parameters
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `TokenMetadata` - The metadata of the created token
+     * * `SdkError` - If there was an error during the token creation
+     */
+    createIssuerToken(request: CreateIssuerTokenRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<TokenMetadata>;
+    /**
+     * Freezes tokens held at the specified address
+     *
+     * # Arguments
+     *
+     * * `request`: The request containing the spark address where the tokens to be frozen are held
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `FreezeIssuerTokenResponse` - The response containing details of the freeze operation
+     * * `SdkError` - If there was an error during the freeze process
+     */
+    freezeIssuerToken(request: FreezeIssuerTokenRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<FreezeIssuerTokenResponse>;
+    /**
+     * Gets the issuer token balance
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `TokenBalance` - The balance of the issuer token
+     * * `SdkError` - If there was an error during the retrieval or no issuer token exists
+     */
+    getIssuerTokenBalance(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<TokenBalance>;
+    /**
+     * Gets the issuer token metadata
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `TokenMetadata` - The metadata of the issuer token
+     * * `SdkError` - If there was an error during the retrieval or no issuer token exists
+     */
+    getIssuerTokenMetadata(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<TokenMetadata>;
+    /**
+     * Mints supply for the issuer token
+     *
+     * # Arguments
+     *
+     * * `request`: The request contiaining the amount of the supply to mint
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `Payment` - The payment representing the minting transaction
+     * * `SdkError` - If there was an error during the minting process
+     */
+    mintIssuerToken(request: MintIssuerTokenRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Payment>;
+    /**
+     * Unfreezes tokens held at the specified address
+     *
+     * # Arguments
+     *
+     * * `request`: The request containing the spark address where the tokens to be unfrozen are held
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `UnfreezeIssuerTokenResponse` - The response containing details of the unfreeze operation
+     * * `SdkError` - If there was an error during the unfreeze process
+     */
+    unfreezeIssuerToken(request: UnfreezeIssuerTokenRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<UnfreezeIssuerTokenResponse>;
+}
+export declare class TokenIssuer extends UniffiAbstractObject implements TokenIssuerInterface {
+    readonly [uniffiTypeNameSymbol] = "TokenIssuer";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    /**
+     * Burns supply of the issuer token
+     *
+     * # Arguments
+     *
+     * * `request`: The request containing the amount of the supply to burn
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `Payment` - The payment representing the burn transaction
+     * * `SdkError` - If there was an error during the burn process
+     */
+    burnIssuerToken(request: BurnIssuerTokenRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Payment>;
+    /**
+     * Creates a new issuer token
+     *
+     * # Arguments
+     *
+     * * `request`: The request containing the token parameters
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `TokenMetadata` - The metadata of the created token
+     * * `SdkError` - If there was an error during the token creation
+     */
+    createIssuerToken(request: CreateIssuerTokenRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<TokenMetadata>;
+    /**
+     * Freezes tokens held at the specified address
+     *
+     * # Arguments
+     *
+     * * `request`: The request containing the spark address where the tokens to be frozen are held
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `FreezeIssuerTokenResponse` - The response containing details of the freeze operation
+     * * `SdkError` - If there was an error during the freeze process
+     */
+    freezeIssuerToken(request: FreezeIssuerTokenRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<FreezeIssuerTokenResponse>;
+    /**
+     * Gets the issuer token balance
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `TokenBalance` - The balance of the issuer token
+     * * `SdkError` - If there was an error during the retrieval or no issuer token exists
+     */
+    getIssuerTokenBalance(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<TokenBalance>;
+    /**
+     * Gets the issuer token metadata
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `TokenMetadata` - The metadata of the issuer token
+     * * `SdkError` - If there was an error during the retrieval or no issuer token exists
+     */
+    getIssuerTokenMetadata(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<TokenMetadata>;
+    /**
+     * Mints supply for the issuer token
+     *
+     * # Arguments
+     *
+     * * `request`: The request contiaining the amount of the supply to mint
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `Payment` - The payment representing the minting transaction
+     * * `SdkError` - If there was an error during the minting process
+     */
+    mintIssuerToken(request: MintIssuerTokenRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Payment>;
+    /**
+     * Unfreezes tokens held at the specified address
+     *
+     * # Arguments
+     *
+     * * `request`: The request containing the spark address where the tokens to be unfrozen are held
+     *
+     * # Returns
+     *
+     * Result containing either:
+     * * `UnfreezeIssuerTokenResponse` - The response containing details of the unfreeze operation
+     * * `SdkError` - If there was an error during the unfreeze process
+     */
+    unfreezeIssuerToken(request: UnfreezeIssuerTokenRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<UnfreezeIssuerTokenResponse>;
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is TokenIssuer;
+}
 /**
  * This should be called before anything else.
  *
@@ -9208,6 +9597,13 @@ declare const _default: Readonly<{
             lower(value: Bolt12OfferDetails): UniffiByteArray;
         };
         FfiConverterTypeBreezSdk: FfiConverterObject<BreezSdkInterface>;
+        FfiConverterTypeBurnIssuerTokenRequest: {
+            read(from: RustBuffer): BurnIssuerTokenRequest;
+            write(value: BurnIssuerTokenRequest, into: RustBuffer): void;
+            allocationSize(value: BurnIssuerTokenRequest): number;
+            lift(value: UniffiByteArray): BurnIssuerTokenRequest;
+            lower(value: BurnIssuerTokenRequest): UniffiByteArray;
+        };
         FfiConverterTypeCheckLightningAddressRequest: {
             read(from: RustBuffer): CheckLightningAddressRequest;
             write(value: CheckLightningAddressRequest, into: RustBuffer): void;
@@ -9256,6 +9652,13 @@ declare const _default: Readonly<{
             allocationSize(value: ConnectRequest): number;
             lift(value: UniffiByteArray): ConnectRequest;
             lower(value: ConnectRequest): UniffiByteArray;
+        };
+        FfiConverterTypeCreateIssuerTokenRequest: {
+            read(from: RustBuffer): CreateIssuerTokenRequest;
+            write(value: CreateIssuerTokenRequest, into: RustBuffer): void;
+            allocationSize(value: CreateIssuerTokenRequest): number;
+            lift(value: UniffiByteArray): CreateIssuerTokenRequest;
+            lower(value: CreateIssuerTokenRequest): UniffiByteArray;
         };
         FfiConverterTypeCredentials: {
             read(from: RustBuffer): Credentials;
@@ -9307,6 +9710,20 @@ declare const _default: Readonly<{
             lower(value: FiatCurrency): UniffiByteArray;
         };
         FfiConverterTypeFiatService: FfiConverterObjectWithCallbacks<FiatService>;
+        FfiConverterTypeFreezeIssuerTokenRequest: {
+            read(from: RustBuffer): FreezeIssuerTokenRequest;
+            write(value: FreezeIssuerTokenRequest, into: RustBuffer): void;
+            allocationSize(value: FreezeIssuerTokenRequest): number;
+            lift(value: UniffiByteArray): FreezeIssuerTokenRequest;
+            lower(value: FreezeIssuerTokenRequest): UniffiByteArray;
+        };
+        FfiConverterTypeFreezeIssuerTokenResponse: {
+            read(from: RustBuffer): FreezeIssuerTokenResponse;
+            write(value: FreezeIssuerTokenResponse, into: RustBuffer): void;
+            allocationSize(value: FreezeIssuerTokenResponse): number;
+            lift(value: UniffiByteArray): FreezeIssuerTokenResponse;
+            lower(value: FreezeIssuerTokenResponse): UniffiByteArray;
+        };
         FfiConverterTypeGetInfoRequest: {
             read(from: RustBuffer): GetInfoRequest;
             write(value: GetInfoRequest, into: RustBuffer): void;
@@ -9516,6 +9933,13 @@ declare const _default: Readonly<{
             allocationSize(value: MessageSuccessActionData): number;
             lift(value: UniffiByteArray): MessageSuccessActionData;
             lower(value: MessageSuccessActionData): UniffiByteArray;
+        };
+        FfiConverterTypeMintIssuerTokenRequest: {
+            read(from: RustBuffer): MintIssuerTokenRequest;
+            write(value: MintIssuerTokenRequest, into: RustBuffer): void;
+            allocationSize(value: MintIssuerTokenRequest): number;
+            lift(value: UniffiByteArray): MintIssuerTokenRequest;
+            lower(value: MintIssuerTokenRequest): UniffiByteArray;
         };
         FfiConverterTypeNetwork: {
             read(from: RustBuffer): Network;
@@ -9851,6 +10275,7 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): TokenBalance;
             lower(value: TokenBalance): UniffiByteArray;
         };
+        FfiConverterTypeTokenIssuer: FfiConverterObject<TokenIssuerInterface>;
         FfiConverterTypeTokenMetadata: {
             read(from: RustBuffer): TokenMetadata;
             write(value: TokenMetadata, into: RustBuffer): void;
@@ -9864,6 +10289,20 @@ declare const _default: Readonly<{
             allocationSize(value: TxStatus): number;
             lift(value: UniffiByteArray): TxStatus;
             lower(value: TxStatus): UniffiByteArray;
+        };
+        FfiConverterTypeUnfreezeIssuerTokenRequest: {
+            read(from: RustBuffer): UnfreezeIssuerTokenRequest;
+            write(value: UnfreezeIssuerTokenRequest, into: RustBuffer): void;
+            allocationSize(value: UnfreezeIssuerTokenRequest): number;
+            lift(value: UniffiByteArray): UnfreezeIssuerTokenRequest;
+            lower(value: UnfreezeIssuerTokenRequest): UniffiByteArray;
+        };
+        FfiConverterTypeUnfreezeIssuerTokenResponse: {
+            read(from: RustBuffer): UnfreezeIssuerTokenResponse;
+            write(value: UnfreezeIssuerTokenResponse, into: RustBuffer): void;
+            allocationSize(value: UnfreezeIssuerTokenResponse): number;
+            lift(value: UniffiByteArray): UnfreezeIssuerTokenResponse;
+            lower(value: UnfreezeIssuerTokenResponse): UniffiByteArray;
         };
         FfiConverterTypeUnversionedRecordChange: {
             read(from: RustBuffer): UnversionedRecordChange;

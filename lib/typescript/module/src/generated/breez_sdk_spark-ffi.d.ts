@@ -20,6 +20,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_info(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_lightning_address(ptr: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_payment(ptr: bigint, request: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_token_issuer(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_tokens_metadata(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_user_settings(ptr: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_list_fiat_currencies(ptr: bigint): bigint;
@@ -91,6 +92,15 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_syncstorage_get_incoming_records(ptr: bigint, limit: number): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_syncstorage_get_latest_outgoing_change(ptr: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_syncstorage_update_record_from_incoming(ptr: bigint, record: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_clone_tokenissuer(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_free_tokenissuer(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): void;
+    ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_burn_issuer_token(ptr: bigint, request: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_create_issuer_token(ptr: bigint, request: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_freeze_issuer_token(ptr: bigint, request: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_balance(ptr: bigint): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_metadata(ptr: bigint): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_mint_issuer_token(ptr: bigint, request: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_unfreeze_issuer_token(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_connect(request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_default_config(network: Uint8Array, uniffi_out_err: UniffiRustCallStatus): Uint8Array;
     ubrn_uniffi_breez_sdk_spark_fn_func_init_logging(logDir: Uint8Array, appLogger: Uint8Array, logFilter: Uint8Array, uniffi_out_err: UniffiRustCallStatus): void;
@@ -162,6 +172,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_lightning_address(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_payment(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_token_issuer(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_tokens_metadata(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_user_settings(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_currencies(): number;
@@ -220,6 +231,13 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_checksum_method_syncstorage_get_incoming_records(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_syncstorage_get_latest_outgoing_change(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_syncstorage_update_record_from_incoming(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_burn_issuer_token(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_create_issuer_token(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_freeze_issuer_token(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_balance(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_metadata(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_mint_issuer_token(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_unfreeze_issuer_token(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_eventlistener_on_event(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_logger_log(): number;
@@ -240,6 +258,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_internal_fn_method_sdkbuilder_ffi__bless_pointer(pointer: bigint, uniffi_out_err: UniffiRustCallStatus): UniffiRustArcPtr;
     ubrn_uniffi_internal_fn_method_storage_ffi__bless_pointer(pointer: bigint, uniffi_out_err: UniffiRustCallStatus): UniffiRustArcPtr;
     ubrn_uniffi_internal_fn_method_syncstorage_ffi__bless_pointer(pointer: bigint, uniffi_out_err: UniffiRustCallStatus): UniffiRustArcPtr;
+    ubrn_uniffi_internal_fn_method_tokenissuer_ffi__bless_pointer(pointer: bigint, uniffi_out_err: UniffiRustCallStatus): UniffiRustArcPtr;
 }
 declare const getter: () => NativeModuleInterface;
 export default getter;

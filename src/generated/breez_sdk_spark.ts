@@ -1299,6 +1299,60 @@ const FfiConverterTypeBolt12OfferDetails = (() => {
   return new FFIConverter();
 })();
 
+export type BurnIssuerTokenRequest = {
+  amount: U128;
+};
+
+/**
+ * Generated factory for {@link BurnIssuerTokenRequest} record objects.
+ */
+export const BurnIssuerTokenRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      BurnIssuerTokenRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link BurnIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link BurnIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<BurnIssuerTokenRequest>,
+  });
+})();
+
+const FfiConverterTypeBurnIssuerTokenRequest = (() => {
+  type TypeName = BurnIssuerTokenRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        amount: FfiConverterTypeu128.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeu128.write(value.amount, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterTypeu128.allocationSize(value.amount);
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type CheckLightningAddressRequest = {
   username: string;
 };
@@ -1775,6 +1829,78 @@ const FfiConverterTypeConnectRequest = (() => {
   return new FFIConverter();
 })();
 
+export type CreateIssuerTokenRequest = {
+  name: string;
+  ticker: string;
+  decimals: /*u32*/ number;
+  isFreezable: boolean;
+  maxSupply: U128;
+};
+
+/**
+ * Generated factory for {@link CreateIssuerTokenRequest} record objects.
+ */
+export const CreateIssuerTokenRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      CreateIssuerTokenRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link CreateIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link CreateIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<CreateIssuerTokenRequest>,
+  });
+})();
+
+const FfiConverterTypeCreateIssuerTokenRequest = (() => {
+  type TypeName = CreateIssuerTokenRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        name: FfiConverterString.read(from),
+        ticker: FfiConverterString.read(from),
+        decimals: FfiConverterUInt32.read(from),
+        isFreezable: FfiConverterBool.read(from),
+        maxSupply: FfiConverterTypeu128.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.name, into);
+      FfiConverterString.write(value.ticker, into);
+      FfiConverterUInt32.write(value.decimals, into);
+      FfiConverterBool.write(value.isFreezable, into);
+      FfiConverterTypeu128.write(value.maxSupply, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.name) +
+        FfiConverterString.allocationSize(value.ticker) +
+        FfiConverterUInt32.allocationSize(value.decimals) +
+        FfiConverterBool.allocationSize(value.isFreezable) +
+        FfiConverterTypeu128.allocationSize(value.maxSupply)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type Credentials = {
   username: string;
   password: string;
@@ -2122,6 +2248,120 @@ const FfiConverterTypeFiatCurrency = (() => {
       return (
         FfiConverterString.allocationSize(value.id) +
         FfiConverterTypeCurrencyInfo.allocationSize(value.info)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type FreezeIssuerTokenRequest = {
+  address: string;
+};
+
+/**
+ * Generated factory for {@link FreezeIssuerTokenRequest} record objects.
+ */
+export const FreezeIssuerTokenRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      FreezeIssuerTokenRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link FreezeIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link FreezeIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<FreezeIssuerTokenRequest>,
+  });
+})();
+
+const FfiConverterTypeFreezeIssuerTokenRequest = (() => {
+  type TypeName = FreezeIssuerTokenRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        address: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.address, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterString.allocationSize(value.address);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type FreezeIssuerTokenResponse = {
+  impactedOutputIds: Array<string>;
+  impactedTokenAmount: U128;
+};
+
+/**
+ * Generated factory for {@link FreezeIssuerTokenResponse} record objects.
+ */
+export const FreezeIssuerTokenResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      FreezeIssuerTokenResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link FreezeIssuerTokenResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link FreezeIssuerTokenResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<FreezeIssuerTokenResponse>,
+  });
+})();
+
+const FfiConverterTypeFreezeIssuerTokenResponse = (() => {
+  type TypeName = FreezeIssuerTokenResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        impactedOutputIds: FfiConverterArrayString.read(from),
+        impactedTokenAmount: FfiConverterTypeu128.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayString.write(value.impactedOutputIds, into);
+      FfiConverterTypeu128.write(value.impactedTokenAmount, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayString.allocationSize(value.impactedOutputIds) +
+        FfiConverterTypeu128.allocationSize(value.impactedTokenAmount)
       );
     }
   }
@@ -3970,6 +4210,60 @@ const FfiConverterTypeMessageSuccessActionData = (() => {
     }
     allocationSize(value: TypeName): number {
       return FfiConverterString.allocationSize(value.message);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type MintIssuerTokenRequest = {
+  amount: U128;
+};
+
+/**
+ * Generated factory for {@link MintIssuerTokenRequest} record objects.
+ */
+export const MintIssuerTokenRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      MintIssuerTokenRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link MintIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link MintIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<MintIssuerTokenRequest>,
+  });
+})();
+
+const FfiConverterTypeMintIssuerTokenRequest = (() => {
+  type TypeName = MintIssuerTokenRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        amount: FfiConverterTypeu128.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeu128.write(value.amount, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterTypeu128.allocationSize(value.amount);
     }
   }
   return new FFIConverter();
@@ -6287,6 +6581,120 @@ const FfiConverterTypeTxStatus = (() => {
         FfiConverterBool.allocationSize(value.confirmed) +
         FfiConverterOptionalUInt32.allocationSize(value.blockHeight) +
         FfiConverterOptionalUInt64.allocationSize(value.blockTime)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type UnfreezeIssuerTokenRequest = {
+  address: string;
+};
+
+/**
+ * Generated factory for {@link UnfreezeIssuerTokenRequest} record objects.
+ */
+export const UnfreezeIssuerTokenRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      UnfreezeIssuerTokenRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link UnfreezeIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link UnfreezeIssuerTokenRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<UnfreezeIssuerTokenRequest>,
+  });
+})();
+
+const FfiConverterTypeUnfreezeIssuerTokenRequest = (() => {
+  type TypeName = UnfreezeIssuerTokenRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        address: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.address, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterString.allocationSize(value.address);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type UnfreezeIssuerTokenResponse = {
+  impactedOutputIds: Array<string>;
+  impactedTokenAmount: U128;
+};
+
+/**
+ * Generated factory for {@link UnfreezeIssuerTokenResponse} record objects.
+ */
+export const UnfreezeIssuerTokenResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      UnfreezeIssuerTokenResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link UnfreezeIssuerTokenResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link UnfreezeIssuerTokenResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<UnfreezeIssuerTokenResponse>,
+  });
+})();
+
+const FfiConverterTypeUnfreezeIssuerTokenResponse = (() => {
+  type TypeName = UnfreezeIssuerTokenResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        impactedOutputIds: FfiConverterArrayString.read(from),
+        impactedTokenAmount: FfiConverterTypeu128.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayString.write(value.impactedOutputIds, into);
+      FfiConverterTypeu128.write(value.impactedTokenAmount, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayString.allocationSize(value.impactedOutputIds) +
+        FfiConverterTypeu128.allocationSize(value.impactedTokenAmount)
       );
     }
   }
@@ -13911,6 +14319,10 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<GetPaymentResponse>;
   /**
+   * Returns an instance of the [`TokenIssuer`] for managing token issuance.
+   */
+  getTokenIssuer(): TokenIssuerInterface;
+  /**
    * Returns the metadata for the given token identifiers.
    *
    * Results are not guaranteed to be in the same order as the input token identifiers.
@@ -14456,6 +14868,23 @@ export class BreezSdk
       }
       throw __error;
     }
+  }
+
+  /**
+   * Returns an instance of the [`TokenIssuer`] for managing token issuance.
+   */
+  public getTokenIssuer(): TokenIssuerInterface {
+    return FfiConverterTypeTokenIssuer.lift(
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_token_issuer(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            callStatus
+          );
+        },
+        /*liftString:*/ FfiConverterString.lift
+      )
+    );
   }
 
   /**
@@ -19359,6 +19788,570 @@ const uniffiCallbackInterfaceSyncStorage: {
   },
 };
 
+export interface TokenIssuerInterface {
+  /**
+   * Burns supply of the issuer token
+   *
+   * # Arguments
+   *
+   * * `request`: The request containing the amount of the supply to burn
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `Payment` - The payment representing the burn transaction
+   * * `SdkError` - If there was an error during the burn process
+   */
+  burnIssuerToken(
+    request: BurnIssuerTokenRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<Payment>;
+  /**
+   * Creates a new issuer token
+   *
+   * # Arguments
+   *
+   * * `request`: The request containing the token parameters
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `TokenMetadata` - The metadata of the created token
+   * * `SdkError` - If there was an error during the token creation
+   */
+  createIssuerToken(
+    request: CreateIssuerTokenRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<TokenMetadata>;
+  /**
+   * Freezes tokens held at the specified address
+   *
+   * # Arguments
+   *
+   * * `request`: The request containing the spark address where the tokens to be frozen are held
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `FreezeIssuerTokenResponse` - The response containing details of the freeze operation
+   * * `SdkError` - If there was an error during the freeze process
+   */
+  freezeIssuerToken(
+    request: FreezeIssuerTokenRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<FreezeIssuerTokenResponse>;
+  /**
+   * Gets the issuer token balance
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `TokenBalance` - The balance of the issuer token
+   * * `SdkError` - If there was an error during the retrieval or no issuer token exists
+   */
+  getIssuerTokenBalance(asyncOpts_?: {
+    signal: AbortSignal;
+  }) /*throws*/ : Promise<TokenBalance>;
+  /**
+   * Gets the issuer token metadata
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `TokenMetadata` - The metadata of the issuer token
+   * * `SdkError` - If there was an error during the retrieval or no issuer token exists
+   */
+  getIssuerTokenMetadata(asyncOpts_?: {
+    signal: AbortSignal;
+  }) /*throws*/ : Promise<TokenMetadata>;
+  /**
+   * Mints supply for the issuer token
+   *
+   * # Arguments
+   *
+   * * `request`: The request contiaining the amount of the supply to mint
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `Payment` - The payment representing the minting transaction
+   * * `SdkError` - If there was an error during the minting process
+   */
+  mintIssuerToken(
+    request: MintIssuerTokenRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<Payment>;
+  /**
+   * Unfreezes tokens held at the specified address
+   *
+   * # Arguments
+   *
+   * * `request`: The request containing the spark address where the tokens to be unfrozen are held
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `UnfreezeIssuerTokenResponse` - The response containing details of the unfreeze operation
+   * * `SdkError` - If there was an error during the unfreeze process
+   */
+  unfreezeIssuerToken(
+    request: UnfreezeIssuerTokenRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<UnfreezeIssuerTokenResponse>;
+}
+
+export class TokenIssuer
+  extends UniffiAbstractObject
+  implements TokenIssuerInterface
+{
+  readonly [uniffiTypeNameSymbol] = 'TokenIssuer';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypeTokenIssuerObjectFactory.bless(pointer);
+  }
+
+  /**
+   * Burns supply of the issuer token
+   *
+   * # Arguments
+   *
+   * * `request`: The request containing the amount of the supply to burn
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `Payment` - The payment representing the burn transaction
+   * * `SdkError` - If there was an error during the burn process
+   */
+  public async burnIssuerToken(
+    request: BurnIssuerTokenRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<Payment> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_burn_issuer_token(
+            uniffiTypeTokenIssuerObjectFactory.clonePointer(this),
+            FfiConverterTypeBurnIssuerTokenRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePayment.lift.bind(
+          FfiConverterTypePayment
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Creates a new issuer token
+   *
+   * # Arguments
+   *
+   * * `request`: The request containing the token parameters
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `TokenMetadata` - The metadata of the created token
+   * * `SdkError` - If there was an error during the token creation
+   */
+  public async createIssuerToken(
+    request: CreateIssuerTokenRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<TokenMetadata> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_create_issuer_token(
+            uniffiTypeTokenIssuerObjectFactory.clonePointer(this),
+            FfiConverterTypeCreateIssuerTokenRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeTokenMetadata.lift.bind(
+          FfiConverterTypeTokenMetadata
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Freezes tokens held at the specified address
+   *
+   * # Arguments
+   *
+   * * `request`: The request containing the spark address where the tokens to be frozen are held
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `FreezeIssuerTokenResponse` - The response containing details of the freeze operation
+   * * `SdkError` - If there was an error during the freeze process
+   */
+  public async freezeIssuerToken(
+    request: FreezeIssuerTokenRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<FreezeIssuerTokenResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_freeze_issuer_token(
+            uniffiTypeTokenIssuerObjectFactory.clonePointer(this),
+            FfiConverterTypeFreezeIssuerTokenRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeFreezeIssuerTokenResponse.lift.bind(
+          FfiConverterTypeFreezeIssuerTokenResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Gets the issuer token balance
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `TokenBalance` - The balance of the issuer token
+   * * `SdkError` - If there was an error during the retrieval or no issuer token exists
+   */
+  public async getIssuerTokenBalance(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<TokenBalance> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_balance(
+            uniffiTypeTokenIssuerObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeTokenBalance.lift.bind(
+          FfiConverterTypeTokenBalance
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Gets the issuer token metadata
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `TokenMetadata` - The metadata of the issuer token
+   * * `SdkError` - If there was an error during the retrieval or no issuer token exists
+   */
+  public async getIssuerTokenMetadata(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<TokenMetadata> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_metadata(
+            uniffiTypeTokenIssuerObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeTokenMetadata.lift.bind(
+          FfiConverterTypeTokenMetadata
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Mints supply for the issuer token
+   *
+   * # Arguments
+   *
+   * * `request`: The request contiaining the amount of the supply to mint
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `Payment` - The payment representing the minting transaction
+   * * `SdkError` - If there was an error during the minting process
+   */
+  public async mintIssuerToken(
+    request: MintIssuerTokenRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<Payment> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_mint_issuer_token(
+            uniffiTypeTokenIssuerObjectFactory.clonePointer(this),
+            FfiConverterTypeMintIssuerTokenRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePayment.lift.bind(
+          FfiConverterTypePayment
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Unfreezes tokens held at the specified address
+   *
+   * # Arguments
+   *
+   * * `request`: The request containing the spark address where the tokens to be unfrozen are held
+   *
+   * # Returns
+   *
+   * Result containing either:
+   * * `UnfreezeIssuerTokenResponse` - The response containing details of the unfreeze operation
+   * * `SdkError` - If there was an error during the unfreeze process
+   */
+  public async unfreezeIssuerToken(
+    request: UnfreezeIssuerTokenRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<UnfreezeIssuerTokenResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_unfreeze_issuer_token(
+            uniffiTypeTokenIssuerObjectFactory.clonePointer(this),
+            FfiConverterTypeUnfreezeIssuerTokenRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeUnfreezeIssuerTokenResponse.lift.bind(
+          FfiConverterTypeUnfreezeIssuerTokenResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer = uniffiTypeTokenIssuerObjectFactory.pointer(this);
+      uniffiTypeTokenIssuerObjectFactory.freePointer(pointer);
+      uniffiTypeTokenIssuerObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is TokenIssuer {
+    return uniffiTypeTokenIssuerObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypeTokenIssuerObjectFactory: UniffiObjectFactory<TokenIssuerInterface> =
+  {
+    create(pointer: UnsafeMutableRawPointer): TokenIssuerInterface {
+      const instance = Object.create(TokenIssuer.prototype);
+      instance[pointerLiteralSymbol] = pointer;
+      instance[destructorGuardSymbol] = this.bless(pointer);
+      instance[uniffiTypeNameSymbol] = 'TokenIssuer';
+      return instance;
+    },
+
+    bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+      return uniffiCaller.rustCall(
+        /*caller:*/ (status) =>
+          nativeModule().ubrn_uniffi_internal_fn_method_tokenissuer_ffi__bless_pointer(
+            p,
+            status
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
+
+    unbless(ptr: UniffiRustArcPtr) {
+      ptr.markDestroyed();
+    },
+
+    pointer(obj: TokenIssuerInterface): UnsafeMutableRawPointer {
+      if ((obj as any)[destructorGuardSymbol] === undefined) {
+        throw new UniffiInternalError.UnexpectedNullPointer();
+      }
+      return (obj as any)[pointerLiteralSymbol];
+    },
+
+    clonePointer(obj: TokenIssuerInterface): UnsafeMutableRawPointer {
+      const pointer = this.pointer(obj);
+      return uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_tokenissuer(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
+
+    freePointer(pointer: UnsafeMutableRawPointer): void {
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_tokenissuer(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
+
+    isConcreteType(obj: any): obj is TokenIssuerInterface {
+      return (
+        obj[destructorGuardSymbol] &&
+        obj[uniffiTypeNameSymbol] === 'TokenIssuer'
+      );
+    },
+  };
+// FfiConverter for TokenIssuerInterface
+const FfiConverterTypeTokenIssuer = new FfiConverterObject(
+  uniffiTypeTokenIssuerObjectFactory
+);
+
 // FfiConverter for boolean | undefined
 const FfiConverterOptionalBool = new FfiConverterOptional(FfiConverterBool);
 
@@ -19730,6 +20723,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_get_payment'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_token_issuer() !==
+    26649
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_get_token_issuer'
     );
   }
   if (
@@ -20197,6 +21198,62 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_burn_issuer_token() !==
+    56056
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_tokenissuer_burn_issuer_token'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_create_issuer_token() !==
+    33277
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_tokenissuer_create_issuer_token'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_freeze_issuer_token() !==
+    32344
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_tokenissuer_freeze_issuer_token'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_balance() !==
+    9758
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_balance'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_metadata() !==
+    57707
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_metadata'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_mint_issuer_token() !==
+    36459
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_tokenissuer_mint_issuer_token'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_unfreeze_issuer_token() !==
+    65025
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_tokenissuer_unfreeze_issuer_token'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new() !==
     65435
   ) {
@@ -20255,6 +21312,7 @@ export default Object.freeze({
     FfiConverterTypeBolt12OfferBlindedPath,
     FfiConverterTypeBolt12OfferDetails,
     FfiConverterTypeBreezSdk,
+    FfiConverterTypeBurnIssuerTokenRequest,
     FfiConverterTypeCheckLightningAddressRequest,
     FfiConverterTypeCheckMessageRequest,
     FfiConverterTypeCheckMessageResponse,
@@ -20262,6 +21320,7 @@ export default Object.freeze({
     FfiConverterTypeClaimDepositResponse,
     FfiConverterTypeConfig,
     FfiConverterTypeConnectRequest,
+    FfiConverterTypeCreateIssuerTokenRequest,
     FfiConverterTypeCredentials,
     FfiConverterTypeCurrencyInfo,
     FfiConverterTypeDepositClaimError,
@@ -20270,6 +21329,8 @@ export default Object.freeze({
     FfiConverterTypeFee,
     FfiConverterTypeFiatCurrency,
     FfiConverterTypeFiatService,
+    FfiConverterTypeFreezeIssuerTokenRequest,
+    FfiConverterTypeFreezeIssuerTokenResponse,
     FfiConverterTypeGetInfoRequest,
     FfiConverterTypeGetInfoResponse,
     FfiConverterTypeGetPaymentRequest,
@@ -20300,6 +21361,7 @@ export default Object.freeze({
     FfiConverterTypeLocalizedName,
     FfiConverterTypeLogEntry,
     FfiConverterTypeMessageSuccessActionData,
+    FfiConverterTypeMintIssuerTokenRequest,
     FfiConverterTypeNetwork,
     FfiConverterTypeOnchainConfirmationSpeed,
     FfiConverterTypeOutgoingChange,
@@ -20352,8 +21414,11 @@ export default Object.freeze({
     FfiConverterTypeSyncWalletRequest,
     FfiConverterTypeSyncWalletResponse,
     FfiConverterTypeTokenBalance,
+    FfiConverterTypeTokenIssuer,
     FfiConverterTypeTokenMetadata,
     FfiConverterTypeTxStatus,
+    FfiConverterTypeUnfreezeIssuerTokenRequest,
+    FfiConverterTypeUnfreezeIssuerTokenResponse,
     FfiConverterTypeUnversionedRecordChange,
     FfiConverterTypeUpdateDepositPayload,
     FfiConverterTypeUpdateUserSettingsRequest,

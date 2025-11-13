@@ -340,6 +340,8 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_get_lightning_address(void *ptr);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_get_payment(void *ptr,
                                                       RustBuffer request);
+void *uniffi_breez_sdk_spark_fn_method_breezsdk_get_token_issuer(
+    void *ptr, RustCallStatus *uniffi_out_err);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_get_tokens_metadata(
     void *ptr, RustBuffer request);
@@ -539,6 +541,32 @@ uniffi_breez_sdk_spark_fn_method_syncstorage_get_latest_outgoing_change(
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_syncstorage_update_record_from_incoming(
     void *ptr, RustBuffer record);
+void *
+uniffi_breez_sdk_spark_fn_clone_tokenissuer(void *ptr,
+                                            RustCallStatus *uniffi_out_err);
+void uniffi_breez_sdk_spark_fn_free_tokenissuer(void *ptr,
+                                                RustCallStatus *uniffi_out_err);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_tokenissuer_burn_issuer_token(
+    void *ptr, RustBuffer request);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_tokenissuer_create_issuer_token(
+    void *ptr, RustBuffer request);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_tokenissuer_freeze_issuer_token(
+    void *ptr, RustBuffer request);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_balance(
+    void *ptr);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_metadata(
+    void *ptr);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_tokenissuer_mint_issuer_token(
+    void *ptr, RustBuffer request);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_tokenissuer_unfreeze_issuer_token(
+    void *ptr, RustBuffer request);
 void uniffi_breez_sdk_spark_fn_init_callback_vtable_eventlistener(
     UniffiVTableCallbackInterfaceEventListener *vtable);
 void uniffi_breez_sdk_spark_fn_init_callback_vtable_logger(
@@ -700,6 +728,7 @@ uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_get_lightning_address();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_get_payment();
+uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_get_token_issuer();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_get_tokens_metadata();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_get_user_settings();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_currencies();
@@ -776,6 +805,18 @@ uint16_t
 uniffi_breez_sdk_spark_checksum_method_syncstorage_get_latest_outgoing_change();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_syncstorage_update_record_from_incoming();
+uint16_t uniffi_breez_sdk_spark_checksum_method_tokenissuer_burn_issuer_token();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_tokenissuer_create_issuer_token();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_tokenissuer_freeze_issuer_token();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_balance();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_metadata();
+uint16_t uniffi_breez_sdk_spark_checksum_method_tokenissuer_mint_issuer_token();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_tokenissuer_unfreeze_issuer_token();
 uint16_t uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new();
 uint16_t uniffi_breez_sdk_spark_checksum_method_eventlistener_on_event();
 uint16_t uniffi_breez_sdk_spark_checksum_method_logger_log();
@@ -8505,6 +8546,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_payment(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_token_issuer"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                        "breezsdk_get_token_issuer"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_token_issuer(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_tokens_metadata"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -9362,6 +9415,112 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_fn_method_syncstorage_update_record_from_incoming(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_fn_clone_tokenissuer"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_tokenissuer"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_clone_tokenissuer(
+                rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_free_tokenissuer"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_tokenissuer"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_free_tokenissuer(
+                rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_burn_issuer_token"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                        "tokenissuer_burn_issuer_token"),
+          2,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_burn_issuer_token(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_create_issuer_"
+        "token"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "tokenissuer_create_issuer_token"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_create_issuer_token(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_freeze_issuer_"
+        "token"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "tokenissuer_freeze_issuer_token"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_freeze_issuer_token(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_"
+        "balance"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "tokenissuer_get_issuer_token_balance"),
+      1,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_balance(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_"
+        "metadata"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "tokenissuer_get_issuer_token_metadata"),
+      1,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_metadata(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_mint_issuer_token"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                        "tokenissuer_mint_issuer_token"),
+          2,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_mint_issuer_token(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_tokenissuer_unfreeze_issuer_"
+        "token"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "tokenissuer_unfreeze_issuer_token"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_unfreeze_issuer_token(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_func_connect"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -10164,6 +10323,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_payment(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_token_"
+        "issuer"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_breezsdk_get_token_issuer"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_token_issuer(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_tokens_"
         "metadata"] = jsi::Function::createFromHostFunction(
       rt,
@@ -10872,6 +11043,92 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_syncstorage_update_record_from_incoming(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_burn_issuer_"
+        "token"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_tokenissuer_burn_issuer_token"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_burn_issuer_token(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_create_issuer_"
+        "token"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_tokenissuer_create_issuer_token"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_create_issuer_token(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_freeze_issuer_"
+        "token"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_tokenissuer_freeze_issuer_token"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_freeze_issuer_token(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_"
+        "token_balance"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "tokenissuer_get_issuer_token_balance"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_balance(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_"
+        "token_metadata"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "tokenissuer_get_issuer_token_metadata"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_metadata(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_mint_issuer_"
+        "token"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_tokenissuer_mint_issuer_token"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_mint_issuer_token(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_unfreeze_"
+        "issuer_token"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_tokenissuer_unfreeze_issuer_token"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_unfreeze_issuer_token(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -11114,6 +11371,19 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
                 ->cpp_uniffi_internal_fn_method_syncstorage_ffi__bless_pointer(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_internal_fn_method_tokenissuer_ffi__bless_pointer"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_internal_fn_method_tokenissuer_ffi__bless_pointer"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_internal_fn_method_tokenissuer_ffi__bless_pointer(
                     rt, thisVal, args, count);
           });
 }
@@ -11399,6 +11669,22 @@ jsi::Value NativeBreezSdkSpark::
   auto obj = jsi::Object::createFromHostObject(rt, ptrObj);
   return jsi::Value(rt, obj);
 }
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_internal_fn_method_tokenissuer_ffi__bless_pointer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto pointer =
+      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[0]);
+  auto static destructor = [](uint64_t p) {
+    auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
+    RustCallStatus status = {0};
+    uniffi_breez_sdk_spark_fn_free_tokenissuer(pointer, &status);
+  };
+  auto ptrObj =
+      std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
+  auto obj = jsi::Object::createFromHostObject(rt, ptrObj);
+  return jsi::Value(rt, obj);
+}
 
 // Methods calling directly into the uniffi generated C API of the Rust crate.
 jsi::Value
@@ -11605,6 +11891,19 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_payment(
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_token_issuer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_get_token_issuer(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_tokens_metadata(
@@ -12477,6 +12776,113 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
+jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_tokenissuer(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_spark_fn_clone_tokenissuer(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_tokenissuer(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  uniffi_breez_sdk_spark_fn_free_tokenissuer(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return jsi::Value::undefined();
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_burn_issuer_token(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_tokenissuer_burn_issuer_token(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_create_issuer_token(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_tokenissuer_create_issuer_token(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_freeze_issuer_token(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_tokenissuer_freeze_issuer_token(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_balance(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_balance(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_metadata(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_tokenissuer_get_issuer_token_metadata(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_mint_issuer_token(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_tokenissuer_mint_issuer_token(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_tokenissuer_unfreeze_issuer_token(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_tokenissuer_unfreeze_issuer_token(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
 jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_connect(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
@@ -13274,6 +13680,15 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_token_issuer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_get_token_issuer();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_tokens_metadata(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -13771,6 +14186,69 @@ jsi::Value NativeBreezSdkSpark::
         size_t count) {
   auto value =
       uniffi_breez_sdk_spark_checksum_method_syncstorage_update_record_from_incoming();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_burn_issuer_token(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_tokenissuer_burn_issuer_token();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_create_issuer_token(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_tokenissuer_create_issuer_token();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_freeze_issuer_token(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_tokenissuer_freeze_issuer_token();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_balance(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_balance();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_metadata(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_metadata();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_mint_issuer_token(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_tokenissuer_mint_issuer_token();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_unfreeze_issuer_token(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_tokenissuer_unfreeze_issuer_token();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
