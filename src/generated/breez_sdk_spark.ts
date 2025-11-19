@@ -3460,13 +3460,19 @@ const FfiConverterTypeLnurlPayInfo = (() => {
 
 export type LnurlPayRequest = {
   prepareResponse: PrepareLnurlPayResponse;
+  /**
+   * If set, providing the same idempotency key for multiple requests will ensure that only one
+   * payment is made. If an idempotency key is re-used, the same payment will be returned.
+   * The idempotency key must be a valid UUID.
+   */
+  idempotencyKey: string | undefined;
 };
 
 /**
  * Generated factory for {@link LnurlPayRequest} record objects.
  */
 export const LnurlPayRequest = (() => {
-  const defaults = () => ({});
+  const defaults = () => ({ idempotencyKey: undefined });
   const create = (() => {
     return uniffiCreateRecord<LnurlPayRequest, ReturnType<typeof defaults>>(
       defaults
@@ -3498,6 +3504,7 @@ const FfiConverterTypeLnurlPayRequest = (() => {
     read(from: RustBuffer): TypeName {
       return {
         prepareResponse: FfiConverterTypePrepareLnurlPayResponse.read(from),
+        idempotencyKey: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -3505,10 +3512,13 @@ const FfiConverterTypeLnurlPayRequest = (() => {
         value.prepareResponse,
         into
       );
+      FfiConverterOptionalString.write(value.idempotencyKey, into);
     }
     allocationSize(value: TypeName): number {
-      return FfiConverterTypePrepareLnurlPayResponse.allocationSize(
-        value.prepareResponse
+      return (
+        FfiConverterTypePrepareLnurlPayResponse.allocationSize(
+          value.prepareResponse
+        ) + FfiConverterOptionalString.allocationSize(value.idempotencyKey)
       );
     }
   }
@@ -5114,6 +5124,76 @@ const FfiConverterTypeReceivePaymentResponse = (() => {
   return new FFIConverter();
 })();
 
+export type RecommendedFees = {
+  fastestFee: /*u64*/ bigint;
+  halfHourFee: /*u64*/ bigint;
+  hourFee: /*u64*/ bigint;
+  economyFee: /*u64*/ bigint;
+  minimumFee: /*u64*/ bigint;
+};
+
+/**
+ * Generated factory for {@link RecommendedFees} record objects.
+ */
+export const RecommendedFees = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<RecommendedFees, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link RecommendedFees}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link RecommendedFees}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<RecommendedFees>,
+  });
+})();
+
+const FfiConverterTypeRecommendedFees = (() => {
+  type TypeName = RecommendedFees;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        fastestFee: FfiConverterUInt64.read(from),
+        halfHourFee: FfiConverterUInt64.read(from),
+        hourFee: FfiConverterUInt64.read(from),
+        economyFee: FfiConverterUInt64.read(from),
+        minimumFee: FfiConverterUInt64.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterUInt64.write(value.fastestFee, into);
+      FfiConverterUInt64.write(value.halfHourFee, into);
+      FfiConverterUInt64.write(value.hourFee, into);
+      FfiConverterUInt64.write(value.economyFee, into);
+      FfiConverterUInt64.write(value.minimumFee, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterUInt64.allocationSize(value.fastestFee) +
+        FfiConverterUInt64.allocationSize(value.halfHourFee) +
+        FfiConverterUInt64.allocationSize(value.hourFee) +
+        FfiConverterUInt64.allocationSize(value.economyFee) +
+        FfiConverterUInt64.allocationSize(value.minimumFee)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type Record = {
   id: RecordId;
   revision: /*u64*/ bigint;
@@ -5681,13 +5761,20 @@ const FfiConverterTypeSendOnchainSpeedFeeQuote = (() => {
 export type SendPaymentRequest = {
   prepareResponse: PrepareSendPaymentResponse;
   options: SendPaymentOptions | undefined;
+  /**
+   * The optional idempotency key for all Spark based transfers (excludes token payments).
+   * If set, providing the same idempotency key for multiple requests will ensure that only one
+   * payment is made. If an idempotency key is re-used, the same payment will be returned.
+   * The idempotency key must be a valid UUID.
+   */
+  idempotencyKey: string | undefined;
 };
 
 /**
  * Generated factory for {@link SendPaymentRequest} record objects.
  */
 export const SendPaymentRequest = (() => {
-  const defaults = () => ({ options: undefined });
+  const defaults = () => ({ options: undefined, idempotencyKey: undefined });
   const create = (() => {
     return uniffiCreateRecord<SendPaymentRequest, ReturnType<typeof defaults>>(
       defaults
@@ -5720,6 +5807,7 @@ const FfiConverterTypeSendPaymentRequest = (() => {
       return {
         prepareResponse: FfiConverterTypePrepareSendPaymentResponse.read(from),
         options: FfiConverterOptionalTypeSendPaymentOptions.read(from),
+        idempotencyKey: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -5728,13 +5816,17 @@ const FfiConverterTypeSendPaymentRequest = (() => {
         into
       );
       FfiConverterOptionalTypeSendPaymentOptions.write(value.options, into);
+      FfiConverterOptionalString.write(value.idempotencyKey, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterTypePrepareSendPaymentResponse.allocationSize(
           value.prepareResponse
         ) +
-        FfiConverterOptionalTypeSendPaymentOptions.allocationSize(value.options)
+        FfiConverterOptionalTypeSendPaymentOptions.allocationSize(
+          value.options
+        ) +
+        FfiConverterOptionalString.allocationSize(value.idempotencyKey)
       );
     }
   }
@@ -7011,115 +7103,6 @@ const FfiConverterTypeUtxo = (() => {
   return new FFIConverter();
 })();
 
-export type WaitForPaymentRequest = {
-  identifier: WaitForPaymentIdentifier;
-};
-
-/**
- * Generated factory for {@link WaitForPaymentRequest} record objects.
- */
-export const WaitForPaymentRequest = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<
-      WaitForPaymentRequest,
-      ReturnType<typeof defaults>
-    >(defaults);
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link WaitForPaymentRequest}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link WaitForPaymentRequest}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Object.freeze(defaults()) as Partial<WaitForPaymentRequest>,
-  });
-})();
-
-const FfiConverterTypeWaitForPaymentRequest = (() => {
-  type TypeName = WaitForPaymentRequest;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        identifier: FfiConverterTypeWaitForPaymentIdentifier.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterTypeWaitForPaymentIdentifier.write(value.identifier, into);
-    }
-    allocationSize(value: TypeName): number {
-      return FfiConverterTypeWaitForPaymentIdentifier.allocationSize(
-        value.identifier
-      );
-    }
-  }
-  return new FFIConverter();
-})();
-
-export type WaitForPaymentResponse = {
-  payment: Payment;
-};
-
-/**
- * Generated factory for {@link WaitForPaymentResponse} record objects.
- */
-export const WaitForPaymentResponse = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<
-      WaitForPaymentResponse,
-      ReturnType<typeof defaults>
-    >(defaults);
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link WaitForPaymentResponse}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link WaitForPaymentResponse}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () =>
-      Object.freeze(defaults()) as Partial<WaitForPaymentResponse>,
-  });
-})();
-
-const FfiConverterTypeWaitForPaymentResponse = (() => {
-  type TypeName = WaitForPaymentResponse;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        payment: FfiConverterTypePayment.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterTypePayment.write(value.payment, into);
-    }
-    allocationSize(value: TypeName): number {
-      return FfiConverterTypePayment.allocationSize(value.payment);
-    }
-  }
-  return new FFIConverter();
-})();
-
 const stringConverter = {
   stringToBytes: (s: string) =>
     uniffiCaller.rustCall((status) =>
@@ -7672,6 +7655,40 @@ const FfiConverterTypeBitcoinNetwork = (() => {
           return ordinalConverter.write(4, into);
         case BitcoinNetwork.Regtest:
           return ordinalConverter.write(5, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export enum ChainApiType {
+  Esplora,
+  MempoolSpace,
+}
+
+const FfiConverterTypeChainApiType = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ChainApiType;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return ChainApiType.Esplora;
+        case 2:
+          return ChainApiType.MempoolSpace;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case ChainApiType.Esplora:
+          return ordinalConverter.write(1, into);
+        case ChainApiType.MempoolSpace:
+          return ordinalConverter.write(2, into);
       }
     }
     allocationSize(value: TypeName): number {
@@ -13626,147 +13643,6 @@ const FfiConverterTypeUpdateDepositPayload = (() => {
   return new FFIConverter();
 })();
 
-// Enum: WaitForPaymentIdentifier
-export enum WaitForPaymentIdentifier_Tags {
-  PaymentId = 'PaymentId',
-  PaymentRequest = 'PaymentRequest',
-}
-export const WaitForPaymentIdentifier = (() => {
-  type PaymentId__interface = {
-    tag: WaitForPaymentIdentifier_Tags.PaymentId;
-    inner: Readonly<[string]>;
-  };
-
-  class PaymentId_ extends UniffiEnum implements PaymentId__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'WaitForPaymentIdentifier';
-    readonly tag = WaitForPaymentIdentifier_Tags.PaymentId;
-    readonly inner: Readonly<[string]>;
-    constructor(v0: string) {
-      super('WaitForPaymentIdentifier', 'PaymentId');
-      this.inner = Object.freeze([v0]);
-    }
-
-    static new(v0: string): PaymentId_ {
-      return new PaymentId_(v0);
-    }
-
-    static instanceOf(obj: any): obj is PaymentId_ {
-      return obj.tag === WaitForPaymentIdentifier_Tags.PaymentId;
-    }
-  }
-
-  type PaymentRequest__interface = {
-    tag: WaitForPaymentIdentifier_Tags.PaymentRequest;
-    inner: Readonly<[string]>;
-  };
-
-  class PaymentRequest_
-    extends UniffiEnum
-    implements PaymentRequest__interface
-  {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'WaitForPaymentIdentifier';
-    readonly tag = WaitForPaymentIdentifier_Tags.PaymentRequest;
-    readonly inner: Readonly<[string]>;
-    constructor(v0: string) {
-      super('WaitForPaymentIdentifier', 'PaymentRequest');
-      this.inner = Object.freeze([v0]);
-    }
-
-    static new(v0: string): PaymentRequest_ {
-      return new PaymentRequest_(v0);
-    }
-
-    static instanceOf(obj: any): obj is PaymentRequest_ {
-      return obj.tag === WaitForPaymentIdentifier_Tags.PaymentRequest;
-    }
-  }
-
-  function instanceOf(obj: any): obj is WaitForPaymentIdentifier {
-    return obj[uniffiTypeNameSymbol] === 'WaitForPaymentIdentifier';
-  }
-
-  return Object.freeze({
-    instanceOf,
-    PaymentId: PaymentId_,
-    PaymentRequest: PaymentRequest_,
-  });
-})();
-
-export type WaitForPaymentIdentifier = InstanceType<
-  (typeof WaitForPaymentIdentifier)[keyof Omit<
-    typeof WaitForPaymentIdentifier,
-    'instanceOf'
-  >]
->;
-
-// FfiConverter for enum WaitForPaymentIdentifier
-const FfiConverterTypeWaitForPaymentIdentifier = (() => {
-  const ordinalConverter = FfiConverterInt32;
-  type TypeName = WaitForPaymentIdentifier;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      switch (ordinalConverter.read(from)) {
-        case 1:
-          return new WaitForPaymentIdentifier.PaymentId(
-            FfiConverterString.read(from)
-          );
-        case 2:
-          return new WaitForPaymentIdentifier.PaymentRequest(
-            FfiConverterString.read(from)
-          );
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      switch (value.tag) {
-        case WaitForPaymentIdentifier_Tags.PaymentId: {
-          ordinalConverter.write(1, into);
-          const inner = value.inner;
-          FfiConverterString.write(inner[0], into);
-          return;
-        }
-        case WaitForPaymentIdentifier_Tags.PaymentRequest: {
-          ordinalConverter.write(2, into);
-          const inner = value.inner;
-          FfiConverterString.write(inner[0], into);
-          return;
-        }
-        default:
-          // Throwing from here means that WaitForPaymentIdentifier_Tags hasn't matched an ordinal.
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    allocationSize(value: TypeName): number {
-      switch (value.tag) {
-        case WaitForPaymentIdentifier_Tags.PaymentId: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(1);
-          size += FfiConverterString.allocationSize(inner[0]);
-          return size;
-        }
-        case WaitForPaymentIdentifier_Tags.PaymentRequest: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(2);
-          size += FfiConverterString.allocationSize(inner[0]);
-          return size;
-        }
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-  }
-  return new FFIConverter();
-})();
-
 // FfiConverter for Map<string, TokenBalance>
 const FfiConverterMapStringTypeTokenBalance = new FfiConverterMap(
   FfiConverterString,
@@ -13796,6 +13672,9 @@ export interface BitcoinChainService {
     tx: string,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<void>;
+  recommendedFees(asyncOpts_?: {
+    signal: AbortSignal;
+  }) /*throws*/ : Promise<RecommendedFees>;
 }
 
 export class BitcoinChainServiceImpl
@@ -13951,6 +13830,43 @@ export class BitcoinChainServiceImpl
         /*freeFunc:*/ nativeModule()
           .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
         /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeChainServiceError.lift.bind(
+          FfiConverterTypeChainServiceError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async recommendedFees(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<RecommendedFees> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_recommended_fees(
+            uniffiTypeBitcoinChainServiceImplObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeRecommendedFees.lift.bind(
+          FfiConverterTypeRecommendedFees
+        ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
         /*errorHandler:*/ FfiConverterTypeChainServiceError.lift.bind(
@@ -14241,6 +14157,49 @@ const uniffiCallbackInterfaceBitcoinChainService: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
+    recommendedFees: (
+      uniffiHandle: bigint,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<RecommendedFees> => {
+        const jsCallback =
+          FfiConverterTypeBitcoinChainService.lift(uniffiHandle);
+        return await jsCallback.recommendedFees({ signal });
+      };
+      const uniffiHandleSuccess = (returnValue: RecommendedFees) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypeRecommendedFees.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ ChainServiceError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeChainServiceError.lower.bind(
+          FfiConverterTypeChainServiceError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
       // BitcoinChainService: this will throw a stale handle error if the handle isn't found.
       FfiConverterTypeBitcoinChainService.drop(uniffiHandle);
@@ -14430,6 +14389,12 @@ export interface BreezSdkInterface {
     request: ReceivePaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<ReceivePaymentResponse>;
+  /**
+   * Get the recommended BTC fees based on the configured chain service.
+   */
+  recommendedFees(asyncOpts_?: {
+    signal: AbortSignal;
+  }) /*throws*/ : Promise<RecommendedFees>;
   refundDeposit(
     request: RefundDepositRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -14482,10 +14447,6 @@ export interface BreezSdkInterface {
     request: UpdateUserSettingsRequest,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<void>;
-  waitForPayment(
-    request: WaitForPaymentRequest,
-    asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<WaitForPaymentResponse>;
 }
 
 /**
@@ -15412,6 +15373,46 @@ export class BreezSdk
     }
   }
 
+  /**
+   * Get the recommended BTC fees based on the configured chain service.
+   */
+  public async recommendedFees(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<RecommendedFees> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_recommended_fees(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeRecommendedFees.lift.bind(
+          FfiConverterTypeRecommendedFees
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
   public async refundDeposit(
     request: RefundDepositRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -15688,45 +15689,6 @@ export class BreezSdk
         /*freeFunc:*/ nativeModule()
           .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
         /*liftFunc:*/ (_v) => {},
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
-          FfiConverterTypeSdkError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  public async waitForPayment(
-    request: WaitForPaymentRequest,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<WaitForPaymentResponse> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_wait_for_payment(
-            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
-            FfiConverterTypeWaitForPaymentRequest.lower(request)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeWaitForPaymentResponse.lift.bind(
-          FfiConverterTypeWaitForPaymentResponse
-        ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
         /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
@@ -16884,10 +16846,12 @@ export interface SdkBuilderInterface {
    * Sets the REST chain service to be used by the SDK.
    * Arguments:
    * - `url`: The base URL of the REST API.
+   * - `api_type`: The API type to be used.
    * - `credentials`: Optional credentials for basic authentication.
    */
   withRestChainService(
     url: string,
+    apiType: ChainApiType,
     credentials: Credentials | undefined,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void>;
@@ -17254,10 +17218,12 @@ export class SdkBuilder
    * Sets the REST chain service to be used by the SDK.
    * Arguments:
    * - `url`: The base URL of the REST API.
+   * - `api_type`: The API type to be used.
    * - `credentials`: Optional credentials for basic authentication.
    */
   public async withRestChainService(
     url: string,
+    apiType: ChainApiType,
     credentials: Credentials | undefined,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void> {
@@ -17269,6 +17235,7 @@ export class SdkBuilder
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_rest_chain_service(
             uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
             FfiConverterString.lower(url),
+            FfiConverterTypeChainApiType.lower(apiType),
             FfiConverterOptionalTypeCredentials.lower(credentials)
           );
         },
@@ -20654,6 +20621,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_recommended_fees() !==
+    43230
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_recommended_fees'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener() !==
     37737
   ) {
@@ -20830,6 +20805,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_recommended_fees() !==
+    16947
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_recommended_fees'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_deposit() !==
     33646
   ) {
@@ -20883,14 +20866,6 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_update_user_settings'
-    );
-  }
-  if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_wait_for_payment() !==
-    64922
-  ) {
-    throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_breezsdk_wait_for_payment'
     );
   }
   if (
@@ -21007,7 +20982,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service() !==
-    56288
+    63155
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service'
@@ -21313,6 +21288,7 @@ export default Object.freeze({
     FfiConverterTypeBolt12OfferDetails,
     FfiConverterTypeBreezSdk,
     FfiConverterTypeBurnIssuerTokenRequest,
+    FfiConverterTypeChainApiType,
     FfiConverterTypeCheckLightningAddressRequest,
     FfiConverterTypeCheckMessageRequest,
     FfiConverterTypeCheckMessageResponse,
@@ -21383,6 +21359,7 @@ export default Object.freeze({
     FfiConverterTypeReceivePaymentMethod,
     FfiConverterTypeReceivePaymentRequest,
     FfiConverterTypeReceivePaymentResponse,
+    FfiConverterTypeRecommendedFees,
     FfiConverterTypeRecord,
     FfiConverterTypeRecordChange,
     FfiConverterTypeRecordId,
@@ -21425,9 +21402,6 @@ export default Object.freeze({
     FfiConverterTypeUrlSuccessActionData,
     FfiConverterTypeUserSettings,
     FfiConverterTypeUtxo,
-    FfiConverterTypeWaitForPaymentIdentifier,
-    FfiConverterTypeWaitForPaymentRequest,
-    FfiConverterTypeWaitForPaymentResponse,
     FfiConverterTypeu128,
   },
 });

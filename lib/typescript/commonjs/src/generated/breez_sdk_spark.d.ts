@@ -1344,6 +1344,12 @@ export declare const LnurlPayInfo: Readonly<{
 }>;
 export type LnurlPayRequest = {
     prepareResponse: PrepareLnurlPayResponse;
+    /**
+     * If set, providing the same idempotency key for multiple requests will ensure that only one
+     * payment is made. If an idempotency key is re-used, the same payment will be returned.
+     * The idempotency key must be a valid UUID.
+     */
+    idempotencyKey: string | undefined;
 };
 /**
  * Generated factory for {@link LnurlPayRequest} record objects.
@@ -1353,12 +1359,12 @@ export declare const LnurlPayRequest: Readonly<{
      * Create a frozen instance of {@link LnurlPayRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<LnurlPayRequest> & Required<Omit<LnurlPayRequest, never>>) => LnurlPayRequest;
+    create: (partial: Partial<LnurlPayRequest> & Required<Omit<LnurlPayRequest, "idempotencyKey">>) => LnurlPayRequest;
     /**
      * Create a frozen instance of {@link LnurlPayRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<LnurlPayRequest> & Required<Omit<LnurlPayRequest, never>>) => LnurlPayRequest;
+    new: (partial: Partial<LnurlPayRequest> & Required<Omit<LnurlPayRequest, "idempotencyKey">>) => LnurlPayRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -2044,6 +2050,32 @@ export declare const ReceivePaymentResponse: Readonly<{
      */
     defaults: () => Partial<ReceivePaymentResponse>;
 }>;
+export type RecommendedFees = {
+    fastestFee: bigint;
+    halfHourFee: bigint;
+    hourFee: bigint;
+    economyFee: bigint;
+    minimumFee: bigint;
+};
+/**
+ * Generated factory for {@link RecommendedFees} record objects.
+ */
+export declare const RecommendedFees: Readonly<{
+    /**
+     * Create a frozen instance of {@link RecommendedFees}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<RecommendedFees> & Required<Omit<RecommendedFees, never>>) => RecommendedFees;
+    /**
+     * Create a frozen instance of {@link RecommendedFees}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<RecommendedFees> & Required<Omit<RecommendedFees, never>>) => RecommendedFees;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<RecommendedFees>;
+}>;
 export type Record = {
     id: RecordId;
     revision: bigint;
@@ -2263,6 +2295,13 @@ export declare const SendOnchainSpeedFeeQuote: Readonly<{
 export type SendPaymentRequest = {
     prepareResponse: PrepareSendPaymentResponse;
     options: SendPaymentOptions | undefined;
+    /**
+     * The optional idempotency key for all Spark based transfers (excludes token payments).
+     * If set, providing the same idempotency key for multiple requests will ensure that only one
+     * payment is made. If an idempotency key is re-used, the same payment will be returned.
+     * The idempotency key must be a valid UUID.
+     */
+    idempotencyKey: string | undefined;
 };
 /**
  * Generated factory for {@link SendPaymentRequest} record objects.
@@ -2272,12 +2311,12 @@ export declare const SendPaymentRequest: Readonly<{
      * Create a frozen instance of {@link SendPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<SendPaymentRequest> & Required<Omit<SendPaymentRequest, "options">>) => SendPaymentRequest;
+    create: (partial: Partial<SendPaymentRequest> & Required<Omit<SendPaymentRequest, "idempotencyKey" | "options">>) => SendPaymentRequest;
     /**
      * Create a frozen instance of {@link SendPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<SendPaymentRequest> & Required<Omit<SendPaymentRequest, "options">>) => SendPaymentRequest;
+    new: (partial: Partial<SendPaymentRequest> & Required<Omit<SendPaymentRequest, "idempotencyKey" | "options">>) => SendPaymentRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -2819,50 +2858,6 @@ export declare const Utxo: Readonly<{
      */
     defaults: () => Partial<Utxo>;
 }>;
-export type WaitForPaymentRequest = {
-    identifier: WaitForPaymentIdentifier;
-};
-/**
- * Generated factory for {@link WaitForPaymentRequest} record objects.
- */
-export declare const WaitForPaymentRequest: Readonly<{
-    /**
-     * Create a frozen instance of {@link WaitForPaymentRequest}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create: (partial: Partial<WaitForPaymentRequest> & Required<Omit<WaitForPaymentRequest, never>>) => WaitForPaymentRequest;
-    /**
-     * Create a frozen instance of {@link WaitForPaymentRequest}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: (partial: Partial<WaitForPaymentRequest> & Required<Omit<WaitForPaymentRequest, never>>) => WaitForPaymentRequest;
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Partial<WaitForPaymentRequest>;
-}>;
-export type WaitForPaymentResponse = {
-    payment: Payment;
-};
-/**
- * Generated factory for {@link WaitForPaymentResponse} record objects.
- */
-export declare const WaitForPaymentResponse: Readonly<{
-    /**
-     * Create a frozen instance of {@link WaitForPaymentResponse}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create: (partial: Partial<WaitForPaymentResponse> & Required<Omit<WaitForPaymentResponse, never>>) => WaitForPaymentResponse;
-    /**
-     * Create a frozen instance of {@link WaitForPaymentResponse}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: (partial: Partial<WaitForPaymentResponse> & Required<Omit<WaitForPaymentResponse, never>>) => WaitForPaymentResponse;
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Partial<WaitForPaymentResponse>;
-}>;
 /**
  * Typealias from the type name used in the UDL file to the custom type.  This
  * is needed because the UDL type name is used in function/method signatures.
@@ -3151,6 +3146,10 @@ export declare enum BitcoinNetwork {
     Testnet4 = 2,
     Signet = 3,
     Regtest = 4
+}
+export declare enum ChainApiType {
+    Esplora = 0,
+    MempoolSpace = 1
 }
 export declare enum ChainServiceError_Tags {
     InvalidAddress = "InvalidAddress",
@@ -7969,72 +7968,6 @@ export declare const UpdateDepositPayload: Readonly<{
     };
 }>;
 export type UpdateDepositPayload = InstanceType<(typeof UpdateDepositPayload)[keyof Omit<typeof UpdateDepositPayload, 'instanceOf'>]>;
-export declare enum WaitForPaymentIdentifier_Tags {
-    PaymentId = "PaymentId",
-    PaymentRequest = "PaymentRequest"
-}
-export declare const WaitForPaymentIdentifier: Readonly<{
-    instanceOf: (obj: any) => obj is WaitForPaymentIdentifier;
-    PaymentId: {
-        new (v0: string): {
-            readonly tag: WaitForPaymentIdentifier_Tags.PaymentId;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "WaitForPaymentIdentifier";
-        };
-        "new"(v0: string): {
-            readonly tag: WaitForPaymentIdentifier_Tags.PaymentId;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "WaitForPaymentIdentifier";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: WaitForPaymentIdentifier_Tags.PaymentId;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "WaitForPaymentIdentifier";
-        };
-    };
-    PaymentRequest: {
-        new (v0: string): {
-            readonly tag: WaitForPaymentIdentifier_Tags.PaymentRequest;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "WaitForPaymentIdentifier";
-        };
-        "new"(v0: string): {
-            readonly tag: WaitForPaymentIdentifier_Tags.PaymentRequest;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "WaitForPaymentIdentifier";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: WaitForPaymentIdentifier_Tags.PaymentRequest;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "WaitForPaymentIdentifier";
-        };
-    };
-}>;
-export type WaitForPaymentIdentifier = InstanceType<(typeof WaitForPaymentIdentifier)[keyof Omit<typeof WaitForPaymentIdentifier, 'instanceOf'>]>;
 export interface BitcoinChainService {
     getAddressUtxos(address: string, asyncOpts_?: {
         signal: AbortSignal;
@@ -8048,6 +7981,9 @@ export interface BitcoinChainService {
     broadcastTransaction(tx: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
+    recommendedFees(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<RecommendedFees>;
 }
 export declare class BitcoinChainServiceImpl extends UniffiAbstractObject implements BitcoinChainService {
     readonly [uniffiTypeNameSymbol] = "BitcoinChainServiceImpl";
@@ -8066,6 +8002,9 @@ export declare class BitcoinChainServiceImpl extends UniffiAbstractObject implem
     broadcastTransaction(tx: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
+    recommendedFees(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<RecommendedFees>;
     /**
      * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
      */
@@ -8236,6 +8175,12 @@ export interface BreezSdkInterface {
     receivePayment(request: ReceivePaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ReceivePaymentResponse>;
+    /**
+     * Get the recommended BTC fees based on the configured chain service.
+     */
+    recommendedFees(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<RecommendedFees>;
     refundDeposit(request: RefundDepositRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<RefundDepositResponse>;
@@ -8281,9 +8226,6 @@ export interface BreezSdkInterface {
     updateUserSettings(request: UpdateUserSettingsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
-    waitForPayment(request: WaitForPaymentRequest, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<WaitForPaymentResponse>;
 }
 /**
  * `BreezSDK` is a wrapper around `SparkSDK` that provides a more structured API
@@ -8453,6 +8395,12 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     receivePayment(request: ReceivePaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ReceivePaymentResponse>;
+    /**
+     * Get the recommended BTC fees based on the configured chain service.
+     */
+    recommendedFees(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<RecommendedFees>;
     refundDeposit(request: RefundDepositRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<RefundDepositResponse>;
@@ -8498,9 +8446,6 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     updateUserSettings(request: UpdateUserSettingsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
-    waitForPayment(request: WaitForPaymentRequest, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<WaitForPaymentResponse>;
     /**
      * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
      */
@@ -8722,9 +8667,10 @@ export interface SdkBuilderInterface {
      * Sets the REST chain service to be used by the SDK.
      * Arguments:
      * - `url`: The base URL of the REST API.
+     * - `api_type`: The API type to be used.
      * - `credentials`: Optional credentials for basic authentication.
      */
-    withRestChainService(url: string, credentials: Credentials | undefined, asyncOpts_?: {
+    withRestChainService(url: string, apiType: ChainApiType, credentials: Credentials | undefined, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -8814,9 +8760,10 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
      * Sets the REST chain service to be used by the SDK.
      * Arguments:
      * - `url`: The base URL of the REST API.
+     * - `api_type`: The API type to be used.
      * - `credentials`: Optional credentials for basic authentication.
      */
-    withRestChainService(url: string, credentials: Credentials | undefined, asyncOpts_?: {
+    withRestChainService(url: string, apiType: ChainApiType, credentials: Credentials | undefined, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -9604,6 +9551,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): BurnIssuerTokenRequest;
             lower(value: BurnIssuerTokenRequest): UniffiByteArray;
         };
+        FfiConverterTypeChainApiType: {
+            read(from: RustBuffer): ChainApiType;
+            write(value: ChainApiType, into: RustBuffer): void;
+            allocationSize(value: ChainApiType): number;
+            lift(value: UniffiByteArray): ChainApiType;
+            lower(value: ChainApiType): UniffiByteArray;
+        };
         FfiConverterTypeCheckLightningAddressRequest: {
             read(from: RustBuffer): CheckLightningAddressRequest;
             write(value: CheckLightningAddressRequest, into: RustBuffer): void;
@@ -10082,6 +10036,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ReceivePaymentResponse;
             lower(value: ReceivePaymentResponse): UniffiByteArray;
         };
+        FfiConverterTypeRecommendedFees: {
+            read(from: RustBuffer): RecommendedFees;
+            write(value: RecommendedFees, into: RustBuffer): void;
+            allocationSize(value: RecommendedFees): number;
+            lift(value: UniffiByteArray): RecommendedFees;
+            lower(value: RecommendedFees): UniffiByteArray;
+        };
         FfiConverterTypeRecord: {
             read(from: RustBuffer): Record;
             write(value: Record, into: RustBuffer): void;
@@ -10345,27 +10306,6 @@ declare const _default: Readonly<{
             allocationSize(value: Utxo): number;
             lift(value: UniffiByteArray): Utxo;
             lower(value: Utxo): UniffiByteArray;
-        };
-        FfiConverterTypeWaitForPaymentIdentifier: {
-            read(from: RustBuffer): WaitForPaymentIdentifier;
-            write(value: WaitForPaymentIdentifier, into: RustBuffer): void;
-            allocationSize(value: WaitForPaymentIdentifier): number;
-            lift(value: UniffiByteArray): WaitForPaymentIdentifier;
-            lower(value: WaitForPaymentIdentifier): UniffiByteArray;
-        };
-        FfiConverterTypeWaitForPaymentRequest: {
-            read(from: RustBuffer): WaitForPaymentRequest;
-            write(value: WaitForPaymentRequest, into: RustBuffer): void;
-            allocationSize(value: WaitForPaymentRequest): number;
-            lift(value: UniffiByteArray): WaitForPaymentRequest;
-            lower(value: WaitForPaymentRequest): UniffiByteArray;
-        };
-        FfiConverterTypeWaitForPaymentResponse: {
-            read(from: RustBuffer): WaitForPaymentResponse;
-            write(value: WaitForPaymentResponse, into: RustBuffer): void;
-            allocationSize(value: WaitForPaymentResponse): number;
-            lift(value: UniffiByteArray): WaitForPaymentResponse;
-            lower(value: WaitForPaymentResponse): UniffiByteArray;
         };
         FfiConverterTypeu128: {
             lift(value: Uint8Array<ArrayBufferLike>): bigint;
