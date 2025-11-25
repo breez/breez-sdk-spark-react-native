@@ -1646,6 +1646,114 @@ const FfiConverterTypeClaimDepositResponse = (() => {
   return new FFIConverter();
 })();
 
+export type ClaimHtlcPaymentRequest = {
+  preimage: string;
+};
+
+/**
+ * Generated factory for {@link ClaimHtlcPaymentRequest} record objects.
+ */
+export const ClaimHtlcPaymentRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ClaimHtlcPaymentRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ClaimHtlcPaymentRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ClaimHtlcPaymentRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ClaimHtlcPaymentRequest>,
+  });
+})();
+
+const FfiConverterTypeClaimHtlcPaymentRequest = (() => {
+  type TypeName = ClaimHtlcPaymentRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        preimage: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.preimage, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterString.allocationSize(value.preimage);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type ClaimHtlcPaymentResponse = {
+  payment: Payment;
+};
+
+/**
+ * Generated factory for {@link ClaimHtlcPaymentResponse} record objects.
+ */
+export const ClaimHtlcPaymentResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ClaimHtlcPaymentResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ClaimHtlcPaymentResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ClaimHtlcPaymentResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ClaimHtlcPaymentResponse>,
+  });
+})();
+
+const FfiConverterTypeClaimHtlcPaymentResponse = (() => {
+  type TypeName = ClaimHtlcPaymentResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        payment: FfiConverterTypePayment.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypePayment.write(value.payment, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterTypePayment.allocationSize(value.payment);
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type Config = {
   apiKey: string | undefined;
   network: Network;
@@ -3018,6 +3126,10 @@ export type ListPaymentsRequest = {
   statusFilter: Array<PaymentStatus> | undefined;
   assetFilter: AssetFilter | undefined;
   /**
+   * Only include payments with specific Spark HTLC statuses
+   */
+  sparkHtlcStatusFilter: Array<SparkHtlcStatus> | undefined;
+  /**
    * Only include payments created after this timestamp (inclusive)
    */
   fromTimestamp: /*u64*/ bigint | undefined;
@@ -3044,6 +3156,7 @@ export const ListPaymentsRequest = (() => {
     typeFilter: undefined,
     statusFilter: undefined,
     assetFilter: undefined,
+    sparkHtlcStatusFilter: undefined,
     fromTimestamp: undefined,
     toTimestamp: undefined,
     offset: undefined,
@@ -3083,6 +3196,8 @@ const FfiConverterTypeListPaymentsRequest = (() => {
         typeFilter: FfiConverterOptionalArrayTypePaymentType.read(from),
         statusFilter: FfiConverterOptionalArrayTypePaymentStatus.read(from),
         assetFilter: FfiConverterOptionalTypeAssetFilter.read(from),
+        sparkHtlcStatusFilter:
+          FfiConverterOptionalArrayTypeSparkHtlcStatus.read(from),
         fromTimestamp: FfiConverterOptionalUInt64.read(from),
         toTimestamp: FfiConverterOptionalUInt64.read(from),
         offset: FfiConverterOptionalUInt32.read(from),
@@ -3097,6 +3212,10 @@ const FfiConverterTypeListPaymentsRequest = (() => {
         into
       );
       FfiConverterOptionalTypeAssetFilter.write(value.assetFilter, into);
+      FfiConverterOptionalArrayTypeSparkHtlcStatus.write(
+        value.sparkHtlcStatusFilter,
+        into
+      );
       FfiConverterOptionalUInt64.write(value.fromTimestamp, into);
       FfiConverterOptionalUInt64.write(value.toTimestamp, into);
       FfiConverterOptionalUInt32.write(value.offset, into);
@@ -3112,6 +3231,9 @@ const FfiConverterTypeListPaymentsRequest = (() => {
           value.statusFilter
         ) +
         FfiConverterOptionalTypeAssetFilter.allocationSize(value.assetFilter) +
+        FfiConverterOptionalArrayTypeSparkHtlcStatus.allocationSize(
+          value.sparkHtlcStatusFilter
+        ) +
         FfiConverterOptionalUInt64.allocationSize(value.fromTimestamp) +
         FfiConverterOptionalUInt64.allocationSize(value.toTimestamp) +
         FfiConverterOptionalUInt32.allocationSize(value.offset) +
@@ -3285,7 +3407,7 @@ const FfiConverterTypeListUnclaimedDepositsResponse = (() => {
 })();
 
 /**
- * Wrapped in a [`LnurlAuth`], this is the result of [`parse`] when given a LNURL-auth endpoint.
+ * Wrapped in a [`InputType::LnurlAuth`], this is the result of [`parse`](breez_sdk_common::input::parse) when given a LNURL-auth endpoint.
  *
  * It represents the endpoint's parameters for the LNURL workflow.
  *
@@ -6137,6 +6259,149 @@ const FfiConverterTypeSparkAddressDetails = (() => {
         FfiConverterString.allocationSize(value.identityPublicKey) +
         FfiConverterTypeBitcoinNetwork.allocationSize(value.network) +
         FfiConverterTypePaymentRequestSource.allocationSize(value.source)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type SparkHtlcDetails = {
+  /**
+   * The payment hash of the HTLC
+   */
+  paymentHash: string;
+  /**
+   * The preimage of the HTLC. Empty until receiver has released it.
+   */
+  preimage: string | undefined;
+  /**
+   * The expiry time of the HTLC in seconds since the Unix epoch
+   */
+  expiryTime: /*u64*/ bigint;
+  /**
+   * The HTLC status
+   */
+  status: SparkHtlcStatus;
+};
+
+/**
+ * Generated factory for {@link SparkHtlcDetails} record objects.
+ */
+export const SparkHtlcDetails = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<SparkHtlcDetails, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SparkHtlcDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SparkHtlcDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<SparkHtlcDetails>,
+  });
+})();
+
+const FfiConverterTypeSparkHtlcDetails = (() => {
+  type TypeName = SparkHtlcDetails;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        paymentHash: FfiConverterString.read(from),
+        preimage: FfiConverterOptionalString.read(from),
+        expiryTime: FfiConverterUInt64.read(from),
+        status: FfiConverterTypeSparkHtlcStatus.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.paymentHash, into);
+      FfiConverterOptionalString.write(value.preimage, into);
+      FfiConverterUInt64.write(value.expiryTime, into);
+      FfiConverterTypeSparkHtlcStatus.write(value.status, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.paymentHash) +
+        FfiConverterOptionalString.allocationSize(value.preimage) +
+        FfiConverterUInt64.allocationSize(value.expiryTime) +
+        FfiConverterTypeSparkHtlcStatus.allocationSize(value.status)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type SparkHtlcOptions = {
+  /**
+   * The payment hash of the HTLC. The receiver will need to provide the associated preimage to claim it.
+   */
+  paymentHash: string;
+  /**
+   * The duration of the HTLC in seconds.
+   * After this time, the HTLC will be returned.
+   */
+  expiryDurationSecs: /*u64*/ bigint;
+};
+
+/**
+ * Generated factory for {@link SparkHtlcOptions} record objects.
+ */
+export const SparkHtlcOptions = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<SparkHtlcOptions, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SparkHtlcOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SparkHtlcOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<SparkHtlcOptions>,
+  });
+})();
+
+const FfiConverterTypeSparkHtlcOptions = (() => {
+  type TypeName = SparkHtlcOptions;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        paymentHash: FfiConverterString.read(from),
+        expiryDurationSecs: FfiConverterUInt64.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.paymentHash, into);
+      FfiConverterUInt64.write(value.expiryDurationSecs, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.paymentHash) +
+        FfiConverterUInt64.allocationSize(value.expiryDurationSecs)
       );
     }
   }
@@ -9084,7 +9349,10 @@ export enum PaymentDetails_Tags {
 export const PaymentDetails = (() => {
   type Spark__interface = {
     tag: PaymentDetails_Tags.Spark;
-    inner: Readonly<{ invoiceDetails: SparkInvoicePaymentDetails | undefined }>;
+    inner: Readonly<{
+      invoiceDetails: SparkInvoicePaymentDetails | undefined;
+      htlcDetails: SparkHtlcDetails | undefined;
+    }>;
   };
 
   class Spark_ extends UniffiEnum implements Spark__interface {
@@ -9096,11 +9364,15 @@ export const PaymentDetails = (() => {
     readonly tag = PaymentDetails_Tags.Spark;
     readonly inner: Readonly<{
       invoiceDetails: SparkInvoicePaymentDetails | undefined;
+      htlcDetails: SparkHtlcDetails | undefined;
     }>;
     constructor(inner: {
       /**
        * The invoice details if the payment fulfilled a spark invoice
        */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+      /**
+       * The HTLC transfer details if the payment fulfilled an HTLC transfer
+       */ htlcDetails: SparkHtlcDetails | undefined;
     }) {
       super('PaymentDetails', 'Spark');
       this.inner = Object.freeze(inner);
@@ -9110,6 +9382,9 @@ export const PaymentDetails = (() => {
       /**
        * The invoice details if the payment fulfilled a spark invoice
        */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+      /**
+       * The HTLC transfer details if the payment fulfilled an HTLC transfer
+       */ htlcDetails: SparkHtlcDetails | undefined;
     }): Spark_ {
       return new Spark_(inner);
     }
@@ -9340,6 +9615,7 @@ const FfiConverterTypePaymentDetails = (() => {
           return new PaymentDetails.Spark({
             invoiceDetails:
               FfiConverterOptionalTypeSparkInvoicePaymentDetails.read(from),
+            htlcDetails: FfiConverterOptionalTypeSparkHtlcDetails.read(from),
           });
         case 2:
           return new PaymentDetails.Token({
@@ -9378,6 +9654,10 @@ const FfiConverterTypePaymentDetails = (() => {
           const inner = value.inner;
           FfiConverterOptionalTypeSparkInvoicePaymentDetails.write(
             inner.invoiceDetails,
+            into
+          );
+          FfiConverterOptionalTypeSparkHtlcDetails.write(
+            inner.htlcDetails,
             into
           );
           return;
@@ -9434,6 +9714,9 @@ const FfiConverterTypePaymentDetails = (() => {
             FfiConverterOptionalTypeSparkInvoicePaymentDetails.allocationSize(
               inner.invoiceDetails
             );
+          size += FfiConverterOptionalTypeSparkHtlcDetails.allocationSize(
+            inner.htlcDetails
+          );
           return size;
         }
         case PaymentDetails_Tags.Token: {
@@ -11890,6 +12173,7 @@ const FfiConverterTypeSendPaymentMethod = (() => {
 export enum SendPaymentOptions_Tags {
   BitcoinAddress = 'BitcoinAddress',
   Bolt11Invoice = 'Bolt11Invoice',
+  SparkAddress = 'SparkAddress',
 }
 export const SendPaymentOptions = (() => {
   type BitcoinAddress__interface = {
@@ -11969,6 +12253,43 @@ export const SendPaymentOptions = (() => {
     }
   }
 
+  type SparkAddress__interface = {
+    tag: SendPaymentOptions_Tags.SparkAddress;
+    inner: Readonly<{ htlcOptions: SparkHtlcOptions | undefined }>;
+  };
+
+  class SparkAddress_ extends UniffiEnum implements SparkAddress__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SendPaymentOptions';
+    readonly tag = SendPaymentOptions_Tags.SparkAddress;
+    readonly inner: Readonly<{ htlcOptions: SparkHtlcOptions | undefined }>;
+    constructor(inner: {
+      /**
+       * Can only be provided for Bitcoin payments. If set, a Spark HTLC transfer will be created.
+       * The receiver will need to provide the preimage to claim it.
+       */ htlcOptions: SparkHtlcOptions | undefined;
+    }) {
+      super('SendPaymentOptions', 'SparkAddress');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * Can only be provided for Bitcoin payments. If set, a Spark HTLC transfer will be created.
+       * The receiver will need to provide the preimage to claim it.
+       */ htlcOptions: SparkHtlcOptions | undefined;
+    }): SparkAddress_ {
+      return new SparkAddress_(inner);
+    }
+
+    static instanceOf(obj: any): obj is SparkAddress_ {
+      return obj.tag === SendPaymentOptions_Tags.SparkAddress;
+    }
+  }
+
   function instanceOf(obj: any): obj is SendPaymentOptions {
     return obj[uniffiTypeNameSymbol] === 'SendPaymentOptions';
   }
@@ -11977,6 +12298,7 @@ export const SendPaymentOptions = (() => {
     instanceOf,
     BitcoinAddress: BitcoinAddress_,
     Bolt11Invoice: Bolt11Invoice_,
+    SparkAddress: SparkAddress_,
   });
 })();
 
@@ -12004,6 +12326,10 @@ const FfiConverterTypeSendPaymentOptions = (() => {
             preferSpark: FfiConverterBool.read(from),
             completionTimeoutSecs: FfiConverterOptionalUInt32.read(from),
           });
+        case 3:
+          return new SendPaymentOptions.SparkAddress({
+            htlcOptions: FfiConverterOptionalTypeSparkHtlcOptions.read(from),
+          });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
@@ -12024,6 +12350,15 @@ const FfiConverterTypeSendPaymentOptions = (() => {
           const inner = value.inner;
           FfiConverterBool.write(inner.preferSpark, into);
           FfiConverterOptionalUInt32.write(inner.completionTimeoutSecs, into);
+          return;
+        }
+        case SendPaymentOptions_Tags.SparkAddress: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterOptionalTypeSparkHtlcOptions.write(
+            inner.htlcOptions,
+            into
+          );
           return;
         }
         default:
@@ -12047,6 +12382,14 @@ const FfiConverterTypeSendPaymentOptions = (() => {
           size += FfiConverterBool.allocationSize(inner.preferSpark);
           size += FfiConverterOptionalUInt32.allocationSize(
             inner.completionTimeoutSecs
+          );
+          return size;
+        }
+        case SendPaymentOptions_Tags.SparkAddress: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterOptionalTypeSparkHtlcOptions.allocationSize(
+            inner.htlcOptions
           );
           return size;
         }
@@ -12638,6 +12981,54 @@ const FfiConverterTypeServiceConnectivityError = (() => {
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
+    }
+  }
+  return new FFIConverter();
+})();
+
+export enum SparkHtlcStatus {
+  /**
+   * The HTLC is waiting for the preimage to be shared by the receiver
+   */
+  WaitingForPreimage,
+  /**
+   * The HTLC preimage has been shared and the transfer can be or has been claimed by the receiver
+   */
+  PreimageShared,
+  /**
+   * The HTLC has been returned to the sender due to expiry
+   */
+  Returned,
+}
+
+const FfiConverterTypeSparkHtlcStatus = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = SparkHtlcStatus;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return SparkHtlcStatus.WaitingForPreimage;
+        case 2:
+          return SparkHtlcStatus.PreimageShared;
+        case 3:
+          return SparkHtlcStatus.Returned;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case SparkHtlcStatus.WaitingForPreimage:
+          return ordinalConverter.write(1, into);
+        case SparkHtlcStatus.PreimageShared:
+          return ordinalConverter.write(2, into);
+        case SparkHtlcStatus.Returned:
+          return ordinalConverter.write(3, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
     }
   }
   return new FFIConverter();
@@ -14249,6 +14640,10 @@ export interface BreezSdkInterface {
     request: ClaimDepositRequest,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<ClaimDepositResponse>;
+  claimHtlcPayment(
+    request: ClaimHtlcPaymentRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<ClaimHtlcPaymentResponse>;
   deleteLightningAddress(asyncOpts_?: {
     signal: AbortSignal;
   }) /*throws*/ : Promise<void>;
@@ -14618,6 +15013,45 @@ export class BreezSdk
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypeClaimDepositResponse.lift.bind(
           FfiConverterTypeClaimDepositResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async claimHtlcPayment(
+    request: ClaimHtlcPaymentRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ClaimHtlcPaymentResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_claim_htlc_payment(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeClaimHtlcPaymentRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeClaimHtlcPaymentResponse.lift.bind(
+          FfiConverterTypeClaimHtlcPaymentResponse
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -20362,6 +20796,16 @@ const FfiConverterOptionalTypeRecord = new FfiConverterOptional(
   FfiConverterTypeRecord
 );
 
+// FfiConverter for SparkHtlcDetails | undefined
+const FfiConverterOptionalTypeSparkHtlcDetails = new FfiConverterOptional(
+  FfiConverterTypeSparkHtlcDetails
+);
+
+// FfiConverter for SparkHtlcOptions | undefined
+const FfiConverterOptionalTypeSparkHtlcOptions = new FfiConverterOptional(
+  FfiConverterTypeSparkHtlcOptions
+);
+
 // FfiConverter for SparkInvoicePaymentDetails | undefined
 const FfiConverterOptionalTypeSparkInvoicePaymentDetails =
   new FfiConverterOptional(FfiConverterTypeSparkInvoicePaymentDetails);
@@ -20533,6 +20977,11 @@ const FfiConverterArrayTypePaymentType = new FfiConverterArray(
   FfiConverterTypePaymentType
 );
 
+// FfiConverter for Array<SparkHtlcStatus>
+const FfiConverterArrayTypeSparkHtlcStatus = new FfiConverterArray(
+  FfiConverterTypeSparkHtlcStatus
+);
+
 // FfiConverter for Array<PaymentStatus> | undefined
 const FfiConverterOptionalArrayTypePaymentStatus = new FfiConverterOptional(
   FfiConverterArrayTypePaymentStatus
@@ -20541,6 +20990,11 @@ const FfiConverterOptionalArrayTypePaymentStatus = new FfiConverterOptional(
 // FfiConverter for Array<PaymentType> | undefined
 const FfiConverterOptionalArrayTypePaymentType = new FfiConverterOptional(
   FfiConverterArrayTypePaymentType
+);
+
+// FfiConverter for Array<SparkHtlcStatus> | undefined
+const FfiConverterOptionalArrayTypeSparkHtlcStatus = new FfiConverterOptional(
+  FfiConverterArrayTypeSparkHtlcStatus
 );
 
 /**
@@ -20658,6 +21112,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_deposit'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_htlc_payment() !==
+    57587
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_htlc_payment'
     );
   }
   if (
@@ -21294,6 +21756,8 @@ export default Object.freeze({
     FfiConverterTypeCheckMessageResponse,
     FfiConverterTypeClaimDepositRequest,
     FfiConverterTypeClaimDepositResponse,
+    FfiConverterTypeClaimHtlcPaymentRequest,
+    FfiConverterTypeClaimHtlcPaymentResponse,
     FfiConverterTypeConfig,
     FfiConverterTypeConnectRequest,
     FfiConverterTypeCreateIssuerTokenRequest,
@@ -21381,6 +21845,9 @@ export default Object.freeze({
     FfiConverterTypeSignMessageResponse,
     FfiConverterTypeSilentPaymentAddressDetails,
     FfiConverterTypeSparkAddressDetails,
+    FfiConverterTypeSparkHtlcDetails,
+    FfiConverterTypeSparkHtlcOptions,
+    FfiConverterTypeSparkHtlcStatus,
     FfiConverterTypeSparkInvoiceDetails,
     FfiConverterTypeSparkInvoicePaymentDetails,
     FfiConverterTypeStorage,

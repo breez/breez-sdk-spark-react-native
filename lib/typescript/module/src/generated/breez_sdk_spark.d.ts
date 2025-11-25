@@ -583,6 +583,50 @@ export declare const ClaimDepositResponse: Readonly<{
      */
     defaults: () => Partial<ClaimDepositResponse>;
 }>;
+export type ClaimHtlcPaymentRequest = {
+    preimage: string;
+};
+/**
+ * Generated factory for {@link ClaimHtlcPaymentRequest} record objects.
+ */
+export declare const ClaimHtlcPaymentRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ClaimHtlcPaymentRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ClaimHtlcPaymentRequest> & Required<Omit<ClaimHtlcPaymentRequest, never>>) => ClaimHtlcPaymentRequest;
+    /**
+     * Create a frozen instance of {@link ClaimHtlcPaymentRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ClaimHtlcPaymentRequest> & Required<Omit<ClaimHtlcPaymentRequest, never>>) => ClaimHtlcPaymentRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ClaimHtlcPaymentRequest>;
+}>;
+export type ClaimHtlcPaymentResponse = {
+    payment: Payment;
+};
+/**
+ * Generated factory for {@link ClaimHtlcPaymentResponse} record objects.
+ */
+export declare const ClaimHtlcPaymentResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link ClaimHtlcPaymentResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ClaimHtlcPaymentResponse> & Required<Omit<ClaimHtlcPaymentResponse, never>>) => ClaimHtlcPaymentResponse;
+    /**
+     * Create a frozen instance of {@link ClaimHtlcPaymentResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ClaimHtlcPaymentResponse> & Required<Omit<ClaimHtlcPaymentResponse, never>>) => ClaimHtlcPaymentResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ClaimHtlcPaymentResponse>;
+}>;
 export type Config = {
     apiKey: string | undefined;
     network: Network;
@@ -1160,6 +1204,10 @@ export type ListPaymentsRequest = {
     statusFilter: Array<PaymentStatus> | undefined;
     assetFilter: AssetFilter | undefined;
     /**
+     * Only include payments with specific Spark HTLC statuses
+     */
+    sparkHtlcStatusFilter: Array<SparkHtlcStatus> | undefined;
+    /**
      * Only include payments created after this timestamp (inclusive)
      */
     fromTimestamp: /*u64*/ bigint | undefined;
@@ -1185,12 +1233,12 @@ export declare const ListPaymentsRequest: Readonly<{
      * Create a frozen instance of {@link ListPaymentsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => ListPaymentsRequest;
+    create: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "sparkHtlcStatusFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => ListPaymentsRequest;
     /**
      * Create a frozen instance of {@link ListPaymentsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => ListPaymentsRequest;
+    new: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "sparkHtlcStatusFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => ListPaymentsRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -1267,7 +1315,7 @@ export declare const ListUnclaimedDepositsResponse: Readonly<{
     defaults: () => Partial<ListUnclaimedDepositsResponse>;
 }>;
 /**
- * Wrapped in a [`LnurlAuth`], this is the result of [`parse`] when given a LNURL-auth endpoint.
+ * Wrapped in a [`InputType::LnurlAuth`], this is the result of [`parse`](breez_sdk_common::input::parse) when given a LNURL-auth endpoint.
  *
  * It represents the endpoint's parameters for the LNURL workflow.
  *
@@ -2450,6 +2498,73 @@ export declare const SparkAddressDetails: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<SparkAddressDetails>;
+}>;
+export type SparkHtlcDetails = {
+    /**
+     * The payment hash of the HTLC
+     */
+    paymentHash: string;
+    /**
+     * The preimage of the HTLC. Empty until receiver has released it.
+     */
+    preimage: string | undefined;
+    /**
+     * The expiry time of the HTLC in seconds since the Unix epoch
+     */
+    expiryTime: bigint;
+    /**
+     * The HTLC status
+     */
+    status: SparkHtlcStatus;
+};
+/**
+ * Generated factory for {@link SparkHtlcDetails} record objects.
+ */
+export declare const SparkHtlcDetails: Readonly<{
+    /**
+     * Create a frozen instance of {@link SparkHtlcDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SparkHtlcDetails> & Required<Omit<SparkHtlcDetails, never>>) => SparkHtlcDetails;
+    /**
+     * Create a frozen instance of {@link SparkHtlcDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SparkHtlcDetails> & Required<Omit<SparkHtlcDetails, never>>) => SparkHtlcDetails;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SparkHtlcDetails>;
+}>;
+export type SparkHtlcOptions = {
+    /**
+     * The payment hash of the HTLC. The receiver will need to provide the associated preimage to claim it.
+     */
+    paymentHash: string;
+    /**
+     * The duration of the HTLC in seconds.
+     * After this time, the HTLC will be returned.
+     */
+    expiryDurationSecs: bigint;
+};
+/**
+ * Generated factory for {@link SparkHtlcOptions} record objects.
+ */
+export declare const SparkHtlcOptions: Readonly<{
+    /**
+     * Create a frozen instance of {@link SparkHtlcOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SparkHtlcOptions> & Required<Omit<SparkHtlcOptions, never>>) => SparkHtlcOptions;
+    /**
+     * Create a frozen instance of {@link SparkHtlcOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SparkHtlcOptions> & Required<Omit<SparkHtlcOptions, never>>) => SparkHtlcOptions;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SparkHtlcOptions>;
 }>;
 export type SparkInvoiceDetails = {
     /**
@@ -4061,10 +4176,14 @@ export declare const PaymentDetails: Readonly<{
             /**
              * The invoice details if the payment fulfilled a spark invoice
              */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+            /**
+             * The HTLC transfer details if the payment fulfilled an HTLC transfer
+             */ htlcDetails: SparkHtlcDetails | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Spark;
             readonly inner: Readonly<{
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
+                htlcDetails: SparkHtlcDetails | undefined;
             }>;
             /**
              * @private
@@ -4076,10 +4195,14 @@ export declare const PaymentDetails: Readonly<{
             /**
              * The invoice details if the payment fulfilled a spark invoice
              */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+            /**
+             * The HTLC transfer details if the payment fulfilled an HTLC transfer
+             */ htlcDetails: SparkHtlcDetails | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Spark;
             readonly inner: Readonly<{
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
+                htlcDetails: SparkHtlcDetails | undefined;
             }>;
             /**
              * @private
@@ -4091,6 +4214,7 @@ export declare const PaymentDetails: Readonly<{
             readonly tag: PaymentDetails_Tags.Spark;
             readonly inner: Readonly<{
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
+                htlcDetails: SparkHtlcDetails | undefined;
             }>;
             /**
              * @private
@@ -6302,7 +6426,8 @@ export declare const SendPaymentMethod: Readonly<{
 export type SendPaymentMethod = InstanceType<(typeof SendPaymentMethod)[keyof Omit<typeof SendPaymentMethod, 'instanceOf'>]>;
 export declare enum SendPaymentOptions_Tags {
     BitcoinAddress = "BitcoinAddress",
-    Bolt11Invoice = "Bolt11Invoice"
+    Bolt11Invoice = "Bolt11Invoice",
+    SparkAddress = "SparkAddress"
 }
 export declare const SendPaymentOptions: Readonly<{
     instanceOf: (obj: any) => obj is SendPaymentOptions;
@@ -6387,6 +6512,51 @@ export declare const SendPaymentOptions: Readonly<{
             readonly inner: Readonly<{
                 preferSpark: boolean;
                 completionTimeoutSecs: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SendPaymentOptions";
+        };
+    };
+    SparkAddress: {
+        new (inner: {
+            /**
+             * Can only be provided for Bitcoin payments. If set, a Spark HTLC transfer will be created.
+             * The receiver will need to provide the preimage to claim it.
+             */ htlcOptions: SparkHtlcOptions | undefined;
+        }): {
+            readonly tag: SendPaymentOptions_Tags.SparkAddress;
+            readonly inner: Readonly<{
+                htlcOptions: SparkHtlcOptions | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SendPaymentOptions";
+        };
+        "new"(inner: {
+            /**
+             * Can only be provided for Bitcoin payments. If set, a Spark HTLC transfer will be created.
+             * The receiver will need to provide the preimage to claim it.
+             */ htlcOptions: SparkHtlcOptions | undefined;
+        }): {
+            readonly tag: SendPaymentOptions_Tags.SparkAddress;
+            readonly inner: Readonly<{
+                htlcOptions: SparkHtlcOptions | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SendPaymentOptions";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SendPaymentOptions_Tags.SparkAddress;
+            readonly inner: Readonly<{
+                htlcOptions: SparkHtlcOptions | undefined;
             }>;
             /**
              * @private
@@ -7147,6 +7317,20 @@ export declare const ServiceConnectivityError: Readonly<{
     };
 }>;
 export type ServiceConnectivityError = InstanceType<(typeof ServiceConnectivityError)[keyof Omit<typeof ServiceConnectivityError, 'instanceOf'>]>;
+export declare enum SparkHtlcStatus {
+    /**
+     * The HTLC is waiting for the preimage to be shared by the receiver
+     */
+    WaitingForPreimage = 0,
+    /**
+     * The HTLC preimage has been shared and the transfer can be or has been claimed by the receiver
+     */
+    PreimageShared = 1,
+    /**
+     * The HTLC has been returned to the sender due to expiry
+     */
+    Returned = 2
+}
 export declare enum StorageError_Tags {
     Implementation = "Implementation",
     InitializationError = "InitializationError",
@@ -8044,6 +8228,9 @@ export interface BreezSdkInterface {
     claimDeposit(request: ClaimDepositRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ClaimDepositResponse>;
+    claimHtlcPayment(request: ClaimHtlcPaymentRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ClaimHtlcPaymentResponse>;
     deleteLightningAddress(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
@@ -8264,6 +8451,9 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     claimDeposit(request: ClaimDepositRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ClaimDepositResponse>;
+    claimHtlcPayment(request: ClaimHtlcPaymentRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ClaimHtlcPaymentResponse>;
     deleteLightningAddress(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
@@ -9593,6 +9783,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ClaimDepositResponse;
             lower(value: ClaimDepositResponse): UniffiByteArray;
         };
+        FfiConverterTypeClaimHtlcPaymentRequest: {
+            read(from: RustBuffer): ClaimHtlcPaymentRequest;
+            write(value: ClaimHtlcPaymentRequest, into: RustBuffer): void;
+            allocationSize(value: ClaimHtlcPaymentRequest): number;
+            lift(value: UniffiByteArray): ClaimHtlcPaymentRequest;
+            lower(value: ClaimHtlcPaymentRequest): UniffiByteArray;
+        };
+        FfiConverterTypeClaimHtlcPaymentResponse: {
+            read(from: RustBuffer): ClaimHtlcPaymentResponse;
+            write(value: ClaimHtlcPaymentResponse, into: RustBuffer): void;
+            allocationSize(value: ClaimHtlcPaymentResponse): number;
+            lift(value: UniffiByteArray): ClaimHtlcPaymentResponse;
+            lower(value: ClaimHtlcPaymentResponse): UniffiByteArray;
+        };
         FfiConverterTypeConfig: {
             read(from: RustBuffer): Config;
             write(value: Config, into: RustBuffer): void;
@@ -10177,6 +10381,27 @@ declare const _default: Readonly<{
             allocationSize(value: SparkAddressDetails): number;
             lift(value: UniffiByteArray): SparkAddressDetails;
             lower(value: SparkAddressDetails): UniffiByteArray;
+        };
+        FfiConverterTypeSparkHtlcDetails: {
+            read(from: RustBuffer): SparkHtlcDetails;
+            write(value: SparkHtlcDetails, into: RustBuffer): void;
+            allocationSize(value: SparkHtlcDetails): number;
+            lift(value: UniffiByteArray): SparkHtlcDetails;
+            lower(value: SparkHtlcDetails): UniffiByteArray;
+        };
+        FfiConverterTypeSparkHtlcOptions: {
+            read(from: RustBuffer): SparkHtlcOptions;
+            write(value: SparkHtlcOptions, into: RustBuffer): void;
+            allocationSize(value: SparkHtlcOptions): number;
+            lift(value: UniffiByteArray): SparkHtlcOptions;
+            lower(value: SparkHtlcOptions): UniffiByteArray;
+        };
+        FfiConverterTypeSparkHtlcStatus: {
+            read(from: RustBuffer): SparkHtlcStatus;
+            write(value: SparkHtlcStatus, into: RustBuffer): void;
+            allocationSize(value: SparkHtlcStatus): number;
+            lift(value: UniffiByteArray): SparkHtlcStatus;
+            lower(value: SparkHtlcStatus): UniffiByteArray;
         };
         FfiConverterTypeSparkInvoiceDetails: {
             read(from: RustBuffer): SparkInvoiceDetails;
