@@ -3839,6 +3839,69 @@ const FfiConverterTypeLnurlPayResponse = (() => {
   return new FFIConverter();
 })();
 
+export type LnurlReceiveMetadata = {
+  nostrZapRequest: string | undefined;
+  nostrZapReceipt: string | undefined;
+  senderComment: string | undefined;
+};
+
+/**
+ * Generated factory for {@link LnurlReceiveMetadata} record objects.
+ */
+export const LnurlReceiveMetadata = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      LnurlReceiveMetadata,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link LnurlReceiveMetadata}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link LnurlReceiveMetadata}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<LnurlReceiveMetadata>,
+  });
+})();
+
+const FfiConverterTypeLnurlReceiveMetadata = (() => {
+  type TypeName = LnurlReceiveMetadata;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        nostrZapRequest: FfiConverterOptionalString.read(from),
+        nostrZapReceipt: FfiConverterOptionalString.read(from),
+        senderComment: FfiConverterOptionalString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalString.write(value.nostrZapRequest, into);
+      FfiConverterOptionalString.write(value.nostrZapReceipt, into);
+      FfiConverterOptionalString.write(value.senderComment, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalString.allocationSize(value.nostrZapRequest) +
+        FfiConverterOptionalString.allocationSize(value.nostrZapReceipt) +
+        FfiConverterOptionalString.allocationSize(value.senderComment)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 /**
  * Represents the withdraw LNURL info
  */
@@ -6002,6 +6065,73 @@ const FfiConverterTypeSendPaymentResponse = (() => {
     }
     allocationSize(value: TypeName): number {
       return FfiConverterTypePayment.allocationSize(value.payment);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type SetLnurlMetadataItem = {
+  paymentHash: string;
+  senderComment: string | undefined;
+  nostrZapRequest: string | undefined;
+  nostrZapReceipt: string | undefined;
+};
+
+/**
+ * Generated factory for {@link SetLnurlMetadataItem} record objects.
+ */
+export const SetLnurlMetadataItem = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      SetLnurlMetadataItem,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SetLnurlMetadataItem}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SetLnurlMetadataItem}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<SetLnurlMetadataItem>,
+  });
+})();
+
+const FfiConverterTypeSetLnurlMetadataItem = (() => {
+  type TypeName = SetLnurlMetadataItem;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        paymentHash: FfiConverterString.read(from),
+        senderComment: FfiConverterOptionalString.read(from),
+        nostrZapRequest: FfiConverterOptionalString.read(from),
+        nostrZapReceipt: FfiConverterOptionalString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.paymentHash, into);
+      FfiConverterOptionalString.write(value.senderComment, into);
+      FfiConverterOptionalString.write(value.nostrZapRequest, into);
+      FfiConverterOptionalString.write(value.nostrZapReceipt, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.paymentHash) +
+        FfiConverterOptionalString.allocationSize(value.senderComment) +
+        FfiConverterOptionalString.allocationSize(value.nostrZapRequest) +
+        FfiConverterOptionalString.allocationSize(value.nostrZapReceipt)
+      );
     }
   }
   return new FFIConverter();
@@ -8175,44 +8305,47 @@ const FfiConverterTypeChainServiceError = (() => {
 
 // Enum: DepositClaimError
 export enum DepositClaimError_Tags {
-  DepositClaimFeeExceeded = 'DepositClaimFeeExceeded',
+  MaxDepositClaimFeeExceeded = 'MaxDepositClaimFeeExceeded',
   MissingUtxo = 'MissingUtxo',
   Generic = 'Generic',
 }
 export const DepositClaimError = (() => {
-  type DepositClaimFeeExceeded__interface = {
-    tag: DepositClaimError_Tags.DepositClaimFeeExceeded;
+  type MaxDepositClaimFeeExceeded__interface = {
+    tag: DepositClaimError_Tags.MaxDepositClaimFeeExceeded;
     inner: Readonly<{
       tx: string;
       vout: /*u32*/ number;
       maxFee: Fee | undefined;
-      actualFee: /*u64*/ bigint;
+      requiredFeeSats: /*u64*/ bigint;
+      requiredFeeRateSatPerVbyte: /*u64*/ bigint;
     }>;
   };
 
-  class DepositClaimFeeExceeded_
+  class MaxDepositClaimFeeExceeded_
     extends UniffiEnum
-    implements DepositClaimFeeExceeded__interface
+    implements MaxDepositClaimFeeExceeded__interface
   {
     /**
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
     readonly [uniffiTypeNameSymbol] = 'DepositClaimError';
-    readonly tag = DepositClaimError_Tags.DepositClaimFeeExceeded;
+    readonly tag = DepositClaimError_Tags.MaxDepositClaimFeeExceeded;
     readonly inner: Readonly<{
       tx: string;
       vout: /*u32*/ number;
       maxFee: Fee | undefined;
-      actualFee: /*u64*/ bigint;
+      requiredFeeSats: /*u64*/ bigint;
+      requiredFeeRateSatPerVbyte: /*u64*/ bigint;
     }>;
     constructor(inner: {
       tx: string;
       vout: /*u32*/ number;
       maxFee: Fee | undefined;
-      actualFee: /*u64*/ bigint;
+      requiredFeeSats: /*u64*/ bigint;
+      requiredFeeRateSatPerVbyte: /*u64*/ bigint;
     }) {
-      super('DepositClaimError', 'DepositClaimFeeExceeded');
+      super('DepositClaimError', 'MaxDepositClaimFeeExceeded');
       this.inner = Object.freeze(inner);
     }
 
@@ -8220,13 +8353,14 @@ export const DepositClaimError = (() => {
       tx: string;
       vout: /*u32*/ number;
       maxFee: Fee | undefined;
-      actualFee: /*u64*/ bigint;
-    }): DepositClaimFeeExceeded_ {
-      return new DepositClaimFeeExceeded_(inner);
+      requiredFeeSats: /*u64*/ bigint;
+      requiredFeeRateSatPerVbyte: /*u64*/ bigint;
+    }): MaxDepositClaimFeeExceeded_ {
+      return new MaxDepositClaimFeeExceeded_(inner);
     }
 
-    static instanceOf(obj: any): obj is DepositClaimFeeExceeded_ {
-      return obj.tag === DepositClaimError_Tags.DepositClaimFeeExceeded;
+    static instanceOf(obj: any): obj is MaxDepositClaimFeeExceeded_ {
+      return obj.tag === DepositClaimError_Tags.MaxDepositClaimFeeExceeded;
     }
   }
 
@@ -8290,7 +8424,7 @@ export const DepositClaimError = (() => {
 
   return Object.freeze({
     instanceOf,
-    DepositClaimFeeExceeded: DepositClaimFeeExceeded_,
+    MaxDepositClaimFeeExceeded: MaxDepositClaimFeeExceeded_,
     MissingUtxo: MissingUtxo_,
     Generic: Generic_,
   });
@@ -8308,11 +8442,12 @@ const FfiConverterTypeDepositClaimError = (() => {
     read(from: RustBuffer): TypeName {
       switch (ordinalConverter.read(from)) {
         case 1:
-          return new DepositClaimError.DepositClaimFeeExceeded({
+          return new DepositClaimError.MaxDepositClaimFeeExceeded({
             tx: FfiConverterString.read(from),
             vout: FfiConverterUInt32.read(from),
             maxFee: FfiConverterOptionalTypeFee.read(from),
-            actualFee: FfiConverterUInt64.read(from),
+            requiredFeeSats: FfiConverterUInt64.read(from),
+            requiredFeeRateSatPerVbyte: FfiConverterUInt64.read(from),
           });
         case 2:
           return new DepositClaimError.MissingUtxo({
@@ -8329,13 +8464,14 @@ const FfiConverterTypeDepositClaimError = (() => {
     }
     write(value: TypeName, into: RustBuffer): void {
       switch (value.tag) {
-        case DepositClaimError_Tags.DepositClaimFeeExceeded: {
+        case DepositClaimError_Tags.MaxDepositClaimFeeExceeded: {
           ordinalConverter.write(1, into);
           const inner = value.inner;
           FfiConverterString.write(inner.tx, into);
           FfiConverterUInt32.write(inner.vout, into);
           FfiConverterOptionalTypeFee.write(inner.maxFee, into);
-          FfiConverterUInt64.write(inner.actualFee, into);
+          FfiConverterUInt64.write(inner.requiredFeeSats, into);
+          FfiConverterUInt64.write(inner.requiredFeeRateSatPerVbyte, into);
           return;
         }
         case DepositClaimError_Tags.MissingUtxo: {
@@ -8358,13 +8494,16 @@ const FfiConverterTypeDepositClaimError = (() => {
     }
     allocationSize(value: TypeName): number {
       switch (value.tag) {
-        case DepositClaimError_Tags.DepositClaimFeeExceeded: {
+        case DepositClaimError_Tags.MaxDepositClaimFeeExceeded: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(1);
           size += FfiConverterString.allocationSize(inner.tx);
           size += FfiConverterUInt32.allocationSize(inner.vout);
           size += FfiConverterOptionalTypeFee.allocationSize(inner.maxFee);
-          size += FfiConverterUInt64.allocationSize(inner.actualFee);
+          size += FfiConverterUInt64.allocationSize(inner.requiredFeeSats);
+          size += FfiConverterUInt64.allocationSize(
+            inner.requiredFeeRateSatPerVbyte
+          );
           return size;
         }
         case DepositClaimError_Tags.MissingUtxo: {
@@ -9451,6 +9590,7 @@ export const PaymentDetails = (() => {
       destinationPubkey: string;
       lnurlPayInfo: LnurlPayInfo | undefined;
       lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
+      lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
     }>;
   };
 
@@ -9469,6 +9609,7 @@ export const PaymentDetails = (() => {
       destinationPubkey: string;
       lnurlPayInfo: LnurlPayInfo | undefined;
       lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
+      lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
     }>;
     constructor(inner: {
       /**
@@ -9494,6 +9635,9 @@ export const PaymentDetails = (() => {
       /**
        * Lnurl withdrawal information if this was an lnurl payment.
        */ lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
+      /**
+       * Lnurl receive information if this was a received lnurl payment.
+       */ lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
     }) {
       super('PaymentDetails', 'Lightning');
       this.inner = Object.freeze(inner);
@@ -9523,6 +9667,9 @@ export const PaymentDetails = (() => {
       /**
        * Lnurl withdrawal information if this was an lnurl payment.
        */ lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
+      /**
+       * Lnurl receive information if this was a received lnurl payment.
+       */ lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
     }): Lightning_ {
       return new Lightning_(inner);
     }
@@ -9634,6 +9781,8 @@ const FfiConverterTypePaymentDetails = (() => {
             lnurlPayInfo: FfiConverterOptionalTypeLnurlPayInfo.read(from),
             lnurlWithdrawInfo:
               FfiConverterOptionalTypeLnurlWithdrawInfo.read(from),
+            lnurlReceiveMetadata:
+              FfiConverterOptionalTypeLnurlReceiveMetadata.read(from),
           });
         case 4:
           return new PaymentDetails.Withdraw({
@@ -9684,6 +9833,10 @@ const FfiConverterTypePaymentDetails = (() => {
           FfiConverterOptionalTypeLnurlPayInfo.write(inner.lnurlPayInfo, into);
           FfiConverterOptionalTypeLnurlWithdrawInfo.write(
             inner.lnurlWithdrawInfo,
+            into
+          );
+          FfiConverterOptionalTypeLnurlReceiveMetadata.write(
+            inner.lnurlReceiveMetadata,
             into
           );
           return;
@@ -9743,6 +9896,9 @@ const FfiConverterTypePaymentDetails = (() => {
           );
           size += FfiConverterOptionalTypeLnurlWithdrawInfo.allocationSize(
             inner.lnurlWithdrawInfo
+          );
+          size += FfiConverterOptionalTypeLnurlReceiveMetadata.allocationSize(
+            inner.lnurlReceiveMetadata
           );
           return size;
         }
@@ -10640,7 +10796,7 @@ export enum SdkError_Tags {
   NetworkError = 'NetworkError',
   StorageError = 'StorageError',
   ChainServiceError = 'ChainServiceError',
-  DepositClaimFeeExceeded = 'DepositClaimFeeExceeded',
+  MaxDepositClaimFeeExceeded = 'MaxDepositClaimFeeExceeded',
   MissingUtxo = 'MissingUtxo',
   LnurlError = 'LnurlError',
   Generic = 'Generic',
@@ -10871,39 +11027,42 @@ export const SdkError = (() => {
     }
   }
 
-  type DepositClaimFeeExceeded__interface = {
-    tag: SdkError_Tags.DepositClaimFeeExceeded;
+  type MaxDepositClaimFeeExceeded__interface = {
+    tag: SdkError_Tags.MaxDepositClaimFeeExceeded;
     inner: Readonly<{
       tx: string;
       vout: /*u32*/ number;
       maxFee: Fee | undefined;
-      actualFee: /*u64*/ bigint;
+      requiredFeeSats: /*u64*/ bigint;
+      requiredFeeRateSatPerVbyte: /*u64*/ bigint;
     }>;
   };
 
-  class DepositClaimFeeExceeded_
+  class MaxDepositClaimFeeExceeded_
     extends UniffiError
-    implements DepositClaimFeeExceeded__interface
+    implements MaxDepositClaimFeeExceeded__interface
   {
     /**
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
     readonly [uniffiTypeNameSymbol] = 'SdkError';
-    readonly tag = SdkError_Tags.DepositClaimFeeExceeded;
+    readonly tag = SdkError_Tags.MaxDepositClaimFeeExceeded;
     readonly inner: Readonly<{
       tx: string;
       vout: /*u32*/ number;
       maxFee: Fee | undefined;
-      actualFee: /*u64*/ bigint;
+      requiredFeeSats: /*u64*/ bigint;
+      requiredFeeRateSatPerVbyte: /*u64*/ bigint;
     }>;
     constructor(inner: {
       tx: string;
       vout: /*u32*/ number;
       maxFee: Fee | undefined;
-      actualFee: /*u64*/ bigint;
+      requiredFeeSats: /*u64*/ bigint;
+      requiredFeeRateSatPerVbyte: /*u64*/ bigint;
     }) {
-      super('SdkError', 'DepositClaimFeeExceeded');
+      super('SdkError', 'MaxDepositClaimFeeExceeded');
       this.inner = Object.freeze(inner);
     }
 
@@ -10911,26 +11070,28 @@ export const SdkError = (() => {
       tx: string;
       vout: /*u32*/ number;
       maxFee: Fee | undefined;
-      actualFee: /*u64*/ bigint;
-    }): DepositClaimFeeExceeded_ {
-      return new DepositClaimFeeExceeded_(inner);
+      requiredFeeSats: /*u64*/ bigint;
+      requiredFeeRateSatPerVbyte: /*u64*/ bigint;
+    }): MaxDepositClaimFeeExceeded_ {
+      return new MaxDepositClaimFeeExceeded_(inner);
     }
 
-    static instanceOf(obj: any): obj is DepositClaimFeeExceeded_ {
-      return obj.tag === SdkError_Tags.DepositClaimFeeExceeded;
+    static instanceOf(obj: any): obj is MaxDepositClaimFeeExceeded_ {
+      return obj.tag === SdkError_Tags.MaxDepositClaimFeeExceeded;
     }
 
-    static hasInner(obj: any): obj is DepositClaimFeeExceeded_ {
-      return DepositClaimFeeExceeded_.instanceOf(obj);
+    static hasInner(obj: any): obj is MaxDepositClaimFeeExceeded_ {
+      return MaxDepositClaimFeeExceeded_.instanceOf(obj);
     }
 
     static getInner(
-      obj: DepositClaimFeeExceeded_
+      obj: MaxDepositClaimFeeExceeded_
     ): Readonly<{
       tx: string;
       vout: /*u32*/ number;
       maxFee: Fee | undefined;
-      actualFee: /*u64*/ bigint;
+      requiredFeeSats: /*u64*/ bigint;
+      requiredFeeRateSatPerVbyte: /*u64*/ bigint;
     }> {
       return obj.inner;
     }
@@ -11055,7 +11216,7 @@ export const SdkError = (() => {
     NetworkError: NetworkError_,
     StorageError: StorageError_,
     ChainServiceError: ChainServiceError_,
-    DepositClaimFeeExceeded: DepositClaimFeeExceeded_,
+    MaxDepositClaimFeeExceeded: MaxDepositClaimFeeExceeded_,
     MissingUtxo: MissingUtxo_,
     LnurlError: LnurlError_,
     Generic: Generic_,
@@ -11090,11 +11251,12 @@ const FfiConverterTypeSdkError = (() => {
         case 6:
           return new SdkError.ChainServiceError(FfiConverterString.read(from));
         case 7:
-          return new SdkError.DepositClaimFeeExceeded({
+          return new SdkError.MaxDepositClaimFeeExceeded({
             tx: FfiConverterString.read(from),
             vout: FfiConverterUInt32.read(from),
             maxFee: FfiConverterOptionalTypeFee.read(from),
-            actualFee: FfiConverterUInt64.read(from),
+            requiredFeeSats: FfiConverterUInt64.read(from),
+            requiredFeeRateSatPerVbyte: FfiConverterUInt64.read(from),
           });
         case 8:
           return new SdkError.MissingUtxo({
@@ -11147,13 +11309,14 @@ const FfiConverterTypeSdkError = (() => {
           FfiConverterString.write(inner[0], into);
           return;
         }
-        case SdkError_Tags.DepositClaimFeeExceeded: {
+        case SdkError_Tags.MaxDepositClaimFeeExceeded: {
           ordinalConverter.write(7, into);
           const inner = value.inner;
           FfiConverterString.write(inner.tx, into);
           FfiConverterUInt32.write(inner.vout, into);
           FfiConverterOptionalTypeFee.write(inner.maxFee, into);
-          FfiConverterUInt64.write(inner.actualFee, into);
+          FfiConverterUInt64.write(inner.requiredFeeSats, into);
+          FfiConverterUInt64.write(inner.requiredFeeRateSatPerVbyte, into);
           return;
         }
         case SdkError_Tags.MissingUtxo: {
@@ -11218,13 +11381,16 @@ const FfiConverterTypeSdkError = (() => {
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
-        case SdkError_Tags.DepositClaimFeeExceeded: {
+        case SdkError_Tags.MaxDepositClaimFeeExceeded: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(7);
           size += FfiConverterString.allocationSize(inner.tx);
           size += FfiConverterUInt32.allocationSize(inner.vout);
           size += FfiConverterOptionalTypeFee.allocationSize(inner.maxFee);
-          size += FfiConverterUInt64.allocationSize(inner.actualFee);
+          size += FfiConverterUInt64.allocationSize(inner.requiredFeeSats);
+          size += FfiConverterUInt64.allocationSize(
+            inner.requiredFeeRateSatPerVbyte
+          );
           return size;
         }
         case SdkError_Tags.MissingUtxo: {
@@ -17968,6 +18134,10 @@ export interface Storage {
     payload: UpdateDepositPayload,
     asyncOpts_?: { signal: AbortSignal }
   ) /*throws*/ : Promise<void>;
+  setLnurlMetadata(
+    metadata: Array<SetLnurlMetadataItem>,
+    asyncOpts_?: { signal: AbortSignal }
+  ) /*throws*/ : Promise<void>;
 }
 
 /**
@@ -18520,6 +18690,43 @@ export class StorageImpl extends UniffiAbstractObject implements Storage {
             FfiConverterString.lower(txid),
             FfiConverterUInt32.lower(vout),
             FfiConverterTypeUpdateDepositPayload.lower(payload)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeStorageError.lift.bind(
+          FfiConverterTypeStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async setLnurlMetadata(
+    metadata: Array<SetLnurlMetadataItem>,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_storage_set_lnurl_metadata(
+            uniffiTypeStorageImplObjectFactory.clonePointer(this),
+            FfiConverterArrayTypeSetLnurlMetadataItem.lower(metadata)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -19135,6 +19342,48 @@ const uniffiCallbackInterfaceStorage: {
           FfiConverterString.lift(txid),
           FfiConverterUInt32.lift(vout),
           FfiConverterTypeUpdateDepositPayload.lift(payload),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: void) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ StorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeStorageError.lower.bind(
+          FfiConverterTypeStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    setLnurlMetadata: (
+      uniffiHandle: bigint,
+      metadata: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<void> => {
+        const jsCallback = FfiConverterTypeStorage.lift(uniffiHandle);
+        return await jsCallback.setLnurlMetadata(
+          FfiConverterArrayTypeSetLnurlMetadataItem.lift(metadata),
           { signal }
         );
       };
@@ -20776,6 +21025,11 @@ const FfiConverterOptionalTypeLnurlPayInfo = new FfiConverterOptional(
   FfiConverterTypeLnurlPayInfo
 );
 
+// FfiConverter for LnurlReceiveMetadata | undefined
+const FfiConverterOptionalTypeLnurlReceiveMetadata = new FfiConverterOptional(
+  FfiConverterTypeLnurlReceiveMetadata
+);
+
 // FfiConverter for LnurlWithdrawInfo | undefined
 const FfiConverterOptionalTypeLnurlWithdrawInfo = new FfiConverterOptional(
   FfiConverterTypeLnurlWithdrawInfo
@@ -20895,6 +21149,11 @@ const FfiConverterArrayTypeRate = new FfiConverterArray(FfiConverterTypeRate);
 // FfiConverter for Array<Record>
 const FfiConverterArrayTypeRecord = new FfiConverterArray(
   FfiConverterTypeRecord
+);
+
+// FfiConverter for Array<SetLnurlMetadataItem>
+const FfiConverterArrayTypeSetLnurlMetadataItem = new FfiConverterArray(
+  FfiConverterTypeSetLnurlMetadataItem
 );
 
 // FfiConverter for Array<TokenMetadata>
@@ -21555,6 +21814,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_set_lnurl_metadata() !==
+    7460
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_storage_set_lnurl_metadata'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_syncstorage_add_outgoing_change() !==
     19087
   ) {
@@ -21793,6 +22060,7 @@ export default Object.freeze({
     FfiConverterTypeLnurlPayRequest,
     FfiConverterTypeLnurlPayRequestDetails,
     FfiConverterTypeLnurlPayResponse,
+    FfiConverterTypeLnurlReceiveMetadata,
     FfiConverterTypeLnurlWithdrawInfo,
     FfiConverterTypeLnurlWithdrawRequest,
     FfiConverterTypeLnurlWithdrawRequestDetails,
@@ -21841,6 +22109,7 @@ export default Object.freeze({
     FfiConverterTypeSendPaymentOptions,
     FfiConverterTypeSendPaymentRequest,
     FfiConverterTypeSendPaymentResponse,
+    FfiConverterTypeSetLnurlMetadataItem,
     FfiConverterTypeSignMessageRequest,
     FfiConverterTypeSignMessageResponse,
     FfiConverterTypeSilentPaymentAddressDetails,

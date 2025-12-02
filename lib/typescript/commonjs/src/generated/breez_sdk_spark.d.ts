@@ -1508,6 +1508,30 @@ export declare const LnurlPayResponse: Readonly<{
      */
     defaults: () => Partial<LnurlPayResponse>;
 }>;
+export type LnurlReceiveMetadata = {
+    nostrZapRequest: string | undefined;
+    nostrZapReceipt: string | undefined;
+    senderComment: string | undefined;
+};
+/**
+ * Generated factory for {@link LnurlReceiveMetadata} record objects.
+ */
+export declare const LnurlReceiveMetadata: Readonly<{
+    /**
+     * Create a frozen instance of {@link LnurlReceiveMetadata}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<LnurlReceiveMetadata> & Required<Omit<LnurlReceiveMetadata, never>>) => LnurlReceiveMetadata;
+    /**
+     * Create a frozen instance of {@link LnurlReceiveMetadata}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<LnurlReceiveMetadata> & Required<Omit<LnurlReceiveMetadata, never>>) => LnurlReceiveMetadata;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<LnurlReceiveMetadata>;
+}>;
 /**
  * Represents the withdraw LNURL info
  */
@@ -2391,6 +2415,31 @@ export declare const SendPaymentResponse: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<SendPaymentResponse>;
+}>;
+export type SetLnurlMetadataItem = {
+    paymentHash: string;
+    senderComment: string | undefined;
+    nostrZapRequest: string | undefined;
+    nostrZapReceipt: string | undefined;
+};
+/**
+ * Generated factory for {@link SetLnurlMetadataItem} record objects.
+ */
+export declare const SetLnurlMetadataItem: Readonly<{
+    /**
+     * Create a frozen instance of {@link SetLnurlMetadataItem}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SetLnurlMetadataItem> & Required<Omit<SetLnurlMetadataItem, never>>) => SetLnurlMetadataItem;
+    /**
+     * Create a frozen instance of {@link SetLnurlMetadataItem}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SetLnurlMetadataItem> & Required<Omit<SetLnurlMetadataItem, never>>) => SetLnurlMetadataItem;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SetLnurlMetadataItem>;
 }>;
 export type SignMessageRequest = {
     message: string;
@@ -3489,25 +3538,27 @@ export declare const ChainServiceError: Readonly<{
 }>;
 export type ChainServiceError = InstanceType<(typeof ChainServiceError)[keyof Omit<typeof ChainServiceError, 'instanceOf'>]>;
 export declare enum DepositClaimError_Tags {
-    DepositClaimFeeExceeded = "DepositClaimFeeExceeded",
+    MaxDepositClaimFeeExceeded = "MaxDepositClaimFeeExceeded",
     MissingUtxo = "MissingUtxo",
     Generic = "Generic"
 }
 export declare const DepositClaimError: Readonly<{
     instanceOf: (obj: any) => obj is DepositClaimError;
-    DepositClaimFeeExceeded: {
+    MaxDepositClaimFeeExceeded: {
         new (inner: {
             tx: string;
             vout: number;
             maxFee: Fee | undefined;
-            actualFee: bigint;
+            requiredFeeSats: bigint;
+            requiredFeeRateSatPerVbyte: bigint;
         }): {
-            readonly tag: DepositClaimError_Tags.DepositClaimFeeExceeded;
+            readonly tag: DepositClaimError_Tags.MaxDepositClaimFeeExceeded;
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
                 maxFee: Fee | undefined;
-                actualFee: bigint;
+                requiredFeeSats: bigint;
+                requiredFeeRateSatPerVbyte: bigint;
             }>;
             /**
              * @private
@@ -3519,14 +3570,16 @@ export declare const DepositClaimError: Readonly<{
             tx: string;
             vout: number;
             maxFee: Fee | undefined;
-            actualFee: bigint;
+            requiredFeeSats: bigint;
+            requiredFeeRateSatPerVbyte: bigint;
         }): {
-            readonly tag: DepositClaimError_Tags.DepositClaimFeeExceeded;
+            readonly tag: DepositClaimError_Tags.MaxDepositClaimFeeExceeded;
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
                 maxFee: Fee | undefined;
-                actualFee: bigint;
+                requiredFeeSats: bigint;
+                requiredFeeRateSatPerVbyte: bigint;
             }>;
             /**
              * @private
@@ -3535,12 +3588,13 @@ export declare const DepositClaimError: Readonly<{
             readonly [uniffiTypeNameSymbol]: "DepositClaimError";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: DepositClaimError_Tags.DepositClaimFeeExceeded;
+            readonly tag: DepositClaimError_Tags.MaxDepositClaimFeeExceeded;
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
                 maxFee: Fee | undefined;
-                actualFee: bigint;
+                requiredFeeSats: bigint;
+                requiredFeeRateSatPerVbyte: bigint;
             }>;
             /**
              * @private
@@ -4301,6 +4355,9 @@ export declare const PaymentDetails: Readonly<{
             /**
              * Lnurl withdrawal information if this was an lnurl payment.
              */ lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
+            /**
+             * Lnurl receive information if this was a received lnurl payment.
+             */ lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Lightning;
             readonly inner: Readonly<{
@@ -4311,6 +4368,7 @@ export declare const PaymentDetails: Readonly<{
                 destinationPubkey: string;
                 lnurlPayInfo: LnurlPayInfo | undefined;
                 lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
+                lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
             }>;
             /**
              * @private
@@ -4342,6 +4400,9 @@ export declare const PaymentDetails: Readonly<{
             /**
              * Lnurl withdrawal information if this was an lnurl payment.
              */ lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
+            /**
+             * Lnurl receive information if this was a received lnurl payment.
+             */ lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Lightning;
             readonly inner: Readonly<{
@@ -4352,6 +4413,7 @@ export declare const PaymentDetails: Readonly<{
                 destinationPubkey: string;
                 lnurlPayInfo: LnurlPayInfo | undefined;
                 lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
+                lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
             }>;
             /**
              * @private
@@ -4369,6 +4431,7 @@ export declare const PaymentDetails: Readonly<{
                 destinationPubkey: string;
                 lnurlPayInfo: LnurlPayInfo | undefined;
                 lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
+                lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
             }>;
             /**
              * @private
@@ -5030,7 +5093,7 @@ export declare enum SdkError_Tags {
     NetworkError = "NetworkError",
     StorageError = "StorageError",
     ChainServiceError = "ChainServiceError",
-    DepositClaimFeeExceeded = "DepositClaimFeeExceeded",
+    MaxDepositClaimFeeExceeded = "MaxDepositClaimFeeExceeded",
     MissingUtxo = "MissingUtxo",
     LnurlError = "LnurlError",
     Generic = "Generic"
@@ -5466,19 +5529,21 @@ export declare const SdkError: Readonly<{
         prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
         stackTraceLimit: number;
     };
-    DepositClaimFeeExceeded: {
+    MaxDepositClaimFeeExceeded: {
         new (inner: {
             tx: string;
             vout: number;
             maxFee: Fee | undefined;
-            actualFee: bigint;
+            requiredFeeSats: bigint;
+            requiredFeeRateSatPerVbyte: bigint;
         }): {
-            readonly tag: SdkError_Tags.DepositClaimFeeExceeded;
+            readonly tag: SdkError_Tags.MaxDepositClaimFeeExceeded;
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
                 maxFee: Fee | undefined;
-                actualFee: bigint;
+                requiredFeeSats: bigint;
+                requiredFeeRateSatPerVbyte: bigint;
             }>;
             /**
              * @private
@@ -5494,14 +5559,16 @@ export declare const SdkError: Readonly<{
             tx: string;
             vout: number;
             maxFee: Fee | undefined;
-            actualFee: bigint;
+            requiredFeeSats: bigint;
+            requiredFeeRateSatPerVbyte: bigint;
         }): {
-            readonly tag: SdkError_Tags.DepositClaimFeeExceeded;
+            readonly tag: SdkError_Tags.MaxDepositClaimFeeExceeded;
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
                 maxFee: Fee | undefined;
-                actualFee: bigint;
+                requiredFeeSats: bigint;
+                requiredFeeRateSatPerVbyte: bigint;
             }>;
             /**
              * @private
@@ -5514,12 +5581,13 @@ export declare const SdkError: Readonly<{
             cause?: unknown;
         };
         instanceOf(obj: any): obj is {
-            readonly tag: SdkError_Tags.DepositClaimFeeExceeded;
+            readonly tag: SdkError_Tags.MaxDepositClaimFeeExceeded;
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
                 maxFee: Fee | undefined;
-                actualFee: bigint;
+                requiredFeeSats: bigint;
+                requiredFeeRateSatPerVbyte: bigint;
             }>;
             /**
              * @private
@@ -5532,12 +5600,13 @@ export declare const SdkError: Readonly<{
             cause?: unknown;
         };
         hasInner(obj: any): obj is {
-            readonly tag: SdkError_Tags.DepositClaimFeeExceeded;
+            readonly tag: SdkError_Tags.MaxDepositClaimFeeExceeded;
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
                 maxFee: Fee | undefined;
-                actualFee: bigint;
+                requiredFeeSats: bigint;
+                requiredFeeRateSatPerVbyte: bigint;
             }>;
             /**
              * @private
@@ -5550,12 +5619,13 @@ export declare const SdkError: Readonly<{
             cause?: unknown;
         };
         getInner(obj: {
-            readonly tag: SdkError_Tags.DepositClaimFeeExceeded;
+            readonly tag: SdkError_Tags.MaxDepositClaimFeeExceeded;
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
                 maxFee: Fee | undefined;
-                actualFee: bigint;
+                requiredFeeSats: bigint;
+                requiredFeeRateSatPerVbyte: bigint;
             }>;
             /**
              * @private
@@ -5570,7 +5640,8 @@ export declare const SdkError: Readonly<{
             tx: string;
             vout: number;
             maxFee: Fee | undefined;
-            actualFee: bigint;
+            requiredFeeSats: bigint;
+            requiredFeeRateSatPerVbyte: bigint;
         }>;
         isError(error: unknown): error is Error;
         captureStackTrace(targetObject: object, constructorOpt?: Function): void;
@@ -9104,6 +9175,9 @@ export interface Storage {
     updateDeposit(txid: string, vout: number, payload: UpdateDepositPayload, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
+    setLnurlMetadata(metadata: Array<SetLnurlMetadataItem>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
 }
 /**
  * Trait for persistent storage
@@ -9241,6 +9315,9 @@ export declare class StorageImpl extends UniffiAbstractObject implements Storage
      * Success or a `StorageError`
      */
     updateDeposit(txid: string, vout: number, payload: UpdateDepositPayload, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    setLnurlMetadata(metadata: Array<SetLnurlMetadataItem>, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -10036,6 +10113,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): LnurlPayResponse;
             lower(value: LnurlPayResponse): UniffiByteArray;
         };
+        FfiConverterTypeLnurlReceiveMetadata: {
+            read(from: RustBuffer): LnurlReceiveMetadata;
+            write(value: LnurlReceiveMetadata, into: RustBuffer): void;
+            allocationSize(value: LnurlReceiveMetadata): number;
+            lift(value: UniffiByteArray): LnurlReceiveMetadata;
+            lower(value: LnurlReceiveMetadata): UniffiByteArray;
+        };
         FfiConverterTypeLnurlWithdrawInfo: {
             read(from: RustBuffer): LnurlWithdrawInfo;
             write(value: LnurlWithdrawInfo, into: RustBuffer): void;
@@ -10353,6 +10437,13 @@ declare const _default: Readonly<{
             allocationSize(value: SendPaymentResponse): number;
             lift(value: UniffiByteArray): SendPaymentResponse;
             lower(value: SendPaymentResponse): UniffiByteArray;
+        };
+        FfiConverterTypeSetLnurlMetadataItem: {
+            read(from: RustBuffer): SetLnurlMetadataItem;
+            write(value: SetLnurlMetadataItem, into: RustBuffer): void;
+            allocationSize(value: SetLnurlMetadataItem): number;
+            lift(value: UniffiByteArray): SetLnurlMetadataItem;
+            lower(value: SetLnurlMetadataItem): UniffiByteArray;
         };
         FfiConverterTypeSignMessageRequest: {
             read(from: RustBuffer): SignMessageRequest;

@@ -82,6 +82,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_storage_delete_deposit(ptr: bigint, txid: Uint8Array, vout: number): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_storage_list_deposits(ptr: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_storage_update_deposit(ptr: bigint, txid: Uint8Array, vout: number, payload: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_storage_set_lnurl_metadata(ptr: bigint, metadata: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_clone_syncstorage(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_free_syncstorage(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): void;
     ubrn_uniffi_breez_sdk_spark_fn_method_syncstorage_add_outgoing_change(ptr: bigint, record: Uint8Array): bigint;
@@ -225,6 +226,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_deposit(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_deposits(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_storage_update_deposit(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_storage_set_lnurl_metadata(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_syncstorage_add_outgoing_change(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_syncstorage_complete_outgoing_sync(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_syncstorage_get_pending_outgoing_changes(): number;
@@ -362,6 +364,7 @@ type UniffiCallbackInterfaceStorageMethod8 = (uniffiHandle: bigint, txid: Uint8A
 type UniffiCallbackInterfaceStorageMethod9 = (uniffiHandle: bigint, txid: Uint8Array, vout: number, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceStorageMethod10 = (uniffiHandle: bigint, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceStorageMethod11 = (uniffiHandle: bigint, txid: Uint8Array, vout: number, payload: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceStorageMethod12 = (uniffiHandle: bigint, metadata: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceSyncStorageMethod0 = (uniffiHandle: bigint, record: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteU64, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceSyncStorageMethod1 = (uniffiHandle: bigint, record: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceSyncStorageMethod2 = (uniffiHandle: bigint, limit: number, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiResult<UniffiForeignFuture>;
@@ -416,6 +419,7 @@ export type UniffiVTableCallbackInterfaceStorage = {
     deleteDeposit: UniffiCallbackInterfaceStorageMethod9;
     listDeposits: UniffiCallbackInterfaceStorageMethod10;
     updateDeposit: UniffiCallbackInterfaceStorageMethod11;
+    setLnurlMetadata: UniffiCallbackInterfaceStorageMethod12;
     uniffiFree: UniffiCallbackInterfaceFree;
 };
 export type UniffiVTableCallbackInterfaceSyncStorage = {
