@@ -1534,7 +1534,7 @@ const FfiConverterTypeCheckMessageResponse = (() => {
 export type ClaimDepositRequest = {
   txid: string;
   vout: /*u32*/ number;
-  maxFee: Fee | undefined;
+  maxFee: MaxFee | undefined;
 };
 
 /**
@@ -1574,19 +1574,19 @@ const FfiConverterTypeClaimDepositRequest = (() => {
       return {
         txid: FfiConverterString.read(from),
         vout: FfiConverterUInt32.read(from),
-        maxFee: FfiConverterOptionalTypeFee.read(from),
+        maxFee: FfiConverterOptionalTypeMaxFee.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterString.write(value.txid, into);
       FfiConverterUInt32.write(value.vout, into);
-      FfiConverterOptionalTypeFee.write(value.maxFee, into);
+      FfiConverterOptionalTypeMaxFee.write(value.maxFee, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterString.allocationSize(value.txid) +
         FfiConverterUInt32.allocationSize(value.vout) +
-        FfiConverterOptionalTypeFee.allocationSize(value.maxFee)
+        FfiConverterOptionalTypeMaxFee.allocationSize(value.maxFee)
       );
     }
   }
@@ -1758,7 +1758,7 @@ export type Config = {
   apiKey: string | undefined;
   network: Network;
   syncIntervalSecs: /*u32*/ number;
-  maxDepositClaimFee: Fee | undefined;
+  maxDepositClaimFee: MaxFee | undefined;
   /**
    * The domain used for receiving through lnurl-pay and lightning address.
    */
@@ -1830,7 +1830,7 @@ const FfiConverterTypeConfig = (() => {
         apiKey: FfiConverterOptionalString.read(from),
         network: FfiConverterTypeNetwork.read(from),
         syncIntervalSecs: FfiConverterUInt32.read(from),
-        maxDepositClaimFee: FfiConverterOptionalTypeFee.read(from),
+        maxDepositClaimFee: FfiConverterOptionalTypeMaxFee.read(from),
         lnurlDomain: FfiConverterOptionalString.read(from),
         preferSparkOverLightning: FfiConverterBool.read(from),
         externalInputParsers:
@@ -1844,7 +1844,7 @@ const FfiConverterTypeConfig = (() => {
       FfiConverterOptionalString.write(value.apiKey, into);
       FfiConverterTypeNetwork.write(value.network, into);
       FfiConverterUInt32.write(value.syncIntervalSecs, into);
-      FfiConverterOptionalTypeFee.write(value.maxDepositClaimFee, into);
+      FfiConverterOptionalTypeMaxFee.write(value.maxDepositClaimFee, into);
       FfiConverterOptionalString.write(value.lnurlDomain, into);
       FfiConverterBool.write(value.preferSparkOverLightning, into);
       FfiConverterOptionalArrayTypeExternalInputParser.write(
@@ -1860,7 +1860,9 @@ const FfiConverterTypeConfig = (() => {
         FfiConverterOptionalString.allocationSize(value.apiKey) +
         FfiConverterTypeNetwork.allocationSize(value.network) +
         FfiConverterUInt32.allocationSize(value.syncIntervalSecs) +
-        FfiConverterOptionalTypeFee.allocationSize(value.maxDepositClaimFee) +
+        FfiConverterOptionalTypeMaxFee.allocationSize(
+          value.maxDepositClaimFee
+        ) +
         FfiConverterOptionalString.allocationSize(value.lnurlDomain) +
         FfiConverterBool.allocationSize(value.preferSparkOverLightning) +
         FfiConverterOptionalArrayTypeExternalInputParser.allocationSize(
@@ -9404,6 +9406,189 @@ const FfiConverterTypeKeySetType = (() => {
   return new FFIConverter();
 })();
 
+// Enum: MaxFee
+export enum MaxFee_Tags {
+  Fixed = 'Fixed',
+  Rate = 'Rate',
+  NetworkRecommended = 'NetworkRecommended',
+}
+export const MaxFee = (() => {
+  type Fixed__interface = {
+    tag: MaxFee_Tags.Fixed;
+    inner: Readonly<{ amount: /*u64*/ bigint }>;
+  };
+
+  class Fixed_ extends UniffiEnum implements Fixed__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'MaxFee';
+    readonly tag = MaxFee_Tags.Fixed;
+    readonly inner: Readonly<{ amount: /*u64*/ bigint }>;
+    constructor(inner: { amount: /*u64*/ bigint }) {
+      super('MaxFee', 'Fixed');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { amount: /*u64*/ bigint }): Fixed_ {
+      return new Fixed_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Fixed_ {
+      return obj.tag === MaxFee_Tags.Fixed;
+    }
+  }
+
+  type Rate__interface = {
+    tag: MaxFee_Tags.Rate;
+    inner: Readonly<{ satPerVbyte: /*u64*/ bigint }>;
+  };
+
+  class Rate_ extends UniffiEnum implements Rate__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'MaxFee';
+    readonly tag = MaxFee_Tags.Rate;
+    readonly inner: Readonly<{ satPerVbyte: /*u64*/ bigint }>;
+    constructor(inner: { satPerVbyte: /*u64*/ bigint }) {
+      super('MaxFee', 'Rate');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { satPerVbyte: /*u64*/ bigint }): Rate_ {
+      return new Rate_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Rate_ {
+      return obj.tag === MaxFee_Tags.Rate;
+    }
+  }
+
+  type NetworkRecommended__interface = {
+    tag: MaxFee_Tags.NetworkRecommended;
+    inner: Readonly<{ leewaySatPerVbyte: /*u64*/ bigint }>;
+  };
+
+  class NetworkRecommended_
+    extends UniffiEnum
+    implements NetworkRecommended__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'MaxFee';
+    readonly tag = MaxFee_Tags.NetworkRecommended;
+    readonly inner: Readonly<{ leewaySatPerVbyte: /*u64*/ bigint }>;
+    constructor(inner: { leewaySatPerVbyte: /*u64*/ bigint }) {
+      super('MaxFee', 'NetworkRecommended');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      leewaySatPerVbyte: /*u64*/ bigint;
+    }): NetworkRecommended_ {
+      return new NetworkRecommended_(inner);
+    }
+
+    static instanceOf(obj: any): obj is NetworkRecommended_ {
+      return obj.tag === MaxFee_Tags.NetworkRecommended;
+    }
+  }
+
+  function instanceOf(obj: any): obj is MaxFee {
+    return obj[uniffiTypeNameSymbol] === 'MaxFee';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Fixed: Fixed_,
+    Rate: Rate_,
+    NetworkRecommended: NetworkRecommended_,
+  });
+})();
+
+export type MaxFee = InstanceType<
+  (typeof MaxFee)[keyof Omit<typeof MaxFee, 'instanceOf'>]
+>;
+
+// FfiConverter for enum MaxFee
+const FfiConverterTypeMaxFee = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = MaxFee;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new MaxFee.Fixed({ amount: FfiConverterUInt64.read(from) });
+        case 2:
+          return new MaxFee.Rate({
+            satPerVbyte: FfiConverterUInt64.read(from),
+          });
+        case 3:
+          return new MaxFee.NetworkRecommended({
+            leewaySatPerVbyte: FfiConverterUInt64.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case MaxFee_Tags.Fixed: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterUInt64.write(inner.amount, into);
+          return;
+        }
+        case MaxFee_Tags.Rate: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterUInt64.write(inner.satPerVbyte, into);
+          return;
+        }
+        case MaxFee_Tags.NetworkRecommended: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterUInt64.write(inner.leewaySatPerVbyte, into);
+          return;
+        }
+        default:
+          // Throwing from here means that MaxFee_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case MaxFee_Tags.Fixed: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterUInt64.allocationSize(inner.amount);
+          return size;
+        }
+        case MaxFee_Tags.Rate: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterUInt64.allocationSize(inner.satPerVbyte);
+          return size;
+        }
+        case MaxFee_Tags.NetworkRecommended: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterUInt64.allocationSize(inner.leewaySatPerVbyte);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
 export enum Network {
   Mainnet,
   Regtest,
@@ -11423,7 +11608,6 @@ const FfiConverterTypeSdkError = (() => {
 // Enum: SdkEvent
 export enum SdkEvent_Tags {
   Synced = 'Synced',
-  DataSynced = 'DataSynced',
   UnclaimedDeposits = 'UnclaimedDeposits',
   ClaimedDeposits = 'ClaimedDeposits',
   PaymentSucceeded = 'PaymentSucceeded',
@@ -11458,44 +11642,6 @@ export const SdkEvent = (() => {
 
     static instanceOf(obj: any): obj is Synced_ {
       return obj.tag === SdkEvent_Tags.Synced;
-    }
-  }
-
-  type DataSynced__interface = {
-    tag: SdkEvent_Tags.DataSynced;
-    inner: Readonly<{ didPullNewRecords: boolean }>;
-  };
-
-  /**
-   * Emitted when data was pushed and/or pulled to/from real-time sync storage.
-   */
-  class DataSynced_ extends UniffiEnum implements DataSynced__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'SdkEvent';
-    readonly tag = SdkEvent_Tags.DataSynced;
-    readonly inner: Readonly<{ didPullNewRecords: boolean }>;
-    constructor(inner: {
-      /**
-       * Value indicating whether new data was pulled through real-time sync.
-       */ didPullNewRecords: boolean;
-    }) {
-      super('SdkEvent', 'DataSynced');
-      this.inner = Object.freeze(inner);
-    }
-
-    static new(inner: {
-      /**
-       * Value indicating whether new data was pulled through real-time sync.
-       */ didPullNewRecords: boolean;
-    }): DataSynced_ {
-      return new DataSynced_(inner);
-    }
-
-    static instanceOf(obj: any): obj is DataSynced_ {
-      return obj.tag === SdkEvent_Tags.DataSynced;
     }
   }
 
@@ -11660,7 +11806,6 @@ export const SdkEvent = (() => {
   return Object.freeze({
     instanceOf,
     Synced: Synced_,
-    DataSynced: DataSynced_,
     UnclaimedDeposits: UnclaimedDeposits_,
     ClaimedDeposits: ClaimedDeposits_,
     PaymentSucceeded: PaymentSucceeded_,
@@ -11687,26 +11832,22 @@ const FfiConverterTypeSdkEvent = (() => {
         case 1:
           return new SdkEvent.Synced();
         case 2:
-          return new SdkEvent.DataSynced({
-            didPullNewRecords: FfiConverterBool.read(from),
-          });
-        case 3:
           return new SdkEvent.UnclaimedDeposits({
             unclaimedDeposits: FfiConverterArrayTypeDepositInfo.read(from),
           });
-        case 4:
+        case 3:
           return new SdkEvent.ClaimedDeposits({
             claimedDeposits: FfiConverterArrayTypeDepositInfo.read(from),
           });
-        case 5:
+        case 4:
           return new SdkEvent.PaymentSucceeded({
             payment: FfiConverterTypePayment.read(from),
           });
-        case 6:
+        case 5:
           return new SdkEvent.PaymentPending({
             payment: FfiConverterTypePayment.read(from),
           });
-        case 7:
+        case 6:
           return new SdkEvent.PaymentFailed({
             payment: FfiConverterTypePayment.read(from),
           });
@@ -11720,38 +11861,32 @@ const FfiConverterTypeSdkEvent = (() => {
           ordinalConverter.write(1, into);
           return;
         }
-        case SdkEvent_Tags.DataSynced: {
-          ordinalConverter.write(2, into);
-          const inner = value.inner;
-          FfiConverterBool.write(inner.didPullNewRecords, into);
-          return;
-        }
         case SdkEvent_Tags.UnclaimedDeposits: {
-          ordinalConverter.write(3, into);
+          ordinalConverter.write(2, into);
           const inner = value.inner;
           FfiConverterArrayTypeDepositInfo.write(inner.unclaimedDeposits, into);
           return;
         }
         case SdkEvent_Tags.ClaimedDeposits: {
-          ordinalConverter.write(4, into);
+          ordinalConverter.write(3, into);
           const inner = value.inner;
           FfiConverterArrayTypeDepositInfo.write(inner.claimedDeposits, into);
           return;
         }
         case SdkEvent_Tags.PaymentSucceeded: {
-          ordinalConverter.write(5, into);
+          ordinalConverter.write(4, into);
           const inner = value.inner;
           FfiConverterTypePayment.write(inner.payment, into);
           return;
         }
         case SdkEvent_Tags.PaymentPending: {
-          ordinalConverter.write(6, into);
+          ordinalConverter.write(5, into);
           const inner = value.inner;
           FfiConverterTypePayment.write(inner.payment, into);
           return;
         }
         case SdkEvent_Tags.PaymentFailed: {
-          ordinalConverter.write(7, into);
+          ordinalConverter.write(6, into);
           const inner = value.inner;
           FfiConverterTypePayment.write(inner.payment, into);
           return;
@@ -11766,15 +11901,9 @@ const FfiConverterTypeSdkEvent = (() => {
         case SdkEvent_Tags.Synced: {
           return ordinalConverter.allocationSize(1);
         }
-        case SdkEvent_Tags.DataSynced: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(2);
-          size += FfiConverterBool.allocationSize(inner.didPullNewRecords);
-          return size;
-        }
         case SdkEvent_Tags.UnclaimedDeposits: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(3);
+          let size = ordinalConverter.allocationSize(2);
           size += FfiConverterArrayTypeDepositInfo.allocationSize(
             inner.unclaimedDeposits
           );
@@ -11782,7 +11911,7 @@ const FfiConverterTypeSdkEvent = (() => {
         }
         case SdkEvent_Tags.ClaimedDeposits: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(4);
+          let size = ordinalConverter.allocationSize(3);
           size += FfiConverterArrayTypeDepositInfo.allocationSize(
             inner.claimedDeposits
           );
@@ -11790,19 +11919,19 @@ const FfiConverterTypeSdkEvent = (() => {
         }
         case SdkEvent_Tags.PaymentSucceeded: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(5);
+          let size = ordinalConverter.allocationSize(4);
           size += FfiConverterTypePayment.allocationSize(inner.payment);
           return size;
         }
         case SdkEvent_Tags.PaymentPending: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(6);
+          let size = ordinalConverter.allocationSize(5);
           size += FfiConverterTypePayment.allocationSize(inner.payment);
           return size;
         }
         case SdkEvent_Tags.PaymentFailed: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(7);
+          let size = ordinalConverter.allocationSize(6);
           size += FfiConverterTypePayment.allocationSize(inner.payment);
           return size;
         }
@@ -21192,6 +21321,11 @@ const FfiConverterOptionalTypeFee = new FfiConverterOptional(
   FfiConverterTypeFee
 );
 
+// FfiConverter for MaxFee | undefined
+const FfiConverterOptionalTypeMaxFee = new FfiConverterOptional(
+  FfiConverterTypeMaxFee
+);
+
 // FfiConverter for PaymentDetails | undefined
 const FfiConverterOptionalTypePaymentDetails = new FfiConverterOptional(
   FfiConverterTypePaymentDetails
@@ -22068,6 +22202,7 @@ export default Object.freeze({
     FfiConverterTypeLocaleOverrides,
     FfiConverterTypeLocalizedName,
     FfiConverterTypeLogEntry,
+    FfiConverterTypeMaxFee,
     FfiConverterTypeMessageSuccessActionData,
     FfiConverterTypeMintIssuerTokenRequest,
     FfiConverterTypeNetwork,

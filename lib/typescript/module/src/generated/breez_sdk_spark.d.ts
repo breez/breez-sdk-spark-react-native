@@ -540,7 +540,7 @@ export declare const CheckMessageResponse: Readonly<{
 export type ClaimDepositRequest = {
     txid: string;
     vout: number;
-    maxFee: Fee | undefined;
+    maxFee: MaxFee | undefined;
 };
 /**
  * Generated factory for {@link ClaimDepositRequest} record objects.
@@ -631,7 +631,7 @@ export type Config = {
     apiKey: string | undefined;
     network: Network;
     syncIntervalSecs: number;
-    maxDepositClaimFee: Fee | undefined;
+    maxDepositClaimFee: MaxFee | undefined;
     /**
      * The domain used for receiving through lnurl-pay and lightning address.
      */
@@ -4207,6 +4207,132 @@ export declare enum KeySetType {
     WrappedSegwit = 3,
     Legacy = 4
 }
+export declare enum MaxFee_Tags {
+    Fixed = "Fixed",
+    Rate = "Rate",
+    NetworkRecommended = "NetworkRecommended"
+}
+export declare const MaxFee: Readonly<{
+    instanceOf: (obj: any) => obj is MaxFee;
+    Fixed: {
+        new (inner: {
+            amount: bigint;
+        }): {
+            readonly tag: MaxFee_Tags.Fixed;
+            readonly inner: Readonly<{
+                amount: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "MaxFee";
+        };
+        "new"(inner: {
+            amount: bigint;
+        }): {
+            readonly tag: MaxFee_Tags.Fixed;
+            readonly inner: Readonly<{
+                amount: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "MaxFee";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: MaxFee_Tags.Fixed;
+            readonly inner: Readonly<{
+                amount: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "MaxFee";
+        };
+    };
+    Rate: {
+        new (inner: {
+            satPerVbyte: bigint;
+        }): {
+            readonly tag: MaxFee_Tags.Rate;
+            readonly inner: Readonly<{
+                satPerVbyte: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "MaxFee";
+        };
+        "new"(inner: {
+            satPerVbyte: bigint;
+        }): {
+            readonly tag: MaxFee_Tags.Rate;
+            readonly inner: Readonly<{
+                satPerVbyte: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "MaxFee";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: MaxFee_Tags.Rate;
+            readonly inner: Readonly<{
+                satPerVbyte: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "MaxFee";
+        };
+    };
+    NetworkRecommended: {
+        new (inner: {
+            leewaySatPerVbyte: bigint;
+        }): {
+            readonly tag: MaxFee_Tags.NetworkRecommended;
+            readonly inner: Readonly<{
+                leewaySatPerVbyte: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "MaxFee";
+        };
+        "new"(inner: {
+            leewaySatPerVbyte: bigint;
+        }): {
+            readonly tag: MaxFee_Tags.NetworkRecommended;
+            readonly inner: Readonly<{
+                leewaySatPerVbyte: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "MaxFee";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: MaxFee_Tags.NetworkRecommended;
+            readonly inner: Readonly<{
+                leewaySatPerVbyte: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "MaxFee";
+        };
+    };
+}>;
+export type MaxFee = InstanceType<(typeof MaxFee)[keyof Omit<typeof MaxFee, 'instanceOf'>]>;
 export declare enum Network {
     Mainnet = 0,
     Regtest = 1
@@ -5892,7 +6018,6 @@ export declare const SdkError: Readonly<{
 export type SdkError = InstanceType<(typeof SdkError)[keyof Omit<typeof SdkError, 'instanceOf'>]>;
 export declare enum SdkEvent_Tags {
     Synced = "Synced",
-    DataSynced = "DataSynced",
     UnclaimedDeposits = "UnclaimedDeposits",
     ClaimedDeposits = "ClaimedDeposits",
     PaymentSucceeded = "PaymentSucceeded",
@@ -5923,49 +6048,6 @@ export declare const SdkEvent: Readonly<{
         };
         instanceOf(obj: any): obj is {
             readonly tag: SdkEvent_Tags.Synced;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkEvent";
-        };
-    };
-    DataSynced: {
-        new (inner: {
-            /**
-             * Value indicating whether new data was pulled through real-time sync.
-             */ didPullNewRecords: boolean;
-        }): {
-            readonly tag: SdkEvent_Tags.DataSynced;
-            readonly inner: Readonly<{
-                didPullNewRecords: boolean;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkEvent";
-        };
-        "new"(inner: {
-            /**
-             * Value indicating whether new data was pulled through real-time sync.
-             */ didPullNewRecords: boolean;
-        }): {
-            readonly tag: SdkEvent_Tags.DataSynced;
-            readonly inner: Readonly<{
-                didPullNewRecords: boolean;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkEvent";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: SdkEvent_Tags.DataSynced;
-            readonly inner: Readonly<{
-                didPullNewRecords: boolean;
-            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -10168,6 +10250,13 @@ declare const _default: Readonly<{
             allocationSize(value: LogEntry): number;
             lift(value: UniffiByteArray): LogEntry;
             lower(value: LogEntry): UniffiByteArray;
+        };
+        FfiConverterTypeMaxFee: {
+            read(from: RustBuffer): MaxFee;
+            write(value: MaxFee, into: RustBuffer): void;
+            allocationSize(value: MaxFee): number;
+            lift(value: UniffiByteArray): MaxFee;
+            lower(value: MaxFee): UniffiByteArray;
         };
         FfiConverterTypeMessageSuccessActionData: {
             read(from: RustBuffer): MessageSuccessActionData;
