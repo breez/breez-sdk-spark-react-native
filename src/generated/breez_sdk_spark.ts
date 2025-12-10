@@ -14345,22 +14345,22 @@ export interface BitcoinChainService {
   getAddressUtxos(
     address: string,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<Array<Utxo>>;
+  ): /*throws*/ Promise<Array<Utxo>>;
   getTransactionStatus(
     txid: string,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<TxStatus>;
+  ): /*throws*/ Promise<TxStatus>;
   getTransactionHex(
     txid: string,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<string>;
+  ): /*throws*/ Promise<string>;
   broadcastTransaction(
     tx: string,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
   recommendedFees(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<RecommendedFees>;
+  }): /*throws*/ Promise<RecommendedFees>;
 }
 
 export class BitcoinChainServiceImpl
@@ -14921,7 +14921,7 @@ export interface BreezSdkInterface {
   checkLightningAddressAvailable(
     req: CheckLightningAddressRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<boolean>;
+  ): /*throws*/ Promise<boolean>;
   /**
    * Verifies a message signature against the provided public key. The message
    * is SHA256 hashed before verification. The signature can be hex encoded
@@ -14930,18 +14930,18 @@ export interface BreezSdkInterface {
   checkMessage(
     request: CheckMessageRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<CheckMessageResponse>;
+  ): /*throws*/ Promise<CheckMessageResponse>;
   claimDeposit(
     request: ClaimDepositRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<ClaimDepositResponse>;
+  ): /*throws*/ Promise<ClaimDepositResponse>;
   claimHtlcPayment(
     request: ClaimHtlcPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<ClaimHtlcPaymentResponse>;
+  ): /*throws*/ Promise<ClaimHtlcPaymentResponse>;
   deleteLightningAddress(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<void>;
+  }): /*throws*/ Promise<void>;
   /**
    * Stops the SDK's background tasks
    *
@@ -14952,21 +14952,21 @@ export interface BreezSdkInterface {
    *
    * Result containing either success or an `SdkError` if the background task couldn't be stopped
    */
-  disconnect(asyncOpts_?: { signal: AbortSignal }) /*throws*/ : Promise<void>;
+  disconnect(asyncOpts_?: { signal: AbortSignal }): /*throws*/ Promise<void>;
   /**
    * Returns the balance of the wallet in satoshis
    */
   getInfo(
     request: GetInfoRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<GetInfoResponse>;
+  ): /*throws*/ Promise<GetInfoResponse>;
   getLightningAddress(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<LightningAddressInfo | undefined>;
+  }): /*throws*/ Promise<LightningAddressInfo | undefined>;
   getPayment(
     request: GetPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<GetPaymentResponse>;
+  ): /*throws*/ Promise<GetPaymentResponse>;
   /**
    * Returns an instance of the [`TokenIssuer`] for managing token issuance.
    */
@@ -14982,7 +14982,7 @@ export interface BreezSdkInterface {
   getTokensMetadata(
     request: GetTokensMetadataRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<GetTokensMetadataResponse>;
+  ): /*throws*/ Promise<GetTokensMetadataResponse>;
   /**
    * Returns the user settings for the wallet.
    *
@@ -14990,20 +14990,20 @@ export interface BreezSdkInterface {
    */
   getUserSettings(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<UserSettings>;
+  }): /*throws*/ Promise<UserSettings>;
   /**
    * List fiat currencies for which there is a known exchange rate,
    * sorted by the canonical name of the currency.
    */
   listFiatCurrencies(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<ListFiatCurrenciesResponse>;
+  }): /*throws*/ Promise<ListFiatCurrenciesResponse>;
   /**
    * List the latest rates of fiat currencies, sorted by name.
    */
   listFiatRates(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<ListFiatRatesResponse>;
+  }): /*throws*/ Promise<ListFiatRatesResponse>;
   /**
      * Lists payments from the storage with pagination
      *
@@ -15023,15 +15023,15 @@ export interface BreezSdkInterface {
   listPayments(
     request: ListPaymentsRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<ListPaymentsResponse>;
+  ): /*throws*/ Promise<ListPaymentsResponse>;
   listUnclaimedDeposits(
     request: ListUnclaimedDepositsRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<ListUnclaimedDepositsResponse>;
+  ): /*throws*/ Promise<ListUnclaimedDepositsResponse>;
   lnurlPay(
     request: LnurlPayRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<LnurlPayResponse>;
+  ): /*throws*/ Promise<LnurlPayResponse>;
   /**
    * Performs an LNURL withdraw operation for the amount of satoshis to
    * withdraw and the LNURL withdraw request details. The LNURL withdraw request
@@ -15062,37 +15062,37 @@ export interface BreezSdkInterface {
   lnurlWithdraw(
     request: LnurlWithdrawRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<LnurlWithdrawResponse>;
+  ): /*throws*/ Promise<LnurlWithdrawResponse>;
   parse(
     input: string,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<InputType>;
+  ): /*throws*/ Promise<InputType>;
   prepareLnurlPay(
     request: PrepareLnurlPayRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<PrepareLnurlPayResponse>;
+  ): /*throws*/ Promise<PrepareLnurlPayResponse>;
   prepareSendPayment(
     request: PrepareSendPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<PrepareSendPaymentResponse>;
+  ): /*throws*/ Promise<PrepareSendPaymentResponse>;
   receivePayment(
     request: ReceivePaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<ReceivePaymentResponse>;
+  ): /*throws*/ Promise<ReceivePaymentResponse>;
   /**
    * Get the recommended BTC fees based on the configured chain service.
    */
   recommendedFees(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<RecommendedFees>;
+  }): /*throws*/ Promise<RecommendedFees>;
   refundDeposit(
     request: RefundDepositRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<RefundDepositResponse>;
+  ): /*throws*/ Promise<RefundDepositResponse>;
   registerLightningAddress(
     request: RegisterLightningAddressRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<LightningAddressInfo>;
+  ): /*throws*/ Promise<LightningAddressInfo>;
   /**
    * Removes a previously registered event listener
    *
@@ -15111,7 +15111,7 @@ export interface BreezSdkInterface {
   sendPayment(
     request: SendPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<SendPaymentResponse>;
+  ): /*throws*/ Promise<SendPaymentResponse>;
   /**
    * Signs a message with the wallet's identity key. The message is SHA256
    * hashed before signing. The returned signature will be hex encoded in
@@ -15120,14 +15120,14 @@ export interface BreezSdkInterface {
   signMessage(
     request: SignMessageRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<SignMessageResponse>;
+  ): /*throws*/ Promise<SignMessageResponse>;
   /**
    * Synchronizes the wallet with the Spark network
    */
   syncWallet(
     request: SyncWalletRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<SyncWalletResponse>;
+  ): /*throws*/ Promise<SyncWalletResponse>;
   /**
    * Updates the user settings for the wallet.
    *
@@ -15136,7 +15136,7 @@ export interface BreezSdkInterface {
   updateUserSettings(
     request: UpdateUserSettingsRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
 }
 
 /**
@@ -16525,13 +16525,13 @@ export interface FiatService {
    */
   fetchFiatCurrencies(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<Array<FiatCurrency>>;
+  }): /*throws*/ Promise<Array<FiatCurrency>>;
   /**
    * Get the live rates from the server.
    */
   fetchFiatRates(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<Array<Rate>>;
+  }): /*throws*/ Promise<Array<Rate>>;
 }
 
 /**
@@ -16834,7 +16834,7 @@ export interface PaymentObserver {
   beforeSend(
     payments: Array<ProvisionalPayment>,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
 }
 
 /**
@@ -17056,7 +17056,7 @@ export interface RestClient {
     url: string,
     headers: Map<string, string> | undefined,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<RestResponse>;
+  ): /*throws*/ Promise<RestResponse>;
   /**
    * Makes a POST request, and logs on DEBUG.
    * ### Arguments
@@ -17069,7 +17069,7 @@ export interface RestClient {
     headers: Map<string, string> | undefined,
     body: string | undefined,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<RestResponse>;
+  ): /*throws*/ Promise<RestResponse>;
   /**
    * Makes a DELETE request, and logs on DEBUG.
    * ### Arguments
@@ -17082,7 +17082,7 @@ export interface RestClient {
     headers: Map<string, string> | undefined,
     body: string | undefined,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<RestResponse>;
+  ): /*throws*/ Promise<RestResponse>;
 }
 
 export class RestClientImpl extends UniffiAbstractObject implements RestClient {
@@ -17507,7 +17507,7 @@ export interface SdkBuilderInterface {
    */
   build(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<BreezSdkInterface>;
+  }): /*throws*/ Promise<BreezSdkInterface>;
   /**
    * Sets the chain service to be used by the SDK.
    * Arguments:
@@ -18118,16 +18118,16 @@ export interface Storage {
   deleteCachedItem(
     key: string,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
   getCachedItem(
     key: string,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<string | undefined>;
+  ): /*throws*/ Promise<string | undefined>;
   setCachedItem(
     key: string,
     value: string,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
   /**
    * Lists payments with optional filters and pagination
    *
@@ -18142,7 +18142,7 @@ export interface Storage {
   listPayments(
     request: ListPaymentsRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<Array<Payment>>;
+  ): /*throws*/ Promise<Array<Payment>>;
   /**
    * Inserts a payment into storage
    *
@@ -18157,7 +18157,7 @@ export interface Storage {
   insertPayment(
     payment: Payment,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
   /**
    * Inserts payment metadata into storage
    *
@@ -18174,7 +18174,7 @@ export interface Storage {
     paymentId: string,
     metadata: PaymentMetadata,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
   /**
    * Gets a payment by its ID
    * # Arguments
@@ -18188,7 +18188,7 @@ export interface Storage {
   getPaymentById(
     id: string,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<Payment>;
+  ): /*throws*/ Promise<Payment>;
   /**
    * Gets a payment by its invoice
    * # Arguments
@@ -18201,7 +18201,7 @@ export interface Storage {
   getPaymentByInvoice(
     invoice: string,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<Payment | undefined>;
+  ): /*throws*/ Promise<Payment | undefined>;
   /**
    * Add a deposit to storage
    * # Arguments
@@ -18219,7 +18219,7 @@ export interface Storage {
     vout: /*u32*/ number,
     amountSats: /*u64*/ bigint,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
   /**
    * Removes an unclaimed deposit from storage
    * # Arguments
@@ -18235,7 +18235,7 @@ export interface Storage {
     txid: string,
     vout: /*u32*/ number,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
   /**
    * Lists all unclaimed deposits from storage
    * # Returns
@@ -18244,7 +18244,7 @@ export interface Storage {
    */
   listDeposits(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<Array<DepositInfo>>;
+  }): /*throws*/ Promise<Array<DepositInfo>>;
   /**
    * Updates or inserts unclaimed deposit details
    * # Arguments
@@ -18262,11 +18262,11 @@ export interface Storage {
     vout: /*u32*/ number,
     payload: UpdateDepositPayload,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
   setLnurlMetadata(
     metadata: Array<SetLnurlMetadataItem>,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
 }
 
 /**
@@ -19561,62 +19561,62 @@ export interface SyncStorage {
   addOutgoingChange(
     record: UnversionedRecordChange,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise</*u64*/ bigint>;
+  ): /*throws*/ Promise</*u64*/ bigint>;
   completeOutgoingSync(
     record: Record,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
   getPendingOutgoingChanges(
     limit: /*u32*/ number,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<Array<OutgoingChange>>;
+  ): /*throws*/ Promise<Array<OutgoingChange>>;
   /**
    * Get the revision number of the last synchronized record
    */
   getLastRevision(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise</*u64*/ bigint>;
+  }): /*throws*/ Promise</*u64*/ bigint>;
   /**
    * Insert incoming records from remote sync
    */
   insertIncomingRecords(
     records: Array<Record>,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
   /**
    * Delete an incoming record after it has been processed
    */
   deleteIncomingRecord(
     record: Record,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
   /**
    * Update revision numbers of pending outgoing records to be higher than the given revision
    */
   rebasePendingOutgoingRecords(
     revision: /*u64*/ bigint,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
   /**
    * Get incoming records that need to be processed, up to the specified limit
    */
   getIncomingRecords(
     limit: /*u32*/ number,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<Array<IncomingChange>>;
+  ): /*throws*/ Promise<Array<IncomingChange>>;
   /**
    * Get the latest outgoing record if any exists
    */
   getLatestOutgoingChange(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<OutgoingChange | undefined>;
+  }): /*throws*/ Promise<OutgoingChange | undefined>;
   /**
    * Update the sync state record from an incoming record
    */
   updateRecordFromIncoming(
     record: Record,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<void>;
+  ): /*throws*/ Promise<void>;
 }
 
 export class SyncStorageImpl
@@ -20584,7 +20584,7 @@ export interface TokenIssuerInterface {
   burnIssuerToken(
     request: BurnIssuerTokenRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<Payment>;
+  ): /*throws*/ Promise<Payment>;
   /**
    * Creates a new issuer token
    *
@@ -20601,7 +20601,7 @@ export interface TokenIssuerInterface {
   createIssuerToken(
     request: CreateIssuerTokenRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<TokenMetadata>;
+  ): /*throws*/ Promise<TokenMetadata>;
   /**
    * Freezes tokens held at the specified address
    *
@@ -20618,7 +20618,7 @@ export interface TokenIssuerInterface {
   freezeIssuerToken(
     request: FreezeIssuerTokenRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<FreezeIssuerTokenResponse>;
+  ): /*throws*/ Promise<FreezeIssuerTokenResponse>;
   /**
    * Gets the issuer token balance
    *
@@ -20630,7 +20630,7 @@ export interface TokenIssuerInterface {
    */
   getIssuerTokenBalance(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<TokenBalance>;
+  }): /*throws*/ Promise<TokenBalance>;
   /**
    * Gets the issuer token metadata
    *
@@ -20642,7 +20642,7 @@ export interface TokenIssuerInterface {
    */
   getIssuerTokenMetadata(asyncOpts_?: {
     signal: AbortSignal;
-  }) /*throws*/ : Promise<TokenMetadata>;
+  }): /*throws*/ Promise<TokenMetadata>;
   /**
    * Mints supply for the issuer token
    *
@@ -20659,7 +20659,7 @@ export interface TokenIssuerInterface {
   mintIssuerToken(
     request: MintIssuerTokenRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<Payment>;
+  ): /*throws*/ Promise<Payment>;
   /**
    * Unfreezes tokens held at the specified address
    *
@@ -20676,7 +20676,7 @@ export interface TokenIssuerInterface {
   unfreezeIssuerToken(
     request: UnfreezeIssuerTokenRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ) /*throws*/ : Promise<UnfreezeIssuerTokenResponse>;
+  ): /*throws*/ Promise<UnfreezeIssuerTokenResponse>;
 }
 
 export class TokenIssuer
