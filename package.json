@@ -1,6 +1,6 @@
 {
   "name": "@breeztech/breez-sdk-spark-react-native",
-  "version": "0.6.4-rc3",
+  "version": "0.6.4-dev3",
   "description": "React Native bindings for the Breez SDK - Nodeless (Spark Implementation)",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
@@ -22,6 +22,7 @@
     "src",
     "lib",
     "android",
+    "build",
     "ios",
     "cpp",
     "*.podspec",
@@ -48,7 +49,6 @@
     "plugin:build": "EXPO_NONINTERACTIVE=true expo-module build plugin",
     "plugin:clean": "expo-module clean plugin",
     "plugin:watch": "expo-module build plugin",
-    "postinstall": "./scripts/postinstall.sh",
     "prepare": "bob build && yarn plugin:build",
     "release": "release-it --only-version",
     "typecheck": "tsc",
