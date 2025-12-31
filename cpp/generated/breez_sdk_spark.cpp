@@ -333,6 +333,8 @@ void uniffi_breez_sdk_spark_fn_free_breezsdk(void *ptr,
 uniffi_breez_sdk_spark_fn_method_breezsdk_add_event_listener(void *ptr,
                                                              uint64_t listener);
 /*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_cancel_leaf_optimization(void *ptr);
+/*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_check_lightning_address_available(
     void *ptr, RustBuffer req);
 /*handle*/ uint64_t
@@ -351,6 +353,9 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(void *ptr);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_get_info(void *ptr,
                                                    RustBuffer request);
+RustBuffer
+uniffi_breez_sdk_spark_fn_method_breezsdk_get_leaf_optimization_progress(
+    void *ptr, RustCallStatus *uniffi_out_err);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_get_lightning_address(void *ptr);
 /*handle*/ uint64_t
@@ -407,6 +412,8 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment(void *ptr,
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_sign_message(void *ptr,
                                                        RustBuffer request);
+void uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_optimization(
+    void *ptr, RustCallStatus *uniffi_out_err);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(void *ptr,
                                                       RustBuffer request);
@@ -737,6 +744,8 @@ uint16_t
 uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_recommended_fees();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener();
 uint16_t
+uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_optimization();
+uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_check_lightning_address_available();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_check_message();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_deposit();
@@ -745,6 +754,8 @@ uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_lightning_address();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_get_lightning_address();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_get_payment();
@@ -770,6 +781,8 @@ uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_update_user_settings();
 uint16_t
@@ -8768,6 +8781,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_add_event_listener(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_cancel_leaf_"
+        "optimization"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "breezsdk_cancel_leaf_optimization"),
+      1,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_cancel_leaf_optimization(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_check_lightning_"
         "address_available"] = jsi::Function::createFromHostFunction(
       rt,
@@ -8854,6 +8879,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             return this->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_info(
                 rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_leaf_optimization_"
+        "progress"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "breezsdk_get_leaf_optimization_progress"),
+      1,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_leaf_optimization_progress(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_lightning_"
         "address"] = jsi::Function::createFromHostFunction(
       rt,
@@ -9112,6 +9149,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_sign_message(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_"
+        "optimization"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "breezsdk_start_leaf_optimization"),
+      1,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_optimization(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -10582,6 +10631,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_"
+        "optimization"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_breezsdk_cancel_leaf_optimization"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_optimization(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_lightning_"
         "address_available"] = jsi::Function::createFromHostFunction(
       rt,
@@ -10668,6 +10729,19 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_"
+        "optimization_progress"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "breezsdk_get_leaf_optimization_progress"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_lightning_"
         "address"] = jsi::Function::createFromHostFunction(
       rt,
@@ -10922,6 +10996,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_"
+        "optimization"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_breezsdk_start_leaf_optimization"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -12198,6 +12284,17 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_cancel_leaf_optimization(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_breezsdk_cancel_leaf_optimization(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_check_lightning_address_available(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -12278,6 +12375,22 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_info(
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_leaf_optimization_progress(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_breezsdk_get_leaf_optimization_progress(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(rt, callInvoker,
+                                                             value);
 }
 jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_lightning_address(
@@ -12523,6 +12636,19 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_sign_message(
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_optimization(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_optimization(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return jsi::Value::undefined();
 }
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
@@ -14043,6 +14169,15 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_optimization(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_optimization();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_lightning_address_available(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -14098,6 +14233,15 @@ jsi::Value NativeBreezSdkSpark::
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value = uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -14279,6 +14423,15 @@ jsi::Value NativeBreezSdkSpark::
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value = uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }

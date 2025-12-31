@@ -61,6 +61,7 @@ import {
   FfiConverterUInt16,
   FfiConverterUInt32,
   FfiConverterUInt64,
+  FfiConverterUInt8,
   RustBuffer,
   UniffiAbstractObject,
   UniffiEnum,
@@ -1792,6 +1793,14 @@ export type Config = {
    * If set to false, no changes will be made to the Spark private mode.
    */
   privateEnabledDefault: boolean;
+  /**
+   * Configuration for leaf optimization.
+   *
+   * Leaf optimization controls the denominations of leaves that are held in the wallet.
+   * Fewer, bigger leaves allow for more funds to be exited unilaterally.
+   * More leaves allow payments to be made without needing a swap, reducing payment latency.
+   */
+  optimizationConfig: OptimizationConfig;
 };
 
 /**
@@ -1838,6 +1847,7 @@ const FfiConverterTypeConfig = (() => {
         useDefaultExternalInputParsers: FfiConverterBool.read(from),
         realTimeSyncServerUrl: FfiConverterOptionalString.read(from),
         privateEnabledDefault: FfiConverterBool.read(from),
+        optimizationConfig: FfiConverterTypeOptimizationConfig.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -1854,6 +1864,7 @@ const FfiConverterTypeConfig = (() => {
       FfiConverterBool.write(value.useDefaultExternalInputParsers, into);
       FfiConverterOptionalString.write(value.realTimeSyncServerUrl, into);
       FfiConverterBool.write(value.privateEnabledDefault, into);
+      FfiConverterTypeOptimizationConfig.write(value.optimizationConfig, into);
     }
     allocationSize(value: TypeName): number {
       return (
@@ -1870,7 +1881,10 @@ const FfiConverterTypeConfig = (() => {
         ) +
         FfiConverterBool.allocationSize(value.useDefaultExternalInputParsers) +
         FfiConverterOptionalString.allocationSize(value.realTimeSyncServerUrl) +
-        FfiConverterBool.allocationSize(value.privateEnabledDefault)
+        FfiConverterBool.allocationSize(value.privateEnabledDefault) +
+        FfiConverterTypeOptimizationConfig.allocationSize(
+          value.optimizationConfig
+        )
       );
     }
   }
@@ -4461,6 +4475,144 @@ const FfiConverterTypeMintIssuerTokenRequest = (() => {
     }
     allocationSize(value: TypeName): number {
       return FfiConverterTypeu128.allocationSize(value.amount);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type OptimizationConfig = {
+  /**
+   * Whether automatic leaf optimization is enabled.
+   *
+   * If set to true, the SDK will automatically optimize the leaf set when it changes.
+   * Otherwise, the manual optimization API must be used to optimize the leaf set.
+   *
+   * Default value is true.
+   */
+  autoEnabled: boolean;
+  /**
+   * The desired multiplicity for the leaf set. Acceptable values are 0-5.
+   *
+   * Setting this to 0 will optimize for maximizing unilateral exit.
+   * Higher values will optimize for minimizing transfer swaps, with higher values
+   * being more aggressive.
+   *
+   * Default value is 1.
+   */
+  multiplicity: /*u8*/ number;
+};
+
+/**
+ * Generated factory for {@link OptimizationConfig} record objects.
+ */
+export const OptimizationConfig = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<OptimizationConfig, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link OptimizationConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link OptimizationConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<OptimizationConfig>,
+  });
+})();
+
+const FfiConverterTypeOptimizationConfig = (() => {
+  type TypeName = OptimizationConfig;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        autoEnabled: FfiConverterBool.read(from),
+        multiplicity: FfiConverterUInt8.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterBool.write(value.autoEnabled, into);
+      FfiConverterUInt8.write(value.multiplicity, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterBool.allocationSize(value.autoEnabled) +
+        FfiConverterUInt8.allocationSize(value.multiplicity)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type OptimizationProgress = {
+  isRunning: boolean;
+  currentRound: /*u32*/ number;
+  totalRounds: /*u32*/ number;
+};
+
+/**
+ * Generated factory for {@link OptimizationProgress} record objects.
+ */
+export const OptimizationProgress = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      OptimizationProgress,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link OptimizationProgress}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link OptimizationProgress}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<OptimizationProgress>,
+  });
+})();
+
+const FfiConverterTypeOptimizationProgress = (() => {
+  type TypeName = OptimizationProgress;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        isRunning: FfiConverterBool.read(from),
+        currentRound: FfiConverterUInt32.read(from),
+        totalRounds: FfiConverterUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterBool.write(value.isRunning, into);
+      FfiConverterUInt32.write(value.currentRound, into);
+      FfiConverterUInt32.write(value.totalRounds, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterBool.allocationSize(value.isRunning) +
+        FfiConverterUInt32.allocationSize(value.currentRound) +
+        FfiConverterUInt32.allocationSize(value.totalRounds)
+      );
     }
   }
   return new FFIConverter();
@@ -9662,6 +9814,327 @@ const FfiConverterTypeOnchainConfirmationSpeed = (() => {
   return new FFIConverter();
 })();
 
+// Enum: OptimizationEvent
+export enum OptimizationEvent_Tags {
+  Started = 'Started',
+  RoundCompleted = 'RoundCompleted',
+  Completed = 'Completed',
+  Cancelled = 'Cancelled',
+  Failed = 'Failed',
+  Skipped = 'Skipped',
+}
+export const OptimizationEvent = (() => {
+  type Started__interface = {
+    tag: OptimizationEvent_Tags.Started;
+    inner: Readonly<{ totalRounds: /*u32*/ number }>;
+  };
+
+  /**
+   * Optimization has started with the given number of rounds.
+   */
+  class Started_ extends UniffiEnum implements Started__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'OptimizationEvent';
+    readonly tag = OptimizationEvent_Tags.Started;
+    readonly inner: Readonly<{ totalRounds: /*u32*/ number }>;
+    constructor(inner: { totalRounds: /*u32*/ number }) {
+      super('OptimizationEvent', 'Started');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { totalRounds: /*u32*/ number }): Started_ {
+      return new Started_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Started_ {
+      return obj.tag === OptimizationEvent_Tags.Started;
+    }
+  }
+
+  type RoundCompleted__interface = {
+    tag: OptimizationEvent_Tags.RoundCompleted;
+    inner: Readonly<{
+      currentRound: /*u32*/ number;
+      totalRounds: /*u32*/ number;
+    }>;
+  };
+
+  /**
+   * A round has completed.
+   */
+  class RoundCompleted_
+    extends UniffiEnum
+    implements RoundCompleted__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'OptimizationEvent';
+    readonly tag = OptimizationEvent_Tags.RoundCompleted;
+    readonly inner: Readonly<{
+      currentRound: /*u32*/ number;
+      totalRounds: /*u32*/ number;
+    }>;
+    constructor(inner: {
+      currentRound: /*u32*/ number;
+      totalRounds: /*u32*/ number;
+    }) {
+      super('OptimizationEvent', 'RoundCompleted');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      currentRound: /*u32*/ number;
+      totalRounds: /*u32*/ number;
+    }): RoundCompleted_ {
+      return new RoundCompleted_(inner);
+    }
+
+    static instanceOf(obj: any): obj is RoundCompleted_ {
+      return obj.tag === OptimizationEvent_Tags.RoundCompleted;
+    }
+  }
+
+  type Completed__interface = {
+    tag: OptimizationEvent_Tags.Completed;
+  };
+
+  /**
+   * Optimization completed successfully.
+   */
+  class Completed_ extends UniffiEnum implements Completed__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'OptimizationEvent';
+    readonly tag = OptimizationEvent_Tags.Completed;
+    constructor() {
+      super('OptimizationEvent', 'Completed');
+    }
+
+    static new(): Completed_ {
+      return new Completed_();
+    }
+
+    static instanceOf(obj: any): obj is Completed_ {
+      return obj.tag === OptimizationEvent_Tags.Completed;
+    }
+  }
+
+  type Cancelled__interface = {
+    tag: OptimizationEvent_Tags.Cancelled;
+  };
+
+  /**
+   * Optimization was cancelled.
+   */
+  class Cancelled_ extends UniffiEnum implements Cancelled__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'OptimizationEvent';
+    readonly tag = OptimizationEvent_Tags.Cancelled;
+    constructor() {
+      super('OptimizationEvent', 'Cancelled');
+    }
+
+    static new(): Cancelled_ {
+      return new Cancelled_();
+    }
+
+    static instanceOf(obj: any): obj is Cancelled_ {
+      return obj.tag === OptimizationEvent_Tags.Cancelled;
+    }
+  }
+
+  type Failed__interface = {
+    tag: OptimizationEvent_Tags.Failed;
+    inner: Readonly<{ error: string }>;
+  };
+
+  /**
+   * Optimization failed with an error.
+   */
+  class Failed_ extends UniffiEnum implements Failed__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'OptimizationEvent';
+    readonly tag = OptimizationEvent_Tags.Failed;
+    readonly inner: Readonly<{ error: string }>;
+    constructor(inner: { error: string }) {
+      super('OptimizationEvent', 'Failed');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { error: string }): Failed_ {
+      return new Failed_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Failed_ {
+      return obj.tag === OptimizationEvent_Tags.Failed;
+    }
+  }
+
+  type Skipped__interface = {
+    tag: OptimizationEvent_Tags.Skipped;
+  };
+
+  /**
+   * Optimization was skipped because leaves are already optimal.
+   */
+  class Skipped_ extends UniffiEnum implements Skipped__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'OptimizationEvent';
+    readonly tag = OptimizationEvent_Tags.Skipped;
+    constructor() {
+      super('OptimizationEvent', 'Skipped');
+    }
+
+    static new(): Skipped_ {
+      return new Skipped_();
+    }
+
+    static instanceOf(obj: any): obj is Skipped_ {
+      return obj.tag === OptimizationEvent_Tags.Skipped;
+    }
+  }
+
+  function instanceOf(obj: any): obj is OptimizationEvent {
+    return obj[uniffiTypeNameSymbol] === 'OptimizationEvent';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Started: Started_,
+    RoundCompleted: RoundCompleted_,
+    Completed: Completed_,
+    Cancelled: Cancelled_,
+    Failed: Failed_,
+    Skipped: Skipped_,
+  });
+})();
+
+export type OptimizationEvent = InstanceType<
+  (typeof OptimizationEvent)[keyof Omit<typeof OptimizationEvent, 'instanceOf'>]
+>;
+
+// FfiConverter for enum OptimizationEvent
+const FfiConverterTypeOptimizationEvent = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = OptimizationEvent;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new OptimizationEvent.Started({
+            totalRounds: FfiConverterUInt32.read(from),
+          });
+        case 2:
+          return new OptimizationEvent.RoundCompleted({
+            currentRound: FfiConverterUInt32.read(from),
+            totalRounds: FfiConverterUInt32.read(from),
+          });
+        case 3:
+          return new OptimizationEvent.Completed();
+        case 4:
+          return new OptimizationEvent.Cancelled();
+        case 5:
+          return new OptimizationEvent.Failed({
+            error: FfiConverterString.read(from),
+          });
+        case 6:
+          return new OptimizationEvent.Skipped();
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case OptimizationEvent_Tags.Started: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterUInt32.write(inner.totalRounds, into);
+          return;
+        }
+        case OptimizationEvent_Tags.RoundCompleted: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterUInt32.write(inner.currentRound, into);
+          FfiConverterUInt32.write(inner.totalRounds, into);
+          return;
+        }
+        case OptimizationEvent_Tags.Completed: {
+          ordinalConverter.write(3, into);
+          return;
+        }
+        case OptimizationEvent_Tags.Cancelled: {
+          ordinalConverter.write(4, into);
+          return;
+        }
+        case OptimizationEvent_Tags.Failed: {
+          ordinalConverter.write(5, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.error, into);
+          return;
+        }
+        case OptimizationEvent_Tags.Skipped: {
+          ordinalConverter.write(6, into);
+          return;
+        }
+        default:
+          // Throwing from here means that OptimizationEvent_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case OptimizationEvent_Tags.Started: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterUInt32.allocationSize(inner.totalRounds);
+          return size;
+        }
+        case OptimizationEvent_Tags.RoundCompleted: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterUInt32.allocationSize(inner.currentRound);
+          size += FfiConverterUInt32.allocationSize(inner.totalRounds);
+          return size;
+        }
+        case OptimizationEvent_Tags.Completed: {
+          return ordinalConverter.allocationSize(3);
+        }
+        case OptimizationEvent_Tags.Cancelled: {
+          return ordinalConverter.allocationSize(4);
+        }
+        case OptimizationEvent_Tags.Failed: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(5);
+          size += FfiConverterString.allocationSize(inner.error);
+          return size;
+        }
+        case OptimizationEvent_Tags.Skipped: {
+          return ordinalConverter.allocationSize(6);
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
 // Enum: PaymentDetails
 export enum PaymentDetails_Tags {
   Spark = 'Spark',
@@ -10820,6 +11293,7 @@ export const ReceivePaymentMethod = (() => {
     inner: Readonly<{
       description: string;
       amountSats: /*u64*/ bigint | undefined;
+      expirySecs: /*u32*/ number | undefined;
     }>;
   };
 
@@ -10833,10 +11307,14 @@ export const ReceivePaymentMethod = (() => {
     readonly inner: Readonly<{
       description: string;
       amountSats: /*u64*/ bigint | undefined;
+      expirySecs: /*u32*/ number | undefined;
     }>;
     constructor(inner: {
       description: string;
       amountSats: /*u64*/ bigint | undefined;
+      /**
+       * The expiry time of the invoice in seconds
+       */ expirySecs: /*u32*/ number | undefined;
     }) {
       super('ReceivePaymentMethod', 'Bolt11Invoice');
       this.inner = Object.freeze(inner);
@@ -10845,6 +11323,9 @@ export const ReceivePaymentMethod = (() => {
     static new(inner: {
       description: string;
       amountSats: /*u64*/ bigint | undefined;
+      /**
+       * The expiry time of the invoice in seconds
+       */ expirySecs: /*u32*/ number | undefined;
     }): Bolt11Invoice_ {
       return new Bolt11Invoice_(inner);
     }
@@ -10897,6 +11378,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
           return new ReceivePaymentMethod.Bolt11Invoice({
             description: FfiConverterString.read(from),
             amountSats: FfiConverterOptionalUInt64.read(from),
+            expirySecs: FfiConverterOptionalUInt32.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -10927,6 +11409,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
           const inner = value.inner;
           FfiConverterString.write(inner.description, into);
           FfiConverterOptionalUInt64.write(inner.amountSats, into);
+          FfiConverterOptionalUInt32.write(inner.expirySecs, into);
           return;
         }
         default:
@@ -10961,6 +11444,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
           let size = ordinalConverter.allocationSize(4);
           size += FfiConverterString.allocationSize(inner.description);
           size += FfiConverterOptionalUInt64.allocationSize(inner.amountSats);
+          size += FfiConverterOptionalUInt32.allocationSize(inner.expirySecs);
           return size;
         }
         default:
@@ -11613,6 +12097,7 @@ export enum SdkEvent_Tags {
   PaymentSucceeded = 'PaymentSucceeded',
   PaymentPending = 'PaymentPending',
   PaymentFailed = 'PaymentFailed',
+  Optimization = 'Optimization',
 }
 /**
  * Events emitted by the SDK
@@ -11799,6 +12284,33 @@ export const SdkEvent = (() => {
     }
   }
 
+  type Optimization__interface = {
+    tag: SdkEvent_Tags.Optimization;
+    inner: Readonly<{ optimizationEvent: OptimizationEvent }>;
+  };
+
+  class Optimization_ extends UniffiEnum implements Optimization__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SdkEvent';
+    readonly tag = SdkEvent_Tags.Optimization;
+    readonly inner: Readonly<{ optimizationEvent: OptimizationEvent }>;
+    constructor(inner: { optimizationEvent: OptimizationEvent }) {
+      super('SdkEvent', 'Optimization');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { optimizationEvent: OptimizationEvent }): Optimization_ {
+      return new Optimization_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Optimization_ {
+      return obj.tag === SdkEvent_Tags.Optimization;
+    }
+  }
+
   function instanceOf(obj: any): obj is SdkEvent {
     return obj[uniffiTypeNameSymbol] === 'SdkEvent';
   }
@@ -11811,6 +12323,7 @@ export const SdkEvent = (() => {
     PaymentSucceeded: PaymentSucceeded_,
     PaymentPending: PaymentPending_,
     PaymentFailed: PaymentFailed_,
+    Optimization: Optimization_,
   });
 })();
 
@@ -11851,6 +12364,10 @@ const FfiConverterTypeSdkEvent = (() => {
           return new SdkEvent.PaymentFailed({
             payment: FfiConverterTypePayment.read(from),
           });
+        case 7:
+          return new SdkEvent.Optimization({
+            optimizationEvent: FfiConverterTypeOptimizationEvent.read(from),
+          });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
@@ -11889,6 +12406,15 @@ const FfiConverterTypeSdkEvent = (() => {
           ordinalConverter.write(6, into);
           const inner = value.inner;
           FfiConverterTypePayment.write(inner.payment, into);
+          return;
+        }
+        case SdkEvent_Tags.Optimization: {
+          ordinalConverter.write(7, into);
+          const inner = value.inner;
+          FfiConverterTypeOptimizationEvent.write(
+            inner.optimizationEvent,
+            into
+          );
           return;
         }
         default:
@@ -11933,6 +12459,14 @@ const FfiConverterTypeSdkEvent = (() => {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(6);
           size += FfiConverterTypePayment.allocationSize(inner.payment);
+          return size;
+        }
+        case SdkEvent_Tags.Optimization: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(7);
+          size += FfiConverterTypeOptimizationEvent.allocationSize(
+            inner.optimizationEvent
+          );
           return size;
         }
         default:
@@ -14918,6 +15452,19 @@ export interface BreezSdkInterface {
     listener: EventListener,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<string>;
+  /**
+   * Cancels the ongoing leaf optimization.
+   *
+   * This method cancels the ongoing optimization and waits for it to fully stop.
+   * The current round will complete before stopping. This method blocks
+   * until the optimization has fully stopped and leaves reserved for optimization
+   * are available again.
+   *
+   * If no optimization is running, this method returns immediately.
+   */
+  cancelLeafOptimization(asyncOpts_?: {
+    signal: AbortSignal;
+  }): /*throws*/ Promise<void>;
   checkLightningAddressAvailable(
     req: CheckLightningAddressRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -14960,6 +15507,10 @@ export interface BreezSdkInterface {
     request: GetInfoRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<GetInfoResponse>;
+  /**
+   * Returns the current optimization progress snapshot.
+   */
+  getLeafOptimizationProgress(): OptimizationProgress;
   getLightningAddress(asyncOpts_?: {
     signal: AbortSignal;
   }): /*throws*/ Promise<LightningAddressInfo | undefined>;
@@ -15122,6 +15673,14 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<SignMessageResponse>;
   /**
+   * Starts leaf optimization in the background.
+   *
+   * This method spawns the optimization work in a background task and returns
+   * immediately. Progress is reported via events.
+   * If optimization is already running, no new task will be started.
+   */
+  startLeafOptimization(): void;
+  /**
    * Synchronizes the wallet with the Spark network
    */
   syncWallet(
@@ -15194,6 +15753,51 @@ export class BreezSdk
         /*liftFunc:*/ FfiConverterString.lift.bind(FfiConverterString),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Cancels the ongoing leaf optimization.
+   *
+   * This method cancels the ongoing optimization and waits for it to fully stop.
+   * The current round will complete before stopping. This method blocks
+   * until the optimization has fully stopped and leaves reserved for optimization
+   * are available again.
+   *
+   * If no optimization is running, this method returns immediately.
+   */
+  public async cancelLeafOptimization(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<void> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_cancel_leaf_optimization(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
       );
     } catch (__error: any) {
       if (uniffiIsDebug && __error instanceof Error) {
@@ -15482,6 +16086,23 @@ export class BreezSdk
       }
       throw __error;
     }
+  }
+
+  /**
+   * Returns the current optimization progress snapshot.
+   */
+  public getLeafOptimizationProgress(): OptimizationProgress {
+    return FfiConverterTypeOptimizationProgress.lift(
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_leaf_optimization_progress(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            callStatus
+          );
+        },
+        /*liftString:*/ FfiConverterString.lift
+      )
+    );
   }
 
   public async getLightningAddress(asyncOpts_?: {
@@ -16346,6 +16967,25 @@ export class BreezSdk
       }
       throw __error;
     }
+  }
+
+  /**
+   * Starts leaf optimization in the background.
+   *
+   * This method spawns the optimization work in a background task and returns
+   * immediately. Progress is reported via events.
+   * If optimization is already running, no new task will be started.
+   */
+  public startLeafOptimization(): void {
+    uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) => {
+        nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_optimization(
+          uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+          callStatus
+        );
+      },
+      /*liftString:*/ FfiConverterString.lift
+    );
   }
 
   /**
@@ -21484,6 +22124,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_optimization() !==
+    56996
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_optimization'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_lightning_address_available() !==
     31624
   ) {
@@ -21537,6 +22185,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress() !==
+    38008
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress'
     );
   }
   if (
@@ -21705,6 +22361,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization() !==
+    22827
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization'
     );
   }
   if (
@@ -22207,6 +22871,9 @@ export default Object.freeze({
     FfiConverterTypeMintIssuerTokenRequest,
     FfiConverterTypeNetwork,
     FfiConverterTypeOnchainConfirmationSpeed,
+    FfiConverterTypeOptimizationConfig,
+    FfiConverterTypeOptimizationEvent,
+    FfiConverterTypeOptimizationProgress,
     FfiConverterTypeOutgoingChange,
     FfiConverterTypePayment,
     FfiConverterTypePaymentDetails,

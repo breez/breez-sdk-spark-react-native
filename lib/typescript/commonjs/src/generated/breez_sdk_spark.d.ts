@@ -665,6 +665,14 @@ export type Config = {
      * If set to false, no changes will be made to the Spark private mode.
      */
     privateEnabledDefault: boolean;
+    /**
+     * Configuration for leaf optimization.
+     *
+     * Leaf optimization controls the denominations of leaves that are held in the wallet.
+     * Fewer, bigger leaves allow for more funds to be exited unilaterally.
+     * More leaves allow payments to be made without needing a swap, reducing payment latency.
+     */
+    optimizationConfig: OptimizationConfig;
 };
 /**
  * Generated factory for {@link Config} record objects.
@@ -1767,6 +1775,70 @@ export declare const MintIssuerTokenRequest: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<MintIssuerTokenRequest>;
+}>;
+export type OptimizationConfig = {
+    /**
+     * Whether automatic leaf optimization is enabled.
+     *
+     * If set to true, the SDK will automatically optimize the leaf set when it changes.
+     * Otherwise, the manual optimization API must be used to optimize the leaf set.
+     *
+     * Default value is true.
+     */
+    autoEnabled: boolean;
+    /**
+     * The desired multiplicity for the leaf set. Acceptable values are 0-5.
+     *
+     * Setting this to 0 will optimize for maximizing unilateral exit.
+     * Higher values will optimize for minimizing transfer swaps, with higher values
+     * being more aggressive.
+     *
+     * Default value is 1.
+     */
+    multiplicity: number;
+};
+/**
+ * Generated factory for {@link OptimizationConfig} record objects.
+ */
+export declare const OptimizationConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link OptimizationConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<OptimizationConfig> & Required<Omit<OptimizationConfig, never>>) => OptimizationConfig;
+    /**
+     * Create a frozen instance of {@link OptimizationConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<OptimizationConfig> & Required<Omit<OptimizationConfig, never>>) => OptimizationConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<OptimizationConfig>;
+}>;
+export type OptimizationProgress = {
+    isRunning: boolean;
+    currentRound: number;
+    totalRounds: number;
+};
+/**
+ * Generated factory for {@link OptimizationProgress} record objects.
+ */
+export declare const OptimizationProgress: Readonly<{
+    /**
+     * Create a frozen instance of {@link OptimizationProgress}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<OptimizationProgress> & Required<Omit<OptimizationProgress, never>>) => OptimizationProgress;
+    /**
+     * Create a frozen instance of {@link OptimizationProgress}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<OptimizationProgress> & Required<Omit<OptimizationProgress, never>>) => OptimizationProgress;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<OptimizationProgress>;
 }>;
 export type OutgoingChange = {
     change: RecordChange;
@@ -4342,6 +4414,218 @@ export declare enum OnchainConfirmationSpeed {
     Medium = 1,
     Slow = 2
 }
+export declare enum OptimizationEvent_Tags {
+    Started = "Started",
+    RoundCompleted = "RoundCompleted",
+    Completed = "Completed",
+    Cancelled = "Cancelled",
+    Failed = "Failed",
+    Skipped = "Skipped"
+}
+export declare const OptimizationEvent: Readonly<{
+    instanceOf: (obj: any) => obj is OptimizationEvent;
+    Started: {
+        new (inner: {
+            totalRounds: number;
+        }): {
+            readonly tag: OptimizationEvent_Tags.Started;
+            readonly inner: Readonly<{
+                totalRounds: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+        "new"(inner: {
+            totalRounds: number;
+        }): {
+            readonly tag: OptimizationEvent_Tags.Started;
+            readonly inner: Readonly<{
+                totalRounds: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: OptimizationEvent_Tags.Started;
+            readonly inner: Readonly<{
+                totalRounds: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+    };
+    RoundCompleted: {
+        new (inner: {
+            currentRound: number;
+            totalRounds: number;
+        }): {
+            readonly tag: OptimizationEvent_Tags.RoundCompleted;
+            readonly inner: Readonly<{
+                currentRound: number;
+                totalRounds: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+        "new"(inner: {
+            currentRound: number;
+            totalRounds: number;
+        }): {
+            readonly tag: OptimizationEvent_Tags.RoundCompleted;
+            readonly inner: Readonly<{
+                currentRound: number;
+                totalRounds: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: OptimizationEvent_Tags.RoundCompleted;
+            readonly inner: Readonly<{
+                currentRound: number;
+                totalRounds: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+    };
+    Completed: {
+        new (): {
+            readonly tag: OptimizationEvent_Tags.Completed;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+        "new"(): {
+            readonly tag: OptimizationEvent_Tags.Completed;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: OptimizationEvent_Tags.Completed;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+    };
+    Cancelled: {
+        new (): {
+            readonly tag: OptimizationEvent_Tags.Cancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+        "new"(): {
+            readonly tag: OptimizationEvent_Tags.Cancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: OptimizationEvent_Tags.Cancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+    };
+    Failed: {
+        new (inner: {
+            error: string;
+        }): {
+            readonly tag: OptimizationEvent_Tags.Failed;
+            readonly inner: Readonly<{
+                error: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+        "new"(inner: {
+            error: string;
+        }): {
+            readonly tag: OptimizationEvent_Tags.Failed;
+            readonly inner: Readonly<{
+                error: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: OptimizationEvent_Tags.Failed;
+            readonly inner: Readonly<{
+                error: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+    };
+    Skipped: {
+        new (): {
+            readonly tag: OptimizationEvent_Tags.Skipped;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+        "new"(): {
+            readonly tag: OptimizationEvent_Tags.Skipped;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: OptimizationEvent_Tags.Skipped;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+        };
+    };
+}>;
+export type OptimizationEvent = InstanceType<(typeof OptimizationEvent)[keyof Omit<typeof OptimizationEvent, 'instanceOf'>]>;
 export declare enum PaymentDetails_Tags {
     Spark = "Spark",
     Token = "Token",
@@ -5170,11 +5454,15 @@ export declare const ReceivePaymentMethod: Readonly<{
         new (inner: {
             description: string;
             amountSats: /*u64*/ bigint | undefined;
+            /**
+             * The expiry time of the invoice in seconds
+             */ expirySecs: /*u32*/ number | undefined;
         }): {
             readonly tag: ReceivePaymentMethod_Tags.Bolt11Invoice;
             readonly inner: Readonly<{
                 description: string;
                 amountSats: /*u64*/ bigint | undefined;
+                expirySecs: /*u32*/ number | undefined;
             }>;
             /**
              * @private
@@ -5185,11 +5473,15 @@ export declare const ReceivePaymentMethod: Readonly<{
         "new"(inner: {
             description: string;
             amountSats: /*u64*/ bigint | undefined;
+            /**
+             * The expiry time of the invoice in seconds
+             */ expirySecs: /*u32*/ number | undefined;
         }): {
             readonly tag: ReceivePaymentMethod_Tags.Bolt11Invoice;
             readonly inner: Readonly<{
                 description: string;
                 amountSats: /*u64*/ bigint | undefined;
+                expirySecs: /*u32*/ number | undefined;
             }>;
             /**
              * @private
@@ -5202,6 +5494,7 @@ export declare const ReceivePaymentMethod: Readonly<{
             readonly inner: Readonly<{
                 description: string;
                 amountSats: /*u64*/ bigint | undefined;
+                expirySecs: /*u32*/ number | undefined;
             }>;
             /**
              * @private
@@ -6022,7 +6315,8 @@ export declare enum SdkEvent_Tags {
     ClaimedDeposits = "ClaimedDeposits",
     PaymentSucceeded = "PaymentSucceeded",
     PaymentPending = "PaymentPending",
-    PaymentFailed = "PaymentFailed"
+    PaymentFailed = "PaymentFailed",
+    Optimization = "Optimization"
 }
 /**
  * Events emitted by the SDK
@@ -6242,6 +6536,45 @@ export declare const SdkEvent: Readonly<{
             readonly tag: SdkEvent_Tags.PaymentFailed;
             readonly inner: Readonly<{
                 payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+    };
+    Optimization: {
+        new (inner: {
+            optimizationEvent: OptimizationEvent;
+        }): {
+            readonly tag: SdkEvent_Tags.Optimization;
+            readonly inner: Readonly<{
+                optimizationEvent: OptimizationEvent;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+        "new"(inner: {
+            optimizationEvent: OptimizationEvent;
+        }): {
+            readonly tag: SdkEvent_Tags.Optimization;
+            readonly inner: Readonly<{
+                optimizationEvent: OptimizationEvent;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkEvent_Tags.Optimization;
+            readonly inner: Readonly<{
+                optimizationEvent: OptimizationEvent;
             }>;
             /**
              * @private
@@ -8367,6 +8700,19 @@ export interface BreezSdkInterface {
     addEventListener(listener: EventListener, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<string>;
+    /**
+     * Cancels the ongoing leaf optimization.
+     *
+     * This method cancels the ongoing optimization and waits for it to fully stop.
+     * The current round will complete before stopping. This method blocks
+     * until the optimization has fully stopped and leaves reserved for optimization
+     * are available again.
+     *
+     * If no optimization is running, this method returns immediately.
+     */
+    cancelLeafOptimization(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     checkLightningAddressAvailable(req: CheckLightningAddressRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
@@ -8406,6 +8752,10 @@ export interface BreezSdkInterface {
     getInfo(request: GetInfoRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<GetInfoResponse>;
+    /**
+     * Returns the current optimization progress snapshot.
+     */
+    getLeafOptimizationProgress(): OptimizationProgress;
     getLightningAddress(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LightningAddressInfo | undefined>;
@@ -8552,6 +8902,14 @@ export interface BreezSdkInterface {
     signMessage(request: SignMessageRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SignMessageResponse>;
+    /**
+     * Starts leaf optimization in the background.
+     *
+     * This method spawns the optimization work in a background task and returns
+     * immediately. Progress is reported via events.
+     * If optimization is already running, no new task will be started.
+     */
+    startLeafOptimization(): void;
     /**
      * Synchronizes the wallet with the Spark network
      */
@@ -8590,6 +8948,19 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     addEventListener(listener: EventListener, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<string>;
+    /**
+     * Cancels the ongoing leaf optimization.
+     *
+     * This method cancels the ongoing optimization and waits for it to fully stop.
+     * The current round will complete before stopping. This method blocks
+     * until the optimization has fully stopped and leaves reserved for optimization
+     * are available again.
+     *
+     * If no optimization is running, this method returns immediately.
+     */
+    cancelLeafOptimization(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     checkLightningAddressAvailable(req: CheckLightningAddressRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
@@ -8629,6 +9000,10 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     getInfo(request: GetInfoRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<GetInfoResponse>;
+    /**
+     * Returns the current optimization progress snapshot.
+     */
+    getLeafOptimizationProgress(): OptimizationProgress;
     getLightningAddress(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LightningAddressInfo | undefined>;
@@ -8775,6 +9150,14 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     signMessage(request: SignMessageRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SignMessageResponse>;
+    /**
+     * Starts leaf optimization in the background.
+     *
+     * This method spawns the optimization work in a background task and returns
+     * immediately. Progress is reported via events.
+     * If optimization is already running, no new task will be started.
+     */
+    startLeafOptimization(): void;
     /**
      * Synchronizes the wallet with the Spark network
      */
@@ -10285,6 +10668,27 @@ declare const _default: Readonly<{
             allocationSize(value: OnchainConfirmationSpeed): number;
             lift(value: UniffiByteArray): OnchainConfirmationSpeed;
             lower(value: OnchainConfirmationSpeed): UniffiByteArray;
+        };
+        FfiConverterTypeOptimizationConfig: {
+            read(from: RustBuffer): OptimizationConfig;
+            write(value: OptimizationConfig, into: RustBuffer): void;
+            allocationSize(value: OptimizationConfig): number;
+            lift(value: UniffiByteArray): OptimizationConfig;
+            lower(value: OptimizationConfig): UniffiByteArray;
+        };
+        FfiConverterTypeOptimizationEvent: {
+            read(from: RustBuffer): OptimizationEvent;
+            write(value: OptimizationEvent, into: RustBuffer): void;
+            allocationSize(value: OptimizationEvent): number;
+            lift(value: UniffiByteArray): OptimizationEvent;
+            lower(value: OptimizationEvent): UniffiByteArray;
+        };
+        FfiConverterTypeOptimizationProgress: {
+            read(from: RustBuffer): OptimizationProgress;
+            write(value: OptimizationProgress, into: RustBuffer): void;
+            allocationSize(value: OptimizationProgress): number;
+            lift(value: UniffiByteArray): OptimizationProgress;
+            lower(value: OptimizationProgress): UniffiByteArray;
         };
         FfiConverterTypeOutgoingChange: {
             read(from: RustBuffer): OutgoingChange;
