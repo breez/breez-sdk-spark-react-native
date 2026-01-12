@@ -32,6 +32,7 @@ import nativeModule, {
   type UniffiVTableCallbackInterfaceEventListener,
   type UniffiVTableCallbackInterfaceLogger,
   type UniffiVTableCallbackInterfaceBitcoinChainService,
+  type UniffiVTableCallbackInterfaceExternalSigner,
   type UniffiVTableCallbackInterfaceFiatService,
   type UniffiVTableCallbackInterfacePaymentObserver,
   type UniffiVTableCallbackInterfaceRestClient,
@@ -77,6 +78,7 @@ import {
   uniffiTraitInterfaceCall,
   uniffiTraitInterfaceCallAsync,
   uniffiTraitInterfaceCallAsyncWithError,
+  uniffiTraitInterfaceCallWithError,
   uniffiTypeNameSymbol,
   variantOrdinalSymbol,
 } from 'uniffi-bindgen-react-native';
@@ -140,12 +142,104 @@ export async function connect(
     throw __error;
   }
 }
+/**
+ * Connects to the Spark network using an external signer.
+ *
+ * This method allows using a custom signer implementation instead of providing
+ * a seed directly.
+ *
+ * # Arguments
+ *
+ * * `request` - The connection request object with external signer
+ *
+ * # Returns
+ *
+ * Result containing either the initialized `BreezSdk` or an `SdkError`
+ */
+export async function connectWithSigner(
+  request: ConnectWithSignerRequest,
+  asyncOpts_?: { signal: AbortSignal }
+): Promise<BreezSdkInterface> /*throws*/ {
+  const __stack = uniffiIsDebug ? new Error().stack : undefined;
+  try {
+    return await uniffiRustCallAsync(
+      /*rustCaller:*/ uniffiCaller,
+      /*rustFutureFunc:*/ () => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_connect_with_signer(
+          FfiConverterTypeConnectWithSignerRequest.lower(request)
+        );
+      },
+      /*pollFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_poll_pointer,
+      /*cancelFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_cancel_pointer,
+      /*completeFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_complete_pointer,
+      /*freeFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_free_pointer,
+      /*liftFunc:*/ FfiConverterTypeBreezSdk.lift.bind(
+        FfiConverterTypeBreezSdk
+      ),
+      /*liftString:*/ FfiConverterString.lift,
+      /*asyncOpts:*/ asyncOpts_,
+      /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+        FfiConverterTypeSdkError
+      )
+    );
+  } catch (__error: any) {
+    if (uniffiIsDebug && __error instanceof Error) {
+      __error.stack = __stack;
+    }
+    throw __error;
+  }
+}
 export function defaultConfig(network: Network): Config {
   return FfiConverterTypeConfig.lift(
     uniffiCaller.rustCall(
       /*caller:*/ (callStatus) => {
         return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_default_config(
           FfiConverterTypeNetwork.lower(network),
+          callStatus
+        );
+      },
+      /*liftString:*/ FfiConverterString.lift
+    )
+  );
+}
+/**
+ * Creates a default external signer from a mnemonic.
+ *
+ * This is a convenience factory method for creating a signer that can be used
+ * with `connect_with_signer` or `SdkBuilder::new_with_signer`.
+ *
+ * # Arguments
+ *
+ * * `mnemonic` - BIP39 mnemonic phrase (12 or 24 words)
+ * * `passphrase` - Optional passphrase for the mnemonic
+ * * `network` - Network to use (Mainnet or Regtest)
+ * * `key_set_config` - Optional key set configuration. If None, uses default configuration.
+ *
+ * # Returns
+ *
+ * Result containing the signer as `Arc<dyn ExternalSigner>`
+ */
+export function defaultExternalSigner(
+  mnemonic: string,
+  passphrase: string | undefined,
+  network: Network,
+  keySetConfig: KeySetConfig | undefined
+): ExternalSigner /*throws*/ {
+  return FfiConverterTypeExternalSigner.lift(
+    uniffiCaller.rustCallWithError(
+      /*liftError:*/ FfiConverterTypeSdkError.lift.bind(
+        FfiConverterTypeSdkError
+      ),
+      /*caller:*/ (callStatus) => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_default_external_signer(
+          FfiConverterString.lower(mnemonic),
+          FfiConverterOptionalString.lower(passphrase),
+          FfiConverterTypeNetwork.lower(network),
+          FfiConverterOptionalTypeKeySetConfig.lower(keySetConfig),
           callStatus
         );
       },
@@ -1953,6 +2047,75 @@ const FfiConverterTypeConnectRequest = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * Request object for connecting to the Spark network using an external signer.
+ *
+ * This allows using a custom signer implementation instead of providing a seed directly.
+ */
+export type ConnectWithSignerRequest = {
+  config: Config;
+  signer: ExternalSigner;
+  storageDir: string;
+};
+
+/**
+ * Generated factory for {@link ConnectWithSignerRequest} record objects.
+ */
+export const ConnectWithSignerRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ConnectWithSignerRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ConnectWithSignerRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ConnectWithSignerRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ConnectWithSignerRequest>,
+  });
+})();
+
+const FfiConverterTypeConnectWithSignerRequest = (() => {
+  type TypeName = ConnectWithSignerRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        config: FfiConverterTypeConfig.read(from),
+        signer: FfiConverterTypeExternalSigner.read(from),
+        storageDir: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeConfig.write(value.config, into);
+      FfiConverterTypeExternalSigner.write(value.signer, into);
+      FfiConverterString.write(value.storageDir, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeConfig.allocationSize(value.config) +
+        FfiConverterTypeExternalSigner.allocationSize(value.signer) +
+        FfiConverterString.allocationSize(value.storageDir)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type CreateIssuerTokenRequest = {
   name: string;
   ticker: string;
@@ -2243,6 +2406,521 @@ const FfiConverterTypeDepositInfo = (() => {
 })();
 
 /**
+ * FFI-safe representation of an ECDSA signature (64 bytes)
+ */
+export type EcdsaSignatureBytes = {
+  bytes: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link EcdsaSignatureBytes} record objects.
+ */
+export const EcdsaSignatureBytes = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<EcdsaSignatureBytes, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link EcdsaSignatureBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link EcdsaSignatureBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<EcdsaSignatureBytes>,
+  });
+})();
+
+const FfiConverterTypeEcdsaSignatureBytes = (() => {
+  type TypeName = EcdsaSignatureBytes;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bytes: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.bytes, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayBuffer.allocationSize(value.bytes);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::AggregateFrostRequest`
+ */
+export type ExternalAggregateFrostRequest = {
+  /**
+   * The message that was signed
+   */
+  message: ArrayBuffer;
+  /**
+   * Statechain signatures as a list of identifier-signature pairs
+   */
+  statechainSignatures: Array<IdentifierSignaturePair>;
+  /**
+   * Statechain public keys as a list of identifier-publickey pairs
+   */
+  statechainPublicKeys: Array<IdentifierPublicKeyPair>;
+  /**
+   * The verifying key (33 bytes compressed)
+   */
+  verifyingKey: ArrayBuffer;
+  /**
+   * Statechain commitments as a list of identifier-commitment pairs
+   */
+  statechainCommitments: Array<IdentifierCommitmentPair>;
+  /**
+   * The self commitment
+   */
+  selfCommitment: ExternalSigningCommitments;
+  /**
+   * The public key (33 bytes compressed)
+   */
+  publicKey: ArrayBuffer;
+  /**
+   * The self signature share
+   */
+  selfSignature: ExternalFrostSignatureShare;
+  /**
+   * Optional adaptor public key (33 bytes compressed)
+   */
+  adaptorPublicKey: ArrayBuffer | undefined;
+};
+
+/**
+ * Generated factory for {@link ExternalAggregateFrostRequest} record objects.
+ */
+export const ExternalAggregateFrostRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalAggregateFrostRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalAggregateFrostRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalAggregateFrostRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalAggregateFrostRequest>,
+  });
+})();
+
+const FfiConverterTypeExternalAggregateFrostRequest = (() => {
+  type TypeName = ExternalAggregateFrostRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        message: FfiConverterArrayBuffer.read(from),
+        statechainSignatures:
+          FfiConverterArrayTypeIdentifierSignaturePair.read(from),
+        statechainPublicKeys:
+          FfiConverterArrayTypeIdentifierPublicKeyPair.read(from),
+        verifyingKey: FfiConverterArrayBuffer.read(from),
+        statechainCommitments:
+          FfiConverterArrayTypeIdentifierCommitmentPair.read(from),
+        selfCommitment: FfiConverterTypeExternalSigningCommitments.read(from),
+        publicKey: FfiConverterArrayBuffer.read(from),
+        selfSignature: FfiConverterTypeExternalFrostSignatureShare.read(from),
+        adaptorPublicKey: FfiConverterOptionalArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.message, into);
+      FfiConverterArrayTypeIdentifierSignaturePair.write(
+        value.statechainSignatures,
+        into
+      );
+      FfiConverterArrayTypeIdentifierPublicKeyPair.write(
+        value.statechainPublicKeys,
+        into
+      );
+      FfiConverterArrayBuffer.write(value.verifyingKey, into);
+      FfiConverterArrayTypeIdentifierCommitmentPair.write(
+        value.statechainCommitments,
+        into
+      );
+      FfiConverterTypeExternalSigningCommitments.write(
+        value.selfCommitment,
+        into
+      );
+      FfiConverterArrayBuffer.write(value.publicKey, into);
+      FfiConverterTypeExternalFrostSignatureShare.write(
+        value.selfSignature,
+        into
+      );
+      FfiConverterOptionalArrayBuffer.write(value.adaptorPublicKey, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayBuffer.allocationSize(value.message) +
+        FfiConverterArrayTypeIdentifierSignaturePair.allocationSize(
+          value.statechainSignatures
+        ) +
+        FfiConverterArrayTypeIdentifierPublicKeyPair.allocationSize(
+          value.statechainPublicKeys
+        ) +
+        FfiConverterArrayBuffer.allocationSize(value.verifyingKey) +
+        FfiConverterArrayTypeIdentifierCommitmentPair.allocationSize(
+          value.statechainCommitments
+        ) +
+        FfiConverterTypeExternalSigningCommitments.allocationSize(
+          value.selfCommitment
+        ) +
+        FfiConverterArrayBuffer.allocationSize(value.publicKey) +
+        FfiConverterTypeExternalFrostSignatureShare.allocationSize(
+          value.selfSignature
+        ) +
+        FfiConverterOptionalArrayBuffer.allocationSize(value.adaptorPublicKey)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::EncryptedPrivateKey`
+ */
+export type ExternalEncryptedPrivateKey = {
+  /**
+   * The encrypted ciphertext
+   */
+  ciphertext: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link ExternalEncryptedPrivateKey} record objects.
+ */
+export const ExternalEncryptedPrivateKey = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalEncryptedPrivateKey,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalEncryptedPrivateKey}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalEncryptedPrivateKey}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalEncryptedPrivateKey>,
+  });
+})();
+
+const FfiConverterTypeExternalEncryptedPrivateKey = (() => {
+  type TypeName = ExternalEncryptedPrivateKey;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        ciphertext: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.ciphertext, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayBuffer.allocationSize(value.ciphertext);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::FrostSigningCommitmentsWithNonces`
+ */
+export type ExternalFrostCommitments = {
+  /**
+   * Serialized hiding nonce commitment (variable length, typically 33 bytes compressed point)
+   */
+  hidingCommitment: ArrayBuffer;
+  /**
+   * Serialized binding nonce commitment (variable length, typically 33 bytes compressed point)
+   */
+  bindingCommitment: ArrayBuffer;
+  /**
+   * Encrypted nonces ciphertext
+   */
+  noncesCiphertext: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link ExternalFrostCommitments} record objects.
+ */
+export const ExternalFrostCommitments = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalFrostCommitments,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalFrostCommitments}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalFrostCommitments}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalFrostCommitments>,
+  });
+})();
+
+const FfiConverterTypeExternalFrostCommitments = (() => {
+  type TypeName = ExternalFrostCommitments;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        hidingCommitment: FfiConverterArrayBuffer.read(from),
+        bindingCommitment: FfiConverterArrayBuffer.read(from),
+        noncesCiphertext: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.hidingCommitment, into);
+      FfiConverterArrayBuffer.write(value.bindingCommitment, into);
+      FfiConverterArrayBuffer.write(value.noncesCiphertext, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayBuffer.allocationSize(value.hidingCommitment) +
+        FfiConverterArrayBuffer.allocationSize(value.bindingCommitment) +
+        FfiConverterArrayBuffer.allocationSize(value.noncesCiphertext)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `frost_secp256k1_tr::Signature`
+ */
+export type ExternalFrostSignature = {
+  /**
+   * Serialized Frost signature bytes (64 bytes)
+   */
+  bytes: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link ExternalFrostSignature} record objects.
+ */
+export const ExternalFrostSignature = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalFrostSignature,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalFrostSignature}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalFrostSignature}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalFrostSignature>,
+  });
+})();
+
+const FfiConverterTypeExternalFrostSignature = (() => {
+  type TypeName = ExternalFrostSignature;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bytes: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.bytes, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayBuffer.allocationSize(value.bytes);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `frost_secp256k1_tr::round2::SignatureShare`
+ */
+export type ExternalFrostSignatureShare = {
+  /**
+   * Serialized signature share bytes (variable length, typically 32 bytes)
+   */
+  bytes: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link ExternalFrostSignatureShare} record objects.
+ */
+export const ExternalFrostSignatureShare = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalFrostSignatureShare,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalFrostSignatureShare}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalFrostSignatureShare}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalFrostSignatureShare>,
+  });
+})();
+
+const FfiConverterTypeExternalFrostSignatureShare = (() => {
+  type TypeName = ExternalFrostSignatureShare;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bytes: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.bytes, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayBuffer.allocationSize(value.bytes);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `frost_secp256k1_tr::Identifier`
+ */
+export type ExternalIdentifier = {
+  /**
+   * Serialized identifier bytes
+   */
+  bytes: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link ExternalIdentifier} record objects.
+ */
+export const ExternalIdentifier = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<ExternalIdentifier, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalIdentifier}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalIdentifier}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ExternalIdentifier>,
+  });
+})();
+
+const FfiConverterTypeExternalIdentifier = (() => {
+  type TypeName = ExternalIdentifier;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bytes: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.bytes, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayBuffer.allocationSize(value.bytes);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
  * Configuration for an external input parser
  */
 export type ExternalInputParser = {
@@ -2311,6 +2989,587 @@ const FfiConverterTypeExternalInputParser = (() => {
         FfiConverterString.allocationSize(value.providerId) +
         FfiConverterString.allocationSize(value.inputRegex) +
         FfiConverterString.allocationSize(value.parserUrl)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `k256::Scalar` (32 bytes)
+ */
+export type ExternalScalar = {
+  /**
+   * The 32-byte scalar value
+   */
+  bytes: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link ExternalScalar} record objects.
+ */
+export const ExternalScalar = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<ExternalScalar, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalScalar}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalScalar}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ExternalScalar>,
+  });
+})();
+
+const FfiConverterTypeExternalScalar = (() => {
+  type TypeName = ExternalScalar;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bytes: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.bytes, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayBuffer.allocationSize(value.bytes);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::SecretShare`
+ */
+export type ExternalSecretShare = {
+  /**
+   * Number of shares required to recover the secret
+   */
+  threshold: /*u32*/ number;
+  /**
+   * Index (x-coordinate) of the share as 32 bytes
+   */
+  index: ExternalScalar;
+  /**
+   * Share value (y-coordinate) as 32 bytes
+   */
+  share: ExternalScalar;
+};
+
+/**
+ * Generated factory for {@link ExternalSecretShare} record objects.
+ */
+export const ExternalSecretShare = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<ExternalSecretShare, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalSecretShare}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalSecretShare}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ExternalSecretShare>,
+  });
+})();
+
+const FfiConverterTypeExternalSecretShare = (() => {
+  type TypeName = ExternalSecretShare;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        threshold: FfiConverterUInt32.read(from),
+        index: FfiConverterTypeExternalScalar.read(from),
+        share: FfiConverterTypeExternalScalar.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterUInt32.write(value.threshold, into);
+      FfiConverterTypeExternalScalar.write(value.index, into);
+      FfiConverterTypeExternalScalar.write(value.share, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterUInt32.allocationSize(value.threshold) +
+        FfiConverterTypeExternalScalar.allocationSize(value.index) +
+        FfiConverterTypeExternalScalar.allocationSize(value.share)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::SignFrostRequest`
+ */
+export type ExternalSignFrostRequest = {
+  /**
+   * The message to sign
+   */
+  message: ArrayBuffer;
+  /**
+   * The public key (33 bytes compressed)
+   */
+  publicKey: ArrayBuffer;
+  /**
+   * The private key source
+   */
+  privateKey: ExternalPrivateKeySource;
+  /**
+   * The verifying key (33 bytes compressed)
+   */
+  verifyingKey: ArrayBuffer;
+  /**
+   * The self nonce commitment
+   */
+  selfNonceCommitment: ExternalFrostCommitments;
+  /**
+   * Statechain commitments as a list of identifier-commitment pairs
+   */
+  statechainCommitments: Array<IdentifierCommitmentPair>;
+  /**
+   * Optional adaptor public key (33 bytes compressed)
+   */
+  adaptorPublicKey: ArrayBuffer | undefined;
+};
+
+/**
+ * Generated factory for {@link ExternalSignFrostRequest} record objects.
+ */
+export const ExternalSignFrostRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalSignFrostRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalSignFrostRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalSignFrostRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalSignFrostRequest>,
+  });
+})();
+
+const FfiConverterTypeExternalSignFrostRequest = (() => {
+  type TypeName = ExternalSignFrostRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        message: FfiConverterArrayBuffer.read(from),
+        publicKey: FfiConverterArrayBuffer.read(from),
+        privateKey: FfiConverterTypeExternalPrivateKeySource.read(from),
+        verifyingKey: FfiConverterArrayBuffer.read(from),
+        selfNonceCommitment:
+          FfiConverterTypeExternalFrostCommitments.read(from),
+        statechainCommitments:
+          FfiConverterArrayTypeIdentifierCommitmentPair.read(from),
+        adaptorPublicKey: FfiConverterOptionalArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.message, into);
+      FfiConverterArrayBuffer.write(value.publicKey, into);
+      FfiConverterTypeExternalPrivateKeySource.write(value.privateKey, into);
+      FfiConverterArrayBuffer.write(value.verifyingKey, into);
+      FfiConverterTypeExternalFrostCommitments.write(
+        value.selfNonceCommitment,
+        into
+      );
+      FfiConverterArrayTypeIdentifierCommitmentPair.write(
+        value.statechainCommitments,
+        into
+      );
+      FfiConverterOptionalArrayBuffer.write(value.adaptorPublicKey, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayBuffer.allocationSize(value.message) +
+        FfiConverterArrayBuffer.allocationSize(value.publicKey) +
+        FfiConverterTypeExternalPrivateKeySource.allocationSize(
+          value.privateKey
+        ) +
+        FfiConverterArrayBuffer.allocationSize(value.verifyingKey) +
+        FfiConverterTypeExternalFrostCommitments.allocationSize(
+          value.selfNonceCommitment
+        ) +
+        FfiConverterArrayTypeIdentifierCommitmentPair.allocationSize(
+          value.statechainCommitments
+        ) +
+        FfiConverterOptionalArrayBuffer.allocationSize(value.adaptorPublicKey)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `frost_secp256k1_tr::round1::SigningCommitments`
+ */
+export type ExternalSigningCommitments = {
+  /**
+   * Serialized hiding nonce commitment
+   */
+  hiding: ArrayBuffer;
+  /**
+   * Serialized binding nonce commitment
+   */
+  binding: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link ExternalSigningCommitments} record objects.
+ */
+export const ExternalSigningCommitments = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalSigningCommitments,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalSigningCommitments}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalSigningCommitments}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalSigningCommitments>,
+  });
+})();
+
+const FfiConverterTypeExternalSigningCommitments = (() => {
+  type TypeName = ExternalSigningCommitments;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        hiding: FfiConverterArrayBuffer.read(from),
+        binding: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.hiding, into);
+      FfiConverterArrayBuffer.write(value.binding, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayBuffer.allocationSize(value.hiding) +
+        FfiConverterArrayBuffer.allocationSize(value.binding)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::TreeNodeId`
+ */
+export type ExternalTreeNodeId = {
+  /**
+   * The tree node identifier as a string
+   */
+  id: string;
+};
+
+/**
+ * Generated factory for {@link ExternalTreeNodeId} record objects.
+ */
+export const ExternalTreeNodeId = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<ExternalTreeNodeId, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalTreeNodeId}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalTreeNodeId}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ExternalTreeNodeId>,
+  });
+})();
+
+const FfiConverterTypeExternalTreeNodeId = (() => {
+  type TypeName = ExternalTreeNodeId;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        id: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.id, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterString.allocationSize(value.id);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::VerifiableSecretShare`
+ */
+export type ExternalVerifiableSecretShare = {
+  /**
+   * Base secret share containing threshold, index, and share value
+   */
+  secretShare: ExternalSecretShare;
+  /**
+   * Cryptographic proofs for share verification (each proof is 33 bytes compressed public key)
+   */
+  proofs: Array<ArrayBuffer>;
+};
+
+/**
+ * Generated factory for {@link ExternalVerifiableSecretShare} record objects.
+ */
+export const ExternalVerifiableSecretShare = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalVerifiableSecretShare,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalVerifiableSecretShare}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalVerifiableSecretShare}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalVerifiableSecretShare>,
+  });
+})();
+
+const FfiConverterTypeExternalVerifiableSecretShare = (() => {
+  type TypeName = ExternalVerifiableSecretShare;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        secretShare: FfiConverterTypeExternalSecretShare.read(from),
+        proofs: FfiConverterArrayArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeExternalSecretShare.write(value.secretShare, into);
+      FfiConverterArrayArrayBuffer.write(value.proofs, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeExternalSecretShare.allocationSize(value.secretShare) +
+        FfiConverterArrayArrayBuffer.allocationSize(value.proofs)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type FetchTokenConversionLimitsRequest = {
+  /**
+   * The type of conversion, either from or to Bitcoin.
+   */
+  conversionType: TokenConversionType;
+  /**
+   * The token identifier when converting to a token.
+   */
+  tokenIdentifier: string | undefined;
+};
+
+/**
+ * Generated factory for {@link FetchTokenConversionLimitsRequest} record objects.
+ */
+export const FetchTokenConversionLimitsRequest = (() => {
+  const defaults = () => ({ tokenIdentifier: undefined });
+  const create = (() => {
+    return uniffiCreateRecord<
+      FetchTokenConversionLimitsRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link FetchTokenConversionLimitsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link FetchTokenConversionLimitsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<FetchTokenConversionLimitsRequest>,
+  });
+})();
+
+const FfiConverterTypeFetchTokenConversionLimitsRequest = (() => {
+  type TypeName = FetchTokenConversionLimitsRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        conversionType: FfiConverterTypeTokenConversionType.read(from),
+        tokenIdentifier: FfiConverterOptionalString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeTokenConversionType.write(value.conversionType, into);
+      FfiConverterOptionalString.write(value.tokenIdentifier, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeTokenConversionType.allocationSize(
+          value.conversionType
+        ) + FfiConverterOptionalString.allocationSize(value.tokenIdentifier)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type FetchTokenConversionLimitsResponse = {
+  /**
+   * The minimum amount to be converted.
+   * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+   */
+  minFromAmount: U128 | undefined;
+  /**
+   * The minimum amount to be received from the conversion.
+   * Denominated in satoshis if converting to Bitcoin, otherwise in the token base units.
+   */
+  minToAmount: U128 | undefined;
+};
+
+/**
+ * Generated factory for {@link FetchTokenConversionLimitsResponse} record objects.
+ */
+export const FetchTokenConversionLimitsResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      FetchTokenConversionLimitsResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link FetchTokenConversionLimitsResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link FetchTokenConversionLimitsResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<FetchTokenConversionLimitsResponse>,
+  });
+})();
+
+const FfiConverterTypeFetchTokenConversionLimitsResponse = (() => {
+  type TypeName = FetchTokenConversionLimitsResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        minFromAmount: FfiConverterOptionalTypeu128.read(from),
+        minToAmount: FfiConverterOptionalTypeu128.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalTypeu128.write(value.minFromAmount, into);
+      FfiConverterOptionalTypeu128.write(value.minToAmount, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalTypeu128.allocationSize(value.minFromAmount) +
+        FfiConverterOptionalTypeu128.allocationSize(value.minToAmount)
       );
     }
   }
@@ -2830,6 +4089,199 @@ const FfiConverterTypeGetTokensMetadataResponse = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * FFI-safe wrapper for (Identifier, `SigningCommitments`) pair
+ */
+export type IdentifierCommitmentPair = {
+  identifier: ExternalIdentifier;
+  commitment: ExternalSigningCommitments;
+};
+
+/**
+ * Generated factory for {@link IdentifierCommitmentPair} record objects.
+ */
+export const IdentifierCommitmentPair = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      IdentifierCommitmentPair,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link IdentifierCommitmentPair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link IdentifierCommitmentPair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<IdentifierCommitmentPair>,
+  });
+})();
+
+const FfiConverterTypeIdentifierCommitmentPair = (() => {
+  type TypeName = IdentifierCommitmentPair;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        identifier: FfiConverterTypeExternalIdentifier.read(from),
+        commitment: FfiConverterTypeExternalSigningCommitments.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeExternalIdentifier.write(value.identifier, into);
+      FfiConverterTypeExternalSigningCommitments.write(value.commitment, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeExternalIdentifier.allocationSize(value.identifier) +
+        FfiConverterTypeExternalSigningCommitments.allocationSize(
+          value.commitment
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe wrapper for (Identifier, `PublicKey`) pair
+ */
+export type IdentifierPublicKeyPair = {
+  identifier: ExternalIdentifier;
+  publicKey: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link IdentifierPublicKeyPair} record objects.
+ */
+export const IdentifierPublicKeyPair = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      IdentifierPublicKeyPair,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link IdentifierPublicKeyPair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link IdentifierPublicKeyPair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<IdentifierPublicKeyPair>,
+  });
+})();
+
+const FfiConverterTypeIdentifierPublicKeyPair = (() => {
+  type TypeName = IdentifierPublicKeyPair;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        identifier: FfiConverterTypeExternalIdentifier.read(from),
+        publicKey: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeExternalIdentifier.write(value.identifier, into);
+      FfiConverterArrayBuffer.write(value.publicKey, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeExternalIdentifier.allocationSize(value.identifier) +
+        FfiConverterArrayBuffer.allocationSize(value.publicKey)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe wrapper for (Identifier, `SignatureShare`) pair
+ */
+export type IdentifierSignaturePair = {
+  identifier: ExternalIdentifier;
+  signature: ExternalFrostSignatureShare;
+};
+
+/**
+ * Generated factory for {@link IdentifierSignaturePair} record objects.
+ */
+export const IdentifierSignaturePair = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      IdentifierSignaturePair,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link IdentifierSignaturePair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link IdentifierSignaturePair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<IdentifierSignaturePair>,
+  });
+})();
+
+const FfiConverterTypeIdentifierSignaturePair = (() => {
+  type TypeName = IdentifierSignaturePair;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        identifier: FfiConverterTypeExternalIdentifier.read(from),
+        signature: FfiConverterTypeExternalFrostSignatureShare.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeExternalIdentifier.write(value.identifier, into);
+      FfiConverterTypeExternalFrostSignatureShare.write(value.signature, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeExternalIdentifier.allocationSize(value.identifier) +
+        FfiConverterTypeExternalFrostSignatureShare.allocationSize(
+          value.signature
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type IncomingChange = {
   newState: Record;
   oldState: Record | undefined;
@@ -2882,6 +4334,82 @@ const FfiConverterTypeIncomingChange = (() => {
       return (
         FfiConverterTypeRecord.allocationSize(value.newState) +
         FfiConverterOptionalTypeRecord.allocationSize(value.oldState)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Configuration for key set derivation.
+ *
+ * This struct encapsulates the parameters needed for BIP32 key derivation.
+ */
+export type KeySetConfig = {
+  /**
+   * The key set type which determines the derivation path
+   */
+  keySetType: KeySetType;
+  /**
+   * Controls the structure of the BIP derivation path
+   */
+  useAddressIndex: boolean;
+  /**
+   * Optional account number for key derivation
+   */
+  accountNumber: /*u32*/ number | undefined;
+};
+
+/**
+ * Generated factory for {@link KeySetConfig} record objects.
+ */
+export const KeySetConfig = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<KeySetConfig, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link KeySetConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link KeySetConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<KeySetConfig>,
+  });
+})();
+
+const FfiConverterTypeKeySetConfig = (() => {
+  type TypeName = KeySetConfig;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        keySetType: FfiConverterTypeKeySetType.read(from),
+        useAddressIndex: FfiConverterBool.read(from),
+        accountNumber: FfiConverterOptionalUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeKeySetType.write(value.keySetType, into);
+      FfiConverterBool.write(value.useAddressIndex, into);
+      FfiConverterOptionalUInt32.write(value.accountNumber, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeKeySetType.allocationSize(value.keySetType) +
+        FfiConverterBool.allocationSize(value.useAddressIndex) +
+        FfiConverterOptionalUInt32.allocationSize(value.accountNumber)
       );
     }
   }
@@ -3142,9 +4670,9 @@ export type ListPaymentsRequest = {
   statusFilter: Array<PaymentStatus> | undefined;
   assetFilter: AssetFilter | undefined;
   /**
-   * Only include payments with specific Spark HTLC statuses
+   * Only include payments matching at least one of these payment details filters
    */
-  sparkHtlcStatusFilter: Array<SparkHtlcStatus> | undefined;
+  paymentDetailsFilter: Array<PaymentDetailsFilter> | undefined;
   /**
    * Only include payments created after this timestamp (inclusive)
    */
@@ -3172,7 +4700,7 @@ export const ListPaymentsRequest = (() => {
     typeFilter: undefined,
     statusFilter: undefined,
     assetFilter: undefined,
-    sparkHtlcStatusFilter: undefined,
+    paymentDetailsFilter: undefined,
     fromTimestamp: undefined,
     toTimestamp: undefined,
     offset: undefined,
@@ -3212,8 +4740,8 @@ const FfiConverterTypeListPaymentsRequest = (() => {
         typeFilter: FfiConverterOptionalArrayTypePaymentType.read(from),
         statusFilter: FfiConverterOptionalArrayTypePaymentStatus.read(from),
         assetFilter: FfiConverterOptionalTypeAssetFilter.read(from),
-        sparkHtlcStatusFilter:
-          FfiConverterOptionalArrayTypeSparkHtlcStatus.read(from),
+        paymentDetailsFilter:
+          FfiConverterOptionalArrayTypePaymentDetailsFilter.read(from),
         fromTimestamp: FfiConverterOptionalUInt64.read(from),
         toTimestamp: FfiConverterOptionalUInt64.read(from),
         offset: FfiConverterOptionalUInt32.read(from),
@@ -3228,8 +4756,8 @@ const FfiConverterTypeListPaymentsRequest = (() => {
         into
       );
       FfiConverterOptionalTypeAssetFilter.write(value.assetFilter, into);
-      FfiConverterOptionalArrayTypeSparkHtlcStatus.write(
-        value.sparkHtlcStatusFilter,
+      FfiConverterOptionalArrayTypePaymentDetailsFilter.write(
+        value.paymentDetailsFilter,
         into
       );
       FfiConverterOptionalUInt64.write(value.fromTimestamp, into);
@@ -3247,8 +4775,8 @@ const FfiConverterTypeListPaymentsRequest = (() => {
           value.statusFilter
         ) +
         FfiConverterOptionalTypeAssetFilter.allocationSize(value.assetFilter) +
-        FfiConverterOptionalArrayTypeSparkHtlcStatus.allocationSize(
-          value.sparkHtlcStatusFilter
+        FfiConverterOptionalArrayTypePaymentDetailsFilter.allocationSize(
+          value.paymentDetailsFilter
         ) +
         FfiConverterOptionalUInt64.allocationSize(value.fromTimestamp) +
         FfiConverterOptionalUInt64.allocationSize(value.toTimestamp) +
@@ -4788,9 +6316,11 @@ const FfiConverterTypePayment = (() => {
  * Metadata associated with a payment that cannot be extracted from the Spark operator.
  */
 export type PaymentMetadata = {
+  parentPaymentId: string | undefined;
   lnurlPayInfo: LnurlPayInfo | undefined;
   lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
   lnurlDescription: string | undefined;
+  tokenConversionInfo: TokenConversionInfo | undefined;
 };
 
 /**
@@ -4828,28 +6358,40 @@ const FfiConverterTypePaymentMetadata = (() => {
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
+        parentPaymentId: FfiConverterOptionalString.read(from),
         lnurlPayInfo: FfiConverterOptionalTypeLnurlPayInfo.read(from),
         lnurlWithdrawInfo: FfiConverterOptionalTypeLnurlWithdrawInfo.read(from),
         lnurlDescription: FfiConverterOptionalString.read(from),
+        tokenConversionInfo:
+          FfiConverterOptionalTypeTokenConversionInfo.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalString.write(value.parentPaymentId, into);
       FfiConverterOptionalTypeLnurlPayInfo.write(value.lnurlPayInfo, into);
       FfiConverterOptionalTypeLnurlWithdrawInfo.write(
         value.lnurlWithdrawInfo,
         into
       );
       FfiConverterOptionalString.write(value.lnurlDescription, into);
+      FfiConverterOptionalTypeTokenConversionInfo.write(
+        value.tokenConversionInfo,
+        into
+      );
     }
     allocationSize(value: TypeName): number {
       return (
+        FfiConverterOptionalString.allocationSize(value.parentPaymentId) +
         FfiConverterOptionalTypeLnurlPayInfo.allocationSize(
           value.lnurlPayInfo
         ) +
         FfiConverterOptionalTypeLnurlWithdrawInfo.allocationSize(
           value.lnurlWithdrawInfo
         ) +
-        FfiConverterOptionalString.allocationSize(value.lnurlDescription)
+        FfiConverterOptionalString.allocationSize(value.lnurlDescription) +
+        FfiConverterOptionalTypeTokenConversionInfo.allocationSize(
+          value.tokenConversionInfo
+        )
       );
     }
   }
@@ -5078,17 +6620,25 @@ export type PrepareSendPaymentRequest = {
    */
   amount: U128 | undefined;
   /**
-   * If provided, the payment will be for a token
-   * May only be provided if the payment request is a spark address
+   * If provided, the payment will be for a token.
+   * May only be provided if the payment request is a spark address.
    */
   tokenIdentifier: string | undefined;
+  /**
+   * If provided, the payment will include a token conversion step before sending the payment
+   */
+  tokenConversionOptions: TokenConversionOptions | undefined;
 };
 
 /**
  * Generated factory for {@link PrepareSendPaymentRequest} record objects.
  */
 export const PrepareSendPaymentRequest = (() => {
-  const defaults = () => ({ amount: undefined, tokenIdentifier: undefined });
+  const defaults = () => ({
+    amount: undefined,
+    tokenIdentifier: undefined,
+    tokenConversionOptions: undefined,
+  });
   const create = (() => {
     return uniffiCreateRecord<
       PrepareSendPaymentRequest,
@@ -5124,18 +6674,27 @@ const FfiConverterTypePrepareSendPaymentRequest = (() => {
         paymentRequest: FfiConverterString.read(from),
         amount: FfiConverterOptionalTypeu128.read(from),
         tokenIdentifier: FfiConverterOptionalString.read(from),
+        tokenConversionOptions:
+          FfiConverterOptionalTypeTokenConversionOptions.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterString.write(value.paymentRequest, into);
       FfiConverterOptionalTypeu128.write(value.amount, into);
       FfiConverterOptionalString.write(value.tokenIdentifier, into);
+      FfiConverterOptionalTypeTokenConversionOptions.write(
+        value.tokenConversionOptions,
+        into
+      );
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterString.allocationSize(value.paymentRequest) +
         FfiConverterOptionalTypeu128.allocationSize(value.amount) +
-        FfiConverterOptionalString.allocationSize(value.tokenIdentifier)
+        FfiConverterOptionalString.allocationSize(value.tokenIdentifier) +
+        FfiConverterOptionalTypeTokenConversionOptions.allocationSize(
+          value.tokenConversionOptions
+        )
       );
     }
   }
@@ -5150,10 +6709,18 @@ export type PrepareSendPaymentResponse = {
    */
   amount: U128;
   /**
-   * The presence of this field indicates that the payment is for a token
-   * If empty, it is a Bitcoin payment
+   * The presence of this field indicates that the payment is for a token.
+   * If empty, it is a Bitcoin payment.
    */
   tokenIdentifier: string | undefined;
+  /**
+   * When set, the payment will include a token conversion step before sending the payment
+   */
+  tokenConversionOptions: TokenConversionOptions | undefined;
+  /**
+   * The estimated token conversion fee if the payment involves a token conversion
+   */
+  tokenConversionFee: U128 | undefined;
 };
 
 /**
@@ -5196,19 +6763,86 @@ const FfiConverterTypePrepareSendPaymentResponse = (() => {
         paymentMethod: FfiConverterTypeSendPaymentMethod.read(from),
         amount: FfiConverterTypeu128.read(from),
         tokenIdentifier: FfiConverterOptionalString.read(from),
+        tokenConversionOptions:
+          FfiConverterOptionalTypeTokenConversionOptions.read(from),
+        tokenConversionFee: FfiConverterOptionalTypeu128.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterTypeSendPaymentMethod.write(value.paymentMethod, into);
       FfiConverterTypeu128.write(value.amount, into);
       FfiConverterOptionalString.write(value.tokenIdentifier, into);
+      FfiConverterOptionalTypeTokenConversionOptions.write(
+        value.tokenConversionOptions,
+        into
+      );
+      FfiConverterOptionalTypeu128.write(value.tokenConversionFee, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterTypeSendPaymentMethod.allocationSize(value.paymentMethod) +
         FfiConverterTypeu128.allocationSize(value.amount) +
-        FfiConverterOptionalString.allocationSize(value.tokenIdentifier)
+        FfiConverterOptionalString.allocationSize(value.tokenIdentifier) +
+        FfiConverterOptionalTypeTokenConversionOptions.allocationSize(
+          value.tokenConversionOptions
+        ) +
+        FfiConverterOptionalTypeu128.allocationSize(value.tokenConversionFee)
       );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of a private key (32 bytes)
+ */
+export type PrivateKeyBytes = {
+  bytes: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link PrivateKeyBytes} record objects.
+ */
+export const PrivateKeyBytes = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<PrivateKeyBytes, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PrivateKeyBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PrivateKeyBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<PrivateKeyBytes>,
+  });
+})();
+
+const FfiConverterTypePrivateKeyBytes = (() => {
+  type TypeName = PrivateKeyBytes;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bytes: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.bytes, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayBuffer.allocationSize(value.bytes);
     }
   }
   return new FFIConverter();
@@ -5280,6 +6914,61 @@ const FfiConverterTypeProvisionalPayment = (() => {
         FfiConverterTypeu128.allocationSize(value.amount) +
         FfiConverterTypeProvisionalPaymentDetails.allocationSize(value.details)
       );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of a secp256k1 public key (33 bytes compressed)
+ */
+export type PublicKeyBytes = {
+  bytes: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link PublicKeyBytes} record objects.
+ */
+export const PublicKeyBytes = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<PublicKeyBytes, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PublicKeyBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PublicKeyBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<PublicKeyBytes>,
+  });
+})();
+
+const FfiConverterTypePublicKeyBytes = (() => {
+  type TypeName = PublicKeyBytes;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bytes: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.bytes, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayBuffer.allocationSize(value.bytes);
     }
   }
   return new FFIConverter();
@@ -5719,6 +7408,63 @@ const FfiConverterTypeRecordId = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * FFI-safe representation of a recoverable ECDSA signature (65 bytes: 1 recovery byte + 64 signature bytes)
+ */
+export type RecoverableEcdsaSignatureBytes = {
+  bytes: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link RecoverableEcdsaSignatureBytes} record objects.
+ */
+export const RecoverableEcdsaSignatureBytes = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      RecoverableEcdsaSignatureBytes,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link RecoverableEcdsaSignatureBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link RecoverableEcdsaSignatureBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<RecoverableEcdsaSignatureBytes>,
+  });
+})();
+
+const FfiConverterTypeRecoverableEcdsaSignatureBytes = (() => {
+  type TypeName = RecoverableEcdsaSignatureBytes;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bytes: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.bytes, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayBuffer.allocationSize(value.bytes);
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type RefundDepositRequest = {
   txid: string;
   vout: /*u32*/ number;
@@ -5958,6 +7704,62 @@ const FfiConverterTypeRestResponse = (() => {
         FfiConverterUInt16.allocationSize(value.status) +
         FfiConverterString.allocationSize(value.body)
       );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of a Schnorr signature (64 bytes)
+ */
+export type SchnorrSignatureBytes = {
+  bytes: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link SchnorrSignatureBytes} record objects.
+ */
+export const SchnorrSignatureBytes = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      SchnorrSignatureBytes,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SchnorrSignatureBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SchnorrSignatureBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<SchnorrSignatureBytes>,
+  });
+})();
+
+const FfiConverterTypeSchnorrSignatureBytes = (() => {
+  type TypeName = SchnorrSignatureBytes;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bytes: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.bytes, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayBuffer.allocationSize(value.bytes);
     }
   }
   return new FFIConverter();
@@ -7078,6 +8880,174 @@ const FfiConverterTypeTokenBalance = (() => {
       return (
         FfiConverterTypeu128.allocationSize(value.balance) +
         FfiConverterTypeTokenMetadata.allocationSize(value.tokenMetadata)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type TokenConversionInfo = {
+  /**
+   * The pool id associated with the conversion
+   */
+  poolId: string;
+  /**
+   * The receiving payment id associated with the conversion
+   */
+  paymentId: string | undefined;
+  /**
+   * The fee paid for the conversion
+   * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+   */
+  fee: U128 | undefined;
+  /**
+   * The refund payment id if a refund payment was made
+   */
+  refundIdentifier: string | undefined;
+};
+
+/**
+ * Generated factory for {@link TokenConversionInfo} record objects.
+ */
+export const TokenConversionInfo = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<TokenConversionInfo, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link TokenConversionInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link TokenConversionInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<TokenConversionInfo>,
+  });
+})();
+
+const FfiConverterTypeTokenConversionInfo = (() => {
+  type TypeName = TokenConversionInfo;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        poolId: FfiConverterString.read(from),
+        paymentId: FfiConverterOptionalString.read(from),
+        fee: FfiConverterOptionalTypeu128.read(from),
+        refundIdentifier: FfiConverterOptionalString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.poolId, into);
+      FfiConverterOptionalString.write(value.paymentId, into);
+      FfiConverterOptionalTypeu128.write(value.fee, into);
+      FfiConverterOptionalString.write(value.refundIdentifier, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.poolId) +
+        FfiConverterOptionalString.allocationSize(value.paymentId) +
+        FfiConverterOptionalTypeu128.allocationSize(value.fee) +
+        FfiConverterOptionalString.allocationSize(value.refundIdentifier)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Options for token conversion when fulfilling a payment. When set, the SDK will
+ * perform a token conversion before fulfilling the payment. If not set, the payment
+ * will only be fulfilled if the wallet has sufficient balance of the required asset.
+ */
+export type TokenConversionOptions = {
+  /**
+   * The type of token conversion to perform when fulfilling the payment
+   */
+  conversionType: TokenConversionType;
+  /**
+   * The optional maximum slippage in basis points (1/100 of a percent) allowed when
+   * a token conversion is needed to fulfill the payment. Defaults to 50 bps (0.5%) if not set.
+   * The token conversion will fail if the actual amount received is less than
+   * `estimated_amount * (1 - max_slippage_bps / 10_000)`.
+   */
+  maxSlippageBps: /*u32*/ number | undefined;
+  /**
+   * The optional timeout in seconds to wait for the token conversion to complete
+   * when fulfilling the payment. This timeout only concerns waiting for the received
+   * payment of the token conversion. If the timeout is reached before the conversion
+   * is complete, the payment will fail. Defaults to 30 seconds if not set.
+   */
+  completionTimeoutSecs: /*u32*/ number | undefined;
+};
+
+/**
+ * Generated factory for {@link TokenConversionOptions} record objects.
+ */
+export const TokenConversionOptions = (() => {
+  const defaults = () => ({
+    maxSlippageBps: undefined,
+    completionTimeoutSecs: undefined,
+  });
+  const create = (() => {
+    return uniffiCreateRecord<
+      TokenConversionOptions,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link TokenConversionOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link TokenConversionOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<TokenConversionOptions>,
+  });
+})();
+
+const FfiConverterTypeTokenConversionOptions = (() => {
+  type TypeName = TokenConversionOptions;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        conversionType: FfiConverterTypeTokenConversionType.read(from),
+        maxSlippageBps: FfiConverterOptionalUInt32.read(from),
+        completionTimeoutSecs: FfiConverterOptionalUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeTokenConversionType.write(value.conversionType, into);
+      FfiConverterOptionalUInt32.write(value.maxSlippageBps, into);
+      FfiConverterOptionalUInt32.write(value.completionTimeoutSecs, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeTokenConversionType.allocationSize(
+          value.conversionType
+        ) +
+        FfiConverterOptionalUInt32.allocationSize(value.maxSlippageBps) +
+        FfiConverterOptionalUInt32.allocationSize(value.completionTimeoutSecs)
       );
     }
   }
@@ -8681,6 +10651,314 @@ const FfiConverterTypeDepositClaimError = (() => {
   return new FFIConverter();
 })();
 
+// Enum: ExternalPrivateKeySource
+export enum ExternalPrivateKeySource_Tags {
+  Derived = 'Derived',
+  Encrypted = 'Encrypted',
+}
+/**
+ * FFI-safe representation of `spark_wallet::PrivateKeySource`
+ */
+export const ExternalPrivateKeySource = (() => {
+  type Derived__interface = {
+    tag: ExternalPrivateKeySource_Tags.Derived;
+    inner: Readonly<{ nodeId: ExternalTreeNodeId }>;
+  };
+
+  /**
+   * Private key derived from a tree node
+   */
+  class Derived_ extends UniffiEnum implements Derived__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ExternalPrivateKeySource';
+    readonly tag = ExternalPrivateKeySource_Tags.Derived;
+    readonly inner: Readonly<{ nodeId: ExternalTreeNodeId }>;
+    constructor(inner: { nodeId: ExternalTreeNodeId }) {
+      super('ExternalPrivateKeySource', 'Derived');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { nodeId: ExternalTreeNodeId }): Derived_ {
+      return new Derived_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Derived_ {
+      return obj.tag === ExternalPrivateKeySource_Tags.Derived;
+    }
+  }
+
+  type Encrypted__interface = {
+    tag: ExternalPrivateKeySource_Tags.Encrypted;
+    inner: Readonly<{ key: ExternalEncryptedPrivateKey }>;
+  };
+
+  /**
+   * Encrypted private key
+   */
+  class Encrypted_ extends UniffiEnum implements Encrypted__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ExternalPrivateKeySource';
+    readonly tag = ExternalPrivateKeySource_Tags.Encrypted;
+    readonly inner: Readonly<{ key: ExternalEncryptedPrivateKey }>;
+    constructor(inner: { key: ExternalEncryptedPrivateKey }) {
+      super('ExternalPrivateKeySource', 'Encrypted');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { key: ExternalEncryptedPrivateKey }): Encrypted_ {
+      return new Encrypted_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Encrypted_ {
+      return obj.tag === ExternalPrivateKeySource_Tags.Encrypted;
+    }
+  }
+
+  function instanceOf(obj: any): obj is ExternalPrivateKeySource {
+    return obj[uniffiTypeNameSymbol] === 'ExternalPrivateKeySource';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Derived: Derived_,
+    Encrypted: Encrypted_,
+  });
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::PrivateKeySource`
+ */
+
+export type ExternalPrivateKeySource = InstanceType<
+  (typeof ExternalPrivateKeySource)[keyof Omit<
+    typeof ExternalPrivateKeySource,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum ExternalPrivateKeySource
+const FfiConverterTypeExternalPrivateKeySource = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ExternalPrivateKeySource;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new ExternalPrivateKeySource.Derived({
+            nodeId: FfiConverterTypeExternalTreeNodeId.read(from),
+          });
+        case 2:
+          return new ExternalPrivateKeySource.Encrypted({
+            key: FfiConverterTypeExternalEncryptedPrivateKey.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case ExternalPrivateKeySource_Tags.Derived: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterTypeExternalTreeNodeId.write(inner.nodeId, into);
+          return;
+        }
+        case ExternalPrivateKeySource_Tags.Encrypted: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterTypeExternalEncryptedPrivateKey.write(inner.key, into);
+          return;
+        }
+        default:
+          // Throwing from here means that ExternalPrivateKeySource_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case ExternalPrivateKeySource_Tags.Derived: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterTypeExternalTreeNodeId.allocationSize(
+            inner.nodeId
+          );
+          return size;
+        }
+        case ExternalPrivateKeySource_Tags.Encrypted: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterTypeExternalEncryptedPrivateKey.allocationSize(
+            inner.key
+          );
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: ExternalSecretToSplit
+export enum ExternalSecretToSplit_Tags {
+  PrivateKey = 'PrivateKey',
+  Preimage = 'Preimage',
+}
+/**
+ * FFI-safe representation of `spark_wallet::SecretToSplit`
+ */
+export const ExternalSecretToSplit = (() => {
+  type PrivateKey__interface = {
+    tag: ExternalSecretToSplit_Tags.PrivateKey;
+    inner: Readonly<{ source: ExternalPrivateKeySource }>;
+  };
+
+  /**
+   * A private key to split
+   */
+  class PrivateKey_ extends UniffiEnum implements PrivateKey__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ExternalSecretToSplit';
+    readonly tag = ExternalSecretToSplit_Tags.PrivateKey;
+    readonly inner: Readonly<{ source: ExternalPrivateKeySource }>;
+    constructor(inner: { source: ExternalPrivateKeySource }) {
+      super('ExternalSecretToSplit', 'PrivateKey');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { source: ExternalPrivateKeySource }): PrivateKey_ {
+      return new PrivateKey_(inner);
+    }
+
+    static instanceOf(obj: any): obj is PrivateKey_ {
+      return obj.tag === ExternalSecretToSplit_Tags.PrivateKey;
+    }
+  }
+
+  type Preimage__interface = {
+    tag: ExternalSecretToSplit_Tags.Preimage;
+    inner: Readonly<{ data: ArrayBuffer }>;
+  };
+
+  /**
+   * A preimage to split (32 bytes)
+   */
+  class Preimage_ extends UniffiEnum implements Preimage__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ExternalSecretToSplit';
+    readonly tag = ExternalSecretToSplit_Tags.Preimage;
+    readonly inner: Readonly<{ data: ArrayBuffer }>;
+    constructor(inner: { data: ArrayBuffer }) {
+      super('ExternalSecretToSplit', 'Preimage');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { data: ArrayBuffer }): Preimage_ {
+      return new Preimage_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Preimage_ {
+      return obj.tag === ExternalSecretToSplit_Tags.Preimage;
+    }
+  }
+
+  function instanceOf(obj: any): obj is ExternalSecretToSplit {
+    return obj[uniffiTypeNameSymbol] === 'ExternalSecretToSplit';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    PrivateKey: PrivateKey_,
+    Preimage: Preimage_,
+  });
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::SecretToSplit`
+ */
+
+export type ExternalSecretToSplit = InstanceType<
+  (typeof ExternalSecretToSplit)[keyof Omit<
+    typeof ExternalSecretToSplit,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum ExternalSecretToSplit
+const FfiConverterTypeExternalSecretToSplit = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ExternalSecretToSplit;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new ExternalSecretToSplit.PrivateKey({
+            source: FfiConverterTypeExternalPrivateKeySource.read(from),
+          });
+        case 2:
+          return new ExternalSecretToSplit.Preimage({
+            data: FfiConverterArrayBuffer.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case ExternalSecretToSplit_Tags.PrivateKey: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterTypeExternalPrivateKeySource.write(inner.source, into);
+          return;
+        }
+        case ExternalSecretToSplit_Tags.Preimage: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterArrayBuffer.write(inner.data, into);
+          return;
+        }
+        default:
+          // Throwing from here means that ExternalSecretToSplit_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case ExternalSecretToSplit_Tags.PrivateKey: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterTypeExternalPrivateKeySource.allocationSize(
+            inner.source
+          );
+          return size;
+        }
+        case ExternalSecretToSplit_Tags.Preimage: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterArrayBuffer.allocationSize(inner.data);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
 // Enum: Fee
 export enum Fee_Tags {
   Fixed = 'Fixed',
@@ -10149,6 +12427,7 @@ export const PaymentDetails = (() => {
     inner: Readonly<{
       invoiceDetails: SparkInvoicePaymentDetails | undefined;
       htlcDetails: SparkHtlcDetails | undefined;
+      tokenConversionInfo: TokenConversionInfo | undefined;
     }>;
   };
 
@@ -10162,6 +12441,7 @@ export const PaymentDetails = (() => {
     readonly inner: Readonly<{
       invoiceDetails: SparkInvoicePaymentDetails | undefined;
       htlcDetails: SparkHtlcDetails | undefined;
+      tokenConversionInfo: TokenConversionInfo | undefined;
     }>;
     constructor(inner: {
       /**
@@ -10170,6 +12450,9 @@ export const PaymentDetails = (() => {
       /**
        * The HTLC transfer details if the payment fulfilled an HTLC transfer
        */ htlcDetails: SparkHtlcDetails | undefined;
+      /**
+       * The information for a token conversion
+       */ tokenConversionInfo: TokenConversionInfo | undefined;
     }) {
       super('PaymentDetails', 'Spark');
       this.inner = Object.freeze(inner);
@@ -10182,6 +12465,9 @@ export const PaymentDetails = (() => {
       /**
        * The HTLC transfer details if the payment fulfilled an HTLC transfer
        */ htlcDetails: SparkHtlcDetails | undefined;
+      /**
+       * The information for a token conversion
+       */ tokenConversionInfo: TokenConversionInfo | undefined;
     }): Spark_ {
       return new Spark_(inner);
     }
@@ -10197,6 +12483,7 @@ export const PaymentDetails = (() => {
       metadata: TokenMetadata;
       txHash: string;
       invoiceDetails: SparkInvoicePaymentDetails | undefined;
+      tokenConversionInfo: TokenConversionInfo | undefined;
     }>;
   };
 
@@ -10211,6 +12498,7 @@ export const PaymentDetails = (() => {
       metadata: TokenMetadata;
       txHash: string;
       invoiceDetails: SparkInvoicePaymentDetails | undefined;
+      tokenConversionInfo: TokenConversionInfo | undefined;
     }>;
     constructor(inner: {
       metadata: TokenMetadata;
@@ -10218,6 +12506,9 @@ export const PaymentDetails = (() => {
       /**
        * The invoice details if the payment fulfilled a spark invoice
        */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+      /**
+       * The information for a token conversion
+       */ tokenConversionInfo: TokenConversionInfo | undefined;
     }) {
       super('PaymentDetails', 'Token');
       this.inner = Object.freeze(inner);
@@ -10229,6 +12520,9 @@ export const PaymentDetails = (() => {
       /**
        * The invoice details if the payment fulfilled a spark invoice
        */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+      /**
+       * The information for a token conversion
+       */ tokenConversionInfo: TokenConversionInfo | undefined;
     }): Token_ {
       return new Token_(inner);
     }
@@ -10421,6 +12715,8 @@ const FfiConverterTypePaymentDetails = (() => {
             invoiceDetails:
               FfiConverterOptionalTypeSparkInvoicePaymentDetails.read(from),
             htlcDetails: FfiConverterOptionalTypeSparkHtlcDetails.read(from),
+            tokenConversionInfo:
+              FfiConverterOptionalTypeTokenConversionInfo.read(from),
           });
         case 2:
           return new PaymentDetails.Token({
@@ -10428,6 +12724,8 @@ const FfiConverterTypePaymentDetails = (() => {
             txHash: FfiConverterString.read(from),
             invoiceDetails:
               FfiConverterOptionalTypeSparkInvoicePaymentDetails.read(from),
+            tokenConversionInfo:
+              FfiConverterOptionalTypeTokenConversionInfo.read(from),
           });
         case 3:
           return new PaymentDetails.Lightning({
@@ -10467,6 +12765,10 @@ const FfiConverterTypePaymentDetails = (() => {
             inner.htlcDetails,
             into
           );
+          FfiConverterOptionalTypeTokenConversionInfo.write(
+            inner.tokenConversionInfo,
+            into
+          );
           return;
         }
         case PaymentDetails_Tags.Token: {
@@ -10476,6 +12778,10 @@ const FfiConverterTypePaymentDetails = (() => {
           FfiConverterString.write(inner.txHash, into);
           FfiConverterOptionalTypeSparkInvoicePaymentDetails.write(
             inner.invoiceDetails,
+            into
+          );
+          FfiConverterOptionalTypeTokenConversionInfo.write(
+            inner.tokenConversionInfo,
             into
           );
           return;
@@ -10528,6 +12834,9 @@ const FfiConverterTypePaymentDetails = (() => {
           size += FfiConverterOptionalTypeSparkHtlcDetails.allocationSize(
             inner.htlcDetails
           );
+          size += FfiConverterOptionalTypeTokenConversionInfo.allocationSize(
+            inner.tokenConversionInfo
+          );
           return size;
         }
         case PaymentDetails_Tags.Token: {
@@ -10539,6 +12848,9 @@ const FfiConverterTypePaymentDetails = (() => {
             FfiConverterOptionalTypeSparkInvoicePaymentDetails.allocationSize(
               inner.invoiceDetails
             );
+          size += FfiConverterOptionalTypeTokenConversionInfo.allocationSize(
+            inner.tokenConversionInfo
+          );
           return size;
         }
         case PaymentDetails_Tags.Lightning: {
@@ -10570,6 +12882,199 @@ const FfiConverterTypePaymentDetails = (() => {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(5);
           size += FfiConverterString.allocationSize(inner.txId);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: PaymentDetailsFilter
+export enum PaymentDetailsFilter_Tags {
+  Spark = 'Spark',
+  Token = 'Token',
+}
+export const PaymentDetailsFilter = (() => {
+  type Spark__interface = {
+    tag: PaymentDetailsFilter_Tags.Spark;
+    inner: Readonly<{
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      conversionRefundNeeded: boolean | undefined;
+    }>;
+  };
+
+  class Spark_ extends UniffiEnum implements Spark__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PaymentDetailsFilter';
+    readonly tag = PaymentDetailsFilter_Tags.Spark;
+    readonly inner: Readonly<{
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      conversionRefundNeeded: boolean | undefined;
+    }>;
+    constructor(inner: {
+      /**
+       * Filter specific Spark HTLC statuses
+       */ htlcStatus: Array<SparkHtlcStatus> | undefined;
+      /**
+       * Filter conversion payments with refund information
+       */ conversionRefundNeeded: boolean | undefined;
+    }) {
+      super('PaymentDetailsFilter', 'Spark');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * Filter specific Spark HTLC statuses
+       */ htlcStatus: Array<SparkHtlcStatus> | undefined;
+      /**
+       * Filter conversion payments with refund information
+       */ conversionRefundNeeded: boolean | undefined;
+    }): Spark_ {
+      return new Spark_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Spark_ {
+      return obj.tag === PaymentDetailsFilter_Tags.Spark;
+    }
+  }
+
+  type Token__interface = {
+    tag: PaymentDetailsFilter_Tags.Token;
+    inner: Readonly<{
+      conversionRefundNeeded: boolean | undefined;
+      txHash: string | undefined;
+    }>;
+  };
+
+  class Token_ extends UniffiEnum implements Token__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PaymentDetailsFilter';
+    readonly tag = PaymentDetailsFilter_Tags.Token;
+    readonly inner: Readonly<{
+      conversionRefundNeeded: boolean | undefined;
+      txHash: string | undefined;
+    }>;
+    constructor(inner: {
+      /**
+       * Filter conversion payments with refund information
+       */ conversionRefundNeeded: boolean | undefined;
+      /**
+       * Filter by transaction hash
+       */ txHash: string | undefined;
+    }) {
+      super('PaymentDetailsFilter', 'Token');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * Filter conversion payments with refund information
+       */ conversionRefundNeeded: boolean | undefined;
+      /**
+       * Filter by transaction hash
+       */ txHash: string | undefined;
+    }): Token_ {
+      return new Token_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Token_ {
+      return obj.tag === PaymentDetailsFilter_Tags.Token;
+    }
+  }
+
+  function instanceOf(obj: any): obj is PaymentDetailsFilter {
+    return obj[uniffiTypeNameSymbol] === 'PaymentDetailsFilter';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Spark: Spark_,
+    Token: Token_,
+  });
+})();
+
+export type PaymentDetailsFilter = InstanceType<
+  (typeof PaymentDetailsFilter)[keyof Omit<
+    typeof PaymentDetailsFilter,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum PaymentDetailsFilter
+const FfiConverterTypePaymentDetailsFilter = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = PaymentDetailsFilter;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new PaymentDetailsFilter.Spark({
+            htlcStatus: FfiConverterOptionalArrayTypeSparkHtlcStatus.read(from),
+            conversionRefundNeeded: FfiConverterOptionalBool.read(from),
+          });
+        case 2:
+          return new PaymentDetailsFilter.Token({
+            conversionRefundNeeded: FfiConverterOptionalBool.read(from),
+            txHash: FfiConverterOptionalString.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case PaymentDetailsFilter_Tags.Spark: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterOptionalArrayTypeSparkHtlcStatus.write(
+            inner.htlcStatus,
+            into
+          );
+          FfiConverterOptionalBool.write(inner.conversionRefundNeeded, into);
+          return;
+        }
+        case PaymentDetailsFilter_Tags.Token: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterOptionalBool.write(inner.conversionRefundNeeded, into);
+          FfiConverterOptionalString.write(inner.txHash, into);
+          return;
+        }
+        default:
+          // Throwing from here means that PaymentDetailsFilter_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case PaymentDetailsFilter_Tags.Spark: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterOptionalArrayTypeSparkHtlcStatus.allocationSize(
+            inner.htlcStatus
+          );
+          size += FfiConverterOptionalBool.allocationSize(
+            inner.conversionRefundNeeded
+          );
+          return size;
+        }
+        case PaymentDetailsFilter_Tags.Token: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterOptionalBool.allocationSize(
+            inner.conversionRefundNeeded
+          );
+          size += FfiConverterOptionalString.allocationSize(inner.txHash);
           return size;
         }
         default:
@@ -11460,6 +13965,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
 // Enum: SdkError
 export enum SdkError_Tags {
   SparkError = 'SparkError',
+  InsufficientFunds = 'InsufficientFunds',
   InvalidUuid = 'InvalidUuid',
   InvalidInput = 'InvalidInput',
   NetworkError = 'NetworkError',
@@ -11468,6 +13974,7 @@ export enum SdkError_Tags {
   MaxDepositClaimFeeExceeded = 'MaxDepositClaimFeeExceeded',
   MissingUtxo = 'MissingUtxo',
   LnurlError = 'LnurlError',
+  Signer = 'Signer',
   Generic = 'Generic',
 }
 /**
@@ -11506,6 +14013,37 @@ export const SdkError = (() => {
 
     static getInner(obj: SparkError_): Readonly<[string]> {
       return obj.inner;
+    }
+  }
+
+  type InsufficientFunds__interface = {
+    tag: SdkError_Tags.InsufficientFunds;
+  };
+
+  class InsufficientFunds_
+    extends UniffiError
+    implements InsufficientFunds__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SdkError';
+    readonly tag = SdkError_Tags.InsufficientFunds;
+    constructor() {
+      super('SdkError', 'InsufficientFunds');
+    }
+
+    static new(): InsufficientFunds_ {
+      return new InsufficientFunds_();
+    }
+
+    static instanceOf(obj: any): obj is InsufficientFunds_ {
+      return obj.tag === SdkError_Tags.InsufficientFunds;
+    }
+
+    static hasInner(obj: any): obj is InsufficientFunds_ {
+      return false;
     }
   }
 
@@ -11838,6 +14376,41 @@ export const SdkError = (() => {
     }
   }
 
+  type Signer__interface = {
+    tag: SdkError_Tags.Signer;
+    inner: Readonly<[string]>;
+  };
+
+  class Signer_ extends UniffiError implements Signer__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SdkError';
+    readonly tag = SdkError_Tags.Signer;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('SdkError', 'Signer');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): Signer_ {
+      return new Signer_(v0);
+    }
+
+    static instanceOf(obj: any): obj is Signer_ {
+      return obj.tag === SdkError_Tags.Signer;
+    }
+
+    static hasInner(obj: any): obj is Signer_ {
+      return Signer_.instanceOf(obj);
+    }
+
+    static getInner(obj: Signer_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
   type Generic__interface = {
     tag: SdkError_Tags.Generic;
     inner: Readonly<[string]>;
@@ -11880,6 +14453,7 @@ export const SdkError = (() => {
   return Object.freeze({
     instanceOf,
     SparkError: SparkError_,
+    InsufficientFunds: InsufficientFunds_,
     InvalidUuid: InvalidUuid_,
     InvalidInput: InvalidInput_,
     NetworkError: NetworkError_,
@@ -11888,6 +14462,7 @@ export const SdkError = (() => {
     MaxDepositClaimFeeExceeded: MaxDepositClaimFeeExceeded_,
     MissingUtxo: MissingUtxo_,
     LnurlError: LnurlError_,
+    Signer: Signer_,
     Generic: Generic_,
   });
 })();
@@ -11910,16 +14485,18 @@ const FfiConverterTypeSdkError = (() => {
         case 1:
           return new SdkError.SparkError(FfiConverterString.read(from));
         case 2:
-          return new SdkError.InvalidUuid(FfiConverterString.read(from));
+          return new SdkError.InsufficientFunds();
         case 3:
-          return new SdkError.InvalidInput(FfiConverterString.read(from));
+          return new SdkError.InvalidUuid(FfiConverterString.read(from));
         case 4:
-          return new SdkError.NetworkError(FfiConverterString.read(from));
+          return new SdkError.InvalidInput(FfiConverterString.read(from));
         case 5:
-          return new SdkError.StorageError(FfiConverterString.read(from));
+          return new SdkError.NetworkError(FfiConverterString.read(from));
         case 6:
-          return new SdkError.ChainServiceError(FfiConverterString.read(from));
+          return new SdkError.StorageError(FfiConverterString.read(from));
         case 7:
+          return new SdkError.ChainServiceError(FfiConverterString.read(from));
+        case 8:
           return new SdkError.MaxDepositClaimFeeExceeded({
             tx: FfiConverterString.read(from),
             vout: FfiConverterUInt32.read(from),
@@ -11927,14 +14504,16 @@ const FfiConverterTypeSdkError = (() => {
             requiredFeeSats: FfiConverterUInt64.read(from),
             requiredFeeRateSatPerVbyte: FfiConverterUInt64.read(from),
           });
-        case 8:
+        case 9:
           return new SdkError.MissingUtxo({
             tx: FfiConverterString.read(from),
             vout: FfiConverterUInt32.read(from),
           });
-        case 9:
-          return new SdkError.LnurlError(FfiConverterString.read(from));
         case 10:
+          return new SdkError.LnurlError(FfiConverterString.read(from));
+        case 11:
+          return new SdkError.Signer(FfiConverterString.read(from));
+        case 12:
           return new SdkError.Generic(FfiConverterString.read(from));
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -11948,38 +14527,42 @@ const FfiConverterTypeSdkError = (() => {
           FfiConverterString.write(inner[0], into);
           return;
         }
-        case SdkError_Tags.InvalidUuid: {
+        case SdkError_Tags.InsufficientFunds: {
           ordinalConverter.write(2, into);
-          const inner = value.inner;
-          FfiConverterString.write(inner[0], into);
           return;
         }
-        case SdkError_Tags.InvalidInput: {
+        case SdkError_Tags.InvalidUuid: {
           ordinalConverter.write(3, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
         }
-        case SdkError_Tags.NetworkError: {
+        case SdkError_Tags.InvalidInput: {
           ordinalConverter.write(4, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
         }
-        case SdkError_Tags.StorageError: {
+        case SdkError_Tags.NetworkError: {
           ordinalConverter.write(5, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
         }
-        case SdkError_Tags.ChainServiceError: {
+        case SdkError_Tags.StorageError: {
           ordinalConverter.write(6, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
         }
-        case SdkError_Tags.MaxDepositClaimFeeExceeded: {
+        case SdkError_Tags.ChainServiceError: {
           ordinalConverter.write(7, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case SdkError_Tags.MaxDepositClaimFeeExceeded: {
+          ordinalConverter.write(8, into);
           const inner = value.inner;
           FfiConverterString.write(inner.tx, into);
           FfiConverterUInt32.write(inner.vout, into);
@@ -11989,20 +14572,26 @@ const FfiConverterTypeSdkError = (() => {
           return;
         }
         case SdkError_Tags.MissingUtxo: {
-          ordinalConverter.write(8, into);
+          ordinalConverter.write(9, into);
           const inner = value.inner;
           FfiConverterString.write(inner.tx, into);
           FfiConverterUInt32.write(inner.vout, into);
           return;
         }
         case SdkError_Tags.LnurlError: {
-          ordinalConverter.write(9, into);
+          ordinalConverter.write(10, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case SdkError_Tags.Signer: {
+          ordinalConverter.write(11, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
         }
         case SdkError_Tags.Generic: {
-          ordinalConverter.write(10, into);
+          ordinalConverter.write(12, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
@@ -12020,39 +14609,42 @@ const FfiConverterTypeSdkError = (() => {
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
-        case SdkError_Tags.InvalidUuid: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(2);
-          size += FfiConverterString.allocationSize(inner[0]);
-          return size;
+        case SdkError_Tags.InsufficientFunds: {
+          return ordinalConverter.allocationSize(2);
         }
-        case SdkError_Tags.InvalidInput: {
+        case SdkError_Tags.InvalidUuid: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(3);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
-        case SdkError_Tags.NetworkError: {
+        case SdkError_Tags.InvalidInput: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(4);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
-        case SdkError_Tags.StorageError: {
+        case SdkError_Tags.NetworkError: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(5);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
-        case SdkError_Tags.ChainServiceError: {
+        case SdkError_Tags.StorageError: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(6);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
-        case SdkError_Tags.MaxDepositClaimFeeExceeded: {
+        case SdkError_Tags.ChainServiceError: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(7);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case SdkError_Tags.MaxDepositClaimFeeExceeded: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(8);
           size += FfiConverterString.allocationSize(inner.tx);
           size += FfiConverterUInt32.allocationSize(inner.vout);
           size += FfiConverterOptionalTypeFee.allocationSize(inner.maxFee);
@@ -12064,20 +14656,26 @@ const FfiConverterTypeSdkError = (() => {
         }
         case SdkError_Tags.MissingUtxo: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(8);
+          let size = ordinalConverter.allocationSize(9);
           size += FfiConverterString.allocationSize(inner.tx);
           size += FfiConverterUInt32.allocationSize(inner.vout);
           return size;
         }
         case SdkError_Tags.LnurlError: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(9);
+          let size = ordinalConverter.allocationSize(10);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case SdkError_Tags.Signer: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(11);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
         case SdkError_Tags.Generic: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(10);
+          let size = ordinalConverter.allocationSize(12);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
@@ -13815,6 +16413,417 @@ const FfiConverterTypeServiceConnectivityError = (() => {
   return new FFIConverter();
 })();
 
+// Error type: SignerError
+
+// Enum: SignerError
+export enum SignerError_Tags {
+  KeyDerivation = 'KeyDerivation',
+  Signing = 'Signing',
+  Encryption = 'Encryption',
+  Decryption = 'Decryption',
+  Frost = 'Frost',
+  InvalidInput = 'InvalidInput',
+  Generic = 'Generic',
+}
+/**
+ * Error type for signer operations
+ */
+export const SignerError = (() => {
+  type KeyDerivation__interface = {
+    tag: SignerError_Tags.KeyDerivation;
+    inner: Readonly<[string]>;
+  };
+
+  class KeyDerivation_ extends UniffiError implements KeyDerivation__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SignerError';
+    readonly tag = SignerError_Tags.KeyDerivation;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('SignerError', 'KeyDerivation');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): KeyDerivation_ {
+      return new KeyDerivation_(v0);
+    }
+
+    static instanceOf(obj: any): obj is KeyDerivation_ {
+      return obj.tag === SignerError_Tags.KeyDerivation;
+    }
+
+    static hasInner(obj: any): obj is KeyDerivation_ {
+      return KeyDerivation_.instanceOf(obj);
+    }
+
+    static getInner(obj: KeyDerivation_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  type Signing__interface = {
+    tag: SignerError_Tags.Signing;
+    inner: Readonly<[string]>;
+  };
+
+  class Signing_ extends UniffiError implements Signing__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SignerError';
+    readonly tag = SignerError_Tags.Signing;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('SignerError', 'Signing');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): Signing_ {
+      return new Signing_(v0);
+    }
+
+    static instanceOf(obj: any): obj is Signing_ {
+      return obj.tag === SignerError_Tags.Signing;
+    }
+
+    static hasInner(obj: any): obj is Signing_ {
+      return Signing_.instanceOf(obj);
+    }
+
+    static getInner(obj: Signing_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  type Encryption__interface = {
+    tag: SignerError_Tags.Encryption;
+    inner: Readonly<[string]>;
+  };
+
+  class Encryption_ extends UniffiError implements Encryption__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SignerError';
+    readonly tag = SignerError_Tags.Encryption;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('SignerError', 'Encryption');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): Encryption_ {
+      return new Encryption_(v0);
+    }
+
+    static instanceOf(obj: any): obj is Encryption_ {
+      return obj.tag === SignerError_Tags.Encryption;
+    }
+
+    static hasInner(obj: any): obj is Encryption_ {
+      return Encryption_.instanceOf(obj);
+    }
+
+    static getInner(obj: Encryption_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  type Decryption__interface = {
+    tag: SignerError_Tags.Decryption;
+    inner: Readonly<[string]>;
+  };
+
+  class Decryption_ extends UniffiError implements Decryption__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SignerError';
+    readonly tag = SignerError_Tags.Decryption;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('SignerError', 'Decryption');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): Decryption_ {
+      return new Decryption_(v0);
+    }
+
+    static instanceOf(obj: any): obj is Decryption_ {
+      return obj.tag === SignerError_Tags.Decryption;
+    }
+
+    static hasInner(obj: any): obj is Decryption_ {
+      return Decryption_.instanceOf(obj);
+    }
+
+    static getInner(obj: Decryption_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  type Frost__interface = {
+    tag: SignerError_Tags.Frost;
+    inner: Readonly<[string]>;
+  };
+
+  class Frost_ extends UniffiError implements Frost__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SignerError';
+    readonly tag = SignerError_Tags.Frost;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('SignerError', 'Frost');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): Frost_ {
+      return new Frost_(v0);
+    }
+
+    static instanceOf(obj: any): obj is Frost_ {
+      return obj.tag === SignerError_Tags.Frost;
+    }
+
+    static hasInner(obj: any): obj is Frost_ {
+      return Frost_.instanceOf(obj);
+    }
+
+    static getInner(obj: Frost_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  type InvalidInput__interface = {
+    tag: SignerError_Tags.InvalidInput;
+    inner: Readonly<[string]>;
+  };
+
+  class InvalidInput_ extends UniffiError implements InvalidInput__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SignerError';
+    readonly tag = SignerError_Tags.InvalidInput;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('SignerError', 'InvalidInput');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): InvalidInput_ {
+      return new InvalidInput_(v0);
+    }
+
+    static instanceOf(obj: any): obj is InvalidInput_ {
+      return obj.tag === SignerError_Tags.InvalidInput;
+    }
+
+    static hasInner(obj: any): obj is InvalidInput_ {
+      return InvalidInput_.instanceOf(obj);
+    }
+
+    static getInner(obj: InvalidInput_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  type Generic__interface = {
+    tag: SignerError_Tags.Generic;
+    inner: Readonly<[string]>;
+  };
+
+  class Generic_ extends UniffiError implements Generic__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SignerError';
+    readonly tag = SignerError_Tags.Generic;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('SignerError', 'Generic');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): Generic_ {
+      return new Generic_(v0);
+    }
+
+    static instanceOf(obj: any): obj is Generic_ {
+      return obj.tag === SignerError_Tags.Generic;
+    }
+
+    static hasInner(obj: any): obj is Generic_ {
+      return Generic_.instanceOf(obj);
+    }
+
+    static getInner(obj: Generic_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  function instanceOf(obj: any): obj is SignerError {
+    return obj[uniffiTypeNameSymbol] === 'SignerError';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    KeyDerivation: KeyDerivation_,
+    Signing: Signing_,
+    Encryption: Encryption_,
+    Decryption: Decryption_,
+    Frost: Frost_,
+    InvalidInput: InvalidInput_,
+    Generic: Generic_,
+  });
+})();
+
+/**
+ * Error type for signer operations
+ */
+
+export type SignerError = InstanceType<
+  (typeof SignerError)[keyof Omit<typeof SignerError, 'instanceOf'>]
+>;
+
+// FfiConverter for enum SignerError
+const FfiConverterTypeSignerError = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = SignerError;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new SignerError.KeyDerivation(FfiConverterString.read(from));
+        case 2:
+          return new SignerError.Signing(FfiConverterString.read(from));
+        case 3:
+          return new SignerError.Encryption(FfiConverterString.read(from));
+        case 4:
+          return new SignerError.Decryption(FfiConverterString.read(from));
+        case 5:
+          return new SignerError.Frost(FfiConverterString.read(from));
+        case 6:
+          return new SignerError.InvalidInput(FfiConverterString.read(from));
+        case 7:
+          return new SignerError.Generic(FfiConverterString.read(from));
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case SignerError_Tags.KeyDerivation: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case SignerError_Tags.Signing: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case SignerError_Tags.Encryption: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case SignerError_Tags.Decryption: {
+          ordinalConverter.write(4, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case SignerError_Tags.Frost: {
+          ordinalConverter.write(5, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case SignerError_Tags.InvalidInput: {
+          ordinalConverter.write(6, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case SignerError_Tags.Generic: {
+          ordinalConverter.write(7, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        default:
+          // Throwing from here means that SignerError_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case SignerError_Tags.KeyDerivation: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case SignerError_Tags.Signing: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case SignerError_Tags.Encryption: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case SignerError_Tags.Decryption: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(4);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case SignerError_Tags.Frost: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(5);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case SignerError_Tags.InvalidInput: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(6);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case SignerError_Tags.Generic: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(7);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
 export enum SparkHtlcStatus {
   /**
    * The HTLC is waiting for the preimage to be shared by the receiver
@@ -14722,6 +17731,140 @@ const FfiConverterTypeSyncStorageError = (() => {
   return new FFIConverter();
 })();
 
+// Enum: TokenConversionType
+export enum TokenConversionType_Tags {
+  FromBitcoin = 'FromBitcoin',
+  ToBitcoin = 'ToBitcoin',
+}
+export const TokenConversionType = (() => {
+  type FromBitcoin__interface = {
+    tag: TokenConversionType_Tags.FromBitcoin;
+  };
+
+  /**
+   * Converting from Bitcoin to a token
+   */
+  class FromBitcoin_ extends UniffiEnum implements FromBitcoin__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'TokenConversionType';
+    readonly tag = TokenConversionType_Tags.FromBitcoin;
+    constructor() {
+      super('TokenConversionType', 'FromBitcoin');
+    }
+
+    static new(): FromBitcoin_ {
+      return new FromBitcoin_();
+    }
+
+    static instanceOf(obj: any): obj is FromBitcoin_ {
+      return obj.tag === TokenConversionType_Tags.FromBitcoin;
+    }
+  }
+
+  type ToBitcoin__interface = {
+    tag: TokenConversionType_Tags.ToBitcoin;
+    inner: Readonly<{ fromTokenIdentifier: string }>;
+  };
+
+  /**
+   * Converting from a token to Bitcoin
+   */
+  class ToBitcoin_ extends UniffiEnum implements ToBitcoin__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'TokenConversionType';
+    readonly tag = TokenConversionType_Tags.ToBitcoin;
+    readonly inner: Readonly<{ fromTokenIdentifier: string }>;
+    constructor(inner: { fromTokenIdentifier: string }) {
+      super('TokenConversionType', 'ToBitcoin');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { fromTokenIdentifier: string }): ToBitcoin_ {
+      return new ToBitcoin_(inner);
+    }
+
+    static instanceOf(obj: any): obj is ToBitcoin_ {
+      return obj.tag === TokenConversionType_Tags.ToBitcoin;
+    }
+  }
+
+  function instanceOf(obj: any): obj is TokenConversionType {
+    return obj[uniffiTypeNameSymbol] === 'TokenConversionType';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    FromBitcoin: FromBitcoin_,
+    ToBitcoin: ToBitcoin_,
+  });
+})();
+
+export type TokenConversionType = InstanceType<
+  (typeof TokenConversionType)[keyof Omit<
+    typeof TokenConversionType,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum TokenConversionType
+const FfiConverterTypeTokenConversionType = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = TokenConversionType;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new TokenConversionType.FromBitcoin();
+        case 2:
+          return new TokenConversionType.ToBitcoin({
+            fromTokenIdentifier: FfiConverterString.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case TokenConversionType_Tags.FromBitcoin: {
+          ordinalConverter.write(1, into);
+          return;
+        }
+        case TokenConversionType_Tags.ToBitcoin: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.fromTokenIdentifier, into);
+          return;
+        }
+        default:
+          // Throwing from here means that TokenConversionType_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case TokenConversionType_Tags.FromBitcoin: {
+          return ordinalConverter.allocationSize(1);
+        }
+        case TokenConversionType_Tags.ToBitcoin: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner.fromTokenIdentifier);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
 // Enum: UpdateDepositPayload
 export enum UpdateDepositPayload_Tags {
   ClaimError = 'ClaimError',
@@ -15500,6 +18643,10 @@ export interface BreezSdkInterface {
    * Result containing either success or an `SdkError` if the background task couldn't be stopped
    */
   disconnect(asyncOpts_?: { signal: AbortSignal }): /*throws*/ Promise<void>;
+  fetchTokenConversionLimits(
+    request: FetchTokenConversionLimitsRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<FetchTokenConversionLimitsResponse>;
   /**
    * Returns the balance of the wallet in satoshis
    */
@@ -16032,6 +19179,45 @@ export class BreezSdk
         /*freeFunc:*/ nativeModule()
           .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
         /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async fetchTokenConversionLimits(
+    request: FetchTokenConversionLimitsRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<FetchTokenConversionLimitsResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_token_conversion_limits(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeFetchTokenConversionLimitsRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeFetchTokenConversionLimitsResponse.lift.bind(
+          FfiConverterTypeFetchTokenConversionLimitsResponse
+        ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
         /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
@@ -17157,6 +20343,2187 @@ const FfiConverterTypeBreezSdk = new FfiConverterObject(
 );
 
 /**
+ * External signer trait that can be implemented by users and passed to the SDK.
+ *
+ * This trait mirrors the `BreezSigner` trait but uses FFI-compatible types (bytes, strings)
+ * instead of Rust-specific types. This allows it to be exposed through FFI and WASM bindings.
+ *
+ * All methods accept and return simple types:
+ * - Derivation paths as strings (e.g., "m/44'/0'/0'")
+ * - Public keys, signatures, and other crypto primitives as Vec<u8>
+ * - Spark-specific types as serialized representations
+ *
+ * Errors are returned as `SignerError` for FFI compatibility.
+ */
+export interface ExternalSigner {
+  /**
+   * Returns the identity public key as 33 bytes (compressed secp256k1 key).
+   */
+  identityPublicKey(): /*throws*/ PublicKeyBytes;
+  /**
+   * Derives a public key for the given BIP32 derivation path.
+   *
+   * # Arguments
+   * * `path` - BIP32 derivation path as a string (e.g., "m/44'/0'/0'/0/0")
+   *
+   * # Returns
+   * The derived public key as 33 bytes, or a `SignerError`
+   */
+  derivePublicKey(
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<PublicKeyBytes>;
+  /**
+   * Signs a message using ECDSA at the given derivation path.
+   *
+   * # Arguments
+   * * `message` - The message to sign
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 64-byte compact ECDSA signature, or a `SignerError`
+   */
+  signEcdsa(
+    message: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<EcdsaSignatureBytes>;
+  /**
+   * Signs a message using recoverable ECDSA at the given derivation path.
+   *
+   * # Arguments
+   * * `message` - The message to sign (will be double-SHA256 hashed)
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 65 bytes: recovery ID (31 + `recovery_id`) + 64-byte signature, or a `SignerError`
+   */
+  signEcdsaRecoverable(
+    message: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<RecoverableEcdsaSignatureBytes>;
+  /**
+   * Encrypts a message using ECIES at the given derivation path.
+   *
+   * # Arguments
+   * * `message` - The message to encrypt
+   * * `path` - BIP32 derivation path for the encryption key
+   *
+   * # Returns
+   * Encrypted data, or a `SignerError`
+   */
+  eciesEncrypt(
+    message: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ArrayBuffer>;
+  /**
+   * Decrypts a message using ECIES at the given derivation path.
+   *
+   * # Arguments
+   * * `message` - The encrypted message
+   * * `path` - BIP32 derivation path for the decryption key
+   *
+   * # Returns
+   * Decrypted data, or a `SignerError`
+   */
+  eciesDecrypt(
+    message: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ArrayBuffer>;
+  /**
+   * Signs a hash using Schnorr signature at the given derivation path.
+   *
+   * # Arguments
+   * * `hash` - The 32-byte hash to sign (must be 32 bytes)
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 64-byte Schnorr signature, or a `SignerError`
+   */
+  signHashSchnorr(
+    hash: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<SchnorrSignatureBytes>;
+  /**
+   * Generates Frost signing commitments for multi-party signing.
+   *
+   * # Returns
+   * Frost commitments with nonces, or a `SignerError`
+   */
+  generateFrostSigningCommitments(asyncOpts_?: {
+    signal: AbortSignal;
+  }): /*throws*/ Promise<ExternalFrostCommitments>;
+  /**
+   * Gets the public key for a specific tree node in the Spark wallet.
+   *
+   * # Arguments
+   * * `id` - The tree node identifier
+   *
+   * # Returns
+   * The public key for the node, or an error string
+   */
+  getPublicKeyForNode(
+    id: ExternalTreeNodeId,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<PublicKeyBytes>;
+  /**
+   * Generates a random private key.
+   *
+   * # Returns
+   * A randomly generated private key source, or an error string
+   */
+  generateRandomKey(asyncOpts_?: {
+    signal: AbortSignal;
+  }): /*throws*/ Promise<ExternalPrivateKeySource>;
+  /**
+   * Gets a static deposit private key source by index.
+   *
+   * # Arguments
+   * * `index` - The index of the static deposit key
+   *
+   * # Returns
+   * The private key source, or an error string
+   */
+  getStaticDepositPrivateKeySource(
+    index: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ExternalPrivateKeySource>;
+  /**
+   * Gets a static deposit private key by index.
+   *
+   * # Arguments
+   * * `index` - The index of the static deposit key
+   *
+   * # Returns
+   * The 32-byte private key, or an error string
+   */
+  getStaticDepositPrivateKey(
+    index: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<PrivateKeyBytes>;
+  /**
+   * Gets a static deposit public key by index.
+   *
+   * # Arguments
+   * * `index` - The index of the static deposit key
+   *
+   * # Returns
+   * The 33-byte public key, or an error string
+   */
+  getStaticDepositPublicKey(
+    index: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<PublicKeyBytes>;
+  /**
+   * Subtracts one private key from another.
+   *
+   * # Arguments
+   * * `signing_key` - The first private key source
+   * * `new_signing_key` - The second private key source to subtract
+   *
+   * # Returns
+   * The resulting private key source, or an error string
+   */
+  subtractPrivateKeys(
+    signingKey: ExternalPrivateKeySource,
+    newSigningKey: ExternalPrivateKeySource,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ExternalPrivateKeySource>;
+  /**
+   * Splits a secret with proofs using Shamir's Secret Sharing.
+   *
+   * # Arguments
+   * * `secret` - The secret to split
+   * * `threshold` - Minimum number of shares needed to reconstruct
+   * * `num_shares` - Total number of shares to create
+   *
+   * # Returns
+   * Vector of verifiable secret shares, or an error string
+   */
+  splitSecret(
+    secret: ExternalSecretToSplit,
+    threshold: /*u32*/ number,
+    numShares: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<Array<ExternalVerifiableSecretShare>>;
+  /**
+   * Encrypts a private key for a specific receiver's public key.
+   *
+   * # Arguments
+   * * `private_key` - The encrypted private key to re-encrypt
+   * * `receiver_public_key` - The receiver's 33-byte public key
+   *
+   * # Returns
+   * Encrypted data for the receiver, or an error string
+   */
+  encryptPrivateKeyForReceiver(
+    privateKey: ExternalEncryptedPrivateKey,
+    receiverPublicKey: PublicKeyBytes,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ArrayBuffer>;
+  /**
+   * Gets the public key from a private key source.
+   *
+   * # Arguments
+   * * `private_key` - The private key source
+   *
+   * # Returns
+   * The corresponding 33-byte public key, or an error string
+   */
+  getPublicKeyFromPrivateKeySource(
+    privateKey: ExternalPrivateKeySource,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<PublicKeyBytes>;
+  /**
+   * Signs using Frost protocol (multi-party signing).
+   *
+   * # Arguments
+   * * `request` - The Frost signing request
+   *
+   * # Returns
+   * A signature share, or an error string
+   */
+  signFrost(
+    request: ExternalSignFrostRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ExternalFrostSignatureShare>;
+  /**
+   * Aggregates Frost signature shares into a final signature.
+   *
+   * # Arguments
+   * * `request` - The Frost aggregation request
+   *
+   * # Returns
+   * The aggregated Frost signature, or an error string
+   */
+  aggregateFrostSignatures(
+    request: ExternalAggregateFrostRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ExternalFrostSignature>;
+}
+
+/**
+ * External signer trait that can be implemented by users and passed to the SDK.
+ *
+ * This trait mirrors the `BreezSigner` trait but uses FFI-compatible types (bytes, strings)
+ * instead of Rust-specific types. This allows it to be exposed through FFI and WASM bindings.
+ *
+ * All methods accept and return simple types:
+ * - Derivation paths as strings (e.g., "m/44'/0'/0'")
+ * - Public keys, signatures, and other crypto primitives as Vec<u8>
+ * - Spark-specific types as serialized representations
+ *
+ * Errors are returned as `SignerError` for FFI compatibility.
+ */
+export class ExternalSignerImpl
+  extends UniffiAbstractObject
+  implements ExternalSigner
+{
+  readonly [uniffiTypeNameSymbol] = 'ExternalSignerImpl';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypeExternalSignerImplObjectFactory.bless(pointer);
+  }
+
+  /**
+   * Returns the identity public key as 33 bytes (compressed secp256k1 key).
+   */
+  public identityPublicKey(): PublicKeyBytes /*throws*/ {
+    return FfiConverterTypePublicKeyBytes.lift(
+      uniffiCaller.rustCallWithError(
+        /*liftError:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*caller:*/ (callStatus) => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_identity_public_key(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            callStatus
+          );
+        },
+        /*liftString:*/ FfiConverterString.lift
+      )
+    );
+  }
+
+  /**
+   * Derives a public key for the given BIP32 derivation path.
+   *
+   * # Arguments
+   * * `path` - BIP32 derivation path as a string (e.g., "m/44'/0'/0'/0/0")
+   *
+   * # Returns
+   * The derived public key as 33 bytes, or a `SignerError`
+   */
+  public async derivePublicKey(
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<PublicKeyBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_derive_public_key(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterString.lower(path)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePublicKeyBytes.lift.bind(
+          FfiConverterTypePublicKeyBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Signs a message using ECDSA at the given derivation path.
+   *
+   * # Arguments
+   * * `message` - The message to sign
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 64-byte compact ECDSA signature, or a `SignerError`
+   */
+  public async signEcdsa(
+    message: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<EcdsaSignatureBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterArrayBuffer.lower(message),
+            FfiConverterString.lower(path)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeEcdsaSignatureBytes.lift.bind(
+          FfiConverterTypeEcdsaSignatureBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Signs a message using recoverable ECDSA at the given derivation path.
+   *
+   * # Arguments
+   * * `message` - The message to sign (will be double-SHA256 hashed)
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 65 bytes: recovery ID (31 + `recovery_id`) + 64-byte signature, or a `SignerError`
+   */
+  public async signEcdsaRecoverable(
+    message: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<RecoverableEcdsaSignatureBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa_recoverable(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterArrayBuffer.lower(message),
+            FfiConverterString.lower(path)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeRecoverableEcdsaSignatureBytes.lift.bind(
+          FfiConverterTypeRecoverableEcdsaSignatureBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Encrypts a message using ECIES at the given derivation path.
+   *
+   * # Arguments
+   * * `message` - The message to encrypt
+   * * `path` - BIP32 derivation path for the encryption key
+   *
+   * # Returns
+   * Encrypted data, or a `SignerError`
+   */
+  public async eciesEncrypt(
+    message: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ArrayBuffer> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_ecies_encrypt(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterArrayBuffer.lower(message),
+            FfiConverterString.lower(path)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterArrayBuffer.lift.bind(
+          FfiConverterArrayBuffer
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Decrypts a message using ECIES at the given derivation path.
+   *
+   * # Arguments
+   * * `message` - The encrypted message
+   * * `path` - BIP32 derivation path for the decryption key
+   *
+   * # Returns
+   * Decrypted data, or a `SignerError`
+   */
+  public async eciesDecrypt(
+    message: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ArrayBuffer> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_ecies_decrypt(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterArrayBuffer.lower(message),
+            FfiConverterString.lower(path)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterArrayBuffer.lift.bind(
+          FfiConverterArrayBuffer
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Signs a hash using Schnorr signature at the given derivation path.
+   *
+   * # Arguments
+   * * `hash` - The 32-byte hash to sign (must be 32 bytes)
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 64-byte Schnorr signature, or a `SignerError`
+   */
+  public async signHashSchnorr(
+    hash: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<SchnorrSignatureBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_hash_schnorr(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterArrayBuffer.lower(hash),
+            FfiConverterString.lower(path)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeSchnorrSignatureBytes.lift.bind(
+          FfiConverterTypeSchnorrSignatureBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Generates Frost signing commitments for multi-party signing.
+   *
+   * # Returns
+   * Frost commitments with nonces, or a `SignerError`
+   */
+  public async generateFrostSigningCommitments(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<ExternalFrostCommitments> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_frost_signing_commitments(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalFrostCommitments.lift.bind(
+          FfiConverterTypeExternalFrostCommitments
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Gets the public key for a specific tree node in the Spark wallet.
+   *
+   * # Arguments
+   * * `id` - The tree node identifier
+   *
+   * # Returns
+   * The public key for the node, or an error string
+   */
+  public async getPublicKeyForNode(
+    id: ExternalTreeNodeId,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<PublicKeyBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_get_public_key_for_node(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalTreeNodeId.lower(id)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePublicKeyBytes.lift.bind(
+          FfiConverterTypePublicKeyBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Generates a random private key.
+   *
+   * # Returns
+   * A randomly generated private key source, or an error string
+   */
+  public async generateRandomKey(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<ExternalPrivateKeySource> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_key(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalPrivateKeySource.lift.bind(
+          FfiConverterTypeExternalPrivateKeySource
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Gets a static deposit private key source by index.
+   *
+   * # Arguments
+   * * `index` - The index of the static deposit key
+   *
+   * # Returns
+   * The private key source, or an error string
+   */
+  public async getStaticDepositPrivateKeySource(
+    index: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ExternalPrivateKeySource> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_get_static_deposit_private_key_source(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterUInt32.lower(index)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalPrivateKeySource.lift.bind(
+          FfiConverterTypeExternalPrivateKeySource
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Gets a static deposit private key by index.
+   *
+   * # Arguments
+   * * `index` - The index of the static deposit key
+   *
+   * # Returns
+   * The 32-byte private key, or an error string
+   */
+  public async getStaticDepositPrivateKey(
+    index: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<PrivateKeyBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_get_static_deposit_private_key(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterUInt32.lower(index)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePrivateKeyBytes.lift.bind(
+          FfiConverterTypePrivateKeyBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Gets a static deposit public key by index.
+   *
+   * # Arguments
+   * * `index` - The index of the static deposit key
+   *
+   * # Returns
+   * The 33-byte public key, or an error string
+   */
+  public async getStaticDepositPublicKey(
+    index: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<PublicKeyBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_get_static_deposit_public_key(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterUInt32.lower(index)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePublicKeyBytes.lift.bind(
+          FfiConverterTypePublicKeyBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Subtracts one private key from another.
+   *
+   * # Arguments
+   * * `signing_key` - The first private key source
+   * * `new_signing_key` - The second private key source to subtract
+   *
+   * # Returns
+   * The resulting private key source, or an error string
+   */
+  public async subtractPrivateKeys(
+    signingKey: ExternalPrivateKeySource,
+    newSigningKey: ExternalPrivateKeySource,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ExternalPrivateKeySource> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_private_keys(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalPrivateKeySource.lower(signingKey),
+            FfiConverterTypeExternalPrivateKeySource.lower(newSigningKey)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalPrivateKeySource.lift.bind(
+          FfiConverterTypeExternalPrivateKeySource
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Splits a secret with proofs using Shamir's Secret Sharing.
+   *
+   * # Arguments
+   * * `secret` - The secret to split
+   * * `threshold` - Minimum number of shares needed to reconstruct
+   * * `num_shares` - Total number of shares to create
+   *
+   * # Returns
+   * Vector of verifiable secret shares, or an error string
+   */
+  public async splitSecret(
+    secret: ExternalSecretToSplit,
+    threshold: /*u32*/ number,
+    numShares: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<Array<ExternalVerifiableSecretShare>> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_split_secret(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalSecretToSplit.lower(secret),
+            FfiConverterUInt32.lower(threshold),
+            FfiConverterUInt32.lower(numShares)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterArrayTypeExternalVerifiableSecretShare.lift.bind(
+          FfiConverterArrayTypeExternalVerifiableSecretShare
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Encrypts a private key for a specific receiver's public key.
+   *
+   * # Arguments
+   * * `private_key` - The encrypted private key to re-encrypt
+   * * `receiver_public_key` - The receiver's 33-byte public key
+   *
+   * # Returns
+   * Encrypted data for the receiver, or an error string
+   */
+  public async encryptPrivateKeyForReceiver(
+    privateKey: ExternalEncryptedPrivateKey,
+    receiverPublicKey: PublicKeyBytes,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ArrayBuffer> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_private_key_for_receiver(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalEncryptedPrivateKey.lower(privateKey),
+            FfiConverterTypePublicKeyBytes.lower(receiverPublicKey)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterArrayBuffer.lift.bind(
+          FfiConverterArrayBuffer
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Gets the public key from a private key source.
+   *
+   * # Arguments
+   * * `private_key` - The private key source
+   *
+   * # Returns
+   * The corresponding 33-byte public key, or an error string
+   */
+  public async getPublicKeyFromPrivateKeySource(
+    privateKey: ExternalPrivateKeySource,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<PublicKeyBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_get_public_key_from_private_key_source(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalPrivateKeySource.lower(privateKey)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePublicKeyBytes.lift.bind(
+          FfiConverterTypePublicKeyBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Signs using Frost protocol (multi-party signing).
+   *
+   * # Arguments
+   * * `request` - The Frost signing request
+   *
+   * # Returns
+   * A signature share, or an error string
+   */
+  public async signFrost(
+    request: ExternalSignFrostRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ExternalFrostSignatureShare> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_frost(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalSignFrostRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalFrostSignatureShare.lift.bind(
+          FfiConverterTypeExternalFrostSignatureShare
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Aggregates Frost signature shares into a final signature.
+   *
+   * # Arguments
+   * * `request` - The Frost aggregation request
+   *
+   * # Returns
+   * The aggregated Frost signature, or an error string
+   */
+  public async aggregateFrostSignatures(
+    request: ExternalAggregateFrostRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ExternalFrostSignature> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_aggregate_frost_signatures(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalAggregateFrostRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalFrostSignature.lift.bind(
+          FfiConverterTypeExternalFrostSignature
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer = uniffiTypeExternalSignerImplObjectFactory.pointer(this);
+      uniffiTypeExternalSignerImplObjectFactory.freePointer(pointer);
+      uniffiTypeExternalSignerImplObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is ExternalSignerImpl {
+    return uniffiTypeExternalSignerImplObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypeExternalSignerImplObjectFactory: UniffiObjectFactory<ExternalSigner> =
+  {
+    create(pointer: UnsafeMutableRawPointer): ExternalSigner {
+      const instance = Object.create(ExternalSignerImpl.prototype);
+      instance[pointerLiteralSymbol] = pointer;
+      instance[destructorGuardSymbol] = this.bless(pointer);
+      instance[uniffiTypeNameSymbol] = 'ExternalSignerImpl';
+      return instance;
+    },
+
+    bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+      return uniffiCaller.rustCall(
+        /*caller:*/ (status) =>
+          nativeModule().ubrn_uniffi_internal_fn_method_externalsigner_ffi__bless_pointer(
+            p,
+            status
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
+
+    unbless(ptr: UniffiRustArcPtr) {
+      ptr.markDestroyed();
+    },
+
+    pointer(obj: ExternalSigner): UnsafeMutableRawPointer {
+      if ((obj as any)[destructorGuardSymbol] === undefined) {
+        throw new UniffiInternalError.UnexpectedNullPointer();
+      }
+      return (obj as any)[pointerLiteralSymbol];
+    },
+
+    clonePointer(obj: ExternalSigner): UnsafeMutableRawPointer {
+      const pointer = this.pointer(obj);
+      return uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_externalsigner(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
+
+    freePointer(pointer: UnsafeMutableRawPointer): void {
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_externalsigner(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
+
+    isConcreteType(obj: any): obj is ExternalSigner {
+      return (
+        obj[destructorGuardSymbol] &&
+        obj[uniffiTypeNameSymbol] === 'ExternalSignerImpl'
+      );
+    },
+  };
+// FfiConverter for ExternalSigner
+const FfiConverterTypeExternalSigner = new FfiConverterObjectWithCallbacks(
+  uniffiTypeExternalSignerImplObjectFactory
+);
+
+// Add a vtavble for the callbacks that go in ExternalSigner.
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+const uniffiCallbackInterfaceExternalSigner: {
+  vtable: UniffiVTableCallbackInterfaceExternalSigner;
+  register: () => void;
+} = {
+  // Create the VTable using a series of closures.
+  // ts automatically converts these into C callback functions.
+  vtable: {
+    identityPublicKey: (uniffiHandle: bigint) => {
+      const uniffiMakeCall = (): PublicKeyBytes => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return jsCallback.identityPublicKey();
+      };
+      const uniffiResult = UniffiResult.ready<Uint8Array>();
+      const uniffiHandleSuccess = (obj: any) => {
+        UniffiResult.writeSuccess(
+          uniffiResult,
+          FfiConverterTypePublicKeyBytes.lower(obj)
+        );
+      };
+      const uniffiHandleError = (code: number, errBuf: UniffiByteArray) => {
+        UniffiResult.writeError(uniffiResult, code, errBuf);
+      };
+      uniffiTraitInterfaceCallWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiResult;
+    },
+    derivePublicKey: (
+      uniffiHandle: bigint,
+      path: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<PublicKeyBytes> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.derivePublicKey(FfiConverterString.lift(path), {
+          signal,
+        });
+      };
+      const uniffiHandleSuccess = (returnValue: PublicKeyBytes) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypePublicKeyBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    signEcdsa: (
+      uniffiHandle: bigint,
+      message: Uint8Array,
+      path: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<EcdsaSignatureBytes> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.signEcdsa(
+          FfiConverterArrayBuffer.lift(message),
+          FfiConverterString.lift(path),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: EcdsaSignatureBytes) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypeEcdsaSignatureBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    signEcdsaRecoverable: (
+      uniffiHandle: bigint,
+      message: Uint8Array,
+      path: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<RecoverableEcdsaSignatureBytes> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.signEcdsaRecoverable(
+          FfiConverterArrayBuffer.lift(message),
+          FfiConverterString.lift(path),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (
+        returnValue: RecoverableEcdsaSignatureBytes
+      ) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeRecoverableEcdsaSignatureBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    eciesEncrypt: (
+      uniffiHandle: bigint,
+      message: Uint8Array,
+      path: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ArrayBuffer> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.eciesEncrypt(
+          FfiConverterArrayBuffer.lift(message),
+          FfiConverterString.lift(path),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: ArrayBuffer) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterArrayBuffer.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    eciesDecrypt: (
+      uniffiHandle: bigint,
+      message: Uint8Array,
+      path: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ArrayBuffer> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.eciesDecrypt(
+          FfiConverterArrayBuffer.lift(message),
+          FfiConverterString.lift(path),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: ArrayBuffer) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterArrayBuffer.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    signHashSchnorr: (
+      uniffiHandle: bigint,
+      hash: Uint8Array,
+      path: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<SchnorrSignatureBytes> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.signHashSchnorr(
+          FfiConverterArrayBuffer.lift(hash),
+          FfiConverterString.lift(path),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: SchnorrSignatureBytes) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeSchnorrSignatureBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    generateFrostSigningCommitments: (
+      uniffiHandle: bigint,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalFrostCommitments> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.generateFrostSigningCommitments({ signal });
+      };
+      const uniffiHandleSuccess = (returnValue: ExternalFrostCommitments) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalFrostCommitments.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    getPublicKeyForNode: (
+      uniffiHandle: bigint,
+      id: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<PublicKeyBytes> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.getPublicKeyForNode(
+          FfiConverterTypeExternalTreeNodeId.lift(id),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: PublicKeyBytes) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypePublicKeyBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    generateRandomKey: (
+      uniffiHandle: bigint,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalPrivateKeySource> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.generateRandomKey({ signal });
+      };
+      const uniffiHandleSuccess = (returnValue: ExternalPrivateKeySource) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalPrivateKeySource.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    getStaticDepositPrivateKeySource: (
+      uniffiHandle: bigint,
+      index: number,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalPrivateKeySource> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.getStaticDepositPrivateKeySource(
+          FfiConverterUInt32.lift(index),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: ExternalPrivateKeySource) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalPrivateKeySource.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    getStaticDepositPrivateKey: (
+      uniffiHandle: bigint,
+      index: number,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<PrivateKeyBytes> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.getStaticDepositPrivateKey(
+          FfiConverterUInt32.lift(index),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: PrivateKeyBytes) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypePrivateKeyBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    getStaticDepositPublicKey: (
+      uniffiHandle: bigint,
+      index: number,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<PublicKeyBytes> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.getStaticDepositPublicKey(
+          FfiConverterUInt32.lift(index),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: PublicKeyBytes) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypePublicKeyBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    subtractPrivateKeys: (
+      uniffiHandle: bigint,
+      signingKey: Uint8Array,
+      newSigningKey: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalPrivateKeySource> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.subtractPrivateKeys(
+          FfiConverterTypeExternalPrivateKeySource.lift(signingKey),
+          FfiConverterTypeExternalPrivateKeySource.lift(newSigningKey),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: ExternalPrivateKeySource) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalPrivateKeySource.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    splitSecret: (
+      uniffiHandle: bigint,
+      secret: Uint8Array,
+      threshold: number,
+      numShares: number,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<Array<ExternalVerifiableSecretShare>> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.splitSecret(
+          FfiConverterTypeExternalSecretToSplit.lift(secret),
+          FfiConverterUInt32.lift(threshold),
+          FfiConverterUInt32.lift(numShares),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (
+        returnValue: Array<ExternalVerifiableSecretShare>
+      ) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterArrayTypeExternalVerifiableSecretShare.lower(
+                returnValue
+              ),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    encryptPrivateKeyForReceiver: (
+      uniffiHandle: bigint,
+      privateKey: Uint8Array,
+      receiverPublicKey: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ArrayBuffer> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.encryptPrivateKeyForReceiver(
+          FfiConverterTypeExternalEncryptedPrivateKey.lift(privateKey),
+          FfiConverterTypePublicKeyBytes.lift(receiverPublicKey),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: ArrayBuffer) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterArrayBuffer.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    getPublicKeyFromPrivateKeySource: (
+      uniffiHandle: bigint,
+      privateKey: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<PublicKeyBytes> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.getPublicKeyFromPrivateKeySource(
+          FfiConverterTypeExternalPrivateKeySource.lift(privateKey),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: PublicKeyBytes) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypePublicKeyBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    signFrost: (
+      uniffiHandle: bigint,
+      request: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalFrostSignatureShare> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.signFrost(
+          FfiConverterTypeExternalSignFrostRequest.lift(request),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (
+        returnValue: ExternalFrostSignatureShare
+      ) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalFrostSignatureShare.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    aggregateFrostSignatures: (
+      uniffiHandle: bigint,
+      request: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalFrostSignature> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.aggregateFrostSignatures(
+          FfiConverterTypeExternalAggregateFrostRequest.lift(request),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: ExternalFrostSignature) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalFrostSignature.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    uniffiFree: (uniffiHandle: UniffiHandle): void => {
+      // ExternalSigner: this will throw a stale handle error if the handle isn't found.
+      FfiConverterTypeExternalSigner.drop(uniffiHandle);
+    },
+  },
+  register: () => {
+    nativeModule().ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsigner(
+      uniffiCallbackInterfaceExternalSigner.vtable
+    );
+  },
+};
+
+/**
  * Trait covering fiat-related functionality
  */
 export interface FiatService {
@@ -18180,13 +23547,10 @@ export interface SdkBuilderInterface {
   /**
    * Sets the key set type to be used by the SDK.
    * Arguments:
-   * - `key_set_type`: The key set type which determines the derivation path.
-   * - `use_address_index`: Controls the structure of the BIP derivation path.
+   * - `config`: Key set configuration containing the key set type, address index flag, and optional account number.
    */
   withKeySet(
-    keySetType: KeySetType,
-    useAddressIndex: boolean,
-    accountNumber: /*u32*/ number | undefined,
+    config: KeySetConfig,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void>;
   withLnurlClient(
@@ -18430,13 +23794,10 @@ export class SdkBuilder
   /**
    * Sets the key set type to be used by the SDK.
    * Arguments:
-   * - `key_set_type`: The key set type which determines the derivation path.
-   * - `use_address_index`: Controls the structure of the BIP derivation path.
+   * - `config`: Key set configuration containing the key set type, address index flag, and optional account number.
    */
   public async withKeySet(
-    keySetType: KeySetType,
-    useAddressIndex: boolean,
-    accountNumber: /*u32*/ number | undefined,
+    config: KeySetConfig,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void> {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
@@ -18446,9 +23807,7 @@ export class SdkBuilder
         /*rustFutureFunc:*/ () => {
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(
             uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
-            FfiConverterTypeKeySetType.lower(keySetType),
-            FfiConverterBool.lower(useAddressIndex),
-            FfiConverterOptionalUInt32.lower(accountNumber)
+            FfiConverterTypeKeySetConfig.lower(config)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -21774,6 +27133,11 @@ const FfiConverterTypeTokenIssuer = new FfiConverterObject(
 // FfiConverter for boolean | undefined
 const FfiConverterOptionalBool = new FfiConverterOptional(FfiConverterBool);
 
+// FfiConverter for ArrayBuffer | undefined
+const FfiConverterOptionalArrayBuffer = new FfiConverterOptional(
+  FfiConverterArrayBuffer
+);
+
 // FfiConverter for Logger | undefined
 const FfiConverterOptionalTypeLogger = new FfiConverterOptional(
   FfiConverterTypeLogger
@@ -21782,6 +27146,11 @@ const FfiConverterOptionalTypeLogger = new FfiConverterOptional(
 // FfiConverter for Credentials | undefined
 const FfiConverterOptionalTypeCredentials = new FfiConverterOptional(
   FfiConverterTypeCredentials
+);
+
+// FfiConverter for KeySetConfig | undefined
+const FfiConverterOptionalTypeKeySetConfig = new FfiConverterOptional(
+  FfiConverterTypeKeySetConfig
 );
 
 // FfiConverter for LightningAddressInfo | undefined
@@ -21838,6 +27207,16 @@ const FfiConverterOptionalTypeSymbol = new FfiConverterOptional(
   FfiConverterTypeSymbol
 );
 
+// FfiConverter for TokenConversionInfo | undefined
+const FfiConverterOptionalTypeTokenConversionInfo = new FfiConverterOptional(
+  FfiConverterTypeTokenConversionInfo
+);
+
+// FfiConverter for TokenConversionOptions | undefined
+const FfiConverterOptionalTypeTokenConversionOptions = new FfiConverterOptional(
+  FfiConverterTypeTokenConversionOptions
+);
+
 // FfiConverter for string | undefined
 const FfiConverterOptionalString = new FfiConverterOptional(FfiConverterString);
 
@@ -21846,6 +27225,11 @@ const FfiConverterOptionalUInt32 = new FfiConverterOptional(FfiConverterUInt32);
 
 // FfiConverter for /*u64*/bigint | undefined
 const FfiConverterOptionalUInt64 = new FfiConverterOptional(FfiConverterUInt64);
+
+// FfiConverter for Array<ArrayBuffer>
+const FfiConverterArrayArrayBuffer = new FfiConverterArray(
+  FfiConverterArrayBuffer
+);
 
 // FfiConverter for Array<Bip21Extra>
 const FfiConverterArrayTypeBip21Extra = new FfiConverterArray(
@@ -21877,9 +27261,28 @@ const FfiConverterArrayTypeExternalInputParser = new FfiConverterArray(
   FfiConverterTypeExternalInputParser
 );
 
+// FfiConverter for Array<ExternalVerifiableSecretShare>
+const FfiConverterArrayTypeExternalVerifiableSecretShare =
+  new FfiConverterArray(FfiConverterTypeExternalVerifiableSecretShare);
+
 // FfiConverter for Array<FiatCurrency>
 const FfiConverterArrayTypeFiatCurrency = new FfiConverterArray(
   FfiConverterTypeFiatCurrency
+);
+
+// FfiConverter for Array<IdentifierCommitmentPair>
+const FfiConverterArrayTypeIdentifierCommitmentPair = new FfiConverterArray(
+  FfiConverterTypeIdentifierCommitmentPair
+);
+
+// FfiConverter for Array<IdentifierPublicKeyPair>
+const FfiConverterArrayTypeIdentifierPublicKeyPair = new FfiConverterArray(
+  FfiConverterTypeIdentifierPublicKeyPair
+);
+
+// FfiConverter for Array<IdentifierSignaturePair>
+const FfiConverterArrayTypeIdentifierSignaturePair = new FfiConverterArray(
+  FfiConverterTypeIdentifierSignaturePair
 );
 
 // FfiConverter for Array<IncomingChange>
@@ -22000,6 +27403,11 @@ const FfiConverterArrayTypeInputType = new FfiConverterArray(
   FfiConverterTypeInputType
 );
 
+// FfiConverter for Array<PaymentDetailsFilter>
+const FfiConverterArrayTypePaymentDetailsFilter = new FfiConverterArray(
+  FfiConverterTypePaymentDetailsFilter
+);
+
 // FfiConverter for Array<PaymentStatus>
 const FfiConverterArrayTypePaymentStatus = new FfiConverterArray(
   FfiConverterTypePaymentStatus
@@ -22014,6 +27422,10 @@ const FfiConverterArrayTypePaymentType = new FfiConverterArray(
 const FfiConverterArrayTypeSparkHtlcStatus = new FfiConverterArray(
   FfiConverterTypeSparkHtlcStatus
 );
+
+// FfiConverter for Array<PaymentDetailsFilter> | undefined
+const FfiConverterOptionalArrayTypePaymentDetailsFilter =
+  new FfiConverterOptional(FfiConverterArrayTypePaymentDetailsFilter);
 
 // FfiConverter for Array<PaymentStatus> | undefined
 const FfiConverterOptionalArrayTypePaymentStatus = new FfiConverterOptional(
@@ -22060,11 +27472,27 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_connect_with_signer() !==
+    1399
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_connect_with_signer'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_default_config() !==
     62194
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_func_default_config'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_default_external_signer() !==
+    40694
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_default_external_signer'
     );
   }
   if (
@@ -22177,6 +27605,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_token_conversion_limits() !==
+    9413
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_token_conversion_limits'
     );
   }
   if (
@@ -22388,6 +27824,158 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_identity_public_key() !==
+    44711
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_identity_public_key'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_derive_public_key() !==
+    63908
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_derive_public_key'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa() !==
+    52291
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa_recoverable() !==
+    8564
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa_recoverable'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_ecies_encrypt() !==
+    19449
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_ecies_encrypt'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_ecies_decrypt() !==
+    46414
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_ecies_decrypt'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_hash_schnorr() !==
+    57220
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_hash_schnorr'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_frost_signing_commitments() !==
+    24826
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_frost_signing_commitments'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node() !==
+    32818
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_key() !==
+    22789
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_key'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_private_key_source() !==
+    37751
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_private_key_source'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_private_key() !==
+    55375
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_private_key'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_public_key() !==
+    49264
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_public_key'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_private_keys() !==
+    46671
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_private_keys'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret() !==
+    840
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_private_key_for_receiver() !==
+    42476
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_private_key_for_receiver'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_from_private_key_source() !==
+    38684
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_from_private_key_source'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost() !==
+    1497
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost_signatures() !==
+    26523
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost_signatures'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_fiatservice_fetch_fiat_currencies() !==
     19092
   ) {
@@ -22469,7 +28057,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set() !==
-    42926
+    50052
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set'
@@ -22783,6 +28371,7 @@ function uniffiEnsureInitialized() {
   uniffiCallbackInterfaceEventListener.register();
   uniffiCallbackInterfaceLogger.register();
   uniffiCallbackInterfaceBitcoinChainService.register();
+  uniffiCallbackInterfaceExternalSigner.register();
   uniffiCallbackInterfaceFiatService.register();
   uniffiCallbackInterfacePaymentObserver.register();
   uniffiCallbackInterfaceRestClient.register();
@@ -22825,13 +28414,32 @@ export default Object.freeze({
     FfiConverterTypeClaimHtlcPaymentResponse,
     FfiConverterTypeConfig,
     FfiConverterTypeConnectRequest,
+    FfiConverterTypeConnectWithSignerRequest,
     FfiConverterTypeCreateIssuerTokenRequest,
     FfiConverterTypeCredentials,
     FfiConverterTypeCurrencyInfo,
     FfiConverterTypeDepositClaimError,
     FfiConverterTypeDepositInfo,
+    FfiConverterTypeEcdsaSignatureBytes,
+    FfiConverterTypeExternalAggregateFrostRequest,
+    FfiConverterTypeExternalEncryptedPrivateKey,
+    FfiConverterTypeExternalFrostCommitments,
+    FfiConverterTypeExternalFrostSignature,
+    FfiConverterTypeExternalFrostSignatureShare,
+    FfiConverterTypeExternalIdentifier,
     FfiConverterTypeExternalInputParser,
+    FfiConverterTypeExternalPrivateKeySource,
+    FfiConverterTypeExternalScalar,
+    FfiConverterTypeExternalSecretShare,
+    FfiConverterTypeExternalSecretToSplit,
+    FfiConverterTypeExternalSignFrostRequest,
+    FfiConverterTypeExternalSigner,
+    FfiConverterTypeExternalSigningCommitments,
+    FfiConverterTypeExternalTreeNodeId,
+    FfiConverterTypeExternalVerifiableSecretShare,
     FfiConverterTypeFee,
+    FfiConverterTypeFetchTokenConversionLimitsRequest,
+    FfiConverterTypeFetchTokenConversionLimitsResponse,
     FfiConverterTypeFiatCurrency,
     FfiConverterTypeFiatService,
     FfiConverterTypeFreezeIssuerTokenRequest,
@@ -22842,8 +28450,12 @@ export default Object.freeze({
     FfiConverterTypeGetPaymentResponse,
     FfiConverterTypeGetTokensMetadataRequest,
     FfiConverterTypeGetTokensMetadataResponse,
+    FfiConverterTypeIdentifierCommitmentPair,
+    FfiConverterTypeIdentifierPublicKeyPair,
+    FfiConverterTypeIdentifierSignaturePair,
     FfiConverterTypeIncomingChange,
     FfiConverterTypeInputType,
+    FfiConverterTypeKeySetConfig,
     FfiConverterTypeKeySetType,
     FfiConverterTypeLightningAddressDetails,
     FfiConverterTypeLightningAddressInfo,
@@ -22877,6 +28489,7 @@ export default Object.freeze({
     FfiConverterTypeOutgoingChange,
     FfiConverterTypePayment,
     FfiConverterTypePaymentDetails,
+    FfiConverterTypePaymentDetailsFilter,
     FfiConverterTypePaymentMetadata,
     FfiConverterTypePaymentMethod,
     FfiConverterTypePaymentObserver,
@@ -22887,8 +28500,10 @@ export default Object.freeze({
     FfiConverterTypePrepareLnurlPayResponse,
     FfiConverterTypePrepareSendPaymentRequest,
     FfiConverterTypePrepareSendPaymentResponse,
+    FfiConverterTypePrivateKeyBytes,
     FfiConverterTypeProvisionalPayment,
     FfiConverterTypeProvisionalPaymentDetails,
+    FfiConverterTypePublicKeyBytes,
     FfiConverterTypeRate,
     FfiConverterTypeReceivePaymentMethod,
     FfiConverterTypeReceivePaymentRequest,
@@ -22897,11 +28512,13 @@ export default Object.freeze({
     FfiConverterTypeRecord,
     FfiConverterTypeRecordChange,
     FfiConverterTypeRecordId,
+    FfiConverterTypeRecoverableEcdsaSignatureBytes,
     FfiConverterTypeRefundDepositRequest,
     FfiConverterTypeRefundDepositResponse,
     FfiConverterTypeRegisterLightningAddressRequest,
     FfiConverterTypeRestClient,
     FfiConverterTypeRestResponse,
+    FfiConverterTypeSchnorrSignatureBytes,
     FfiConverterTypeSdkBuilder,
     FfiConverterTypeSdkEvent,
     FfiConverterTypeSeed,
@@ -22929,6 +28546,9 @@ export default Object.freeze({
     FfiConverterTypeSyncWalletRequest,
     FfiConverterTypeSyncWalletResponse,
     FfiConverterTypeTokenBalance,
+    FfiConverterTypeTokenConversionInfo,
+    FfiConverterTypeTokenConversionOptions,
+    FfiConverterTypeTokenConversionType,
     FfiConverterTypeTokenIssuer,
     FfiConverterTypeTokenMetadata,
     FfiConverterTypeTxStatus,

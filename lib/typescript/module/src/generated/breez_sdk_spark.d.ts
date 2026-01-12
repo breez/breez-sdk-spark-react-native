@@ -13,7 +13,42 @@ import { type UniffiByteArray, type UniffiRustArcPtr, type UnsafeMutableRawPoint
 export declare function connect(request: ConnectRequest, asyncOpts_?: {
     signal: AbortSignal;
 }): Promise<BreezSdkInterface>;
+/**
+ * Connects to the Spark network using an external signer.
+ *
+ * This method allows using a custom signer implementation instead of providing
+ * a seed directly.
+ *
+ * # Arguments
+ *
+ * * `request` - The connection request object with external signer
+ *
+ * # Returns
+ *
+ * Result containing either the initialized `BreezSdk` or an `SdkError`
+ */
+export declare function connectWithSigner(request: ConnectWithSignerRequest, asyncOpts_?: {
+    signal: AbortSignal;
+}): Promise<BreezSdkInterface>;
 export declare function defaultConfig(network: Network): Config;
+/**
+ * Creates a default external signer from a mnemonic.
+ *
+ * This is a convenience factory method for creating a signer that can be used
+ * with `connect_with_signer` or `SdkBuilder::new_with_signer`.
+ *
+ * # Arguments
+ *
+ * * `mnemonic` - BIP39 mnemonic phrase (12 or 24 words)
+ * * `passphrase` - Optional passphrase for the mnemonic
+ * * `network` - Network to use (Mainnet or Regtest)
+ * * `key_set_config` - Optional key set configuration. If None, uses default configuration.
+ *
+ * # Returns
+ *
+ * Result containing the signer as `Arc<dyn ExternalSigner>`
+ */
+export declare function defaultExternalSigner(mnemonic: string, passphrase: string | undefined, network: Network, keySetConfig: KeySetConfig | undefined): ExternalSigner;
 export declare function initLogging(logDir: string | undefined, appLogger: Logger | undefined, logFilter: string | undefined): void;
 /**
  * Trait for event listeners
@@ -717,6 +752,35 @@ export declare const ConnectRequest: Readonly<{
      */
     defaults: () => Partial<ConnectRequest>;
 }>;
+/**
+ * Request object for connecting to the Spark network using an external signer.
+ *
+ * This allows using a custom signer implementation instead of providing a seed directly.
+ */
+export type ConnectWithSignerRequest = {
+    config: Config;
+    signer: ExternalSigner;
+    storageDir: string;
+};
+/**
+ * Generated factory for {@link ConnectWithSignerRequest} record objects.
+ */
+export declare const ConnectWithSignerRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ConnectWithSignerRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ConnectWithSignerRequest> & Required<Omit<ConnectWithSignerRequest, never>>) => ConnectWithSignerRequest;
+    /**
+     * Create a frozen instance of {@link ConnectWithSignerRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ConnectWithSignerRequest> & Required<Omit<ConnectWithSignerRequest, never>>) => ConnectWithSignerRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ConnectWithSignerRequest>;
+}>;
 export type CreateIssuerTokenRequest = {
     name: string;
     ticker: string;
@@ -825,6 +889,239 @@ export declare const DepositInfo: Readonly<{
     defaults: () => Partial<DepositInfo>;
 }>;
 /**
+ * FFI-safe representation of an ECDSA signature (64 bytes)
+ */
+export type EcdsaSignatureBytes = {
+    bytes: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link EcdsaSignatureBytes} record objects.
+ */
+export declare const EcdsaSignatureBytes: Readonly<{
+    /**
+     * Create a frozen instance of {@link EcdsaSignatureBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<EcdsaSignatureBytes> & Required<Omit<EcdsaSignatureBytes, never>>) => EcdsaSignatureBytes;
+    /**
+     * Create a frozen instance of {@link EcdsaSignatureBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<EcdsaSignatureBytes> & Required<Omit<EcdsaSignatureBytes, never>>) => EcdsaSignatureBytes;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<EcdsaSignatureBytes>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::AggregateFrostRequest`
+ */
+export type ExternalAggregateFrostRequest = {
+    /**
+     * The message that was signed
+     */
+    message: ArrayBuffer;
+    /**
+     * Statechain signatures as a list of identifier-signature pairs
+     */
+    statechainSignatures: Array<IdentifierSignaturePair>;
+    /**
+     * Statechain public keys as a list of identifier-publickey pairs
+     */
+    statechainPublicKeys: Array<IdentifierPublicKeyPair>;
+    /**
+     * The verifying key (33 bytes compressed)
+     */
+    verifyingKey: ArrayBuffer;
+    /**
+     * Statechain commitments as a list of identifier-commitment pairs
+     */
+    statechainCommitments: Array<IdentifierCommitmentPair>;
+    /**
+     * The self commitment
+     */
+    selfCommitment: ExternalSigningCommitments;
+    /**
+     * The public key (33 bytes compressed)
+     */
+    publicKey: ArrayBuffer;
+    /**
+     * The self signature share
+     */
+    selfSignature: ExternalFrostSignatureShare;
+    /**
+     * Optional adaptor public key (33 bytes compressed)
+     */
+    adaptorPublicKey: ArrayBuffer | undefined;
+};
+/**
+ * Generated factory for {@link ExternalAggregateFrostRequest} record objects.
+ */
+export declare const ExternalAggregateFrostRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalAggregateFrostRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalAggregateFrostRequest> & Required<Omit<ExternalAggregateFrostRequest, never>>) => ExternalAggregateFrostRequest;
+    /**
+     * Create a frozen instance of {@link ExternalAggregateFrostRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalAggregateFrostRequest> & Required<Omit<ExternalAggregateFrostRequest, never>>) => ExternalAggregateFrostRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalAggregateFrostRequest>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::EncryptedPrivateKey`
+ */
+export type ExternalEncryptedPrivateKey = {
+    /**
+     * The encrypted ciphertext
+     */
+    ciphertext: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link ExternalEncryptedPrivateKey} record objects.
+ */
+export declare const ExternalEncryptedPrivateKey: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalEncryptedPrivateKey}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalEncryptedPrivateKey> & Required<Omit<ExternalEncryptedPrivateKey, never>>) => ExternalEncryptedPrivateKey;
+    /**
+     * Create a frozen instance of {@link ExternalEncryptedPrivateKey}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalEncryptedPrivateKey> & Required<Omit<ExternalEncryptedPrivateKey, never>>) => ExternalEncryptedPrivateKey;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalEncryptedPrivateKey>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::FrostSigningCommitmentsWithNonces`
+ */
+export type ExternalFrostCommitments = {
+    /**
+     * Serialized hiding nonce commitment (variable length, typically 33 bytes compressed point)
+     */
+    hidingCommitment: ArrayBuffer;
+    /**
+     * Serialized binding nonce commitment (variable length, typically 33 bytes compressed point)
+     */
+    bindingCommitment: ArrayBuffer;
+    /**
+     * Encrypted nonces ciphertext
+     */
+    noncesCiphertext: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link ExternalFrostCommitments} record objects.
+ */
+export declare const ExternalFrostCommitments: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalFrostCommitments}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalFrostCommitments> & Required<Omit<ExternalFrostCommitments, never>>) => ExternalFrostCommitments;
+    /**
+     * Create a frozen instance of {@link ExternalFrostCommitments}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalFrostCommitments> & Required<Omit<ExternalFrostCommitments, never>>) => ExternalFrostCommitments;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalFrostCommitments>;
+}>;
+/**
+ * FFI-safe representation of `frost_secp256k1_tr::Signature`
+ */
+export type ExternalFrostSignature = {
+    /**
+     * Serialized Frost signature bytes (64 bytes)
+     */
+    bytes: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link ExternalFrostSignature} record objects.
+ */
+export declare const ExternalFrostSignature: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalFrostSignature}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalFrostSignature> & Required<Omit<ExternalFrostSignature, never>>) => ExternalFrostSignature;
+    /**
+     * Create a frozen instance of {@link ExternalFrostSignature}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalFrostSignature> & Required<Omit<ExternalFrostSignature, never>>) => ExternalFrostSignature;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalFrostSignature>;
+}>;
+/**
+ * FFI-safe representation of `frost_secp256k1_tr::round2::SignatureShare`
+ */
+export type ExternalFrostSignatureShare = {
+    /**
+     * Serialized signature share bytes (variable length, typically 32 bytes)
+     */
+    bytes: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link ExternalFrostSignatureShare} record objects.
+ */
+export declare const ExternalFrostSignatureShare: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalFrostSignatureShare}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalFrostSignatureShare> & Required<Omit<ExternalFrostSignatureShare, never>>) => ExternalFrostSignatureShare;
+    /**
+     * Create a frozen instance of {@link ExternalFrostSignatureShare}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalFrostSignatureShare> & Required<Omit<ExternalFrostSignatureShare, never>>) => ExternalFrostSignatureShare;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalFrostSignatureShare>;
+}>;
+/**
+ * FFI-safe representation of `frost_secp256k1_tr::Identifier`
+ */
+export type ExternalIdentifier = {
+    /**
+     * Serialized identifier bytes
+     */
+    bytes: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link ExternalIdentifier} record objects.
+ */
+export declare const ExternalIdentifier: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalIdentifier}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalIdentifier> & Required<Omit<ExternalIdentifier, never>>) => ExternalIdentifier;
+    /**
+     * Create a frozen instance of {@link ExternalIdentifier}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalIdentifier> & Required<Omit<ExternalIdentifier, never>>) => ExternalIdentifier;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalIdentifier>;
+}>;
+/**
  * Configuration for an external input parser
  */
 export type ExternalInputParser = {
@@ -860,6 +1157,274 @@ export declare const ExternalInputParser: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<ExternalInputParser>;
+}>;
+/**
+ * FFI-safe representation of `k256::Scalar` (32 bytes)
+ */
+export type ExternalScalar = {
+    /**
+     * The 32-byte scalar value
+     */
+    bytes: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link ExternalScalar} record objects.
+ */
+export declare const ExternalScalar: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalScalar}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalScalar> & Required<Omit<ExternalScalar, never>>) => ExternalScalar;
+    /**
+     * Create a frozen instance of {@link ExternalScalar}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalScalar> & Required<Omit<ExternalScalar, never>>) => ExternalScalar;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalScalar>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::SecretShare`
+ */
+export type ExternalSecretShare = {
+    /**
+     * Number of shares required to recover the secret
+     */
+    threshold: number;
+    /**
+     * Index (x-coordinate) of the share as 32 bytes
+     */
+    index: ExternalScalar;
+    /**
+     * Share value (y-coordinate) as 32 bytes
+     */
+    share: ExternalScalar;
+};
+/**
+ * Generated factory for {@link ExternalSecretShare} record objects.
+ */
+export declare const ExternalSecretShare: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalSecretShare}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalSecretShare> & Required<Omit<ExternalSecretShare, never>>) => ExternalSecretShare;
+    /**
+     * Create a frozen instance of {@link ExternalSecretShare}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalSecretShare> & Required<Omit<ExternalSecretShare, never>>) => ExternalSecretShare;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalSecretShare>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::SignFrostRequest`
+ */
+export type ExternalSignFrostRequest = {
+    /**
+     * The message to sign
+     */
+    message: ArrayBuffer;
+    /**
+     * The public key (33 bytes compressed)
+     */
+    publicKey: ArrayBuffer;
+    /**
+     * The private key source
+     */
+    privateKey: ExternalPrivateKeySource;
+    /**
+     * The verifying key (33 bytes compressed)
+     */
+    verifyingKey: ArrayBuffer;
+    /**
+     * The self nonce commitment
+     */
+    selfNonceCommitment: ExternalFrostCommitments;
+    /**
+     * Statechain commitments as a list of identifier-commitment pairs
+     */
+    statechainCommitments: Array<IdentifierCommitmentPair>;
+    /**
+     * Optional adaptor public key (33 bytes compressed)
+     */
+    adaptorPublicKey: ArrayBuffer | undefined;
+};
+/**
+ * Generated factory for {@link ExternalSignFrostRequest} record objects.
+ */
+export declare const ExternalSignFrostRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalSignFrostRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalSignFrostRequest> & Required<Omit<ExternalSignFrostRequest, never>>) => ExternalSignFrostRequest;
+    /**
+     * Create a frozen instance of {@link ExternalSignFrostRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalSignFrostRequest> & Required<Omit<ExternalSignFrostRequest, never>>) => ExternalSignFrostRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalSignFrostRequest>;
+}>;
+/**
+ * FFI-safe representation of `frost_secp256k1_tr::round1::SigningCommitments`
+ */
+export type ExternalSigningCommitments = {
+    /**
+     * Serialized hiding nonce commitment
+     */
+    hiding: ArrayBuffer;
+    /**
+     * Serialized binding nonce commitment
+     */
+    binding: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link ExternalSigningCommitments} record objects.
+ */
+export declare const ExternalSigningCommitments: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalSigningCommitments}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalSigningCommitments> & Required<Omit<ExternalSigningCommitments, never>>) => ExternalSigningCommitments;
+    /**
+     * Create a frozen instance of {@link ExternalSigningCommitments}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalSigningCommitments> & Required<Omit<ExternalSigningCommitments, never>>) => ExternalSigningCommitments;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalSigningCommitments>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::TreeNodeId`
+ */
+export type ExternalTreeNodeId = {
+    /**
+     * The tree node identifier as a string
+     */
+    id: string;
+};
+/**
+ * Generated factory for {@link ExternalTreeNodeId} record objects.
+ */
+export declare const ExternalTreeNodeId: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalTreeNodeId}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalTreeNodeId> & Required<Omit<ExternalTreeNodeId, never>>) => ExternalTreeNodeId;
+    /**
+     * Create a frozen instance of {@link ExternalTreeNodeId}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalTreeNodeId> & Required<Omit<ExternalTreeNodeId, never>>) => ExternalTreeNodeId;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalTreeNodeId>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::VerifiableSecretShare`
+ */
+export type ExternalVerifiableSecretShare = {
+    /**
+     * Base secret share containing threshold, index, and share value
+     */
+    secretShare: ExternalSecretShare;
+    /**
+     * Cryptographic proofs for share verification (each proof is 33 bytes compressed public key)
+     */
+    proofs: Array<ArrayBuffer>;
+};
+/**
+ * Generated factory for {@link ExternalVerifiableSecretShare} record objects.
+ */
+export declare const ExternalVerifiableSecretShare: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalVerifiableSecretShare}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalVerifiableSecretShare> & Required<Omit<ExternalVerifiableSecretShare, never>>) => ExternalVerifiableSecretShare;
+    /**
+     * Create a frozen instance of {@link ExternalVerifiableSecretShare}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalVerifiableSecretShare> & Required<Omit<ExternalVerifiableSecretShare, never>>) => ExternalVerifiableSecretShare;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalVerifiableSecretShare>;
+}>;
+export type FetchTokenConversionLimitsRequest = {
+    /**
+     * The type of conversion, either from or to Bitcoin.
+     */
+    conversionType: TokenConversionType;
+    /**
+     * The token identifier when converting to a token.
+     */
+    tokenIdentifier: string | undefined;
+};
+/**
+ * Generated factory for {@link FetchTokenConversionLimitsRequest} record objects.
+ */
+export declare const FetchTokenConversionLimitsRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link FetchTokenConversionLimitsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<FetchTokenConversionLimitsRequest> & Required<Omit<FetchTokenConversionLimitsRequest, "tokenIdentifier">>) => FetchTokenConversionLimitsRequest;
+    /**
+     * Create a frozen instance of {@link FetchTokenConversionLimitsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<FetchTokenConversionLimitsRequest> & Required<Omit<FetchTokenConversionLimitsRequest, "tokenIdentifier">>) => FetchTokenConversionLimitsRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<FetchTokenConversionLimitsRequest>;
+}>;
+export type FetchTokenConversionLimitsResponse = {
+    /**
+     * The minimum amount to be converted.
+     * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+     */
+    minFromAmount: U128 | undefined;
+    /**
+     * The minimum amount to be received from the conversion.
+     * Denominated in satoshis if converting to Bitcoin, otherwise in the token base units.
+     */
+    minToAmount: U128 | undefined;
+};
+/**
+ * Generated factory for {@link FetchTokenConversionLimitsResponse} record objects.
+ */
+export declare const FetchTokenConversionLimitsResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link FetchTokenConversionLimitsResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<FetchTokenConversionLimitsResponse> & Required<Omit<FetchTokenConversionLimitsResponse, never>>) => FetchTokenConversionLimitsResponse;
+    /**
+     * Create a frozen instance of {@link FetchTokenConversionLimitsResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<FetchTokenConversionLimitsResponse> & Required<Omit<FetchTokenConversionLimitsResponse, never>>) => FetchTokenConversionLimitsResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<FetchTokenConversionLimitsResponse>;
 }>;
 /**
  * Wrapper around the [`CurrencyInfo`] of a fiat currency
@@ -1077,6 +1642,84 @@ export declare const GetTokensMetadataResponse: Readonly<{
      */
     defaults: () => Partial<GetTokensMetadataResponse>;
 }>;
+/**
+ * FFI-safe wrapper for (Identifier, `SigningCommitments`) pair
+ */
+export type IdentifierCommitmentPair = {
+    identifier: ExternalIdentifier;
+    commitment: ExternalSigningCommitments;
+};
+/**
+ * Generated factory for {@link IdentifierCommitmentPair} record objects.
+ */
+export declare const IdentifierCommitmentPair: Readonly<{
+    /**
+     * Create a frozen instance of {@link IdentifierCommitmentPair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<IdentifierCommitmentPair> & Required<Omit<IdentifierCommitmentPair, never>>) => IdentifierCommitmentPair;
+    /**
+     * Create a frozen instance of {@link IdentifierCommitmentPair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<IdentifierCommitmentPair> & Required<Omit<IdentifierCommitmentPair, never>>) => IdentifierCommitmentPair;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<IdentifierCommitmentPair>;
+}>;
+/**
+ * FFI-safe wrapper for (Identifier, `PublicKey`) pair
+ */
+export type IdentifierPublicKeyPair = {
+    identifier: ExternalIdentifier;
+    publicKey: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link IdentifierPublicKeyPair} record objects.
+ */
+export declare const IdentifierPublicKeyPair: Readonly<{
+    /**
+     * Create a frozen instance of {@link IdentifierPublicKeyPair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<IdentifierPublicKeyPair> & Required<Omit<IdentifierPublicKeyPair, never>>) => IdentifierPublicKeyPair;
+    /**
+     * Create a frozen instance of {@link IdentifierPublicKeyPair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<IdentifierPublicKeyPair> & Required<Omit<IdentifierPublicKeyPair, never>>) => IdentifierPublicKeyPair;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<IdentifierPublicKeyPair>;
+}>;
+/**
+ * FFI-safe wrapper for (Identifier, `SignatureShare`) pair
+ */
+export type IdentifierSignaturePair = {
+    identifier: ExternalIdentifier;
+    signature: ExternalFrostSignatureShare;
+};
+/**
+ * Generated factory for {@link IdentifierSignaturePair} record objects.
+ */
+export declare const IdentifierSignaturePair: Readonly<{
+    /**
+     * Create a frozen instance of {@link IdentifierSignaturePair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<IdentifierSignaturePair> & Required<Omit<IdentifierSignaturePair, never>>) => IdentifierSignaturePair;
+    /**
+     * Create a frozen instance of {@link IdentifierSignaturePair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<IdentifierSignaturePair> & Required<Omit<IdentifierSignaturePair, never>>) => IdentifierSignaturePair;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<IdentifierSignaturePair>;
+}>;
 export type IncomingChange = {
     newState: Record;
     oldState: Record | undefined;
@@ -1099,6 +1742,44 @@ export declare const IncomingChange: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<IncomingChange>;
+}>;
+/**
+ * Configuration for key set derivation.
+ *
+ * This struct encapsulates the parameters needed for BIP32 key derivation.
+ */
+export type KeySetConfig = {
+    /**
+     * The key set type which determines the derivation path
+     */
+    keySetType: KeySetType;
+    /**
+     * Controls the structure of the BIP derivation path
+     */
+    useAddressIndex: boolean;
+    /**
+     * Optional account number for key derivation
+     */
+    accountNumber: /*u32*/ number | undefined;
+};
+/**
+ * Generated factory for {@link KeySetConfig} record objects.
+ */
+export declare const KeySetConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link KeySetConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<KeySetConfig> & Required<Omit<KeySetConfig, never>>) => KeySetConfig;
+    /**
+     * Create a frozen instance of {@link KeySetConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<KeySetConfig> & Required<Omit<KeySetConfig, never>>) => KeySetConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<KeySetConfig>;
 }>;
 export type LightningAddressDetails = {
     address: string;
@@ -1212,9 +1893,9 @@ export type ListPaymentsRequest = {
     statusFilter: Array<PaymentStatus> | undefined;
     assetFilter: AssetFilter | undefined;
     /**
-     * Only include payments with specific Spark HTLC statuses
+     * Only include payments matching at least one of these payment details filters
      */
-    sparkHtlcStatusFilter: Array<SparkHtlcStatus> | undefined;
+    paymentDetailsFilter: Array<PaymentDetailsFilter> | undefined;
     /**
      * Only include payments created after this timestamp (inclusive)
      */
@@ -1241,12 +1922,12 @@ export declare const ListPaymentsRequest: Readonly<{
      * Create a frozen instance of {@link ListPaymentsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "sparkHtlcStatusFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => ListPaymentsRequest;
+    create: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "paymentDetailsFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => ListPaymentsRequest;
     /**
      * Create a frozen instance of {@link ListPaymentsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "sparkHtlcStatusFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => ListPaymentsRequest;
+    new: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "paymentDetailsFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => ListPaymentsRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -1924,9 +2605,11 @@ export declare const Payment: Readonly<{
  * Metadata associated with a payment that cannot be extracted from the Spark operator.
  */
 export type PaymentMetadata = {
+    parentPaymentId: string | undefined;
     lnurlPayInfo: LnurlPayInfo | undefined;
     lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
     lnurlDescription: string | undefined;
+    tokenConversionInfo: TokenConversionInfo | undefined;
 };
 /**
  * Generated factory for {@link PaymentMetadata} record objects.
@@ -2030,10 +2713,14 @@ export type PrepareSendPaymentRequest = {
      */
     amount: U128 | undefined;
     /**
-     * If provided, the payment will be for a token
-     * May only be provided if the payment request is a spark address
+     * If provided, the payment will be for a token.
+     * May only be provided if the payment request is a spark address.
      */
     tokenIdentifier: string | undefined;
+    /**
+     * If provided, the payment will include a token conversion step before sending the payment
+     */
+    tokenConversionOptions: TokenConversionOptions | undefined;
 };
 /**
  * Generated factory for {@link PrepareSendPaymentRequest} record objects.
@@ -2043,12 +2730,12 @@ export declare const PrepareSendPaymentRequest: Readonly<{
      * Create a frozen instance of {@link PrepareSendPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier">>) => PrepareSendPaymentRequest;
+    create: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier" | "tokenConversionOptions">>) => PrepareSendPaymentRequest;
     /**
      * Create a frozen instance of {@link PrepareSendPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier">>) => PrepareSendPaymentRequest;
+    new: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier" | "tokenConversionOptions">>) => PrepareSendPaymentRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -2062,10 +2749,18 @@ export type PrepareSendPaymentResponse = {
      */
     amount: U128;
     /**
-     * The presence of this field indicates that the payment is for a token
-     * If empty, it is a Bitcoin payment
+     * The presence of this field indicates that the payment is for a token.
+     * If empty, it is a Bitcoin payment.
      */
     tokenIdentifier: string | undefined;
+    /**
+     * When set, the payment will include a token conversion step before sending the payment
+     */
+    tokenConversionOptions: TokenConversionOptions | undefined;
+    /**
+     * The estimated token conversion fee if the payment involves a token conversion
+     */
+    tokenConversionFee: U128 | undefined;
 };
 /**
  * Generated factory for {@link PrepareSendPaymentResponse} record objects.
@@ -2085,6 +2780,31 @@ export declare const PrepareSendPaymentResponse: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<PrepareSendPaymentResponse>;
+}>;
+/**
+ * FFI-safe representation of a private key (32 bytes)
+ */
+export type PrivateKeyBytes = {
+    bytes: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link PrivateKeyBytes} record objects.
+ */
+export declare const PrivateKeyBytes: Readonly<{
+    /**
+     * Create a frozen instance of {@link PrivateKeyBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PrivateKeyBytes> & Required<Omit<PrivateKeyBytes, never>>) => PrivateKeyBytes;
+    /**
+     * Create a frozen instance of {@link PrivateKeyBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PrivateKeyBytes> & Required<Omit<PrivateKeyBytes, never>>) => PrivateKeyBytes;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PrivateKeyBytes>;
 }>;
 export type ProvisionalPayment = {
     /**
@@ -2118,6 +2838,31 @@ export declare const ProvisionalPayment: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<ProvisionalPayment>;
+}>;
+/**
+ * FFI-safe representation of a secp256k1 public key (33 bytes compressed)
+ */
+export type PublicKeyBytes = {
+    bytes: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link PublicKeyBytes} record objects.
+ */
+export declare const PublicKeyBytes: Readonly<{
+    /**
+     * Create a frozen instance of {@link PublicKeyBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PublicKeyBytes> & Required<Omit<PublicKeyBytes, never>>) => PublicKeyBytes;
+    /**
+     * Create a frozen instance of {@link PublicKeyBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PublicKeyBytes> & Required<Omit<PublicKeyBytes, never>>) => PublicKeyBytes;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PublicKeyBytes>;
 }>;
 /**
  * Denominator in an exchange rate
@@ -2293,6 +3038,31 @@ export declare const RecordId: Readonly<{
      */
     defaults: () => Partial<RecordId>;
 }>;
+/**
+ * FFI-safe representation of a recoverable ECDSA signature (65 bytes: 1 recovery byte + 64 signature bytes)
+ */
+export type RecoverableEcdsaSignatureBytes = {
+    bytes: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link RecoverableEcdsaSignatureBytes} record objects.
+ */
+export declare const RecoverableEcdsaSignatureBytes: Readonly<{
+    /**
+     * Create a frozen instance of {@link RecoverableEcdsaSignatureBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<RecoverableEcdsaSignatureBytes> & Required<Omit<RecoverableEcdsaSignatureBytes, never>>) => RecoverableEcdsaSignatureBytes;
+    /**
+     * Create a frozen instance of {@link RecoverableEcdsaSignatureBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<RecoverableEcdsaSignatureBytes> & Required<Omit<RecoverableEcdsaSignatureBytes, never>>) => RecoverableEcdsaSignatureBytes;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<RecoverableEcdsaSignatureBytes>;
+}>;
 export type RefundDepositRequest = {
     txid: string;
     vout: number;
@@ -2386,6 +3156,31 @@ export declare const RestResponse: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<RestResponse>;
+}>;
+/**
+ * FFI-safe representation of a Schnorr signature (64 bytes)
+ */
+export type SchnorrSignatureBytes = {
+    bytes: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link SchnorrSignatureBytes} record objects.
+ */
+export declare const SchnorrSignatureBytes: Readonly<{
+    /**
+     * Create a frozen instance of {@link SchnorrSignatureBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SchnorrSignatureBytes> & Required<Omit<SchnorrSignatureBytes, never>>) => SchnorrSignatureBytes;
+    /**
+     * Create a frozen instance of {@link SchnorrSignatureBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SchnorrSignatureBytes> & Required<Omit<SchnorrSignatureBytes, never>>) => SchnorrSignatureBytes;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SchnorrSignatureBytes>;
 }>;
 export type SendOnchainFeeQuote = {
     id: string;
@@ -2862,6 +3657,88 @@ export declare const TokenBalance: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<TokenBalance>;
+}>;
+export type TokenConversionInfo = {
+    /**
+     * The pool id associated with the conversion
+     */
+    poolId: string;
+    /**
+     * The receiving payment id associated with the conversion
+     */
+    paymentId: string | undefined;
+    /**
+     * The fee paid for the conversion
+     * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+     */
+    fee: U128 | undefined;
+    /**
+     * The refund payment id if a refund payment was made
+     */
+    refundIdentifier: string | undefined;
+};
+/**
+ * Generated factory for {@link TokenConversionInfo} record objects.
+ */
+export declare const TokenConversionInfo: Readonly<{
+    /**
+     * Create a frozen instance of {@link TokenConversionInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<TokenConversionInfo> & Required<Omit<TokenConversionInfo, never>>) => TokenConversionInfo;
+    /**
+     * Create a frozen instance of {@link TokenConversionInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<TokenConversionInfo> & Required<Omit<TokenConversionInfo, never>>) => TokenConversionInfo;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<TokenConversionInfo>;
+}>;
+/**
+ * Options for token conversion when fulfilling a payment. When set, the SDK will
+ * perform a token conversion before fulfilling the payment. If not set, the payment
+ * will only be fulfilled if the wallet has sufficient balance of the required asset.
+ */
+export type TokenConversionOptions = {
+    /**
+     * The type of token conversion to perform when fulfilling the payment
+     */
+    conversionType: TokenConversionType;
+    /**
+     * The optional maximum slippage in basis points (1/100 of a percent) allowed when
+     * a token conversion is needed to fulfill the payment. Defaults to 50 bps (0.5%) if not set.
+     * The token conversion will fail if the actual amount received is less than
+     * `estimated_amount * (1 - max_slippage_bps / 10_000)`.
+     */
+    maxSlippageBps: /*u32*/ number | undefined;
+    /**
+     * The optional timeout in seconds to wait for the token conversion to complete
+     * when fulfilling the payment. This timeout only concerns waiting for the received
+     * payment of the token conversion. If the timeout is reached before the conversion
+     * is complete, the payment will fail. Defaults to 30 seconds if not set.
+     */
+    completionTimeoutSecs: /*u32*/ number | undefined;
+};
+/**
+ * Generated factory for {@link TokenConversionOptions} record objects.
+ */
+export declare const TokenConversionOptions: Readonly<{
+    /**
+     * Create a frozen instance of {@link TokenConversionOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<TokenConversionOptions> & Required<Omit<TokenConversionOptions, "completionTimeoutSecs" | "maxSlippageBps">>) => TokenConversionOptions;
+    /**
+     * Create a frozen instance of {@link TokenConversionOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<TokenConversionOptions> & Required<Omit<TokenConversionOptions, "completionTimeoutSecs" | "maxSlippageBps">>) => TokenConversionOptions;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<TokenConversionOptions>;
 }>;
 export type TokenMetadata = {
     identifier: string;
@@ -3760,6 +4637,190 @@ export declare const DepositClaimError: Readonly<{
     };
 }>;
 export type DepositClaimError = InstanceType<(typeof DepositClaimError)[keyof Omit<typeof DepositClaimError, 'instanceOf'>]>;
+export declare enum ExternalPrivateKeySource_Tags {
+    Derived = "Derived",
+    Encrypted = "Encrypted"
+}
+/**
+ * FFI-safe representation of `spark_wallet::PrivateKeySource`
+ */
+export declare const ExternalPrivateKeySource: Readonly<{
+    instanceOf: (obj: any) => obj is ExternalPrivateKeySource;
+    Derived: {
+        new (inner: {
+            nodeId: ExternalTreeNodeId;
+        }): {
+            readonly tag: ExternalPrivateKeySource_Tags.Derived;
+            readonly inner: Readonly<{
+                nodeId: ExternalTreeNodeId;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalPrivateKeySource";
+        };
+        "new"(inner: {
+            nodeId: ExternalTreeNodeId;
+        }): {
+            readonly tag: ExternalPrivateKeySource_Tags.Derived;
+            readonly inner: Readonly<{
+                nodeId: ExternalTreeNodeId;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalPrivateKeySource";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExternalPrivateKeySource_Tags.Derived;
+            readonly inner: Readonly<{
+                nodeId: ExternalTreeNodeId;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalPrivateKeySource";
+        };
+    };
+    Encrypted: {
+        new (inner: {
+            key: ExternalEncryptedPrivateKey;
+        }): {
+            readonly tag: ExternalPrivateKeySource_Tags.Encrypted;
+            readonly inner: Readonly<{
+                key: ExternalEncryptedPrivateKey;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalPrivateKeySource";
+        };
+        "new"(inner: {
+            key: ExternalEncryptedPrivateKey;
+        }): {
+            readonly tag: ExternalPrivateKeySource_Tags.Encrypted;
+            readonly inner: Readonly<{
+                key: ExternalEncryptedPrivateKey;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalPrivateKeySource";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExternalPrivateKeySource_Tags.Encrypted;
+            readonly inner: Readonly<{
+                key: ExternalEncryptedPrivateKey;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalPrivateKeySource";
+        };
+    };
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::PrivateKeySource`
+ */
+export type ExternalPrivateKeySource = InstanceType<(typeof ExternalPrivateKeySource)[keyof Omit<typeof ExternalPrivateKeySource, 'instanceOf'>]>;
+export declare enum ExternalSecretToSplit_Tags {
+    PrivateKey = "PrivateKey",
+    Preimage = "Preimage"
+}
+/**
+ * FFI-safe representation of `spark_wallet::SecretToSplit`
+ */
+export declare const ExternalSecretToSplit: Readonly<{
+    instanceOf: (obj: any) => obj is ExternalSecretToSplit;
+    PrivateKey: {
+        new (inner: {
+            source: ExternalPrivateKeySource;
+        }): {
+            readonly tag: ExternalSecretToSplit_Tags.PrivateKey;
+            readonly inner: Readonly<{
+                source: ExternalPrivateKeySource;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
+        };
+        "new"(inner: {
+            source: ExternalPrivateKeySource;
+        }): {
+            readonly tag: ExternalSecretToSplit_Tags.PrivateKey;
+            readonly inner: Readonly<{
+                source: ExternalPrivateKeySource;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExternalSecretToSplit_Tags.PrivateKey;
+            readonly inner: Readonly<{
+                source: ExternalPrivateKeySource;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
+        };
+    };
+    Preimage: {
+        new (inner: {
+            data: ArrayBuffer;
+        }): {
+            readonly tag: ExternalSecretToSplit_Tags.Preimage;
+            readonly inner: Readonly<{
+                data: ArrayBuffer;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
+        };
+        "new"(inner: {
+            data: ArrayBuffer;
+        }): {
+            readonly tag: ExternalSecretToSplit_Tags.Preimage;
+            readonly inner: Readonly<{
+                data: ArrayBuffer;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExternalSecretToSplit_Tags.Preimage;
+            readonly inner: Readonly<{
+                data: ArrayBuffer;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
+        };
+    };
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::SecretToSplit`
+ */
+export type ExternalSecretToSplit = InstanceType<(typeof ExternalSecretToSplit)[keyof Omit<typeof ExternalSecretToSplit, 'instanceOf'>]>;
 export declare enum Fee_Tags {
     Fixed = "Fixed",
     Rate = "Rate"
@@ -4643,11 +5704,15 @@ export declare const PaymentDetails: Readonly<{
             /**
              * The HTLC transfer details if the payment fulfilled an HTLC transfer
              */ htlcDetails: SparkHtlcDetails | undefined;
+            /**
+             * The information for a token conversion
+             */ tokenConversionInfo: TokenConversionInfo | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Spark;
             readonly inner: Readonly<{
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
                 htlcDetails: SparkHtlcDetails | undefined;
+                tokenConversionInfo: TokenConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -4662,11 +5727,15 @@ export declare const PaymentDetails: Readonly<{
             /**
              * The HTLC transfer details if the payment fulfilled an HTLC transfer
              */ htlcDetails: SparkHtlcDetails | undefined;
+            /**
+             * The information for a token conversion
+             */ tokenConversionInfo: TokenConversionInfo | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Spark;
             readonly inner: Readonly<{
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
                 htlcDetails: SparkHtlcDetails | undefined;
+                tokenConversionInfo: TokenConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -4679,6 +5748,7 @@ export declare const PaymentDetails: Readonly<{
             readonly inner: Readonly<{
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
                 htlcDetails: SparkHtlcDetails | undefined;
+                tokenConversionInfo: TokenConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -4694,12 +5764,16 @@ export declare const PaymentDetails: Readonly<{
             /**
              * The invoice details if the payment fulfilled a spark invoice
              */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+            /**
+             * The information for a token conversion
+             */ tokenConversionInfo: TokenConversionInfo | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Token;
             readonly inner: Readonly<{
                 metadata: TokenMetadata;
                 txHash: string;
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
+                tokenConversionInfo: TokenConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -4713,12 +5787,16 @@ export declare const PaymentDetails: Readonly<{
             /**
              * The invoice details if the payment fulfilled a spark invoice
              */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
+            /**
+             * The information for a token conversion
+             */ tokenConversionInfo: TokenConversionInfo | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Token;
             readonly inner: Readonly<{
                 metadata: TokenMetadata;
                 txHash: string;
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
+                tokenConversionInfo: TokenConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -4732,6 +5810,7 @@ export declare const PaymentDetails: Readonly<{
                 metadata: TokenMetadata;
                 txHash: string;
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
+                tokenConversionInfo: TokenConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -4930,6 +6009,118 @@ export declare const PaymentDetails: Readonly<{
     };
 }>;
 export type PaymentDetails = InstanceType<(typeof PaymentDetails)[keyof Omit<typeof PaymentDetails, 'instanceOf'>]>;
+export declare enum PaymentDetailsFilter_Tags {
+    Spark = "Spark",
+    Token = "Token"
+}
+export declare const PaymentDetailsFilter: Readonly<{
+    instanceOf: (obj: any) => obj is PaymentDetailsFilter;
+    Spark: {
+        new (inner: {
+            /**
+             * Filter specific Spark HTLC statuses
+             */ htlcStatus: Array<SparkHtlcStatus> | undefined;
+            /**
+             * Filter conversion payments with refund information
+             */ conversionRefundNeeded: boolean | undefined;
+        }): {
+            readonly tag: PaymentDetailsFilter_Tags.Spark;
+            readonly inner: Readonly<{
+                htlcStatus: Array<SparkHtlcStatus> | undefined;
+                conversionRefundNeeded: boolean | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentDetailsFilter";
+        };
+        "new"(inner: {
+            /**
+             * Filter specific Spark HTLC statuses
+             */ htlcStatus: Array<SparkHtlcStatus> | undefined;
+            /**
+             * Filter conversion payments with refund information
+             */ conversionRefundNeeded: boolean | undefined;
+        }): {
+            readonly tag: PaymentDetailsFilter_Tags.Spark;
+            readonly inner: Readonly<{
+                htlcStatus: Array<SparkHtlcStatus> | undefined;
+                conversionRefundNeeded: boolean | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentDetailsFilter";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PaymentDetailsFilter_Tags.Spark;
+            readonly inner: Readonly<{
+                htlcStatus: Array<SparkHtlcStatus> | undefined;
+                conversionRefundNeeded: boolean | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentDetailsFilter";
+        };
+    };
+    Token: {
+        new (inner: {
+            /**
+             * Filter conversion payments with refund information
+             */ conversionRefundNeeded: boolean | undefined;
+            /**
+             * Filter by transaction hash
+             */ txHash: string | undefined;
+        }): {
+            readonly tag: PaymentDetailsFilter_Tags.Token;
+            readonly inner: Readonly<{
+                conversionRefundNeeded: boolean | undefined;
+                txHash: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentDetailsFilter";
+        };
+        "new"(inner: {
+            /**
+             * Filter conversion payments with refund information
+             */ conversionRefundNeeded: boolean | undefined;
+            /**
+             * Filter by transaction hash
+             */ txHash: string | undefined;
+        }): {
+            readonly tag: PaymentDetailsFilter_Tags.Token;
+            readonly inner: Readonly<{
+                conversionRefundNeeded: boolean | undefined;
+                txHash: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentDetailsFilter";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PaymentDetailsFilter_Tags.Token;
+            readonly inner: Readonly<{
+                conversionRefundNeeded: boolean | undefined;
+                txHash: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentDetailsFilter";
+        };
+    };
+}>;
+export type PaymentDetailsFilter = InstanceType<(typeof PaymentDetailsFilter)[keyof Omit<typeof PaymentDetailsFilter, 'instanceOf'>]>;
 export declare enum PaymentMethod {
     Lightning = 0,
     Spark = 1,
@@ -5507,6 +6698,7 @@ export declare const ReceivePaymentMethod: Readonly<{
 export type ReceivePaymentMethod = InstanceType<(typeof ReceivePaymentMethod)[keyof Omit<typeof ReceivePaymentMethod, 'instanceOf'>]>;
 export declare enum SdkError_Tags {
     SparkError = "SparkError",
+    InsufficientFunds = "InsufficientFunds",
     InvalidUuid = "InvalidUuid",
     InvalidInput = "InvalidInput",
     NetworkError = "NetworkError",
@@ -5515,6 +6707,7 @@ export declare enum SdkError_Tags {
     MaxDepositClaimFeeExceeded = "MaxDepositClaimFeeExceeded",
     MissingUtxo = "MissingUtxo",
     LnurlError = "LnurlError",
+    Signer = "Signer",
     Generic = "Generic"
 }
 /**
@@ -5588,6 +6781,60 @@ export declare const SdkError: Readonly<{
             stack?: string;
             cause?: unknown;
         }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    InsufficientFunds: {
+        new (): {
+            readonly tag: SdkError_Tags.InsufficientFunds;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(): {
+            readonly tag: SdkError_Tags.InsufficientFunds;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkError_Tags.InsufficientFunds;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SdkError_Tags.InsufficientFunds;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
         isError(error: unknown): error is Error;
         captureStackTrace(targetObject: object, constructorOpt?: Function): void;
         prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
@@ -6217,6 +7464,77 @@ export declare const SdkError: Readonly<{
         };
         getInner(obj: {
             readonly tag: SdkError_Tags.LnurlError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    Signer: {
+        new (v0: string): {
+            readonly tag: SdkError_Tags.Signer;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: SdkError_Tags.Signer;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkError_Tags.Signer;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SdkError_Tags.Signer;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SdkError_Tags.Signer;
             readonly inner: Readonly<[string]>;
             /**
              * @private
@@ -7803,6 +9121,522 @@ export declare const ServiceConnectivityError: Readonly<{
     };
 }>;
 export type ServiceConnectivityError = InstanceType<(typeof ServiceConnectivityError)[keyof Omit<typeof ServiceConnectivityError, 'instanceOf'>]>;
+export declare enum SignerError_Tags {
+    KeyDerivation = "KeyDerivation",
+    Signing = "Signing",
+    Encryption = "Encryption",
+    Decryption = "Decryption",
+    Frost = "Frost",
+    InvalidInput = "InvalidInput",
+    Generic = "Generic"
+}
+/**
+ * Error type for signer operations
+ */
+export declare const SignerError: Readonly<{
+    instanceOf: (obj: any) => obj is SignerError;
+    KeyDerivation: {
+        new (v0: string): {
+            readonly tag: SignerError_Tags.KeyDerivation;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: SignerError_Tags.KeyDerivation;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SignerError_Tags.KeyDerivation;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SignerError_Tags.KeyDerivation;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SignerError_Tags.KeyDerivation;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    Signing: {
+        new (v0: string): {
+            readonly tag: SignerError_Tags.Signing;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: SignerError_Tags.Signing;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SignerError_Tags.Signing;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SignerError_Tags.Signing;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SignerError_Tags.Signing;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    Encryption: {
+        new (v0: string): {
+            readonly tag: SignerError_Tags.Encryption;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: SignerError_Tags.Encryption;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SignerError_Tags.Encryption;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SignerError_Tags.Encryption;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SignerError_Tags.Encryption;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    Decryption: {
+        new (v0: string): {
+            readonly tag: SignerError_Tags.Decryption;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: SignerError_Tags.Decryption;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SignerError_Tags.Decryption;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SignerError_Tags.Decryption;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SignerError_Tags.Decryption;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    Frost: {
+        new (v0: string): {
+            readonly tag: SignerError_Tags.Frost;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: SignerError_Tags.Frost;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SignerError_Tags.Frost;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SignerError_Tags.Frost;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SignerError_Tags.Frost;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    InvalidInput: {
+        new (v0: string): {
+            readonly tag: SignerError_Tags.InvalidInput;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: SignerError_Tags.InvalidInput;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SignerError_Tags.InvalidInput;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SignerError_Tags.InvalidInput;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SignerError_Tags.InvalidInput;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    Generic: {
+        new (v0: string): {
+            readonly tag: SignerError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: SignerError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SignerError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SignerError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SignerError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+}>;
+/**
+ * Error type for signer operations
+ */
+export type SignerError = InstanceType<(typeof SignerError)[keyof Omit<typeof SignerError, 'instanceOf'>]>;
 export declare enum SparkHtlcStatus {
     /**
      * The HTLC is waiting for the preimage to be shared by the receiver
@@ -8547,6 +10381,79 @@ export declare const SyncStorageError: Readonly<{
  * Errors that can occur during storage operations
  */
 export type SyncStorageError = InstanceType<(typeof SyncStorageError)[keyof Omit<typeof SyncStorageError, 'instanceOf'>]>;
+export declare enum TokenConversionType_Tags {
+    FromBitcoin = "FromBitcoin",
+    ToBitcoin = "ToBitcoin"
+}
+export declare const TokenConversionType: Readonly<{
+    instanceOf: (obj: any) => obj is TokenConversionType;
+    FromBitcoin: {
+        new (): {
+            readonly tag: TokenConversionType_Tags.FromBitcoin;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TokenConversionType";
+        };
+        "new"(): {
+            readonly tag: TokenConversionType_Tags.FromBitcoin;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TokenConversionType";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: TokenConversionType_Tags.FromBitcoin;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TokenConversionType";
+        };
+    };
+    ToBitcoin: {
+        new (inner: {
+            fromTokenIdentifier: string;
+        }): {
+            readonly tag: TokenConversionType_Tags.ToBitcoin;
+            readonly inner: Readonly<{
+                fromTokenIdentifier: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TokenConversionType";
+        };
+        "new"(inner: {
+            fromTokenIdentifier: string;
+        }): {
+            readonly tag: TokenConversionType_Tags.ToBitcoin;
+            readonly inner: Readonly<{
+                fromTokenIdentifier: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TokenConversionType";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: TokenConversionType_Tags.ToBitcoin;
+            readonly inner: Readonly<{
+                fromTokenIdentifier: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TokenConversionType";
+        };
+    };
+}>;
+export type TokenConversionType = InstanceType<(typeof TokenConversionType)[keyof Omit<typeof TokenConversionType, 'instanceOf'>]>;
 export declare enum UpdateDepositPayload_Tags {
     ClaimError = "ClaimError",
     Refund = "Refund"
@@ -8746,6 +10653,9 @@ export interface BreezSdkInterface {
     disconnect(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
+    fetchTokenConversionLimits(request: FetchTokenConversionLimitsRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<FetchTokenConversionLimitsResponse>;
     /**
      * Returns the balance of the wallet in satoshis
      */
@@ -8994,6 +10904,9 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     disconnect(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
+    fetchTokenConversionLimits(request: FetchTokenConversionLimitsRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<FetchTokenConversionLimitsResponse>;
     /**
      * Returns the balance of the wallet in satoshis
      */
@@ -9177,6 +11090,491 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
      */
     uniffiDestroy(): void;
     static instanceOf(obj: any): obj is BreezSdk;
+}
+/**
+ * External signer trait that can be implemented by users and passed to the SDK.
+ *
+ * This trait mirrors the `BreezSigner` trait but uses FFI-compatible types (bytes, strings)
+ * instead of Rust-specific types. This allows it to be exposed through FFI and WASM bindings.
+ *
+ * All methods accept and return simple types:
+ * - Derivation paths as strings (e.g., "m/44'/0'/0'")
+ * - Public keys, signatures, and other crypto primitives as Vec<u8>
+ * - Spark-specific types as serialized representations
+ *
+ * Errors are returned as `SignerError` for FFI compatibility.
+ */
+export interface ExternalSigner {
+    /**
+     * Returns the identity public key as 33 bytes (compressed secp256k1 key).
+     */
+    identityPublicKey(): PublicKeyBytes;
+    /**
+     * Derives a public key for the given BIP32 derivation path.
+     *
+     * # Arguments
+     * * `path` - BIP32 derivation path as a string (e.g., "m/44'/0'/0'/0/0")
+     *
+     * # Returns
+     * The derived public key as 33 bytes, or a `SignerError`
+     */
+    derivePublicKey(path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublicKeyBytes>;
+    /**
+     * Signs a message using ECDSA at the given derivation path.
+     *
+     * # Arguments
+     * * `message` - The message to sign
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 64-byte compact ECDSA signature, or a `SignerError`
+     */
+    signEcdsa(message: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<EcdsaSignatureBytes>;
+    /**
+     * Signs a message using recoverable ECDSA at the given derivation path.
+     *
+     * # Arguments
+     * * `message` - The message to sign (will be double-SHA256 hashed)
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 65 bytes: recovery ID (31 + `recovery_id`) + 64-byte signature, or a `SignerError`
+     */
+    signEcdsaRecoverable(message: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<RecoverableEcdsaSignatureBytes>;
+    /**
+     * Encrypts a message using ECIES at the given derivation path.
+     *
+     * # Arguments
+     * * `message` - The message to encrypt
+     * * `path` - BIP32 derivation path for the encryption key
+     *
+     * # Returns
+     * Encrypted data, or a `SignerError`
+     */
+    eciesEncrypt(message: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ArrayBuffer>;
+    /**
+     * Decrypts a message using ECIES at the given derivation path.
+     *
+     * # Arguments
+     * * `message` - The encrypted message
+     * * `path` - BIP32 derivation path for the decryption key
+     *
+     * # Returns
+     * Decrypted data, or a `SignerError`
+     */
+    eciesDecrypt(message: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ArrayBuffer>;
+    /**
+     * Signs a hash using Schnorr signature at the given derivation path.
+     *
+     * # Arguments
+     * * `hash` - The 32-byte hash to sign (must be 32 bytes)
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 64-byte Schnorr signature, or a `SignerError`
+     */
+    signHashSchnorr(hash: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SchnorrSignatureBytes>;
+    /**
+     * Generates Frost signing commitments for multi-party signing.
+     *
+     * # Returns
+     * Frost commitments with nonces, or a `SignerError`
+     */
+    generateFrostSigningCommitments(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalFrostCommitments>;
+    /**
+     * Gets the public key for a specific tree node in the Spark wallet.
+     *
+     * # Arguments
+     * * `id` - The tree node identifier
+     *
+     * # Returns
+     * The public key for the node, or an error string
+     */
+    getPublicKeyForNode(id: ExternalTreeNodeId, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublicKeyBytes>;
+    /**
+     * Generates a random private key.
+     *
+     * # Returns
+     * A randomly generated private key source, or an error string
+     */
+    generateRandomKey(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPrivateKeySource>;
+    /**
+     * Gets a static deposit private key source by index.
+     *
+     * # Arguments
+     * * `index` - The index of the static deposit key
+     *
+     * # Returns
+     * The private key source, or an error string
+     */
+    getStaticDepositPrivateKeySource(index: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPrivateKeySource>;
+    /**
+     * Gets a static deposit private key by index.
+     *
+     * # Arguments
+     * * `index` - The index of the static deposit key
+     *
+     * # Returns
+     * The 32-byte private key, or an error string
+     */
+    getStaticDepositPrivateKey(index: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PrivateKeyBytes>;
+    /**
+     * Gets a static deposit public key by index.
+     *
+     * # Arguments
+     * * `index` - The index of the static deposit key
+     *
+     * # Returns
+     * The 33-byte public key, or an error string
+     */
+    getStaticDepositPublicKey(index: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublicKeyBytes>;
+    /**
+     * Subtracts one private key from another.
+     *
+     * # Arguments
+     * * `signing_key` - The first private key source
+     * * `new_signing_key` - The second private key source to subtract
+     *
+     * # Returns
+     * The resulting private key source, or an error string
+     */
+    subtractPrivateKeys(signingKey: ExternalPrivateKeySource, newSigningKey: ExternalPrivateKeySource, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPrivateKeySource>;
+    /**
+     * Splits a secret with proofs using Shamir's Secret Sharing.
+     *
+     * # Arguments
+     * * `secret` - The secret to split
+     * * `threshold` - Minimum number of shares needed to reconstruct
+     * * `num_shares` - Total number of shares to create
+     *
+     * # Returns
+     * Vector of verifiable secret shares, or an error string
+     */
+    splitSecret(secret: ExternalSecretToSplit, threshold: number, numShares: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<ExternalVerifiableSecretShare>>;
+    /**
+     * Encrypts a private key for a specific receiver's public key.
+     *
+     * # Arguments
+     * * `private_key` - The encrypted private key to re-encrypt
+     * * `receiver_public_key` - The receiver's 33-byte public key
+     *
+     * # Returns
+     * Encrypted data for the receiver, or an error string
+     */
+    encryptPrivateKeyForReceiver(privateKey: ExternalEncryptedPrivateKey, receiverPublicKey: PublicKeyBytes, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ArrayBuffer>;
+    /**
+     * Gets the public key from a private key source.
+     *
+     * # Arguments
+     * * `private_key` - The private key source
+     *
+     * # Returns
+     * The corresponding 33-byte public key, or an error string
+     */
+    getPublicKeyFromPrivateKeySource(privateKey: ExternalPrivateKeySource, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublicKeyBytes>;
+    /**
+     * Signs using Frost protocol (multi-party signing).
+     *
+     * # Arguments
+     * * `request` - The Frost signing request
+     *
+     * # Returns
+     * A signature share, or an error string
+     */
+    signFrost(request: ExternalSignFrostRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalFrostSignatureShare>;
+    /**
+     * Aggregates Frost signature shares into a final signature.
+     *
+     * # Arguments
+     * * `request` - The Frost aggregation request
+     *
+     * # Returns
+     * The aggregated Frost signature, or an error string
+     */
+    aggregateFrostSignatures(request: ExternalAggregateFrostRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalFrostSignature>;
+}
+/**
+ * External signer trait that can be implemented by users and passed to the SDK.
+ *
+ * This trait mirrors the `BreezSigner` trait but uses FFI-compatible types (bytes, strings)
+ * instead of Rust-specific types. This allows it to be exposed through FFI and WASM bindings.
+ *
+ * All methods accept and return simple types:
+ * - Derivation paths as strings (e.g., "m/44'/0'/0'")
+ * - Public keys, signatures, and other crypto primitives as Vec<u8>
+ * - Spark-specific types as serialized representations
+ *
+ * Errors are returned as `SignerError` for FFI compatibility.
+ */
+export declare class ExternalSignerImpl extends UniffiAbstractObject implements ExternalSigner {
+    readonly [uniffiTypeNameSymbol] = "ExternalSignerImpl";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    /**
+     * Returns the identity public key as 33 bytes (compressed secp256k1 key).
+     */
+    identityPublicKey(): PublicKeyBytes;
+    /**
+     * Derives a public key for the given BIP32 derivation path.
+     *
+     * # Arguments
+     * * `path` - BIP32 derivation path as a string (e.g., "m/44'/0'/0'/0/0")
+     *
+     * # Returns
+     * The derived public key as 33 bytes, or a `SignerError`
+     */
+    derivePublicKey(path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublicKeyBytes>;
+    /**
+     * Signs a message using ECDSA at the given derivation path.
+     *
+     * # Arguments
+     * * `message` - The message to sign
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 64-byte compact ECDSA signature, or a `SignerError`
+     */
+    signEcdsa(message: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<EcdsaSignatureBytes>;
+    /**
+     * Signs a message using recoverable ECDSA at the given derivation path.
+     *
+     * # Arguments
+     * * `message` - The message to sign (will be double-SHA256 hashed)
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 65 bytes: recovery ID (31 + `recovery_id`) + 64-byte signature, or a `SignerError`
+     */
+    signEcdsaRecoverable(message: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<RecoverableEcdsaSignatureBytes>;
+    /**
+     * Encrypts a message using ECIES at the given derivation path.
+     *
+     * # Arguments
+     * * `message` - The message to encrypt
+     * * `path` - BIP32 derivation path for the encryption key
+     *
+     * # Returns
+     * Encrypted data, or a `SignerError`
+     */
+    eciesEncrypt(message: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ArrayBuffer>;
+    /**
+     * Decrypts a message using ECIES at the given derivation path.
+     *
+     * # Arguments
+     * * `message` - The encrypted message
+     * * `path` - BIP32 derivation path for the decryption key
+     *
+     * # Returns
+     * Decrypted data, or a `SignerError`
+     */
+    eciesDecrypt(message: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ArrayBuffer>;
+    /**
+     * Signs a hash using Schnorr signature at the given derivation path.
+     *
+     * # Arguments
+     * * `hash` - The 32-byte hash to sign (must be 32 bytes)
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 64-byte Schnorr signature, or a `SignerError`
+     */
+    signHashSchnorr(hash: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SchnorrSignatureBytes>;
+    /**
+     * Generates Frost signing commitments for multi-party signing.
+     *
+     * # Returns
+     * Frost commitments with nonces, or a `SignerError`
+     */
+    generateFrostSigningCommitments(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalFrostCommitments>;
+    /**
+     * Gets the public key for a specific tree node in the Spark wallet.
+     *
+     * # Arguments
+     * * `id` - The tree node identifier
+     *
+     * # Returns
+     * The public key for the node, or an error string
+     */
+    getPublicKeyForNode(id: ExternalTreeNodeId, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublicKeyBytes>;
+    /**
+     * Generates a random private key.
+     *
+     * # Returns
+     * A randomly generated private key source, or an error string
+     */
+    generateRandomKey(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPrivateKeySource>;
+    /**
+     * Gets a static deposit private key source by index.
+     *
+     * # Arguments
+     * * `index` - The index of the static deposit key
+     *
+     * # Returns
+     * The private key source, or an error string
+     */
+    getStaticDepositPrivateKeySource(index: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPrivateKeySource>;
+    /**
+     * Gets a static deposit private key by index.
+     *
+     * # Arguments
+     * * `index` - The index of the static deposit key
+     *
+     * # Returns
+     * The 32-byte private key, or an error string
+     */
+    getStaticDepositPrivateKey(index: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PrivateKeyBytes>;
+    /**
+     * Gets a static deposit public key by index.
+     *
+     * # Arguments
+     * * `index` - The index of the static deposit key
+     *
+     * # Returns
+     * The 33-byte public key, or an error string
+     */
+    getStaticDepositPublicKey(index: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublicKeyBytes>;
+    /**
+     * Subtracts one private key from another.
+     *
+     * # Arguments
+     * * `signing_key` - The first private key source
+     * * `new_signing_key` - The second private key source to subtract
+     *
+     * # Returns
+     * The resulting private key source, or an error string
+     */
+    subtractPrivateKeys(signingKey: ExternalPrivateKeySource, newSigningKey: ExternalPrivateKeySource, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPrivateKeySource>;
+    /**
+     * Splits a secret with proofs using Shamir's Secret Sharing.
+     *
+     * # Arguments
+     * * `secret` - The secret to split
+     * * `threshold` - Minimum number of shares needed to reconstruct
+     * * `num_shares` - Total number of shares to create
+     *
+     * # Returns
+     * Vector of verifiable secret shares, or an error string
+     */
+    splitSecret(secret: ExternalSecretToSplit, threshold: number, numShares: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<ExternalVerifiableSecretShare>>;
+    /**
+     * Encrypts a private key for a specific receiver's public key.
+     *
+     * # Arguments
+     * * `private_key` - The encrypted private key to re-encrypt
+     * * `receiver_public_key` - The receiver's 33-byte public key
+     *
+     * # Returns
+     * Encrypted data for the receiver, or an error string
+     */
+    encryptPrivateKeyForReceiver(privateKey: ExternalEncryptedPrivateKey, receiverPublicKey: PublicKeyBytes, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ArrayBuffer>;
+    /**
+     * Gets the public key from a private key source.
+     *
+     * # Arguments
+     * * `private_key` - The private key source
+     *
+     * # Returns
+     * The corresponding 33-byte public key, or an error string
+     */
+    getPublicKeyFromPrivateKeySource(privateKey: ExternalPrivateKeySource, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublicKeyBytes>;
+    /**
+     * Signs using Frost protocol (multi-party signing).
+     *
+     * # Arguments
+     * * `request` - The Frost signing request
+     *
+     * # Returns
+     * A signature share, or an error string
+     */
+    signFrost(request: ExternalSignFrostRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalFrostSignatureShare>;
+    /**
+     * Aggregates Frost signature shares into a final signature.
+     *
+     * # Arguments
+     * * `request` - The Frost aggregation request
+     *
+     * # Returns
+     * The aggregated Frost signature, or an error string
+     */
+    aggregateFrostSignatures(request: ExternalAggregateFrostRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalFrostSignature>;
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is ExternalSignerImpl;
 }
 /**
  * Trait covering fiat-related functionality
@@ -9364,10 +11762,9 @@ export interface SdkBuilderInterface {
     /**
      * Sets the key set type to be used by the SDK.
      * Arguments:
-     * - `key_set_type`: The key set type which determines the derivation path.
-     * - `use_address_index`: Controls the structure of the BIP derivation path.
+     * - `config`: Key set configuration containing the key set type, address index flag, and optional account number.
      */
-    withKeySet(keySetType: KeySetType, useAddressIndex: boolean, accountNumber: /*u32*/ number | undefined, asyncOpts_?: {
+    withKeySet(config: KeySetConfig, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     withLnurlClient(lnurlClient: RestClient, asyncOpts_?: {
@@ -9457,10 +11854,9 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
     /**
      * Sets the key set type to be used by the SDK.
      * Arguments:
-     * - `key_set_type`: The key set type which determines the derivation path.
-     * - `use_address_index`: Controls the structure of the BIP derivation path.
+     * - `config`: Key set configuration containing the key set type, address index flag, and optional account number.
      */
-    withKeySet(keySetType: KeySetType, useAddressIndex: boolean, accountNumber: /*u32*/ number | undefined, asyncOpts_?: {
+    withKeySet(config: KeySetConfig, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     withLnurlClient(lnurlClient: RestClient, asyncOpts_?: {
@@ -10353,6 +12749,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ConnectRequest;
             lower(value: ConnectRequest): UniffiByteArray;
         };
+        FfiConverterTypeConnectWithSignerRequest: {
+            read(from: RustBuffer): ConnectWithSignerRequest;
+            write(value: ConnectWithSignerRequest, into: RustBuffer): void;
+            allocationSize(value: ConnectWithSignerRequest): number;
+            lift(value: UniffiByteArray): ConnectWithSignerRequest;
+            lower(value: ConnectWithSignerRequest): UniffiByteArray;
+        };
         FfiConverterTypeCreateIssuerTokenRequest: {
             read(from: RustBuffer): CreateIssuerTokenRequest;
             write(value: CreateIssuerTokenRequest, into: RustBuffer): void;
@@ -10388,6 +12791,55 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): DepositInfo;
             lower(value: DepositInfo): UniffiByteArray;
         };
+        FfiConverterTypeEcdsaSignatureBytes: {
+            read(from: RustBuffer): EcdsaSignatureBytes;
+            write(value: EcdsaSignatureBytes, into: RustBuffer): void;
+            allocationSize(value: EcdsaSignatureBytes): number;
+            lift(value: UniffiByteArray): EcdsaSignatureBytes;
+            lower(value: EcdsaSignatureBytes): UniffiByteArray;
+        };
+        FfiConverterTypeExternalAggregateFrostRequest: {
+            read(from: RustBuffer): ExternalAggregateFrostRequest;
+            write(value: ExternalAggregateFrostRequest, into: RustBuffer): void;
+            allocationSize(value: ExternalAggregateFrostRequest): number;
+            lift(value: UniffiByteArray): ExternalAggregateFrostRequest;
+            lower(value: ExternalAggregateFrostRequest): UniffiByteArray;
+        };
+        FfiConverterTypeExternalEncryptedPrivateKey: {
+            read(from: RustBuffer): ExternalEncryptedPrivateKey;
+            write(value: ExternalEncryptedPrivateKey, into: RustBuffer): void;
+            allocationSize(value: ExternalEncryptedPrivateKey): number;
+            lift(value: UniffiByteArray): ExternalEncryptedPrivateKey;
+            lower(value: ExternalEncryptedPrivateKey): UniffiByteArray;
+        };
+        FfiConverterTypeExternalFrostCommitments: {
+            read(from: RustBuffer): ExternalFrostCommitments;
+            write(value: ExternalFrostCommitments, into: RustBuffer): void;
+            allocationSize(value: ExternalFrostCommitments): number;
+            lift(value: UniffiByteArray): ExternalFrostCommitments;
+            lower(value: ExternalFrostCommitments): UniffiByteArray;
+        };
+        FfiConverterTypeExternalFrostSignature: {
+            read(from: RustBuffer): ExternalFrostSignature;
+            write(value: ExternalFrostSignature, into: RustBuffer): void;
+            allocationSize(value: ExternalFrostSignature): number;
+            lift(value: UniffiByteArray): ExternalFrostSignature;
+            lower(value: ExternalFrostSignature): UniffiByteArray;
+        };
+        FfiConverterTypeExternalFrostSignatureShare: {
+            read(from: RustBuffer): ExternalFrostSignatureShare;
+            write(value: ExternalFrostSignatureShare, into: RustBuffer): void;
+            allocationSize(value: ExternalFrostSignatureShare): number;
+            lift(value: UniffiByteArray): ExternalFrostSignatureShare;
+            lower(value: ExternalFrostSignatureShare): UniffiByteArray;
+        };
+        FfiConverterTypeExternalIdentifier: {
+            read(from: RustBuffer): ExternalIdentifier;
+            write(value: ExternalIdentifier, into: RustBuffer): void;
+            allocationSize(value: ExternalIdentifier): number;
+            lift(value: UniffiByteArray): ExternalIdentifier;
+            lower(value: ExternalIdentifier): UniffiByteArray;
+        };
         FfiConverterTypeExternalInputParser: {
             read(from: RustBuffer): ExternalInputParser;
             write(value: ExternalInputParser, into: RustBuffer): void;
@@ -10395,12 +12847,83 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ExternalInputParser;
             lower(value: ExternalInputParser): UniffiByteArray;
         };
+        FfiConverterTypeExternalPrivateKeySource: {
+            read(from: RustBuffer): ExternalPrivateKeySource;
+            write(value: ExternalPrivateKeySource, into: RustBuffer): void;
+            allocationSize(value: ExternalPrivateKeySource): number;
+            lift(value: UniffiByteArray): ExternalPrivateKeySource;
+            lower(value: ExternalPrivateKeySource): UniffiByteArray;
+        };
+        FfiConverterTypeExternalScalar: {
+            read(from: RustBuffer): ExternalScalar;
+            write(value: ExternalScalar, into: RustBuffer): void;
+            allocationSize(value: ExternalScalar): number;
+            lift(value: UniffiByteArray): ExternalScalar;
+            lower(value: ExternalScalar): UniffiByteArray;
+        };
+        FfiConverterTypeExternalSecretShare: {
+            read(from: RustBuffer): ExternalSecretShare;
+            write(value: ExternalSecretShare, into: RustBuffer): void;
+            allocationSize(value: ExternalSecretShare): number;
+            lift(value: UniffiByteArray): ExternalSecretShare;
+            lower(value: ExternalSecretShare): UniffiByteArray;
+        };
+        FfiConverterTypeExternalSecretToSplit: {
+            read(from: RustBuffer): ExternalSecretToSplit;
+            write(value: ExternalSecretToSplit, into: RustBuffer): void;
+            allocationSize(value: ExternalSecretToSplit): number;
+            lift(value: UniffiByteArray): ExternalSecretToSplit;
+            lower(value: ExternalSecretToSplit): UniffiByteArray;
+        };
+        FfiConverterTypeExternalSignFrostRequest: {
+            read(from: RustBuffer): ExternalSignFrostRequest;
+            write(value: ExternalSignFrostRequest, into: RustBuffer): void;
+            allocationSize(value: ExternalSignFrostRequest): number;
+            lift(value: UniffiByteArray): ExternalSignFrostRequest;
+            lower(value: ExternalSignFrostRequest): UniffiByteArray;
+        };
+        FfiConverterTypeExternalSigner: FfiConverterObjectWithCallbacks<ExternalSigner>;
+        FfiConverterTypeExternalSigningCommitments: {
+            read(from: RustBuffer): ExternalSigningCommitments;
+            write(value: ExternalSigningCommitments, into: RustBuffer): void;
+            allocationSize(value: ExternalSigningCommitments): number;
+            lift(value: UniffiByteArray): ExternalSigningCommitments;
+            lower(value: ExternalSigningCommitments): UniffiByteArray;
+        };
+        FfiConverterTypeExternalTreeNodeId: {
+            read(from: RustBuffer): ExternalTreeNodeId;
+            write(value: ExternalTreeNodeId, into: RustBuffer): void;
+            allocationSize(value: ExternalTreeNodeId): number;
+            lift(value: UniffiByteArray): ExternalTreeNodeId;
+            lower(value: ExternalTreeNodeId): UniffiByteArray;
+        };
+        FfiConverterTypeExternalVerifiableSecretShare: {
+            read(from: RustBuffer): ExternalVerifiableSecretShare;
+            write(value: ExternalVerifiableSecretShare, into: RustBuffer): void;
+            allocationSize(value: ExternalVerifiableSecretShare): number;
+            lift(value: UniffiByteArray): ExternalVerifiableSecretShare;
+            lower(value: ExternalVerifiableSecretShare): UniffiByteArray;
+        };
         FfiConverterTypeFee: {
             read(from: RustBuffer): Fee;
             write(value: Fee, into: RustBuffer): void;
             allocationSize(value: Fee): number;
             lift(value: UniffiByteArray): Fee;
             lower(value: Fee): UniffiByteArray;
+        };
+        FfiConverterTypeFetchTokenConversionLimitsRequest: {
+            read(from: RustBuffer): FetchTokenConversionLimitsRequest;
+            write(value: FetchTokenConversionLimitsRequest, into: RustBuffer): void;
+            allocationSize(value: FetchTokenConversionLimitsRequest): number;
+            lift(value: UniffiByteArray): FetchTokenConversionLimitsRequest;
+            lower(value: FetchTokenConversionLimitsRequest): UniffiByteArray;
+        };
+        FfiConverterTypeFetchTokenConversionLimitsResponse: {
+            read(from: RustBuffer): FetchTokenConversionLimitsResponse;
+            write(value: FetchTokenConversionLimitsResponse, into: RustBuffer): void;
+            allocationSize(value: FetchTokenConversionLimitsResponse): number;
+            lift(value: UniffiByteArray): FetchTokenConversionLimitsResponse;
+            lower(value: FetchTokenConversionLimitsResponse): UniffiByteArray;
         };
         FfiConverterTypeFiatCurrency: {
             read(from: RustBuffer): FiatCurrency;
@@ -10466,6 +12989,27 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): GetTokensMetadataResponse;
             lower(value: GetTokensMetadataResponse): UniffiByteArray;
         };
+        FfiConverterTypeIdentifierCommitmentPair: {
+            read(from: RustBuffer): IdentifierCommitmentPair;
+            write(value: IdentifierCommitmentPair, into: RustBuffer): void;
+            allocationSize(value: IdentifierCommitmentPair): number;
+            lift(value: UniffiByteArray): IdentifierCommitmentPair;
+            lower(value: IdentifierCommitmentPair): UniffiByteArray;
+        };
+        FfiConverterTypeIdentifierPublicKeyPair: {
+            read(from: RustBuffer): IdentifierPublicKeyPair;
+            write(value: IdentifierPublicKeyPair, into: RustBuffer): void;
+            allocationSize(value: IdentifierPublicKeyPair): number;
+            lift(value: UniffiByteArray): IdentifierPublicKeyPair;
+            lower(value: IdentifierPublicKeyPair): UniffiByteArray;
+        };
+        FfiConverterTypeIdentifierSignaturePair: {
+            read(from: RustBuffer): IdentifierSignaturePair;
+            write(value: IdentifierSignaturePair, into: RustBuffer): void;
+            allocationSize(value: IdentifierSignaturePair): number;
+            lift(value: UniffiByteArray): IdentifierSignaturePair;
+            lower(value: IdentifierSignaturePair): UniffiByteArray;
+        };
         FfiConverterTypeIncomingChange: {
             read(from: RustBuffer): IncomingChange;
             write(value: IncomingChange, into: RustBuffer): void;
@@ -10479,6 +13023,13 @@ declare const _default: Readonly<{
             allocationSize(value: InputType): number;
             lift(value: UniffiByteArray): InputType;
             lower(value: InputType): UniffiByteArray;
+        };
+        FfiConverterTypeKeySetConfig: {
+            read(from: RustBuffer): KeySetConfig;
+            write(value: KeySetConfig, into: RustBuffer): void;
+            allocationSize(value: KeySetConfig): number;
+            lift(value: UniffiByteArray): KeySetConfig;
+            lower(value: KeySetConfig): UniffiByteArray;
         };
         FfiConverterTypeKeySetType: {
             read(from: RustBuffer): KeySetType;
@@ -10711,6 +13262,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): PaymentDetails;
             lower(value: PaymentDetails): UniffiByteArray;
         };
+        FfiConverterTypePaymentDetailsFilter: {
+            read(from: RustBuffer): PaymentDetailsFilter;
+            write(value: PaymentDetailsFilter, into: RustBuffer): void;
+            allocationSize(value: PaymentDetailsFilter): number;
+            lift(value: UniffiByteArray): PaymentDetailsFilter;
+            lower(value: PaymentDetailsFilter): UniffiByteArray;
+        };
         FfiConverterTypePaymentMetadata: {
             read(from: RustBuffer): PaymentMetadata;
             write(value: PaymentMetadata, into: RustBuffer): void;
@@ -10775,6 +13333,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): PrepareSendPaymentResponse;
             lower(value: PrepareSendPaymentResponse): UniffiByteArray;
         };
+        FfiConverterTypePrivateKeyBytes: {
+            read(from: RustBuffer): PrivateKeyBytes;
+            write(value: PrivateKeyBytes, into: RustBuffer): void;
+            allocationSize(value: PrivateKeyBytes): number;
+            lift(value: UniffiByteArray): PrivateKeyBytes;
+            lower(value: PrivateKeyBytes): UniffiByteArray;
+        };
         FfiConverterTypeProvisionalPayment: {
             read(from: RustBuffer): ProvisionalPayment;
             write(value: ProvisionalPayment, into: RustBuffer): void;
@@ -10788,6 +13353,13 @@ declare const _default: Readonly<{
             allocationSize(value: ProvisionalPaymentDetails): number;
             lift(value: UniffiByteArray): ProvisionalPaymentDetails;
             lower(value: ProvisionalPaymentDetails): UniffiByteArray;
+        };
+        FfiConverterTypePublicKeyBytes: {
+            read(from: RustBuffer): PublicKeyBytes;
+            write(value: PublicKeyBytes, into: RustBuffer): void;
+            allocationSize(value: PublicKeyBytes): number;
+            lift(value: UniffiByteArray): PublicKeyBytes;
+            lower(value: PublicKeyBytes): UniffiByteArray;
         };
         FfiConverterTypeRate: {
             read(from: RustBuffer): Rate;
@@ -10845,6 +13417,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): RecordId;
             lower(value: RecordId): UniffiByteArray;
         };
+        FfiConverterTypeRecoverableEcdsaSignatureBytes: {
+            read(from: RustBuffer): RecoverableEcdsaSignatureBytes;
+            write(value: RecoverableEcdsaSignatureBytes, into: RustBuffer): void;
+            allocationSize(value: RecoverableEcdsaSignatureBytes): number;
+            lift(value: UniffiByteArray): RecoverableEcdsaSignatureBytes;
+            lower(value: RecoverableEcdsaSignatureBytes): UniffiByteArray;
+        };
         FfiConverterTypeRefundDepositRequest: {
             read(from: RustBuffer): RefundDepositRequest;
             write(value: RefundDepositRequest, into: RustBuffer): void;
@@ -10873,6 +13452,13 @@ declare const _default: Readonly<{
             allocationSize(value: RestResponse): number;
             lift(value: UniffiByteArray): RestResponse;
             lower(value: RestResponse): UniffiByteArray;
+        };
+        FfiConverterTypeSchnorrSignatureBytes: {
+            read(from: RustBuffer): SchnorrSignatureBytes;
+            write(value: SchnorrSignatureBytes, into: RustBuffer): void;
+            allocationSize(value: SchnorrSignatureBytes): number;
+            lift(value: UniffiByteArray): SchnorrSignatureBytes;
+            lower(value: SchnorrSignatureBytes): UniffiByteArray;
         };
         FfiConverterTypeSdkBuilder: FfiConverterObject<SdkBuilderInterface>;
         FfiConverterTypeSdkEvent: {
@@ -11044,6 +13630,27 @@ declare const _default: Readonly<{
             allocationSize(value: TokenBalance): number;
             lift(value: UniffiByteArray): TokenBalance;
             lower(value: TokenBalance): UniffiByteArray;
+        };
+        FfiConverterTypeTokenConversionInfo: {
+            read(from: RustBuffer): TokenConversionInfo;
+            write(value: TokenConversionInfo, into: RustBuffer): void;
+            allocationSize(value: TokenConversionInfo): number;
+            lift(value: UniffiByteArray): TokenConversionInfo;
+            lower(value: TokenConversionInfo): UniffiByteArray;
+        };
+        FfiConverterTypeTokenConversionOptions: {
+            read(from: RustBuffer): TokenConversionOptions;
+            write(value: TokenConversionOptions, into: RustBuffer): void;
+            allocationSize(value: TokenConversionOptions): number;
+            lift(value: UniffiByteArray): TokenConversionOptions;
+            lower(value: TokenConversionOptions): UniffiByteArray;
+        };
+        FfiConverterTypeTokenConversionType: {
+            read(from: RustBuffer): TokenConversionType;
+            write(value: TokenConversionType, into: RustBuffer): void;
+            allocationSize(value: TokenConversionType): number;
+            lift(value: UniffiByteArray): TokenConversionType;
+            lower(value: TokenConversionType): UniffiByteArray;
         };
         FfiConverterTypeTokenIssuer: FfiConverterObject<TokenIssuerInterface>;
         FfiConverterTypeTokenMetadata: {
