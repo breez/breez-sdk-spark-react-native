@@ -87,7 +87,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(
     ptr: bigint
   ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_token_conversion_limits(
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_conversion_limits(
     ptr: bigint,
     request: Uint8Array
   ): bigint;
@@ -712,7 +712,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_htlc_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_lightning_address(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_token_conversion_limits(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_lightning_address(): number;

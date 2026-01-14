@@ -2116,6 +2116,253 @@ const FfiConverterTypeConnectWithSignerRequest = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * Response from estimating a conversion, used when preparing a payment that requires conversion
+ */
+export type ConversionEstimate = {
+  /**
+   * The conversion options used for the estimate
+   */
+  options: ConversionOptions;
+  /**
+   * The estimated amount to be received from the conversion
+   * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+   */
+  amount: U128;
+  /**
+   * The fee estimated for the conversion
+   * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+   */
+  fee: U128;
+};
+
+/**
+ * Generated factory for {@link ConversionEstimate} record objects.
+ */
+export const ConversionEstimate = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<ConversionEstimate, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ConversionEstimate}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ConversionEstimate}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ConversionEstimate>,
+  });
+})();
+
+const FfiConverterTypeConversionEstimate = (() => {
+  type TypeName = ConversionEstimate;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        options: FfiConverterTypeConversionOptions.read(from),
+        amount: FfiConverterTypeu128.read(from),
+        fee: FfiConverterTypeu128.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeConversionOptions.write(value.options, into);
+      FfiConverterTypeu128.write(value.amount, into);
+      FfiConverterTypeu128.write(value.fee, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeConversionOptions.allocationSize(value.options) +
+        FfiConverterTypeu128.allocationSize(value.amount) +
+        FfiConverterTypeu128.allocationSize(value.fee)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type ConversionInfo = {
+  /**
+   * The pool id associated with the conversion
+   */
+  poolId: string;
+  /**
+   * The conversion id shared by both sides of the conversion
+   */
+  conversionId: string;
+  /**
+   * The status of the conversion
+   */
+  status: ConversionStatus;
+  /**
+   * The fee paid for the conversion
+   * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+   */
+  fee: U128 | undefined;
+  /**
+   * The purpose of the conversion
+   */
+  purpose: ConversionPurpose | undefined;
+};
+
+/**
+ * Generated factory for {@link ConversionInfo} record objects.
+ */
+export const ConversionInfo = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<ConversionInfo, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ConversionInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ConversionInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ConversionInfo>,
+  });
+})();
+
+const FfiConverterTypeConversionInfo = (() => {
+  type TypeName = ConversionInfo;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        poolId: FfiConverterString.read(from),
+        conversionId: FfiConverterString.read(from),
+        status: FfiConverterTypeConversionStatus.read(from),
+        fee: FfiConverterOptionalTypeu128.read(from),
+        purpose: FfiConverterOptionalTypeConversionPurpose.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.poolId, into);
+      FfiConverterString.write(value.conversionId, into);
+      FfiConverterTypeConversionStatus.write(value.status, into);
+      FfiConverterOptionalTypeu128.write(value.fee, into);
+      FfiConverterOptionalTypeConversionPurpose.write(value.purpose, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.poolId) +
+        FfiConverterString.allocationSize(value.conversionId) +
+        FfiConverterTypeConversionStatus.allocationSize(value.status) +
+        FfiConverterOptionalTypeu128.allocationSize(value.fee) +
+        FfiConverterOptionalTypeConversionPurpose.allocationSize(value.purpose)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Options for conversion when fulfilling a payment. When set, the SDK will
+ * perform a conversion before fulfilling the payment. If not set, the payment
+ * will only be fulfilled if the wallet has sufficient balance of the required asset.
+ */
+export type ConversionOptions = {
+  /**
+   * The type of conversion to perform when fulfilling the payment
+   */
+  conversionType: ConversionType;
+  /**
+   * The optional maximum slippage in basis points (1/100 of a percent) allowed when
+   * a conversion is needed to fulfill the payment. Defaults to 50 bps (0.5%) if not set.
+   * The conversion will fail if the actual amount received is less than
+   * `estimated_amount * (1 - max_slippage_bps / 10_000)`.
+   */
+  maxSlippageBps: /*u32*/ number | undefined;
+  /**
+   * The optional timeout in seconds to wait for the conversion to complete
+   * when fulfilling the payment. This timeout only concerns waiting for the received
+   * payment of the conversion. If the timeout is reached before the conversion
+   * is complete, the payment will fail. Defaults to 30 seconds if not set.
+   */
+  completionTimeoutSecs: /*u32*/ number | undefined;
+};
+
+/**
+ * Generated factory for {@link ConversionOptions} record objects.
+ */
+export const ConversionOptions = (() => {
+  const defaults = () => ({
+    maxSlippageBps: undefined,
+    completionTimeoutSecs: undefined,
+  });
+  const create = (() => {
+    return uniffiCreateRecord<ConversionOptions, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ConversionOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ConversionOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ConversionOptions>,
+  });
+})();
+
+const FfiConverterTypeConversionOptions = (() => {
+  type TypeName = ConversionOptions;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        conversionType: FfiConverterTypeConversionType.read(from),
+        maxSlippageBps: FfiConverterOptionalUInt32.read(from),
+        completionTimeoutSecs: FfiConverterOptionalUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeConversionType.write(value.conversionType, into);
+      FfiConverterOptionalUInt32.write(value.maxSlippageBps, into);
+      FfiConverterOptionalUInt32.write(value.completionTimeoutSecs, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeConversionType.allocationSize(value.conversionType) +
+        FfiConverterOptionalUInt32.allocationSize(value.maxSlippageBps) +
+        FfiConverterOptionalUInt32.allocationSize(value.completionTimeoutSecs)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type CreateIssuerTokenRequest = {
   name: string;
   ticker: string;
@@ -3441,11 +3688,11 @@ const FfiConverterTypeExternalVerifiableSecretShare = (() => {
   return new FFIConverter();
 })();
 
-export type FetchTokenConversionLimitsRequest = {
+export type FetchConversionLimitsRequest = {
   /**
    * The type of conversion, either from or to Bitcoin.
    */
-  conversionType: TokenConversionType;
+  conversionType: ConversionType;
   /**
    * The token identifier when converting to a token.
    */
@@ -3453,25 +3700,25 @@ export type FetchTokenConversionLimitsRequest = {
 };
 
 /**
- * Generated factory for {@link FetchTokenConversionLimitsRequest} record objects.
+ * Generated factory for {@link FetchConversionLimitsRequest} record objects.
  */
-export const FetchTokenConversionLimitsRequest = (() => {
+export const FetchConversionLimitsRequest = (() => {
   const defaults = () => ({ tokenIdentifier: undefined });
   const create = (() => {
     return uniffiCreateRecord<
-      FetchTokenConversionLimitsRequest,
+      FetchConversionLimitsRequest,
       ReturnType<typeof defaults>
     >(defaults);
   })();
   return Object.freeze({
     /**
-     * Create a frozen instance of {@link FetchTokenConversionLimitsRequest}, with defaults specified
+     * Create a frozen instance of {@link FetchConversionLimitsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     create,
 
     /**
-     * Create a frozen instance of {@link FetchTokenConversionLimitsRequest}, with defaults specified
+     * Create a frozen instance of {@link FetchConversionLimitsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     new: create,
@@ -3480,35 +3727,34 @@ export const FetchTokenConversionLimitsRequest = (() => {
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () =>
-      Object.freeze(defaults()) as Partial<FetchTokenConversionLimitsRequest>,
+      Object.freeze(defaults()) as Partial<FetchConversionLimitsRequest>,
   });
 })();
 
-const FfiConverterTypeFetchTokenConversionLimitsRequest = (() => {
-  type TypeName = FetchTokenConversionLimitsRequest;
+const FfiConverterTypeFetchConversionLimitsRequest = (() => {
+  type TypeName = FetchConversionLimitsRequest;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
-        conversionType: FfiConverterTypeTokenConversionType.read(from),
+        conversionType: FfiConverterTypeConversionType.read(from),
         tokenIdentifier: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
-      FfiConverterTypeTokenConversionType.write(value.conversionType, into);
+      FfiConverterTypeConversionType.write(value.conversionType, into);
       FfiConverterOptionalString.write(value.tokenIdentifier, into);
     }
     allocationSize(value: TypeName): number {
       return (
-        FfiConverterTypeTokenConversionType.allocationSize(
-          value.conversionType
-        ) + FfiConverterOptionalString.allocationSize(value.tokenIdentifier)
+        FfiConverterTypeConversionType.allocationSize(value.conversionType) +
+        FfiConverterOptionalString.allocationSize(value.tokenIdentifier)
       );
     }
   }
   return new FFIConverter();
 })();
 
-export type FetchTokenConversionLimitsResponse = {
+export type FetchConversionLimitsResponse = {
   /**
    * The minimum amount to be converted.
    * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
@@ -3522,25 +3768,25 @@ export type FetchTokenConversionLimitsResponse = {
 };
 
 /**
- * Generated factory for {@link FetchTokenConversionLimitsResponse} record objects.
+ * Generated factory for {@link FetchConversionLimitsResponse} record objects.
  */
-export const FetchTokenConversionLimitsResponse = (() => {
+export const FetchConversionLimitsResponse = (() => {
   const defaults = () => ({});
   const create = (() => {
     return uniffiCreateRecord<
-      FetchTokenConversionLimitsResponse,
+      FetchConversionLimitsResponse,
       ReturnType<typeof defaults>
     >(defaults);
   })();
   return Object.freeze({
     /**
-     * Create a frozen instance of {@link FetchTokenConversionLimitsResponse}, with defaults specified
+     * Create a frozen instance of {@link FetchConversionLimitsResponse}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     create,
 
     /**
-     * Create a frozen instance of {@link FetchTokenConversionLimitsResponse}, with defaults specified
+     * Create a frozen instance of {@link FetchConversionLimitsResponse}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     new: create,
@@ -3549,12 +3795,12 @@ export const FetchTokenConversionLimitsResponse = (() => {
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () =>
-      Object.freeze(defaults()) as Partial<FetchTokenConversionLimitsResponse>,
+      Object.freeze(defaults()) as Partial<FetchConversionLimitsResponse>,
   });
 })();
 
-const FfiConverterTypeFetchTokenConversionLimitsResponse = (() => {
-  type TypeName = FetchTokenConversionLimitsResponse;
+const FfiConverterTypeFetchConversionLimitsResponse = (() => {
+  type TypeName = FetchConversionLimitsResponse;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
@@ -6320,7 +6566,7 @@ export type PaymentMetadata = {
   lnurlPayInfo: LnurlPayInfo | undefined;
   lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
   lnurlDescription: string | undefined;
-  tokenConversionInfo: TokenConversionInfo | undefined;
+  conversionInfo: ConversionInfo | undefined;
 };
 
 /**
@@ -6362,8 +6608,7 @@ const FfiConverterTypePaymentMetadata = (() => {
         lnurlPayInfo: FfiConverterOptionalTypeLnurlPayInfo.read(from),
         lnurlWithdrawInfo: FfiConverterOptionalTypeLnurlWithdrawInfo.read(from),
         lnurlDescription: FfiConverterOptionalString.read(from),
-        tokenConversionInfo:
-          FfiConverterOptionalTypeTokenConversionInfo.read(from),
+        conversionInfo: FfiConverterOptionalTypeConversionInfo.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -6374,10 +6619,7 @@ const FfiConverterTypePaymentMetadata = (() => {
         into
       );
       FfiConverterOptionalString.write(value.lnurlDescription, into);
-      FfiConverterOptionalTypeTokenConversionInfo.write(
-        value.tokenConversionInfo,
-        into
-      );
+      FfiConverterOptionalTypeConversionInfo.write(value.conversionInfo, into);
     }
     allocationSize(value: TypeName): number {
       return (
@@ -6389,8 +6631,8 @@ const FfiConverterTypePaymentMetadata = (() => {
           value.lnurlWithdrawInfo
         ) +
         FfiConverterOptionalString.allocationSize(value.lnurlDescription) +
-        FfiConverterOptionalTypeTokenConversionInfo.allocationSize(
-          value.tokenConversionInfo
+        FfiConverterOptionalTypeConversionInfo.allocationSize(
+          value.conversionInfo
         )
       );
     }
@@ -6625,9 +6867,9 @@ export type PrepareSendPaymentRequest = {
    */
   tokenIdentifier: string | undefined;
   /**
-   * If provided, the payment will include a token conversion step before sending the payment
+   * If provided, the payment will include a conversion step before sending the payment
    */
-  tokenConversionOptions: TokenConversionOptions | undefined;
+  conversionOptions: ConversionOptions | undefined;
 };
 
 /**
@@ -6637,7 +6879,7 @@ export const PrepareSendPaymentRequest = (() => {
   const defaults = () => ({
     amount: undefined,
     tokenIdentifier: undefined,
-    tokenConversionOptions: undefined,
+    conversionOptions: undefined,
   });
   const create = (() => {
     return uniffiCreateRecord<
@@ -6674,16 +6916,15 @@ const FfiConverterTypePrepareSendPaymentRequest = (() => {
         paymentRequest: FfiConverterString.read(from),
         amount: FfiConverterOptionalTypeu128.read(from),
         tokenIdentifier: FfiConverterOptionalString.read(from),
-        tokenConversionOptions:
-          FfiConverterOptionalTypeTokenConversionOptions.read(from),
+        conversionOptions: FfiConverterOptionalTypeConversionOptions.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterString.write(value.paymentRequest, into);
       FfiConverterOptionalTypeu128.write(value.amount, into);
       FfiConverterOptionalString.write(value.tokenIdentifier, into);
-      FfiConverterOptionalTypeTokenConversionOptions.write(
-        value.tokenConversionOptions,
+      FfiConverterOptionalTypeConversionOptions.write(
+        value.conversionOptions,
         into
       );
     }
@@ -6692,8 +6933,8 @@ const FfiConverterTypePrepareSendPaymentRequest = (() => {
         FfiConverterString.allocationSize(value.paymentRequest) +
         FfiConverterOptionalTypeu128.allocationSize(value.amount) +
         FfiConverterOptionalString.allocationSize(value.tokenIdentifier) +
-        FfiConverterOptionalTypeTokenConversionOptions.allocationSize(
-          value.tokenConversionOptions
+        FfiConverterOptionalTypeConversionOptions.allocationSize(
+          value.conversionOptions
         )
       );
     }
@@ -6714,13 +6955,9 @@ export type PrepareSendPaymentResponse = {
    */
   tokenIdentifier: string | undefined;
   /**
-   * When set, the payment will include a token conversion step before sending the payment
+   * When set, the payment will include a conversion step before sending the payment
    */
-  tokenConversionOptions: TokenConversionOptions | undefined;
-  /**
-   * The estimated token conversion fee if the payment involves a token conversion
-   */
-  tokenConversionFee: U128 | undefined;
+  conversionEstimate: ConversionEstimate | undefined;
 };
 
 /**
@@ -6763,30 +7000,27 @@ const FfiConverterTypePrepareSendPaymentResponse = (() => {
         paymentMethod: FfiConverterTypeSendPaymentMethod.read(from),
         amount: FfiConverterTypeu128.read(from),
         tokenIdentifier: FfiConverterOptionalString.read(from),
-        tokenConversionOptions:
-          FfiConverterOptionalTypeTokenConversionOptions.read(from),
-        tokenConversionFee: FfiConverterOptionalTypeu128.read(from),
+        conversionEstimate:
+          FfiConverterOptionalTypeConversionEstimate.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterTypeSendPaymentMethod.write(value.paymentMethod, into);
       FfiConverterTypeu128.write(value.amount, into);
       FfiConverterOptionalString.write(value.tokenIdentifier, into);
-      FfiConverterOptionalTypeTokenConversionOptions.write(
-        value.tokenConversionOptions,
+      FfiConverterOptionalTypeConversionEstimate.write(
+        value.conversionEstimate,
         into
       );
-      FfiConverterOptionalTypeu128.write(value.tokenConversionFee, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterTypeSendPaymentMethod.allocationSize(value.paymentMethod) +
         FfiConverterTypeu128.allocationSize(value.amount) +
         FfiConverterOptionalString.allocationSize(value.tokenIdentifier) +
-        FfiConverterOptionalTypeTokenConversionOptions.allocationSize(
-          value.tokenConversionOptions
-        ) +
-        FfiConverterOptionalTypeu128.allocationSize(value.tokenConversionFee)
+        FfiConverterOptionalTypeConversionEstimate.allocationSize(
+          value.conversionEstimate
+        )
       );
     }
   }
@@ -8361,7 +8595,7 @@ export type SparkHtlcDetails = {
    */
   preimage: string | undefined;
   /**
-   * The expiry time of the HTLC in seconds since the Unix epoch
+   * The expiry time of the HTLC as a unix timestamp in seconds
    */
   expiryTime: /*u64*/ bigint;
   /**
@@ -8513,7 +8747,7 @@ export type SparkInvoiceDetails = {
    */
   tokenIdentifier: string | undefined;
   /**
-   * Optional expiry time. If not provided, the invoice will never expire.
+   * Optional expiry time as a unix timestamp in seconds. If not provided, the invoice will never expire.
    */
   expiryTime: /*u64*/ bigint | undefined;
   /**
@@ -8880,174 +9114,6 @@ const FfiConverterTypeTokenBalance = (() => {
       return (
         FfiConverterTypeu128.allocationSize(value.balance) +
         FfiConverterTypeTokenMetadata.allocationSize(value.tokenMetadata)
-      );
-    }
-  }
-  return new FFIConverter();
-})();
-
-export type TokenConversionInfo = {
-  /**
-   * The pool id associated with the conversion
-   */
-  poolId: string;
-  /**
-   * The receiving payment id associated with the conversion
-   */
-  paymentId: string | undefined;
-  /**
-   * The fee paid for the conversion
-   * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
-   */
-  fee: U128 | undefined;
-  /**
-   * The refund payment id if a refund payment was made
-   */
-  refundIdentifier: string | undefined;
-};
-
-/**
- * Generated factory for {@link TokenConversionInfo} record objects.
- */
-export const TokenConversionInfo = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<TokenConversionInfo, ReturnType<typeof defaults>>(
-      defaults
-    );
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link TokenConversionInfo}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link TokenConversionInfo}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Object.freeze(defaults()) as Partial<TokenConversionInfo>,
-  });
-})();
-
-const FfiConverterTypeTokenConversionInfo = (() => {
-  type TypeName = TokenConversionInfo;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        poolId: FfiConverterString.read(from),
-        paymentId: FfiConverterOptionalString.read(from),
-        fee: FfiConverterOptionalTypeu128.read(from),
-        refundIdentifier: FfiConverterOptionalString.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterString.write(value.poolId, into);
-      FfiConverterOptionalString.write(value.paymentId, into);
-      FfiConverterOptionalTypeu128.write(value.fee, into);
-      FfiConverterOptionalString.write(value.refundIdentifier, into);
-    }
-    allocationSize(value: TypeName): number {
-      return (
-        FfiConverterString.allocationSize(value.poolId) +
-        FfiConverterOptionalString.allocationSize(value.paymentId) +
-        FfiConverterOptionalTypeu128.allocationSize(value.fee) +
-        FfiConverterOptionalString.allocationSize(value.refundIdentifier)
-      );
-    }
-  }
-  return new FFIConverter();
-})();
-
-/**
- * Options for token conversion when fulfilling a payment. When set, the SDK will
- * perform a token conversion before fulfilling the payment. If not set, the payment
- * will only be fulfilled if the wallet has sufficient balance of the required asset.
- */
-export type TokenConversionOptions = {
-  /**
-   * The type of token conversion to perform when fulfilling the payment
-   */
-  conversionType: TokenConversionType;
-  /**
-   * The optional maximum slippage in basis points (1/100 of a percent) allowed when
-   * a token conversion is needed to fulfill the payment. Defaults to 50 bps (0.5%) if not set.
-   * The token conversion will fail if the actual amount received is less than
-   * `estimated_amount * (1 - max_slippage_bps / 10_000)`.
-   */
-  maxSlippageBps: /*u32*/ number | undefined;
-  /**
-   * The optional timeout in seconds to wait for the token conversion to complete
-   * when fulfilling the payment. This timeout only concerns waiting for the received
-   * payment of the token conversion. If the timeout is reached before the conversion
-   * is complete, the payment will fail. Defaults to 30 seconds if not set.
-   */
-  completionTimeoutSecs: /*u32*/ number | undefined;
-};
-
-/**
- * Generated factory for {@link TokenConversionOptions} record objects.
- */
-export const TokenConversionOptions = (() => {
-  const defaults = () => ({
-    maxSlippageBps: undefined,
-    completionTimeoutSecs: undefined,
-  });
-  const create = (() => {
-    return uniffiCreateRecord<
-      TokenConversionOptions,
-      ReturnType<typeof defaults>
-    >(defaults);
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link TokenConversionOptions}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link TokenConversionOptions}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () =>
-      Object.freeze(defaults()) as Partial<TokenConversionOptions>,
-  });
-})();
-
-const FfiConverterTypeTokenConversionOptions = (() => {
-  type TypeName = TokenConversionOptions;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        conversionType: FfiConverterTypeTokenConversionType.read(from),
-        maxSlippageBps: FfiConverterOptionalUInt32.read(from),
-        completionTimeoutSecs: FfiConverterOptionalUInt32.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterTypeTokenConversionType.write(value.conversionType, into);
-      FfiConverterOptionalUInt32.write(value.maxSlippageBps, into);
-      FfiConverterOptionalUInt32.write(value.completionTimeoutSecs, into);
-    }
-    allocationSize(value: TypeName): number {
-      return (
-        FfiConverterTypeTokenConversionType.allocationSize(
-          value.conversionType
-        ) +
-        FfiConverterOptionalUInt32.allocationSize(value.maxSlippageBps) +
-        FfiConverterOptionalUInt32.allocationSize(value.completionTimeoutSecs)
       );
     }
   }
@@ -10417,6 +10483,340 @@ const FfiConverterTypeChainServiceError = (() => {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(3);
           size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: ConversionPurpose
+export enum ConversionPurpose_Tags {
+  OngoingPayment = 'OngoingPayment',
+  SelfTransfer = 'SelfTransfer',
+}
+/**
+ * The purpose of the conversion, which is used to provide context for the conversion
+ * if its related to an ongoing payment or a self-transfer.
+ */
+export const ConversionPurpose = (() => {
+  type OngoingPayment__interface = {
+    tag: ConversionPurpose_Tags.OngoingPayment;
+    inner: Readonly<{ paymentRequest: string }>;
+  };
+
+  /**
+   * Conversion is associated with an ongoing payment
+   */
+  class OngoingPayment_
+    extends UniffiEnum
+    implements OngoingPayment__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ConversionPurpose';
+    readonly tag = ConversionPurpose_Tags.OngoingPayment;
+    readonly inner: Readonly<{ paymentRequest: string }>;
+    constructor(inner: {
+      /**
+       * The payment request of the ongoing payment
+       */ paymentRequest: string;
+    }) {
+      super('ConversionPurpose', 'OngoingPayment');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * The payment request of the ongoing payment
+       */ paymentRequest: string;
+    }): OngoingPayment_ {
+      return new OngoingPayment_(inner);
+    }
+
+    static instanceOf(obj: any): obj is OngoingPayment_ {
+      return obj.tag === ConversionPurpose_Tags.OngoingPayment;
+    }
+  }
+
+  type SelfTransfer__interface = {
+    tag: ConversionPurpose_Tags.SelfTransfer;
+  };
+
+  /**
+   * Conversion is for self-transfer
+   */
+  class SelfTransfer_ extends UniffiEnum implements SelfTransfer__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ConversionPurpose';
+    readonly tag = ConversionPurpose_Tags.SelfTransfer;
+    constructor() {
+      super('ConversionPurpose', 'SelfTransfer');
+    }
+
+    static new(): SelfTransfer_ {
+      return new SelfTransfer_();
+    }
+
+    static instanceOf(obj: any): obj is SelfTransfer_ {
+      return obj.tag === ConversionPurpose_Tags.SelfTransfer;
+    }
+  }
+
+  function instanceOf(obj: any): obj is ConversionPurpose {
+    return obj[uniffiTypeNameSymbol] === 'ConversionPurpose';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    OngoingPayment: OngoingPayment_,
+    SelfTransfer: SelfTransfer_,
+  });
+})();
+
+/**
+ * The purpose of the conversion, which is used to provide context for the conversion
+ * if its related to an ongoing payment or a self-transfer.
+ */
+
+export type ConversionPurpose = InstanceType<
+  (typeof ConversionPurpose)[keyof Omit<typeof ConversionPurpose, 'instanceOf'>]
+>;
+
+// FfiConverter for enum ConversionPurpose
+const FfiConverterTypeConversionPurpose = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ConversionPurpose;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new ConversionPurpose.OngoingPayment({
+            paymentRequest: FfiConverterString.read(from),
+          });
+        case 2:
+          return new ConversionPurpose.SelfTransfer();
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case ConversionPurpose_Tags.OngoingPayment: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.paymentRequest, into);
+          return;
+        }
+        case ConversionPurpose_Tags.SelfTransfer: {
+          ordinalConverter.write(2, into);
+          return;
+        }
+        default:
+          // Throwing from here means that ConversionPurpose_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case ConversionPurpose_Tags.OngoingPayment: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterString.allocationSize(inner.paymentRequest);
+          return size;
+        }
+        case ConversionPurpose_Tags.SelfTransfer: {
+          return ordinalConverter.allocationSize(2);
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * The status of the conversion
+ */
+export enum ConversionStatus {
+  /**
+   * The conversion was successful
+   */
+  Completed,
+  /**
+   * The conversion failed and no refund was made yet, which requires action by the SDK to
+   * perform the refund. This can happen if there was a failure during the conversion process.
+   */
+  RefundNeeded,
+  /**
+   * The conversion failed and a refund was made
+   */
+  Refunded,
+}
+
+const FfiConverterTypeConversionStatus = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ConversionStatus;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return ConversionStatus.Completed;
+        case 2:
+          return ConversionStatus.RefundNeeded;
+        case 3:
+          return ConversionStatus.Refunded;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case ConversionStatus.Completed:
+          return ordinalConverter.write(1, into);
+        case ConversionStatus.RefundNeeded:
+          return ordinalConverter.write(2, into);
+        case ConversionStatus.Refunded:
+          return ordinalConverter.write(3, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: ConversionType
+export enum ConversionType_Tags {
+  FromBitcoin = 'FromBitcoin',
+  ToBitcoin = 'ToBitcoin',
+}
+export const ConversionType = (() => {
+  type FromBitcoin__interface = {
+    tag: ConversionType_Tags.FromBitcoin;
+  };
+
+  /**
+   * Converting from Bitcoin to a token
+   */
+  class FromBitcoin_ extends UniffiEnum implements FromBitcoin__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ConversionType';
+    readonly tag = ConversionType_Tags.FromBitcoin;
+    constructor() {
+      super('ConversionType', 'FromBitcoin');
+    }
+
+    static new(): FromBitcoin_ {
+      return new FromBitcoin_();
+    }
+
+    static instanceOf(obj: any): obj is FromBitcoin_ {
+      return obj.tag === ConversionType_Tags.FromBitcoin;
+    }
+  }
+
+  type ToBitcoin__interface = {
+    tag: ConversionType_Tags.ToBitcoin;
+    inner: Readonly<{ fromTokenIdentifier: string }>;
+  };
+
+  /**
+   * Converting from a token to Bitcoin
+   */
+  class ToBitcoin_ extends UniffiEnum implements ToBitcoin__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ConversionType';
+    readonly tag = ConversionType_Tags.ToBitcoin;
+    readonly inner: Readonly<{ fromTokenIdentifier: string }>;
+    constructor(inner: { fromTokenIdentifier: string }) {
+      super('ConversionType', 'ToBitcoin');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { fromTokenIdentifier: string }): ToBitcoin_ {
+      return new ToBitcoin_(inner);
+    }
+
+    static instanceOf(obj: any): obj is ToBitcoin_ {
+      return obj.tag === ConversionType_Tags.ToBitcoin;
+    }
+  }
+
+  function instanceOf(obj: any): obj is ConversionType {
+    return obj[uniffiTypeNameSymbol] === 'ConversionType';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    FromBitcoin: FromBitcoin_,
+    ToBitcoin: ToBitcoin_,
+  });
+})();
+
+export type ConversionType = InstanceType<
+  (typeof ConversionType)[keyof Omit<typeof ConversionType, 'instanceOf'>]
+>;
+
+// FfiConverter for enum ConversionType
+const FfiConverterTypeConversionType = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ConversionType;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new ConversionType.FromBitcoin();
+        case 2:
+          return new ConversionType.ToBitcoin({
+            fromTokenIdentifier: FfiConverterString.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case ConversionType_Tags.FromBitcoin: {
+          ordinalConverter.write(1, into);
+          return;
+        }
+        case ConversionType_Tags.ToBitcoin: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.fromTokenIdentifier, into);
+          return;
+        }
+        default:
+          // Throwing from here means that ConversionType_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case ConversionType_Tags.FromBitcoin: {
+          return ordinalConverter.allocationSize(1);
+        }
+        case ConversionType_Tags.ToBitcoin: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner.fromTokenIdentifier);
           return size;
         }
         default:
@@ -12427,7 +12827,7 @@ export const PaymentDetails = (() => {
     inner: Readonly<{
       invoiceDetails: SparkInvoicePaymentDetails | undefined;
       htlcDetails: SparkHtlcDetails | undefined;
-      tokenConversionInfo: TokenConversionInfo | undefined;
+      conversionInfo: ConversionInfo | undefined;
     }>;
   };
 
@@ -12441,7 +12841,7 @@ export const PaymentDetails = (() => {
     readonly inner: Readonly<{
       invoiceDetails: SparkInvoicePaymentDetails | undefined;
       htlcDetails: SparkHtlcDetails | undefined;
-      tokenConversionInfo: TokenConversionInfo | undefined;
+      conversionInfo: ConversionInfo | undefined;
     }>;
     constructor(inner: {
       /**
@@ -12451,8 +12851,8 @@ export const PaymentDetails = (() => {
        * The HTLC transfer details if the payment fulfilled an HTLC transfer
        */ htlcDetails: SparkHtlcDetails | undefined;
       /**
-       * The information for a token conversion
-       */ tokenConversionInfo: TokenConversionInfo | undefined;
+       * The information for a conversion
+       */ conversionInfo: ConversionInfo | undefined;
     }) {
       super('PaymentDetails', 'Spark');
       this.inner = Object.freeze(inner);
@@ -12466,8 +12866,8 @@ export const PaymentDetails = (() => {
        * The HTLC transfer details if the payment fulfilled an HTLC transfer
        */ htlcDetails: SparkHtlcDetails | undefined;
       /**
-       * The information for a token conversion
-       */ tokenConversionInfo: TokenConversionInfo | undefined;
+       * The information for a conversion
+       */ conversionInfo: ConversionInfo | undefined;
     }): Spark_ {
       return new Spark_(inner);
     }
@@ -12483,7 +12883,7 @@ export const PaymentDetails = (() => {
       metadata: TokenMetadata;
       txHash: string;
       invoiceDetails: SparkInvoicePaymentDetails | undefined;
-      tokenConversionInfo: TokenConversionInfo | undefined;
+      conversionInfo: ConversionInfo | undefined;
     }>;
   };
 
@@ -12498,7 +12898,7 @@ export const PaymentDetails = (() => {
       metadata: TokenMetadata;
       txHash: string;
       invoiceDetails: SparkInvoicePaymentDetails | undefined;
-      tokenConversionInfo: TokenConversionInfo | undefined;
+      conversionInfo: ConversionInfo | undefined;
     }>;
     constructor(inner: {
       metadata: TokenMetadata;
@@ -12507,8 +12907,8 @@ export const PaymentDetails = (() => {
        * The invoice details if the payment fulfilled a spark invoice
        */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
       /**
-       * The information for a token conversion
-       */ tokenConversionInfo: TokenConversionInfo | undefined;
+       * The information for a conversion
+       */ conversionInfo: ConversionInfo | undefined;
     }) {
       super('PaymentDetails', 'Token');
       this.inner = Object.freeze(inner);
@@ -12521,8 +12921,8 @@ export const PaymentDetails = (() => {
        * The invoice details if the payment fulfilled a spark invoice
        */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
       /**
-       * The information for a token conversion
-       */ tokenConversionInfo: TokenConversionInfo | undefined;
+       * The information for a conversion
+       */ conversionInfo: ConversionInfo | undefined;
     }): Token_ {
       return new Token_(inner);
     }
@@ -12715,8 +13115,7 @@ const FfiConverterTypePaymentDetails = (() => {
             invoiceDetails:
               FfiConverterOptionalTypeSparkInvoicePaymentDetails.read(from),
             htlcDetails: FfiConverterOptionalTypeSparkHtlcDetails.read(from),
-            tokenConversionInfo:
-              FfiConverterOptionalTypeTokenConversionInfo.read(from),
+            conversionInfo: FfiConverterOptionalTypeConversionInfo.read(from),
           });
         case 2:
           return new PaymentDetails.Token({
@@ -12724,8 +13123,7 @@ const FfiConverterTypePaymentDetails = (() => {
             txHash: FfiConverterString.read(from),
             invoiceDetails:
               FfiConverterOptionalTypeSparkInvoicePaymentDetails.read(from),
-            tokenConversionInfo:
-              FfiConverterOptionalTypeTokenConversionInfo.read(from),
+            conversionInfo: FfiConverterOptionalTypeConversionInfo.read(from),
           });
         case 3:
           return new PaymentDetails.Lightning({
@@ -12765,8 +13163,8 @@ const FfiConverterTypePaymentDetails = (() => {
             inner.htlcDetails,
             into
           );
-          FfiConverterOptionalTypeTokenConversionInfo.write(
-            inner.tokenConversionInfo,
+          FfiConverterOptionalTypeConversionInfo.write(
+            inner.conversionInfo,
             into
           );
           return;
@@ -12780,8 +13178,8 @@ const FfiConverterTypePaymentDetails = (() => {
             inner.invoiceDetails,
             into
           );
-          FfiConverterOptionalTypeTokenConversionInfo.write(
-            inner.tokenConversionInfo,
+          FfiConverterOptionalTypeConversionInfo.write(
+            inner.conversionInfo,
             into
           );
           return;
@@ -12834,8 +13232,8 @@ const FfiConverterTypePaymentDetails = (() => {
           size += FfiConverterOptionalTypeSparkHtlcDetails.allocationSize(
             inner.htlcDetails
           );
-          size += FfiConverterOptionalTypeTokenConversionInfo.allocationSize(
-            inner.tokenConversionInfo
+          size += FfiConverterOptionalTypeConversionInfo.allocationSize(
+            inner.conversionInfo
           );
           return size;
         }
@@ -12848,8 +13246,8 @@ const FfiConverterTypePaymentDetails = (() => {
             FfiConverterOptionalTypeSparkInvoicePaymentDetails.allocationSize(
               inner.invoiceDetails
             );
-          size += FfiConverterOptionalTypeTokenConversionInfo.allocationSize(
-            inner.tokenConversionInfo
+          size += FfiConverterOptionalTypeConversionInfo.allocationSize(
+            inner.conversionInfo
           );
           return size;
         }
@@ -13727,7 +14125,7 @@ export const ReceivePaymentMethod = (() => {
        * If empty, it is a Bitcoin payment
        */ tokenIdentifier: string | undefined;
       /**
-       * The expiry time of the invoice in seconds since the Unix epoch
+       * The expiry time of the invoice as a unix timestamp in seconds
        */ expiryTime: /*u64*/ bigint | undefined;
       /**
        * A description to embed in the invoice.
@@ -13749,7 +14147,7 @@ export const ReceivePaymentMethod = (() => {
        * If empty, it is a Bitcoin payment
        */ tokenIdentifier: string | undefined;
       /**
-       * The expiry time of the invoice in seconds since the Unix epoch
+       * The expiry time of the invoice as a unix timestamp in seconds
        */ expiryTime: /*u64*/ bigint | undefined;
       /**
        * A description to embed in the invoice.
@@ -13818,7 +14216,7 @@ export const ReceivePaymentMethod = (() => {
       description: string;
       amountSats: /*u64*/ bigint | undefined;
       /**
-       * The expiry time of the invoice in seconds
+       * The expiry of the invoice as a duration in seconds
        */ expirySecs: /*u32*/ number | undefined;
     }) {
       super('ReceivePaymentMethod', 'Bolt11Invoice');
@@ -13829,7 +14227,7 @@ export const ReceivePaymentMethod = (() => {
       description: string;
       amountSats: /*u64*/ bigint | undefined;
       /**
-       * The expiry time of the invoice in seconds
+       * The expiry of the invoice as a duration in seconds
        */ expirySecs: /*u32*/ number | undefined;
     }): Bolt11Invoice_ {
       return new Bolt11Invoice_(inner);
@@ -17731,140 +18129,6 @@ const FfiConverterTypeSyncStorageError = (() => {
   return new FFIConverter();
 })();
 
-// Enum: TokenConversionType
-export enum TokenConversionType_Tags {
-  FromBitcoin = 'FromBitcoin',
-  ToBitcoin = 'ToBitcoin',
-}
-export const TokenConversionType = (() => {
-  type FromBitcoin__interface = {
-    tag: TokenConversionType_Tags.FromBitcoin;
-  };
-
-  /**
-   * Converting from Bitcoin to a token
-   */
-  class FromBitcoin_ extends UniffiEnum implements FromBitcoin__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'TokenConversionType';
-    readonly tag = TokenConversionType_Tags.FromBitcoin;
-    constructor() {
-      super('TokenConversionType', 'FromBitcoin');
-    }
-
-    static new(): FromBitcoin_ {
-      return new FromBitcoin_();
-    }
-
-    static instanceOf(obj: any): obj is FromBitcoin_ {
-      return obj.tag === TokenConversionType_Tags.FromBitcoin;
-    }
-  }
-
-  type ToBitcoin__interface = {
-    tag: TokenConversionType_Tags.ToBitcoin;
-    inner: Readonly<{ fromTokenIdentifier: string }>;
-  };
-
-  /**
-   * Converting from a token to Bitcoin
-   */
-  class ToBitcoin_ extends UniffiEnum implements ToBitcoin__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'TokenConversionType';
-    readonly tag = TokenConversionType_Tags.ToBitcoin;
-    readonly inner: Readonly<{ fromTokenIdentifier: string }>;
-    constructor(inner: { fromTokenIdentifier: string }) {
-      super('TokenConversionType', 'ToBitcoin');
-      this.inner = Object.freeze(inner);
-    }
-
-    static new(inner: { fromTokenIdentifier: string }): ToBitcoin_ {
-      return new ToBitcoin_(inner);
-    }
-
-    static instanceOf(obj: any): obj is ToBitcoin_ {
-      return obj.tag === TokenConversionType_Tags.ToBitcoin;
-    }
-  }
-
-  function instanceOf(obj: any): obj is TokenConversionType {
-    return obj[uniffiTypeNameSymbol] === 'TokenConversionType';
-  }
-
-  return Object.freeze({
-    instanceOf,
-    FromBitcoin: FromBitcoin_,
-    ToBitcoin: ToBitcoin_,
-  });
-})();
-
-export type TokenConversionType = InstanceType<
-  (typeof TokenConversionType)[keyof Omit<
-    typeof TokenConversionType,
-    'instanceOf'
-  >]
->;
-
-// FfiConverter for enum TokenConversionType
-const FfiConverterTypeTokenConversionType = (() => {
-  const ordinalConverter = FfiConverterInt32;
-  type TypeName = TokenConversionType;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      switch (ordinalConverter.read(from)) {
-        case 1:
-          return new TokenConversionType.FromBitcoin();
-        case 2:
-          return new TokenConversionType.ToBitcoin({
-            fromTokenIdentifier: FfiConverterString.read(from),
-          });
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      switch (value.tag) {
-        case TokenConversionType_Tags.FromBitcoin: {
-          ordinalConverter.write(1, into);
-          return;
-        }
-        case TokenConversionType_Tags.ToBitcoin: {
-          ordinalConverter.write(2, into);
-          const inner = value.inner;
-          FfiConverterString.write(inner.fromTokenIdentifier, into);
-          return;
-        }
-        default:
-          // Throwing from here means that TokenConversionType_Tags hasn't matched an ordinal.
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    allocationSize(value: TypeName): number {
-      switch (value.tag) {
-        case TokenConversionType_Tags.FromBitcoin: {
-          return ordinalConverter.allocationSize(1);
-        }
-        case TokenConversionType_Tags.ToBitcoin: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(2);
-          size += FfiConverterString.allocationSize(inner.fromTokenIdentifier);
-          return size;
-        }
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-  }
-  return new FFIConverter();
-})();
-
 // Enum: UpdateDepositPayload
 export enum UpdateDepositPayload_Tags {
   ClaimError = 'ClaimError',
@@ -18643,10 +18907,10 @@ export interface BreezSdkInterface {
    * Result containing either success or an `SdkError` if the background task couldn't be stopped
    */
   disconnect(asyncOpts_?: { signal: AbortSignal }): /*throws*/ Promise<void>;
-  fetchTokenConversionLimits(
-    request: FetchTokenConversionLimitsRequest,
+  fetchConversionLimits(
+    request: FetchConversionLimitsRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<FetchTokenConversionLimitsResponse>;
+  ): /*throws*/ Promise<FetchConversionLimitsResponse>;
   /**
    * Returns the balance of the wallet in satoshis
    */
@@ -19193,18 +19457,18 @@ export class BreezSdk
     }
   }
 
-  public async fetchTokenConversionLimits(
-    request: FetchTokenConversionLimitsRequest,
+  public async fetchConversionLimits(
+    request: FetchConversionLimitsRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ): Promise<FetchTokenConversionLimitsResponse> /*throws*/ {
+  ): Promise<FetchConversionLimitsResponse> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
     try {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_token_conversion_limits(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_conversion_limits(
             uniffiTypeBreezSdkObjectFactory.clonePointer(this),
-            FfiConverterTypeFetchTokenConversionLimitsRequest.lower(request)
+            FfiConverterTypeFetchConversionLimitsRequest.lower(request)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -19215,8 +19479,8 @@ export class BreezSdk
           .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
         /*freeFunc:*/ nativeModule()
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeFetchTokenConversionLimitsResponse.lift.bind(
-          FfiConverterTypeFetchTokenConversionLimitsResponse
+        /*liftFunc:*/ FfiConverterTypeFetchConversionLimitsResponse.lift.bind(
+          FfiConverterTypeFetchConversionLimitsResponse
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -27143,6 +27407,21 @@ const FfiConverterOptionalTypeLogger = new FfiConverterOptional(
   FfiConverterTypeLogger
 );
 
+// FfiConverter for ConversionEstimate | undefined
+const FfiConverterOptionalTypeConversionEstimate = new FfiConverterOptional(
+  FfiConverterTypeConversionEstimate
+);
+
+// FfiConverter for ConversionInfo | undefined
+const FfiConverterOptionalTypeConversionInfo = new FfiConverterOptional(
+  FfiConverterTypeConversionInfo
+);
+
+// FfiConverter for ConversionOptions | undefined
+const FfiConverterOptionalTypeConversionOptions = new FfiConverterOptional(
+  FfiConverterTypeConversionOptions
+);
+
 // FfiConverter for Credentials | undefined
 const FfiConverterOptionalTypeCredentials = new FfiConverterOptional(
   FfiConverterTypeCredentials
@@ -27205,16 +27484,6 @@ const FfiConverterOptionalTypeSparkInvoicePaymentDetails =
 // FfiConverter for Symbol | undefined
 const FfiConverterOptionalTypeSymbol = new FfiConverterOptional(
   FfiConverterTypeSymbol
-);
-
-// FfiConverter for TokenConversionInfo | undefined
-const FfiConverterOptionalTypeTokenConversionInfo = new FfiConverterOptional(
-  FfiConverterTypeTokenConversionInfo
-);
-
-// FfiConverter for TokenConversionOptions | undefined
-const FfiConverterOptionalTypeTokenConversionOptions = new FfiConverterOptional(
-  FfiConverterTypeTokenConversionOptions
 );
 
 // FfiConverter for string | undefined
@@ -27352,6 +27621,11 @@ const FfiConverterOptionalTypeAmount = new FfiConverterOptional(
 // FfiConverter for AssetFilter | undefined
 const FfiConverterOptionalTypeAssetFilter = new FfiConverterOptional(
   FfiConverterTypeAssetFilter
+);
+
+// FfiConverter for ConversionPurpose | undefined
+const FfiConverterOptionalTypeConversionPurpose = new FfiConverterOptional(
+  FfiConverterTypeConversionPurpose
 );
 
 // FfiConverter for DepositClaimError | undefined
@@ -27608,11 +27882,11 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_token_conversion_limits() !==
-    9413
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits() !==
+    50958
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_token_conversion_limits'
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits'
     );
   }
   if (
@@ -28415,6 +28689,12 @@ export default Object.freeze({
     FfiConverterTypeConfig,
     FfiConverterTypeConnectRequest,
     FfiConverterTypeConnectWithSignerRequest,
+    FfiConverterTypeConversionEstimate,
+    FfiConverterTypeConversionInfo,
+    FfiConverterTypeConversionOptions,
+    FfiConverterTypeConversionPurpose,
+    FfiConverterTypeConversionStatus,
+    FfiConverterTypeConversionType,
     FfiConverterTypeCreateIssuerTokenRequest,
     FfiConverterTypeCredentials,
     FfiConverterTypeCurrencyInfo,
@@ -28438,8 +28718,8 @@ export default Object.freeze({
     FfiConverterTypeExternalTreeNodeId,
     FfiConverterTypeExternalVerifiableSecretShare,
     FfiConverterTypeFee,
-    FfiConverterTypeFetchTokenConversionLimitsRequest,
-    FfiConverterTypeFetchTokenConversionLimitsResponse,
+    FfiConverterTypeFetchConversionLimitsRequest,
+    FfiConverterTypeFetchConversionLimitsResponse,
     FfiConverterTypeFiatCurrency,
     FfiConverterTypeFiatService,
     FfiConverterTypeFreezeIssuerTokenRequest,
@@ -28546,9 +28826,6 @@ export default Object.freeze({
     FfiConverterTypeSyncWalletRequest,
     FfiConverterTypeSyncWalletResponse,
     FfiConverterTypeTokenBalance,
-    FfiConverterTypeTokenConversionInfo,
-    FfiConverterTypeTokenConversionOptions,
-    FfiConverterTypeTokenConversionType,
     FfiConverterTypeTokenIssuer,
     FfiConverterTypeTokenMetadata,
     FfiConverterTypeTxStatus,

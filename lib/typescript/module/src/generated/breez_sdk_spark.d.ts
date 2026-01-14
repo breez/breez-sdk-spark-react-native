@@ -781,6 +781,130 @@ export declare const ConnectWithSignerRequest: Readonly<{
      */
     defaults: () => Partial<ConnectWithSignerRequest>;
 }>;
+/**
+ * Response from estimating a conversion, used when preparing a payment that requires conversion
+ */
+export type ConversionEstimate = {
+    /**
+     * The conversion options used for the estimate
+     */
+    options: ConversionOptions;
+    /**
+     * The estimated amount to be received from the conversion
+     * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+     */
+    amount: U128;
+    /**
+     * The fee estimated for the conversion
+     * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+     */
+    fee: U128;
+};
+/**
+ * Generated factory for {@link ConversionEstimate} record objects.
+ */
+export declare const ConversionEstimate: Readonly<{
+    /**
+     * Create a frozen instance of {@link ConversionEstimate}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ConversionEstimate> & Required<Omit<ConversionEstimate, never>>) => ConversionEstimate;
+    /**
+     * Create a frozen instance of {@link ConversionEstimate}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ConversionEstimate> & Required<Omit<ConversionEstimate, never>>) => ConversionEstimate;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ConversionEstimate>;
+}>;
+export type ConversionInfo = {
+    /**
+     * The pool id associated with the conversion
+     */
+    poolId: string;
+    /**
+     * The conversion id shared by both sides of the conversion
+     */
+    conversionId: string;
+    /**
+     * The status of the conversion
+     */
+    status: ConversionStatus;
+    /**
+     * The fee paid for the conversion
+     * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+     */
+    fee: U128 | undefined;
+    /**
+     * The purpose of the conversion
+     */
+    purpose: ConversionPurpose | undefined;
+};
+/**
+ * Generated factory for {@link ConversionInfo} record objects.
+ */
+export declare const ConversionInfo: Readonly<{
+    /**
+     * Create a frozen instance of {@link ConversionInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ConversionInfo> & Required<Omit<ConversionInfo, never>>) => ConversionInfo;
+    /**
+     * Create a frozen instance of {@link ConversionInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ConversionInfo> & Required<Omit<ConversionInfo, never>>) => ConversionInfo;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ConversionInfo>;
+}>;
+/**
+ * Options for conversion when fulfilling a payment. When set, the SDK will
+ * perform a conversion before fulfilling the payment. If not set, the payment
+ * will only be fulfilled if the wallet has sufficient balance of the required asset.
+ */
+export type ConversionOptions = {
+    /**
+     * The type of conversion to perform when fulfilling the payment
+     */
+    conversionType: ConversionType;
+    /**
+     * The optional maximum slippage in basis points (1/100 of a percent) allowed when
+     * a conversion is needed to fulfill the payment. Defaults to 50 bps (0.5%) if not set.
+     * The conversion will fail if the actual amount received is less than
+     * `estimated_amount * (1 - max_slippage_bps / 10_000)`.
+     */
+    maxSlippageBps: /*u32*/ number | undefined;
+    /**
+     * The optional timeout in seconds to wait for the conversion to complete
+     * when fulfilling the payment. This timeout only concerns waiting for the received
+     * payment of the conversion. If the timeout is reached before the conversion
+     * is complete, the payment will fail. Defaults to 30 seconds if not set.
+     */
+    completionTimeoutSecs: /*u32*/ number | undefined;
+};
+/**
+ * Generated factory for {@link ConversionOptions} record objects.
+ */
+export declare const ConversionOptions: Readonly<{
+    /**
+     * Create a frozen instance of {@link ConversionOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ConversionOptions> & Required<Omit<ConversionOptions, "maxSlippageBps" | "completionTimeoutSecs">>) => ConversionOptions;
+    /**
+     * Create a frozen instance of {@link ConversionOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ConversionOptions> & Required<Omit<ConversionOptions, "maxSlippageBps" | "completionTimeoutSecs">>) => ConversionOptions;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ConversionOptions>;
+}>;
 export type CreateIssuerTokenRequest = {
     name: string;
     ticker: string;
@@ -1366,36 +1490,36 @@ export declare const ExternalVerifiableSecretShare: Readonly<{
      */
     defaults: () => Partial<ExternalVerifiableSecretShare>;
 }>;
-export type FetchTokenConversionLimitsRequest = {
+export type FetchConversionLimitsRequest = {
     /**
      * The type of conversion, either from or to Bitcoin.
      */
-    conversionType: TokenConversionType;
+    conversionType: ConversionType;
     /**
      * The token identifier when converting to a token.
      */
     tokenIdentifier: string | undefined;
 };
 /**
- * Generated factory for {@link FetchTokenConversionLimitsRequest} record objects.
+ * Generated factory for {@link FetchConversionLimitsRequest} record objects.
  */
-export declare const FetchTokenConversionLimitsRequest: Readonly<{
+export declare const FetchConversionLimitsRequest: Readonly<{
     /**
-     * Create a frozen instance of {@link FetchTokenConversionLimitsRequest}, with defaults specified
+     * Create a frozen instance of {@link FetchConversionLimitsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<FetchTokenConversionLimitsRequest> & Required<Omit<FetchTokenConversionLimitsRequest, "tokenIdentifier">>) => FetchTokenConversionLimitsRequest;
+    create: (partial: Partial<FetchConversionLimitsRequest> & Required<Omit<FetchConversionLimitsRequest, "tokenIdentifier">>) => FetchConversionLimitsRequest;
     /**
-     * Create a frozen instance of {@link FetchTokenConversionLimitsRequest}, with defaults specified
+     * Create a frozen instance of {@link FetchConversionLimitsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<FetchTokenConversionLimitsRequest> & Required<Omit<FetchTokenConversionLimitsRequest, "tokenIdentifier">>) => FetchTokenConversionLimitsRequest;
+    new: (partial: Partial<FetchConversionLimitsRequest> & Required<Omit<FetchConversionLimitsRequest, "tokenIdentifier">>) => FetchConversionLimitsRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
-    defaults: () => Partial<FetchTokenConversionLimitsRequest>;
+    defaults: () => Partial<FetchConversionLimitsRequest>;
 }>;
-export type FetchTokenConversionLimitsResponse = {
+export type FetchConversionLimitsResponse = {
     /**
      * The minimum amount to be converted.
      * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
@@ -1408,23 +1532,23 @@ export type FetchTokenConversionLimitsResponse = {
     minToAmount: U128 | undefined;
 };
 /**
- * Generated factory for {@link FetchTokenConversionLimitsResponse} record objects.
+ * Generated factory for {@link FetchConversionLimitsResponse} record objects.
  */
-export declare const FetchTokenConversionLimitsResponse: Readonly<{
+export declare const FetchConversionLimitsResponse: Readonly<{
     /**
-     * Create a frozen instance of {@link FetchTokenConversionLimitsResponse}, with defaults specified
+     * Create a frozen instance of {@link FetchConversionLimitsResponse}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<FetchTokenConversionLimitsResponse> & Required<Omit<FetchTokenConversionLimitsResponse, never>>) => FetchTokenConversionLimitsResponse;
+    create: (partial: Partial<FetchConversionLimitsResponse> & Required<Omit<FetchConversionLimitsResponse, never>>) => FetchConversionLimitsResponse;
     /**
-     * Create a frozen instance of {@link FetchTokenConversionLimitsResponse}, with defaults specified
+     * Create a frozen instance of {@link FetchConversionLimitsResponse}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<FetchTokenConversionLimitsResponse> & Required<Omit<FetchTokenConversionLimitsResponse, never>>) => FetchTokenConversionLimitsResponse;
+    new: (partial: Partial<FetchConversionLimitsResponse> & Required<Omit<FetchConversionLimitsResponse, never>>) => FetchConversionLimitsResponse;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
-    defaults: () => Partial<FetchTokenConversionLimitsResponse>;
+    defaults: () => Partial<FetchConversionLimitsResponse>;
 }>;
 /**
  * Wrapper around the [`CurrencyInfo`] of a fiat currency
@@ -2609,7 +2733,7 @@ export type PaymentMetadata = {
     lnurlPayInfo: LnurlPayInfo | undefined;
     lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
     lnurlDescription: string | undefined;
-    tokenConversionInfo: TokenConversionInfo | undefined;
+    conversionInfo: ConversionInfo | undefined;
 };
 /**
  * Generated factory for {@link PaymentMetadata} record objects.
@@ -2718,9 +2842,9 @@ export type PrepareSendPaymentRequest = {
      */
     tokenIdentifier: string | undefined;
     /**
-     * If provided, the payment will include a token conversion step before sending the payment
+     * If provided, the payment will include a conversion step before sending the payment
      */
-    tokenConversionOptions: TokenConversionOptions | undefined;
+    conversionOptions: ConversionOptions | undefined;
 };
 /**
  * Generated factory for {@link PrepareSendPaymentRequest} record objects.
@@ -2730,12 +2854,12 @@ export declare const PrepareSendPaymentRequest: Readonly<{
      * Create a frozen instance of {@link PrepareSendPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier" | "tokenConversionOptions">>) => PrepareSendPaymentRequest;
+    create: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier" | "conversionOptions">>) => PrepareSendPaymentRequest;
     /**
      * Create a frozen instance of {@link PrepareSendPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier" | "tokenConversionOptions">>) => PrepareSendPaymentRequest;
+    new: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier" | "conversionOptions">>) => PrepareSendPaymentRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -2754,13 +2878,9 @@ export type PrepareSendPaymentResponse = {
      */
     tokenIdentifier: string | undefined;
     /**
-     * When set, the payment will include a token conversion step before sending the payment
+     * When set, the payment will include a conversion step before sending the payment
      */
-    tokenConversionOptions: TokenConversionOptions | undefined;
-    /**
-     * The estimated token conversion fee if the payment involves a token conversion
-     */
-    tokenConversionFee: U128 | undefined;
+    conversionEstimate: ConversionEstimate | undefined;
 };
 /**
  * Generated factory for {@link PrepareSendPaymentResponse} record objects.
@@ -3250,12 +3370,12 @@ export declare const SendPaymentRequest: Readonly<{
      * Create a frozen instance of {@link SendPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<SendPaymentRequest> & Required<Omit<SendPaymentRequest, "idempotencyKey" | "options">>) => SendPaymentRequest;
+    create: (partial: Partial<SendPaymentRequest> & Required<Omit<SendPaymentRequest, "options" | "idempotencyKey">>) => SendPaymentRequest;
     /**
      * Create a frozen instance of {@link SendPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<SendPaymentRequest> & Required<Omit<SendPaymentRequest, "idempotencyKey" | "options">>) => SendPaymentRequest;
+    new: (partial: Partial<SendPaymentRequest> & Required<Omit<SendPaymentRequest, "options" | "idempotencyKey">>) => SendPaymentRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -3425,7 +3545,7 @@ export type SparkHtlcDetails = {
      */
     preimage: string | undefined;
     /**
-     * The expiry time of the HTLC in seconds since the Unix epoch
+     * The expiry time of the HTLC as a unix timestamp in seconds
      */
     expiryTime: bigint;
     /**
@@ -3501,7 +3621,7 @@ export type SparkInvoiceDetails = {
      */
     tokenIdentifier: string | undefined;
     /**
-     * Optional expiry time. If not provided, the invoice will never expire.
+     * Optional expiry time as a unix timestamp in seconds. If not provided, the invoice will never expire.
      */
     expiryTime: /*u64*/ bigint | undefined;
     /**
@@ -3657,88 +3777,6 @@ export declare const TokenBalance: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<TokenBalance>;
-}>;
-export type TokenConversionInfo = {
-    /**
-     * The pool id associated with the conversion
-     */
-    poolId: string;
-    /**
-     * The receiving payment id associated with the conversion
-     */
-    paymentId: string | undefined;
-    /**
-     * The fee paid for the conversion
-     * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
-     */
-    fee: U128 | undefined;
-    /**
-     * The refund payment id if a refund payment was made
-     */
-    refundIdentifier: string | undefined;
-};
-/**
- * Generated factory for {@link TokenConversionInfo} record objects.
- */
-export declare const TokenConversionInfo: Readonly<{
-    /**
-     * Create a frozen instance of {@link TokenConversionInfo}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create: (partial: Partial<TokenConversionInfo> & Required<Omit<TokenConversionInfo, never>>) => TokenConversionInfo;
-    /**
-     * Create a frozen instance of {@link TokenConversionInfo}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: (partial: Partial<TokenConversionInfo> & Required<Omit<TokenConversionInfo, never>>) => TokenConversionInfo;
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Partial<TokenConversionInfo>;
-}>;
-/**
- * Options for token conversion when fulfilling a payment. When set, the SDK will
- * perform a token conversion before fulfilling the payment. If not set, the payment
- * will only be fulfilled if the wallet has sufficient balance of the required asset.
- */
-export type TokenConversionOptions = {
-    /**
-     * The type of token conversion to perform when fulfilling the payment
-     */
-    conversionType: TokenConversionType;
-    /**
-     * The optional maximum slippage in basis points (1/100 of a percent) allowed when
-     * a token conversion is needed to fulfill the payment. Defaults to 50 bps (0.5%) if not set.
-     * The token conversion will fail if the actual amount received is less than
-     * `estimated_amount * (1 - max_slippage_bps / 10_000)`.
-     */
-    maxSlippageBps: /*u32*/ number | undefined;
-    /**
-     * The optional timeout in seconds to wait for the token conversion to complete
-     * when fulfilling the payment. This timeout only concerns waiting for the received
-     * payment of the token conversion. If the timeout is reached before the conversion
-     * is complete, the payment will fail. Defaults to 30 seconds if not set.
-     */
-    completionTimeoutSecs: /*u32*/ number | undefined;
-};
-/**
- * Generated factory for {@link TokenConversionOptions} record objects.
- */
-export declare const TokenConversionOptions: Readonly<{
-    /**
-     * Create a frozen instance of {@link TokenConversionOptions}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create: (partial: Partial<TokenConversionOptions> & Required<Omit<TokenConversionOptions, "completionTimeoutSecs" | "maxSlippageBps">>) => TokenConversionOptions;
-    /**
-     * Create a frozen instance of {@link TokenConversionOptions}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: (partial: Partial<TokenConversionOptions> & Required<Omit<TokenConversionOptions, "completionTimeoutSecs" | "maxSlippageBps">>) => TokenConversionOptions;
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Partial<TokenConversionOptions>;
 }>;
 export type TokenMetadata = {
     identifier: string;
@@ -4486,6 +4524,182 @@ export declare const ChainServiceError: Readonly<{
     };
 }>;
 export type ChainServiceError = InstanceType<(typeof ChainServiceError)[keyof Omit<typeof ChainServiceError, 'instanceOf'>]>;
+export declare enum ConversionPurpose_Tags {
+    OngoingPayment = "OngoingPayment",
+    SelfTransfer = "SelfTransfer"
+}
+/**
+ * The purpose of the conversion, which is used to provide context for the conversion
+ * if its related to an ongoing payment or a self-transfer.
+ */
+export declare const ConversionPurpose: Readonly<{
+    instanceOf: (obj: any) => obj is ConversionPurpose;
+    OngoingPayment: {
+        new (inner: {
+            /**
+             * The payment request of the ongoing payment
+             */ paymentRequest: string;
+        }): {
+            readonly tag: ConversionPurpose_Tags.OngoingPayment;
+            readonly inner: Readonly<{
+                paymentRequest: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionPurpose";
+        };
+        "new"(inner: {
+            /**
+             * The payment request of the ongoing payment
+             */ paymentRequest: string;
+        }): {
+            readonly tag: ConversionPurpose_Tags.OngoingPayment;
+            readonly inner: Readonly<{
+                paymentRequest: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionPurpose";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ConversionPurpose_Tags.OngoingPayment;
+            readonly inner: Readonly<{
+                paymentRequest: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionPurpose";
+        };
+    };
+    SelfTransfer: {
+        new (): {
+            readonly tag: ConversionPurpose_Tags.SelfTransfer;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionPurpose";
+        };
+        "new"(): {
+            readonly tag: ConversionPurpose_Tags.SelfTransfer;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionPurpose";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ConversionPurpose_Tags.SelfTransfer;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionPurpose";
+        };
+    };
+}>;
+/**
+ * The purpose of the conversion, which is used to provide context for the conversion
+ * if its related to an ongoing payment or a self-transfer.
+ */
+export type ConversionPurpose = InstanceType<(typeof ConversionPurpose)[keyof Omit<typeof ConversionPurpose, 'instanceOf'>]>;
+/**
+ * The status of the conversion
+ */
+export declare enum ConversionStatus {
+    /**
+     * The conversion was successful
+     */
+    Completed = 0,
+    /**
+     * The conversion failed and no refund was made yet, which requires action by the SDK to
+     * perform the refund. This can happen if there was a failure during the conversion process.
+     */
+    RefundNeeded = 1,
+    /**
+     * The conversion failed and a refund was made
+     */
+    Refunded = 2
+}
+export declare enum ConversionType_Tags {
+    FromBitcoin = "FromBitcoin",
+    ToBitcoin = "ToBitcoin"
+}
+export declare const ConversionType: Readonly<{
+    instanceOf: (obj: any) => obj is ConversionType;
+    FromBitcoin: {
+        new (): {
+            readonly tag: ConversionType_Tags.FromBitcoin;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionType";
+        };
+        "new"(): {
+            readonly tag: ConversionType_Tags.FromBitcoin;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionType";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ConversionType_Tags.FromBitcoin;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionType";
+        };
+    };
+    ToBitcoin: {
+        new (inner: {
+            fromTokenIdentifier: string;
+        }): {
+            readonly tag: ConversionType_Tags.ToBitcoin;
+            readonly inner: Readonly<{
+                fromTokenIdentifier: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionType";
+        };
+        "new"(inner: {
+            fromTokenIdentifier: string;
+        }): {
+            readonly tag: ConversionType_Tags.ToBitcoin;
+            readonly inner: Readonly<{
+                fromTokenIdentifier: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionType";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ConversionType_Tags.ToBitcoin;
+            readonly inner: Readonly<{
+                fromTokenIdentifier: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionType";
+        };
+    };
+}>;
+export type ConversionType = InstanceType<(typeof ConversionType)[keyof Omit<typeof ConversionType, 'instanceOf'>]>;
 export declare enum DepositClaimError_Tags {
     MaxDepositClaimFeeExceeded = "MaxDepositClaimFeeExceeded",
     MissingUtxo = "MissingUtxo",
@@ -5705,14 +5919,14 @@ export declare const PaymentDetails: Readonly<{
              * The HTLC transfer details if the payment fulfilled an HTLC transfer
              */ htlcDetails: SparkHtlcDetails | undefined;
             /**
-             * The information for a token conversion
-             */ tokenConversionInfo: TokenConversionInfo | undefined;
+             * The information for a conversion
+             */ conversionInfo: ConversionInfo | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Spark;
             readonly inner: Readonly<{
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
                 htlcDetails: SparkHtlcDetails | undefined;
-                tokenConversionInfo: TokenConversionInfo | undefined;
+                conversionInfo: ConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -5728,14 +5942,14 @@ export declare const PaymentDetails: Readonly<{
              * The HTLC transfer details if the payment fulfilled an HTLC transfer
              */ htlcDetails: SparkHtlcDetails | undefined;
             /**
-             * The information for a token conversion
-             */ tokenConversionInfo: TokenConversionInfo | undefined;
+             * The information for a conversion
+             */ conversionInfo: ConversionInfo | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Spark;
             readonly inner: Readonly<{
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
                 htlcDetails: SparkHtlcDetails | undefined;
-                tokenConversionInfo: TokenConversionInfo | undefined;
+                conversionInfo: ConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -5748,7 +5962,7 @@ export declare const PaymentDetails: Readonly<{
             readonly inner: Readonly<{
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
                 htlcDetails: SparkHtlcDetails | undefined;
-                tokenConversionInfo: TokenConversionInfo | undefined;
+                conversionInfo: ConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -5765,15 +5979,15 @@ export declare const PaymentDetails: Readonly<{
              * The invoice details if the payment fulfilled a spark invoice
              */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
             /**
-             * The information for a token conversion
-             */ tokenConversionInfo: TokenConversionInfo | undefined;
+             * The information for a conversion
+             */ conversionInfo: ConversionInfo | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Token;
             readonly inner: Readonly<{
                 metadata: TokenMetadata;
                 txHash: string;
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
-                tokenConversionInfo: TokenConversionInfo | undefined;
+                conversionInfo: ConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -5788,15 +6002,15 @@ export declare const PaymentDetails: Readonly<{
              * The invoice details if the payment fulfilled a spark invoice
              */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
             /**
-             * The information for a token conversion
-             */ tokenConversionInfo: TokenConversionInfo | undefined;
+             * The information for a conversion
+             */ conversionInfo: ConversionInfo | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Token;
             readonly inner: Readonly<{
                 metadata: TokenMetadata;
                 txHash: string;
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
-                tokenConversionInfo: TokenConversionInfo | undefined;
+                conversionInfo: ConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -5810,7 +6024,7 @@ export declare const PaymentDetails: Readonly<{
                 metadata: TokenMetadata;
                 txHash: string;
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
-                tokenConversionInfo: TokenConversionInfo | undefined;
+                conversionInfo: ConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -6544,7 +6758,7 @@ export declare const ReceivePaymentMethod: Readonly<{
              * If empty, it is a Bitcoin payment
              */ tokenIdentifier: string | undefined;
             /**
-             * The expiry time of the invoice in seconds since the Unix epoch
+             * The expiry time of the invoice as a unix timestamp in seconds
              */ expiryTime: /*u64*/ bigint | undefined;
             /**
              * A description to embed in the invoice.
@@ -6576,7 +6790,7 @@ export declare const ReceivePaymentMethod: Readonly<{
              * If empty, it is a Bitcoin payment
              */ tokenIdentifier: string | undefined;
             /**
-             * The expiry time of the invoice in seconds since the Unix epoch
+             * The expiry time of the invoice as a unix timestamp in seconds
              */ expiryTime: /*u64*/ bigint | undefined;
             /**
              * A description to embed in the invoice.
@@ -6646,7 +6860,7 @@ export declare const ReceivePaymentMethod: Readonly<{
             description: string;
             amountSats: /*u64*/ bigint | undefined;
             /**
-             * The expiry time of the invoice in seconds
+             * The expiry of the invoice as a duration in seconds
              */ expirySecs: /*u32*/ number | undefined;
         }): {
             readonly tag: ReceivePaymentMethod_Tags.Bolt11Invoice;
@@ -6665,7 +6879,7 @@ export declare const ReceivePaymentMethod: Readonly<{
             description: string;
             amountSats: /*u64*/ bigint | undefined;
             /**
-             * The expiry time of the invoice in seconds
+             * The expiry of the invoice as a duration in seconds
              */ expirySecs: /*u32*/ number | undefined;
         }): {
             readonly tag: ReceivePaymentMethod_Tags.Bolt11Invoice;
@@ -10381,79 +10595,6 @@ export declare const SyncStorageError: Readonly<{
  * Errors that can occur during storage operations
  */
 export type SyncStorageError = InstanceType<(typeof SyncStorageError)[keyof Omit<typeof SyncStorageError, 'instanceOf'>]>;
-export declare enum TokenConversionType_Tags {
-    FromBitcoin = "FromBitcoin",
-    ToBitcoin = "ToBitcoin"
-}
-export declare const TokenConversionType: Readonly<{
-    instanceOf: (obj: any) => obj is TokenConversionType;
-    FromBitcoin: {
-        new (): {
-            readonly tag: TokenConversionType_Tags.FromBitcoin;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "TokenConversionType";
-        };
-        "new"(): {
-            readonly tag: TokenConversionType_Tags.FromBitcoin;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "TokenConversionType";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: TokenConversionType_Tags.FromBitcoin;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "TokenConversionType";
-        };
-    };
-    ToBitcoin: {
-        new (inner: {
-            fromTokenIdentifier: string;
-        }): {
-            readonly tag: TokenConversionType_Tags.ToBitcoin;
-            readonly inner: Readonly<{
-                fromTokenIdentifier: string;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "TokenConversionType";
-        };
-        "new"(inner: {
-            fromTokenIdentifier: string;
-        }): {
-            readonly tag: TokenConversionType_Tags.ToBitcoin;
-            readonly inner: Readonly<{
-                fromTokenIdentifier: string;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "TokenConversionType";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: TokenConversionType_Tags.ToBitcoin;
-            readonly inner: Readonly<{
-                fromTokenIdentifier: string;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "TokenConversionType";
-        };
-    };
-}>;
-export type TokenConversionType = InstanceType<(typeof TokenConversionType)[keyof Omit<typeof TokenConversionType, 'instanceOf'>]>;
 export declare enum UpdateDepositPayload_Tags {
     ClaimError = "ClaimError",
     Refund = "Refund"
@@ -10653,9 +10794,9 @@ export interface BreezSdkInterface {
     disconnect(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
-    fetchTokenConversionLimits(request: FetchTokenConversionLimitsRequest, asyncOpts_?: {
+    fetchConversionLimits(request: FetchConversionLimitsRequest, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<FetchTokenConversionLimitsResponse>;
+    }): Promise<FetchConversionLimitsResponse>;
     /**
      * Returns the balance of the wallet in satoshis
      */
@@ -10904,9 +11045,9 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     disconnect(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
-    fetchTokenConversionLimits(request: FetchTokenConversionLimitsRequest, asyncOpts_?: {
+    fetchConversionLimits(request: FetchConversionLimitsRequest, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<FetchTokenConversionLimitsResponse>;
+    }): Promise<FetchConversionLimitsResponse>;
     /**
      * Returns the balance of the wallet in satoshis
      */
@@ -12756,6 +12897,48 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ConnectWithSignerRequest;
             lower(value: ConnectWithSignerRequest): UniffiByteArray;
         };
+        FfiConverterTypeConversionEstimate: {
+            read(from: RustBuffer): ConversionEstimate;
+            write(value: ConversionEstimate, into: RustBuffer): void;
+            allocationSize(value: ConversionEstimate): number;
+            lift(value: UniffiByteArray): ConversionEstimate;
+            lower(value: ConversionEstimate): UniffiByteArray;
+        };
+        FfiConverterTypeConversionInfo: {
+            read(from: RustBuffer): ConversionInfo;
+            write(value: ConversionInfo, into: RustBuffer): void;
+            allocationSize(value: ConversionInfo): number;
+            lift(value: UniffiByteArray): ConversionInfo;
+            lower(value: ConversionInfo): UniffiByteArray;
+        };
+        FfiConverterTypeConversionOptions: {
+            read(from: RustBuffer): ConversionOptions;
+            write(value: ConversionOptions, into: RustBuffer): void;
+            allocationSize(value: ConversionOptions): number;
+            lift(value: UniffiByteArray): ConversionOptions;
+            lower(value: ConversionOptions): UniffiByteArray;
+        };
+        FfiConverterTypeConversionPurpose: {
+            read(from: RustBuffer): ConversionPurpose;
+            write(value: ConversionPurpose, into: RustBuffer): void;
+            allocationSize(value: ConversionPurpose): number;
+            lift(value: UniffiByteArray): ConversionPurpose;
+            lower(value: ConversionPurpose): UniffiByteArray;
+        };
+        FfiConverterTypeConversionStatus: {
+            read(from: RustBuffer): ConversionStatus;
+            write(value: ConversionStatus, into: RustBuffer): void;
+            allocationSize(value: ConversionStatus): number;
+            lift(value: UniffiByteArray): ConversionStatus;
+            lower(value: ConversionStatus): UniffiByteArray;
+        };
+        FfiConverterTypeConversionType: {
+            read(from: RustBuffer): ConversionType;
+            write(value: ConversionType, into: RustBuffer): void;
+            allocationSize(value: ConversionType): number;
+            lift(value: UniffiByteArray): ConversionType;
+            lower(value: ConversionType): UniffiByteArray;
+        };
         FfiConverterTypeCreateIssuerTokenRequest: {
             read(from: RustBuffer): CreateIssuerTokenRequest;
             write(value: CreateIssuerTokenRequest, into: RustBuffer): void;
@@ -12911,19 +13094,19 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): Fee;
             lower(value: Fee): UniffiByteArray;
         };
-        FfiConverterTypeFetchTokenConversionLimitsRequest: {
-            read(from: RustBuffer): FetchTokenConversionLimitsRequest;
-            write(value: FetchTokenConversionLimitsRequest, into: RustBuffer): void;
-            allocationSize(value: FetchTokenConversionLimitsRequest): number;
-            lift(value: UniffiByteArray): FetchTokenConversionLimitsRequest;
-            lower(value: FetchTokenConversionLimitsRequest): UniffiByteArray;
+        FfiConverterTypeFetchConversionLimitsRequest: {
+            read(from: RustBuffer): FetchConversionLimitsRequest;
+            write(value: FetchConversionLimitsRequest, into: RustBuffer): void;
+            allocationSize(value: FetchConversionLimitsRequest): number;
+            lift(value: UniffiByteArray): FetchConversionLimitsRequest;
+            lower(value: FetchConversionLimitsRequest): UniffiByteArray;
         };
-        FfiConverterTypeFetchTokenConversionLimitsResponse: {
-            read(from: RustBuffer): FetchTokenConversionLimitsResponse;
-            write(value: FetchTokenConversionLimitsResponse, into: RustBuffer): void;
-            allocationSize(value: FetchTokenConversionLimitsResponse): number;
-            lift(value: UniffiByteArray): FetchTokenConversionLimitsResponse;
-            lower(value: FetchTokenConversionLimitsResponse): UniffiByteArray;
+        FfiConverterTypeFetchConversionLimitsResponse: {
+            read(from: RustBuffer): FetchConversionLimitsResponse;
+            write(value: FetchConversionLimitsResponse, into: RustBuffer): void;
+            allocationSize(value: FetchConversionLimitsResponse): number;
+            lift(value: UniffiByteArray): FetchConversionLimitsResponse;
+            lower(value: FetchConversionLimitsResponse): UniffiByteArray;
         };
         FfiConverterTypeFiatCurrency: {
             read(from: RustBuffer): FiatCurrency;
@@ -13630,27 +13813,6 @@ declare const _default: Readonly<{
             allocationSize(value: TokenBalance): number;
             lift(value: UniffiByteArray): TokenBalance;
             lower(value: TokenBalance): UniffiByteArray;
-        };
-        FfiConverterTypeTokenConversionInfo: {
-            read(from: RustBuffer): TokenConversionInfo;
-            write(value: TokenConversionInfo, into: RustBuffer): void;
-            allocationSize(value: TokenConversionInfo): number;
-            lift(value: UniffiByteArray): TokenConversionInfo;
-            lower(value: TokenConversionInfo): UniffiByteArray;
-        };
-        FfiConverterTypeTokenConversionOptions: {
-            read(from: RustBuffer): TokenConversionOptions;
-            write(value: TokenConversionOptions, into: RustBuffer): void;
-            allocationSize(value: TokenConversionOptions): number;
-            lift(value: UniffiByteArray): TokenConversionOptions;
-            lower(value: TokenConversionOptions): UniffiByteArray;
-        };
-        FfiConverterTypeTokenConversionType: {
-            read(from: RustBuffer): TokenConversionType;
-            write(value: TokenConversionType, into: RustBuffer): void;
-            allocationSize(value: TokenConversionType): number;
-            lift(value: UniffiByteArray): TokenConversionType;
-            lower(value: TokenConversionType): UniffiByteArray;
         };
         FfiConverterTypeTokenIssuer: FfiConverterObject<TokenIssuerInterface>;
         FfiConverterTypeTokenMetadata: {

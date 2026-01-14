@@ -454,7 +454,7 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_delete_lightning_address(void *ptr);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(void *ptr);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_token_conversion_limits(
+uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_conversion_limits(
     void *ptr, RustBuffer request);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_get_info(void *ptr,
@@ -928,7 +928,7 @@ uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_lightning_address();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_token_conversion_limits();
+uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress();
@@ -12044,16 +12044,16 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_token_conversion_"
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_conversion_"
         "limits"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "breezsdk_fetch_token_conversion_limits"),
+                                    "breezsdk_fetch_conversion_limits"),
       2,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_token_conversion_limits(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_conversion_limits(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_info"] =
@@ -14210,17 +14210,16 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_token_"
-        "conversion_limits"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_"
+        "limits"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "breezsdk_fetch_token_conversion_limits"),
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_breezsdk_fetch_conversion_limits"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_token_conversion_limits(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info"] =
@@ -16211,11 +16210,11 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_token_conversion_limits(
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_conversion_limits(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_token_conversion_limits(
+      uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_conversion_limits(
           uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
           uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                                 args[1]));
@@ -18413,11 +18412,11 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_token_conversion_limits(
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_token_conversion_limits();
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
