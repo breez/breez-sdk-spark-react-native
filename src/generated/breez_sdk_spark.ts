@@ -4335,6 +4335,58 @@ const FfiConverterTypeGetTokensMetadataResponse = (() => {
   return new FFIConverter();
 })();
 
+export type HashedMessageBytes = {
+  bytes: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link HashedMessageBytes} record objects.
+ */
+export const HashedMessageBytes = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<HashedMessageBytes, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link HashedMessageBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link HashedMessageBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<HashedMessageBytes>,
+  });
+})();
+
+const FfiConverterTypeHashedMessageBytes = (() => {
+  type TypeName = HashedMessageBytes;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bytes: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.bytes, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayBuffer.allocationSize(value.bytes);
+    }
+  }
+  return new FFIConverter();
+})();
+
 /**
  * FFI-safe wrapper for (Identifier, `SigningCommitments`) pair
  */
@@ -5286,6 +5338,61 @@ const FfiConverterTypeLnurlAuthRequestDetails = (() => {
 })();
 
 /**
+ * LNURL error details
+ */
+export type LnurlErrorDetails = {
+  reason: string;
+};
+
+/**
+ * Generated factory for {@link LnurlErrorDetails} record objects.
+ */
+export const LnurlErrorDetails = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<LnurlErrorDetails, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link LnurlErrorDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link LnurlErrorDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<LnurlErrorDetails>,
+  });
+})();
+
+const FfiConverterTypeLnurlErrorDetails = (() => {
+  type TypeName = LnurlErrorDetails;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        reason: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.reason, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterString.allocationSize(value.reason);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
  * Represents the payment LNURL info
  */
 export type LnurlPayInfo = {
@@ -6141,6 +6248,61 @@ const FfiConverterTypeLogEntry = (() => {
         FfiConverterString.allocationSize(value.line) +
         FfiConverterString.allocationSize(value.level)
       );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of a 32-byte message digest for ECDSA signing
+ */
+export type MessageBytes = {
+  bytes: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link MessageBytes} record objects.
+ */
+export const MessageBytes = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<MessageBytes, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link MessageBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link MessageBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<MessageBytes>,
+  });
+})();
+
+const FfiConverterTypeMessageBytes = (() => {
+  type TypeName = MessageBytes;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bytes: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.bytes, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayBuffer.allocationSize(value.bytes);
     }
   }
   return new FFIConverter();
@@ -12231,6 +12393,149 @@ const FfiConverterTypeKeySetType = (() => {
     }
     allocationSize(value: TypeName): number {
       return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: LnurlCallbackStatus
+export enum LnurlCallbackStatus_Tags {
+  Ok = 'Ok',
+  ErrorStatus = 'ErrorStatus',
+}
+/**
+ * The response from a LNURL-auth callback, indicating success or failure.
+ */
+export const LnurlCallbackStatus = (() => {
+  type Ok__interface = {
+    tag: LnurlCallbackStatus_Tags.Ok;
+  };
+
+  /**
+   * On-wire format is: `{"status": "OK"}`
+   */
+  class Ok_ extends UniffiEnum implements Ok__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'LnurlCallbackStatus';
+    readonly tag = LnurlCallbackStatus_Tags.Ok;
+    constructor() {
+      super('LnurlCallbackStatus', 'Ok');
+    }
+
+    static new(): Ok_ {
+      return new Ok_();
+    }
+
+    static instanceOf(obj: any): obj is Ok_ {
+      return obj.tag === LnurlCallbackStatus_Tags.Ok;
+    }
+  }
+
+  type ErrorStatus__interface = {
+    tag: LnurlCallbackStatus_Tags.ErrorStatus;
+    inner: Readonly<{ errorDetails: LnurlErrorDetails }>;
+  };
+
+  /**
+   * On-wire format is: `{"status": "ERROR", "reason": "error details..."}`
+   */
+  class ErrorStatus_ extends UniffiEnum implements ErrorStatus__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'LnurlCallbackStatus';
+    readonly tag = LnurlCallbackStatus_Tags.ErrorStatus;
+    readonly inner: Readonly<{ errorDetails: LnurlErrorDetails }>;
+    constructor(inner: { errorDetails: LnurlErrorDetails }) {
+      super('LnurlCallbackStatus', 'ErrorStatus');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { errorDetails: LnurlErrorDetails }): ErrorStatus_ {
+      return new ErrorStatus_(inner);
+    }
+
+    static instanceOf(obj: any): obj is ErrorStatus_ {
+      return obj.tag === LnurlCallbackStatus_Tags.ErrorStatus;
+    }
+  }
+
+  function instanceOf(obj: any): obj is LnurlCallbackStatus {
+    return obj[uniffiTypeNameSymbol] === 'LnurlCallbackStatus';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Ok: Ok_,
+    ErrorStatus: ErrorStatus_,
+  });
+})();
+
+/**
+ * The response from a LNURL-auth callback, indicating success or failure.
+ */
+
+export type LnurlCallbackStatus = InstanceType<
+  (typeof LnurlCallbackStatus)[keyof Omit<
+    typeof LnurlCallbackStatus,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum LnurlCallbackStatus
+const FfiConverterTypeLnurlCallbackStatus = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = LnurlCallbackStatus;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new LnurlCallbackStatus.Ok();
+        case 2:
+          return new LnurlCallbackStatus.ErrorStatus({
+            errorDetails: FfiConverterTypeLnurlErrorDetails.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case LnurlCallbackStatus_Tags.Ok: {
+          ordinalConverter.write(1, into);
+          return;
+        }
+        case LnurlCallbackStatus_Tags.ErrorStatus: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterTypeLnurlErrorDetails.write(inner.errorDetails, into);
+          return;
+        }
+        default:
+          // Throwing from here means that LnurlCallbackStatus_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case LnurlCallbackStatus_Tags.Ok: {
+          return ordinalConverter.allocationSize(1);
+        }
+        case LnurlCallbackStatus_Tags.ErrorStatus: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterTypeLnurlErrorDetails.allocationSize(
+            inner.errorDetails
+          );
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
     }
   }
   return new FFIConverter();
@@ -18990,6 +19295,59 @@ export interface BreezSdkInterface {
     request: ListUnclaimedDepositsRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<ListUnclaimedDepositsResponse>;
+  /**
+   * Performs LNURL-auth with the service.
+   *
+   * This method implements the LNURL-auth protocol as specified in LUD-04 and LUD-05.
+   * It derives a domain-specific linking key, signs the challenge, and sends the
+   * authentication request to the service.
+   *
+   * # Arguments
+   *
+   * * `request_data` - The parsed LNURL-auth request details obtained from [`parse`]
+   *
+   * # Returns
+   *
+   * * `Ok(LnurlCallbackStatus::Ok)` - Authentication was successful
+   * * `Ok(LnurlCallbackStatus::ErrorStatus{reason})` - Service returned an error
+   * * `Err(SdkError)` - An error occurred during the authentication process
+   *
+   * # Example
+   *
+   * ```rust,no_run
+   * # use breez_sdk_spark::{BreezSdk, InputType};
+   * # async fn example(sdk: BreezSdk) -> Result<(), Box<dyn std::error::Error>> {
+   * // 1. Parse the LNURL-auth string
+   * let input = sdk.parse("lnurl1...").await?;
+   * let auth_request = match input {
+   * InputType::LnurlAuth(data) => data,
+   * _ => return Err("Not an auth request".into()),
+   * };
+   *
+   * // 2. Show user the domain and get confirmation
+   * println!("Authenticate with {}?", auth_request.domain);
+   *
+   * // 3. Perform authentication
+   * let status = sdk.lnurl_auth(auth_request).await?;
+   * match status {
+   * breez_sdk_spark::LnurlCallbackStatus::Ok => println!("Success!"),
+   * breez_sdk_spark::LnurlCallbackStatus::ErrorStatus { error_details } => {
+   * println!("Error: {}", error_details.reason)
+   * }
+   * }
+   * # Ok(())
+   * # }
+   * ```
+   *
+   * # See Also
+   *
+   * * LUD-04: <https://github.com/lnurl/luds/blob/luds/04.md>
+   * * LUD-05: <https://github.com/lnurl/luds/blob/luds/05.md>
+   */
+  lnurlAuth(
+    requestData: LnurlAuthRequestDetails,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<LnurlCallbackStatus>;
   lnurlPay(
     request: LnurlPayRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -19912,6 +20270,94 @@ export class BreezSdk
     }
   }
 
+  /**
+   * Performs LNURL-auth with the service.
+   *
+   * This method implements the LNURL-auth protocol as specified in LUD-04 and LUD-05.
+   * It derives a domain-specific linking key, signs the challenge, and sends the
+   * authentication request to the service.
+   *
+   * # Arguments
+   *
+   * * `request_data` - The parsed LNURL-auth request details obtained from [`parse`]
+   *
+   * # Returns
+   *
+   * * `Ok(LnurlCallbackStatus::Ok)` - Authentication was successful
+   * * `Ok(LnurlCallbackStatus::ErrorStatus{reason})` - Service returned an error
+   * * `Err(SdkError)` - An error occurred during the authentication process
+   *
+   * # Example
+   *
+   * ```rust,no_run
+   * # use breez_sdk_spark::{BreezSdk, InputType};
+   * # async fn example(sdk: BreezSdk) -> Result<(), Box<dyn std::error::Error>> {
+   * // 1. Parse the LNURL-auth string
+   * let input = sdk.parse("lnurl1...").await?;
+   * let auth_request = match input {
+   * InputType::LnurlAuth(data) => data,
+   * _ => return Err("Not an auth request".into()),
+   * };
+   *
+   * // 2. Show user the domain and get confirmation
+   * println!("Authenticate with {}?", auth_request.domain);
+   *
+   * // 3. Perform authentication
+   * let status = sdk.lnurl_auth(auth_request).await?;
+   * match status {
+   * breez_sdk_spark::LnurlCallbackStatus::Ok => println!("Success!"),
+   * breez_sdk_spark::LnurlCallbackStatus::ErrorStatus { error_details } => {
+   * println!("Error: {}", error_details.reason)
+   * }
+   * }
+   * # Ok(())
+   * # }
+   * ```
+   *
+   * # See Also
+   *
+   * * LUD-04: <https://github.com/lnurl/luds/blob/luds/04.md>
+   * * LUD-05: <https://github.com/lnurl/luds/blob/luds/05.md>
+   */
+  public async lnurlAuth(
+    requestData: LnurlAuthRequestDetails,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<LnurlCallbackStatus> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_lnurl_auth(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeLnurlAuthRequestDetails.lower(requestData)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeLnurlCallbackStatus.lift.bind(
+          FfiConverterTypeLnurlCallbackStatus
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
   public async lnurlPay(
     request: LnurlPayRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -20640,30 +21086,34 @@ export interface ExternalSigner {
   /**
    * Signs a message using ECDSA at the given derivation path.
    *
+   * The message should be a 32-byte digest (typically a hash of the original data).
+   *
    * # Arguments
-   * * `message` - The message to sign
+   * * `message` - The 32-byte message digest to sign
    * * `path` - BIP32 derivation path as a string
    *
    * # Returns
    * 64-byte compact ECDSA signature, or a `SignerError`
    */
   signEcdsa(
-    message: ArrayBuffer,
+    message: MessageBytes,
     path: string,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<EcdsaSignatureBytes>;
   /**
    * Signs a message using recoverable ECDSA at the given derivation path.
    *
+   * The message should be a 32-byte digest (typically a hash of the original data).
+   *
    * # Arguments
-   * * `message` - The message to sign (will be double-SHA256 hashed)
+   * * `message` - The 32-byte message digest to sign
    * * `path` - BIP32 derivation path as a string
    *
    * # Returns
    * 65 bytes: recovery ID (31 + `recovery_id`) + 64-byte signature, or a `SignerError`
    */
   signEcdsaRecoverable(
-    message: ArrayBuffer,
+    message: MessageBytes,
     path: string,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<RecoverableEcdsaSignatureBytes>;
@@ -20712,6 +21162,21 @@ export interface ExternalSigner {
     path: string,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<SchnorrSignatureBytes>;
+  /**
+   * HMAC-SHA256 of a message at the given derivation path.
+   *
+   * # Arguments
+   * * `message` - The message to hash
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 32-byte HMAC-SHA256, or a `SignerError`
+   */
+  hmacSha256(
+    message: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<HashedMessageBytes>;
   /**
    * Generates Frost signing commitments for multi-party signing.
    *
@@ -20969,15 +21434,17 @@ export class ExternalSignerImpl
   /**
    * Signs a message using ECDSA at the given derivation path.
    *
+   * The message should be a 32-byte digest (typically a hash of the original data).
+   *
    * # Arguments
-   * * `message` - The message to sign
+   * * `message` - The 32-byte message digest to sign
    * * `path` - BIP32 derivation path as a string
    *
    * # Returns
    * 64-byte compact ECDSA signature, or a `SignerError`
    */
   public async signEcdsa(
-    message: ArrayBuffer,
+    message: MessageBytes,
     path: string,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<EcdsaSignatureBytes> /*throws*/ {
@@ -20988,7 +21455,7 @@ export class ExternalSignerImpl
         /*rustFutureFunc:*/ () => {
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterArrayBuffer.lower(message),
+            FfiConverterTypeMessageBytes.lower(message),
             FfiConverterString.lower(path)
           );
         },
@@ -21020,15 +21487,17 @@ export class ExternalSignerImpl
   /**
    * Signs a message using recoverable ECDSA at the given derivation path.
    *
+   * The message should be a 32-byte digest (typically a hash of the original data).
+   *
    * # Arguments
-   * * `message` - The message to sign (will be double-SHA256 hashed)
+   * * `message` - The 32-byte message digest to sign
    * * `path` - BIP32 derivation path as a string
    *
    * # Returns
    * 65 bytes: recovery ID (31 + `recovery_id`) + 64-byte signature, or a `SignerError`
    */
   public async signEcdsaRecoverable(
-    message: ArrayBuffer,
+    message: MessageBytes,
     path: string,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<RecoverableEcdsaSignatureBytes> /*throws*/ {
@@ -21039,7 +21508,7 @@ export class ExternalSignerImpl
         /*rustFutureFunc:*/ () => {
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa_recoverable(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterArrayBuffer.lower(message),
+            FfiConverterTypeMessageBytes.lower(message),
             FfiConverterString.lower(path)
           );
         },
@@ -21206,6 +21675,57 @@ export class ExternalSignerImpl
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypeSchnorrSignatureBytes.lift.bind(
           FfiConverterTypeSchnorrSignatureBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * HMAC-SHA256 of a message at the given derivation path.
+   *
+   * # Arguments
+   * * `message` - The message to hash
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 32-byte HMAC-SHA256, or a `SignerError`
+   */
+  public async hmacSha256(
+    message: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<HashedMessageBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_hmac_sha256(
+            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+            FfiConverterArrayBuffer.lower(message),
+            FfiConverterString.lower(path)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeHashedMessageBytes.lift.bind(
+          FfiConverterTypeHashedMessageBytes
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -21978,7 +22498,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       ): Promise<EcdsaSignatureBytes> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
         return await jsCallback.signEcdsa(
-          FfiConverterArrayBuffer.lift(message),
+          FfiConverterTypeMessageBytes.lift(message),
           FfiConverterString.lift(path),
           { signal }
         );
@@ -22026,7 +22546,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       ): Promise<RecoverableEcdsaSignatureBytes> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
         return await jsCallback.signEcdsaRecoverable(
-          FfiConverterArrayBuffer.lift(message),
+          FfiConverterTypeMessageBytes.lift(message),
           FfiConverterString.lift(path),
           { signal }
         );
@@ -22184,6 +22704,54 @@ const uniffiCallbackInterfaceExternalSigner: {
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
               FfiConverterTypeSchnorrSignatureBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: { code, errorBuf },
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return UniffiResult.success(uniffiForeignFuture);
+    },
+    hmacSha256: (
+      uniffiHandle: bigint,
+      message: Uint8Array,
+      path: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<HashedMessageBytes> => {
+        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        return await jsCallback.hmacSha256(
+          FfiConverterArrayBuffer.lift(message),
+          FfiConverterString.lift(path),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: HashedMessageBytes) => {
+        uniffiFutureCallback(
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypeHashedMessageBytes.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -27978,6 +28546,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_auth() !==
+    37942
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_auth'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_pay() !==
     10147
   ) {
@@ -28115,7 +28691,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa() !==
-    52291
+    37648
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa'
@@ -28123,7 +28699,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa_recoverable() !==
-    8564
+    3107
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa_recoverable'
@@ -28154,8 +28730,16 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_hmac_sha256() !==
+    19799
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_hmac_sha256'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_frost_signing_commitments() !==
-    24826
+    24833
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_frost_signing_commitments'
@@ -28163,7 +28747,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node() !==
-    32818
+    62425
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node'
@@ -28171,7 +28755,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_key() !==
-    22789
+    21363
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_key'
@@ -28179,7 +28763,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_private_key_source() !==
-    37751
+    61352
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_private_key_source'
@@ -28187,7 +28771,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_private_key() !==
-    55375
+    57038
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_private_key'
@@ -28195,7 +28779,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_public_key() !==
-    49264
+    47081
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_public_key'
@@ -28203,7 +28787,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_private_keys() !==
-    46671
+    63060
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_private_keys'
@@ -28211,7 +28795,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret() !==
-    840
+    22937
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret'
@@ -28219,7 +28803,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_private_key_for_receiver() !==
-    42476
+    52786
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_private_key_for_receiver'
@@ -28227,7 +28811,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_from_private_key_source() !==
-    38684
+    58178
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_from_private_key_source'
@@ -28235,7 +28819,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost() !==
-    1497
+    44847
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost'
@@ -28243,7 +28827,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost_signatures() !==
-    26523
+    61746
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost_signatures'
@@ -28730,6 +29314,7 @@ export default Object.freeze({
     FfiConverterTypeGetPaymentResponse,
     FfiConverterTypeGetTokensMetadataRequest,
     FfiConverterTypeGetTokensMetadataResponse,
+    FfiConverterTypeHashedMessageBytes,
     FfiConverterTypeIdentifierCommitmentPair,
     FfiConverterTypeIdentifierPublicKeyPair,
     FfiConverterTypeIdentifierSignaturePair,
@@ -28746,6 +29331,8 @@ export default Object.freeze({
     FfiConverterTypeListUnclaimedDepositsRequest,
     FfiConverterTypeListUnclaimedDepositsResponse,
     FfiConverterTypeLnurlAuthRequestDetails,
+    FfiConverterTypeLnurlCallbackStatus,
+    FfiConverterTypeLnurlErrorDetails,
     FfiConverterTypeLnurlPayInfo,
     FfiConverterTypeLnurlPayRequest,
     FfiConverterTypeLnurlPayRequestDetails,
@@ -28759,6 +29346,7 @@ export default Object.freeze({
     FfiConverterTypeLocalizedName,
     FfiConverterTypeLogEntry,
     FfiConverterTypeMaxFee,
+    FfiConverterTypeMessageBytes,
     FfiConverterTypeMessageSuccessActionData,
     FfiConverterTypeMintIssuerTokenRequest,
     FfiConverterTypeNetwork,

@@ -1766,6 +1766,28 @@ export declare const GetTokensMetadataResponse: Readonly<{
      */
     defaults: () => Partial<GetTokensMetadataResponse>;
 }>;
+export type HashedMessageBytes = {
+    bytes: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link HashedMessageBytes} record objects.
+ */
+export declare const HashedMessageBytes: Readonly<{
+    /**
+     * Create a frozen instance of {@link HashedMessageBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<HashedMessageBytes> & Required<Omit<HashedMessageBytes, never>>) => HashedMessageBytes;
+    /**
+     * Create a frozen instance of {@link HashedMessageBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<HashedMessageBytes> & Required<Omit<HashedMessageBytes, never>>) => HashedMessageBytes;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<HashedMessageBytes>;
+}>;
 /**
  * FFI-safe wrapper for (Identifier, `SigningCommitments`) pair
  */
@@ -2174,6 +2196,31 @@ export declare const LnurlAuthRequestDetails: Readonly<{
     defaults: () => Partial<LnurlAuthRequestDetails>;
 }>;
 /**
+ * LNURL error details
+ */
+export type LnurlErrorDetails = {
+    reason: string;
+};
+/**
+ * Generated factory for {@link LnurlErrorDetails} record objects.
+ */
+export declare const LnurlErrorDetails: Readonly<{
+    /**
+     * Create a frozen instance of {@link LnurlErrorDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<LnurlErrorDetails> & Required<Omit<LnurlErrorDetails, never>>) => LnurlErrorDetails;
+    /**
+     * Create a frozen instance of {@link LnurlErrorDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<LnurlErrorDetails> & Required<Omit<LnurlErrorDetails, never>>) => LnurlErrorDetails;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<LnurlErrorDetails>;
+}>;
+/**
  * Represents the payment LNURL info
  */
 export type LnurlPayInfo = {
@@ -2536,6 +2583,31 @@ export declare const LogEntry: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<LogEntry>;
+}>;
+/**
+ * FFI-safe representation of a 32-byte message digest for ECDSA signing
+ */
+export type MessageBytes = {
+    bytes: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link MessageBytes} record objects.
+ */
+export declare const MessageBytes: Readonly<{
+    /**
+     * Create a frozen instance of {@link MessageBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<MessageBytes> & Required<Omit<MessageBytes, never>>) => MessageBytes;
+    /**
+     * Create a frozen instance of {@link MessageBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<MessageBytes> & Required<Omit<MessageBytes, never>>) => MessageBytes;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<MessageBytes>;
 }>;
 export type MessageSuccessActionData = {
     message: string;
@@ -5554,6 +5626,85 @@ export declare enum KeySetType {
     WrappedSegwit = 3,
     Legacy = 4
 }
+export declare enum LnurlCallbackStatus_Tags {
+    Ok = "Ok",
+    ErrorStatus = "ErrorStatus"
+}
+/**
+ * The response from a LNURL-auth callback, indicating success or failure.
+ */
+export declare const LnurlCallbackStatus: Readonly<{
+    instanceOf: (obj: any) => obj is LnurlCallbackStatus;
+    Ok: {
+        new (): {
+            readonly tag: LnurlCallbackStatus_Tags.Ok;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "LnurlCallbackStatus";
+        };
+        "new"(): {
+            readonly tag: LnurlCallbackStatus_Tags.Ok;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "LnurlCallbackStatus";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: LnurlCallbackStatus_Tags.Ok;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "LnurlCallbackStatus";
+        };
+    };
+    ErrorStatus: {
+        new (inner: {
+            errorDetails: LnurlErrorDetails;
+        }): {
+            readonly tag: LnurlCallbackStatus_Tags.ErrorStatus;
+            readonly inner: Readonly<{
+                errorDetails: LnurlErrorDetails;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "LnurlCallbackStatus";
+        };
+        "new"(inner: {
+            errorDetails: LnurlErrorDetails;
+        }): {
+            readonly tag: LnurlCallbackStatus_Tags.ErrorStatus;
+            readonly inner: Readonly<{
+                errorDetails: LnurlErrorDetails;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "LnurlCallbackStatus";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: LnurlCallbackStatus_Tags.ErrorStatus;
+            readonly inner: Readonly<{
+                errorDetails: LnurlErrorDetails;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "LnurlCallbackStatus";
+        };
+    };
+}>;
+/**
+ * The response from a LNURL-auth callback, indicating success or failure.
+ */
+export type LnurlCallbackStatus = InstanceType<(typeof LnurlCallbackStatus)[keyof Omit<typeof LnurlCallbackStatus, 'instanceOf'>]>;
 export declare enum MaxFee_Tags {
     Fixed = "Fixed",
     Rate = "Rate",
@@ -10871,6 +11022,58 @@ export interface BreezSdkInterface {
     listUnclaimedDeposits(request: ListUnclaimedDepositsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ListUnclaimedDepositsResponse>;
+    /**
+     * Performs LNURL-auth with the service.
+     *
+     * This method implements the LNURL-auth protocol as specified in LUD-04 and LUD-05.
+     * It derives a domain-specific linking key, signs the challenge, and sends the
+     * authentication request to the service.
+     *
+     * # Arguments
+     *
+     * * `request_data` - The parsed LNURL-auth request details obtained from [`parse`]
+     *
+     * # Returns
+     *
+     * * `Ok(LnurlCallbackStatus::Ok)` - Authentication was successful
+     * * `Ok(LnurlCallbackStatus::ErrorStatus{reason})` - Service returned an error
+     * * `Err(SdkError)` - An error occurred during the authentication process
+     *
+     * # Example
+     *
+     * ```rust,no_run
+     * # use breez_sdk_spark::{BreezSdk, InputType};
+     * # async fn example(sdk: BreezSdk) -> Result<(), Box<dyn std::error::Error>> {
+     * // 1. Parse the LNURL-auth string
+     * let input = sdk.parse("lnurl1...").await?;
+     * let auth_request = match input {
+     * InputType::LnurlAuth(data) => data,
+     * _ => return Err("Not an auth request".into()),
+     * };
+     *
+     * // 2. Show user the domain and get confirmation
+     * println!("Authenticate with {}?", auth_request.domain);
+     *
+     * // 3. Perform authentication
+     * let status = sdk.lnurl_auth(auth_request).await?;
+     * match status {
+     * breez_sdk_spark::LnurlCallbackStatus::Ok => println!("Success!"),
+     * breez_sdk_spark::LnurlCallbackStatus::ErrorStatus { error_details } => {
+     * println!("Error: {}", error_details.reason)
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     *
+     * # See Also
+     *
+     * * LUD-04: <https://github.com/lnurl/luds/blob/luds/04.md>
+     * * LUD-05: <https://github.com/lnurl/luds/blob/luds/05.md>
+     */
+    lnurlAuth(requestData: LnurlAuthRequestDetails, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<LnurlCallbackStatus>;
     lnurlPay(request: LnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LnurlPayResponse>;
@@ -11122,6 +11325,58 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     listUnclaimedDeposits(request: ListUnclaimedDepositsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ListUnclaimedDepositsResponse>;
+    /**
+     * Performs LNURL-auth with the service.
+     *
+     * This method implements the LNURL-auth protocol as specified in LUD-04 and LUD-05.
+     * It derives a domain-specific linking key, signs the challenge, and sends the
+     * authentication request to the service.
+     *
+     * # Arguments
+     *
+     * * `request_data` - The parsed LNURL-auth request details obtained from [`parse`]
+     *
+     * # Returns
+     *
+     * * `Ok(LnurlCallbackStatus::Ok)` - Authentication was successful
+     * * `Ok(LnurlCallbackStatus::ErrorStatus{reason})` - Service returned an error
+     * * `Err(SdkError)` - An error occurred during the authentication process
+     *
+     * # Example
+     *
+     * ```rust,no_run
+     * # use breez_sdk_spark::{BreezSdk, InputType};
+     * # async fn example(sdk: BreezSdk) -> Result<(), Box<dyn std::error::Error>> {
+     * // 1. Parse the LNURL-auth string
+     * let input = sdk.parse("lnurl1...").await?;
+     * let auth_request = match input {
+     * InputType::LnurlAuth(data) => data,
+     * _ => return Err("Not an auth request".into()),
+     * };
+     *
+     * // 2. Show user the domain and get confirmation
+     * println!("Authenticate with {}?", auth_request.domain);
+     *
+     * // 3. Perform authentication
+     * let status = sdk.lnurl_auth(auth_request).await?;
+     * match status {
+     * breez_sdk_spark::LnurlCallbackStatus::Ok => println!("Success!"),
+     * breez_sdk_spark::LnurlCallbackStatus::ErrorStatus { error_details } => {
+     * println!("Error: {}", error_details.reason)
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     *
+     * # See Also
+     *
+     * * LUD-04: <https://github.com/lnurl/luds/blob/luds/04.md>
+     * * LUD-05: <https://github.com/lnurl/luds/blob/luds/05.md>
+     */
+    lnurlAuth(requestData: LnurlAuthRequestDetails, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<LnurlCallbackStatus>;
     lnurlPay(request: LnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LnurlPayResponse>;
@@ -11265,27 +11520,31 @@ export interface ExternalSigner {
     /**
      * Signs a message using ECDSA at the given derivation path.
      *
+     * The message should be a 32-byte digest (typically a hash of the original data).
+     *
      * # Arguments
-     * * `message` - The message to sign
+     * * `message` - The 32-byte message digest to sign
      * * `path` - BIP32 derivation path as a string
      *
      * # Returns
      * 64-byte compact ECDSA signature, or a `SignerError`
      */
-    signEcdsa(message: ArrayBuffer, path: string, asyncOpts_?: {
+    signEcdsa(message: MessageBytes, path: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<EcdsaSignatureBytes>;
     /**
      * Signs a message using recoverable ECDSA at the given derivation path.
      *
+     * The message should be a 32-byte digest (typically a hash of the original data).
+     *
      * # Arguments
-     * * `message` - The message to sign (will be double-SHA256 hashed)
+     * * `message` - The 32-byte message digest to sign
      * * `path` - BIP32 derivation path as a string
      *
      * # Returns
      * 65 bytes: recovery ID (31 + `recovery_id`) + 64-byte signature, or a `SignerError`
      */
-    signEcdsaRecoverable(message: ArrayBuffer, path: string, asyncOpts_?: {
+    signEcdsaRecoverable(message: MessageBytes, path: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<RecoverableEcdsaSignatureBytes>;
     /**
@@ -11327,6 +11586,19 @@ export interface ExternalSigner {
     signHashSchnorr(hash: ArrayBuffer, path: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SchnorrSignatureBytes>;
+    /**
+     * HMAC-SHA256 of a message at the given derivation path.
+     *
+     * # Arguments
+     * * `message` - The message to hash
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 32-byte HMAC-SHA256, or a `SignerError`
+     */
+    hmacSha256(message: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<HashedMessageBytes>;
     /**
      * Generates Frost signing commitments for multi-party signing.
      *
@@ -11507,27 +11779,31 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
     /**
      * Signs a message using ECDSA at the given derivation path.
      *
+     * The message should be a 32-byte digest (typically a hash of the original data).
+     *
      * # Arguments
-     * * `message` - The message to sign
+     * * `message` - The 32-byte message digest to sign
      * * `path` - BIP32 derivation path as a string
      *
      * # Returns
      * 64-byte compact ECDSA signature, or a `SignerError`
      */
-    signEcdsa(message: ArrayBuffer, path: string, asyncOpts_?: {
+    signEcdsa(message: MessageBytes, path: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<EcdsaSignatureBytes>;
     /**
      * Signs a message using recoverable ECDSA at the given derivation path.
      *
+     * The message should be a 32-byte digest (typically a hash of the original data).
+     *
      * # Arguments
-     * * `message` - The message to sign (will be double-SHA256 hashed)
+     * * `message` - The 32-byte message digest to sign
      * * `path` - BIP32 derivation path as a string
      *
      * # Returns
      * 65 bytes: recovery ID (31 + `recovery_id`) + 64-byte signature, or a `SignerError`
      */
-    signEcdsaRecoverable(message: ArrayBuffer, path: string, asyncOpts_?: {
+    signEcdsaRecoverable(message: MessageBytes, path: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<RecoverableEcdsaSignatureBytes>;
     /**
@@ -11569,6 +11845,19 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
     signHashSchnorr(hash: ArrayBuffer, path: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SchnorrSignatureBytes>;
+    /**
+     * HMAC-SHA256 of a message at the given derivation path.
+     *
+     * # Arguments
+     * * `message` - The message to hash
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 32-byte HMAC-SHA256, or a `SignerError`
+     */
+    hmacSha256(message: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<HashedMessageBytes>;
     /**
      * Generates Frost signing commitments for multi-party signing.
      *
@@ -13172,6 +13461,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): GetTokensMetadataResponse;
             lower(value: GetTokensMetadataResponse): UniffiByteArray;
         };
+        FfiConverterTypeHashedMessageBytes: {
+            read(from: RustBuffer): HashedMessageBytes;
+            write(value: HashedMessageBytes, into: RustBuffer): void;
+            allocationSize(value: HashedMessageBytes): number;
+            lift(value: UniffiByteArray): HashedMessageBytes;
+            lower(value: HashedMessageBytes): UniffiByteArray;
+        };
         FfiConverterTypeIdentifierCommitmentPair: {
             read(from: RustBuffer): IdentifierCommitmentPair;
             write(value: IdentifierCommitmentPair, into: RustBuffer): void;
@@ -13284,6 +13580,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): LnurlAuthRequestDetails;
             lower(value: LnurlAuthRequestDetails): UniffiByteArray;
         };
+        FfiConverterTypeLnurlCallbackStatus: {
+            read(from: RustBuffer): LnurlCallbackStatus;
+            write(value: LnurlCallbackStatus, into: RustBuffer): void;
+            allocationSize(value: LnurlCallbackStatus): number;
+            lift(value: UniffiByteArray): LnurlCallbackStatus;
+            lower(value: LnurlCallbackStatus): UniffiByteArray;
+        };
+        FfiConverterTypeLnurlErrorDetails: {
+            read(from: RustBuffer): LnurlErrorDetails;
+            write(value: LnurlErrorDetails, into: RustBuffer): void;
+            allocationSize(value: LnurlErrorDetails): number;
+            lift(value: UniffiByteArray): LnurlErrorDetails;
+            lower(value: LnurlErrorDetails): UniffiByteArray;
+        };
         FfiConverterTypeLnurlPayInfo: {
             read(from: RustBuffer): LnurlPayInfo;
             write(value: LnurlPayInfo, into: RustBuffer): void;
@@ -13374,6 +13684,13 @@ declare const _default: Readonly<{
             allocationSize(value: MaxFee): number;
             lift(value: UniffiByteArray): MaxFee;
             lower(value: MaxFee): UniffiByteArray;
+        };
+        FfiConverterTypeMessageBytes: {
+            read(from: RustBuffer): MessageBytes;
+            write(value: MessageBytes, into: RustBuffer): void;
+            allocationSize(value: MessageBytes): number;
+            lift(value: UniffiByteArray): MessageBytes;
+            lower(value: MessageBytes): UniffiByteArray;
         };
         FfiConverterTypeMessageSuccessActionData: {
             read(from: RustBuffer): MessageSuccessActionData;

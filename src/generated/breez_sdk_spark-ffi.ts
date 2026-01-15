@@ -131,6 +131,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_lnurl_auth(
+    ptr: bigint,
+    requestData: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_lnurl_pay(
     ptr: bigint,
     request: Uint8Array
@@ -229,6 +233,11 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_hash_schnorr(
     ptr: bigint,
     hash: Uint8Array,
+    path: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_hmac_sha256(
+    ptr: bigint,
+    message: Uint8Array,
     path: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_frost_signing_commitments(
@@ -724,6 +733,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_rates(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_payments(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_unclaimed_deposits(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_auth(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_pay(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_withdraw(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_parse(): number;
@@ -746,6 +756,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_ecies_encrypt(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_ecies_decrypt(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_hash_schnorr(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_hmac_sha256(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_frost_signing_commitments(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_key(): number;
@@ -1085,23 +1096,24 @@ type UniffiCallbackInterfaceExternalSignerMethod6 = (
 ) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceExternalSignerMethod7 = (
   uniffiHandle: bigint,
+  message: Uint8Array,
+  path: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceExternalSignerMethod8 = (
   uniffiHandle: bigint,
-  id: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceExternalSignerMethod9 = (
   uniffiHandle: bigint,
+  id: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceExternalSignerMethod10 = (
   uniffiHandle: bigint,
-  index: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
@@ -1119,12 +1131,18 @@ type UniffiCallbackInterfaceExternalSignerMethod12 = (
 ) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceExternalSignerMethod13 = (
   uniffiHandle: bigint,
+  index: number,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiResult<UniffiForeignFuture>;
+type UniffiCallbackInterfaceExternalSignerMethod14 = (
+  uniffiHandle: bigint,
   signingKey: Uint8Array,
   newSigningKey: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
-type UniffiCallbackInterfaceExternalSignerMethod14 = (
+type UniffiCallbackInterfaceExternalSignerMethod15 = (
   uniffiHandle: bigint,
   secret: Uint8Array,
   threshold: number,
@@ -1132,26 +1150,26 @@ type UniffiCallbackInterfaceExternalSignerMethod14 = (
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
-type UniffiCallbackInterfaceExternalSignerMethod15 = (
+type UniffiCallbackInterfaceExternalSignerMethod16 = (
   uniffiHandle: bigint,
   privateKey: Uint8Array,
   receiverPublicKey: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
-type UniffiCallbackInterfaceExternalSignerMethod16 = (
+type UniffiCallbackInterfaceExternalSignerMethod17 = (
   uniffiHandle: bigint,
   privateKey: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
-type UniffiCallbackInterfaceExternalSignerMethod17 = (
+type UniffiCallbackInterfaceExternalSignerMethod18 = (
   uniffiHandle: bigint,
   request: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
-type UniffiCallbackInterfaceExternalSignerMethod18 = (
+type UniffiCallbackInterfaceExternalSignerMethod19 = (
   uniffiHandle: bigint,
   request: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
@@ -1362,18 +1380,19 @@ export type UniffiVTableCallbackInterfaceExternalSigner = {
   eciesEncrypt: UniffiCallbackInterfaceExternalSignerMethod4;
   eciesDecrypt: UniffiCallbackInterfaceExternalSignerMethod5;
   signHashSchnorr: UniffiCallbackInterfaceExternalSignerMethod6;
-  generateFrostSigningCommitments: UniffiCallbackInterfaceExternalSignerMethod7;
-  getPublicKeyForNode: UniffiCallbackInterfaceExternalSignerMethod8;
-  generateRandomKey: UniffiCallbackInterfaceExternalSignerMethod9;
-  getStaticDepositPrivateKeySource: UniffiCallbackInterfaceExternalSignerMethod10;
-  getStaticDepositPrivateKey: UniffiCallbackInterfaceExternalSignerMethod11;
-  getStaticDepositPublicKey: UniffiCallbackInterfaceExternalSignerMethod12;
-  subtractPrivateKeys: UniffiCallbackInterfaceExternalSignerMethod13;
-  splitSecret: UniffiCallbackInterfaceExternalSignerMethod14;
-  encryptPrivateKeyForReceiver: UniffiCallbackInterfaceExternalSignerMethod15;
-  getPublicKeyFromPrivateKeySource: UniffiCallbackInterfaceExternalSignerMethod16;
-  signFrost: UniffiCallbackInterfaceExternalSignerMethod17;
-  aggregateFrostSignatures: UniffiCallbackInterfaceExternalSignerMethod18;
+  hmacSha256: UniffiCallbackInterfaceExternalSignerMethod7;
+  generateFrostSigningCommitments: UniffiCallbackInterfaceExternalSignerMethod8;
+  getPublicKeyForNode: UniffiCallbackInterfaceExternalSignerMethod9;
+  generateRandomKey: UniffiCallbackInterfaceExternalSignerMethod10;
+  getStaticDepositPrivateKeySource: UniffiCallbackInterfaceExternalSignerMethod11;
+  getStaticDepositPrivateKey: UniffiCallbackInterfaceExternalSignerMethod12;
+  getStaticDepositPublicKey: UniffiCallbackInterfaceExternalSignerMethod13;
+  subtractPrivateKeys: UniffiCallbackInterfaceExternalSignerMethod14;
+  splitSecret: UniffiCallbackInterfaceExternalSignerMethod15;
+  encryptPrivateKeyForReceiver: UniffiCallbackInterfaceExternalSignerMethod16;
+  getPublicKeyFromPrivateKeySource: UniffiCallbackInterfaceExternalSignerMethod17;
+  signFrost: UniffiCallbackInterfaceExternalSignerMethod18;
+  aggregateFrostSignatures: UniffiCallbackInterfaceExternalSignerMethod19;
   uniffiFree: UniffiCallbackInterfaceFree;
 };
 export type UniffiVTableCallbackInterfaceFiatService = {
