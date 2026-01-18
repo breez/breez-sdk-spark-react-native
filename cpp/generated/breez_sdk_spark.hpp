@@ -199,10 +199,10 @@ protected:
   cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa_recoverable(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_ecies_encrypt(
+  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_ecies(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_ecies_decrypt(
+  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_decrypt_ecies(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
@@ -213,7 +213,7 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_frost_signing_commitments(
+  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_signing_commitment(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
@@ -229,18 +229,19 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_get_static_deposit_private_key(
+  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_get_static_deposit_public_key(
+  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_signing_key(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_private_keys(
+  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secret_keys(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_split_secret(
+  jsi::Value
+  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_split_secret_with_proofs(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
@@ -255,7 +256,7 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_aggregate_frost_signatures(
+  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_aggregate_frost(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_clone_fiatservice(
@@ -814,11 +815,11 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_ecies_encrypt(
+  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_ecies(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_ecies_decrypt(
+  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_decrypt_ecies(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
@@ -830,7 +831,7 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_frost_signing_commitments(
+  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_signing_commitment(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
@@ -846,19 +847,19 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_private_key(
+  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_public_key(
+  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_signing_key(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_private_keys(
+  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secret_keys(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret(
+  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret_with_proofs(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
@@ -874,7 +875,7 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost_signatures(
+  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value

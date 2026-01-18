@@ -21068,6 +21068,8 @@ const FfiConverterTypeBreezSdk = new FfiConverterObject(
 export interface ExternalSigner {
   /**
    * Returns the identity public key as 33 bytes (compressed secp256k1 key).
+   *
+   * See also: [JavaScript `getIdentityPublicKey`](https://docs.spark.money/wallets/spark-signer#get-identity-public-key)
    */
   identityPublicKey(): /*throws*/ PublicKeyBytes;
   /**
@@ -21078,6 +21080,8 @@ export interface ExternalSigner {
    *
    * # Returns
    * The derived public key as 33 bytes, or a `SignerError`
+   *
+   * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
    */
   derivePublicKey(
     path: string,
@@ -21127,7 +21131,7 @@ export interface ExternalSigner {
    * # Returns
    * Encrypted data, or a `SignerError`
    */
-  eciesEncrypt(
+  encryptEcies(
     message: ArrayBuffer,
     path: string,
     asyncOpts_?: { signal: AbortSignal }
@@ -21141,8 +21145,10 @@ export interface ExternalSigner {
    *
    * # Returns
    * Decrypted data, or a `SignerError`
+   *
+   * See also: [JavaScript `decryptEcies`](https://docs.spark.money/wallets/spark-signer#decrypt-ecies)
    */
-  eciesDecrypt(
+  decryptEcies(
     message: ArrayBuffer,
     path: string,
     asyncOpts_?: { signal: AbortSignal }
@@ -21171,6 +21177,8 @@ export interface ExternalSigner {
    *
    * # Returns
    * 32-byte HMAC-SHA256, or a `SignerError`
+   *
+   * See also: [JavaScript `htlcHMAC`](https://docs.spark.money/wallets/spark-signer#generate-htlc-hmac)
    */
   hmacSha256(
     message: ArrayBuffer,
@@ -21182,8 +21190,10 @@ export interface ExternalSigner {
    *
    * # Returns
    * Frost commitments with nonces, or a `SignerError`
+   *
+   * See also: [JavaScript `getRandomSigningCommitment`](https://docs.spark.money/wallets/spark-signer#get-random-signing-commitment)
    */
-  generateFrostSigningCommitments(asyncOpts_?: {
+  generateRandomSigningCommitment(asyncOpts_?: {
     signal: AbortSignal;
   }): /*throws*/ Promise<ExternalFrostCommitments>;
   /**
@@ -21229,8 +21239,10 @@ export interface ExternalSigner {
    *
    * # Returns
    * The 32-byte private key, or an error string
+   *
+   * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
    */
-  getStaticDepositPrivateKey(
+  staticDepositSecretKey(
     index: /*u32*/ number,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<PrivateKeyBytes>;
@@ -21242,8 +21254,10 @@ export interface ExternalSigner {
    *
    * # Returns
    * The 33-byte public key, or an error string
+   *
+   * See also: [JavaScript `getStaticDepositSigningKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-signing-key)
    */
-  getStaticDepositPublicKey(
+  staticDepositSigningKey(
     index: /*u32*/ number,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<PublicKeyBytes>;
@@ -21257,7 +21271,7 @@ export interface ExternalSigner {
    * # Returns
    * The resulting private key source, or an error string
    */
-  subtractPrivateKeys(
+  subtractSecretKeys(
     signingKey: ExternalPrivateKeySource,
     newSigningKey: ExternalPrivateKeySource,
     asyncOpts_?: { signal: AbortSignal }
@@ -21272,8 +21286,10 @@ export interface ExternalSigner {
    *
    * # Returns
    * Vector of verifiable secret shares, or an error string
+   *
+   * See also: [JavaScript `splitSecretWithProofs`](https://docs.spark.money/wallets/spark-signer#split-secret-with-proofs)
    */
-  splitSecret(
+  splitSecretWithProofs(
     secret: ExternalSecretToSplit,
     threshold: /*u32*/ number,
     numShares: /*u32*/ number,
@@ -21315,6 +21331,8 @@ export interface ExternalSigner {
    *
    * # Returns
    * A signature share, or an error string
+   *
+   * See also: [JavaScript `signFrost`](https://docs.spark.money/wallets/spark-signer#frost-signing)
    */
   signFrost(
     request: ExternalSignFrostRequest,
@@ -21328,8 +21346,10 @@ export interface ExternalSigner {
    *
    * # Returns
    * The aggregated Frost signature, or an error string
+   *
+   * See also: [JavaScript `aggregateFrost`](https://docs.spark.money/wallets/spark-signer#aggregate-frost-signatures)
    */
-  aggregateFrostSignatures(
+  aggregateFrost(
     request: ExternalAggregateFrostRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<ExternalFrostSignature>;
@@ -21365,6 +21385,8 @@ export class ExternalSignerImpl
 
   /**
    * Returns the identity public key as 33 bytes (compressed secp256k1 key).
+   *
+   * See also: [JavaScript `getIdentityPublicKey`](https://docs.spark.money/wallets/spark-signer#get-identity-public-key)
    */
   public identityPublicKey(): PublicKeyBytes /*throws*/ {
     return FfiConverterTypePublicKeyBytes.lift(
@@ -21391,6 +21413,8 @@ export class ExternalSignerImpl
    *
    * # Returns
    * The derived public key as 33 bytes, or a `SignerError`
+   *
+   * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
    */
   public async derivePublicKey(
     path: string,
@@ -21547,7 +21571,7 @@ export class ExternalSignerImpl
    * # Returns
    * Encrypted data, or a `SignerError`
    */
-  public async eciesEncrypt(
+  public async encryptEcies(
     message: ArrayBuffer,
     path: string,
     asyncOpts_?: { signal: AbortSignal }
@@ -21557,7 +21581,7 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_ecies_encrypt(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_ecies(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
             FfiConverterArrayBuffer.lower(message),
             FfiConverterString.lower(path)
@@ -21597,8 +21621,10 @@ export class ExternalSignerImpl
    *
    * # Returns
    * Decrypted data, or a `SignerError`
+   *
+   * See also: [JavaScript `decryptEcies`](https://docs.spark.money/wallets/spark-signer#decrypt-ecies)
    */
-  public async eciesDecrypt(
+  public async decryptEcies(
     message: ArrayBuffer,
     path: string,
     asyncOpts_?: { signal: AbortSignal }
@@ -21608,7 +21634,7 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_ecies_decrypt(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_decrypt_ecies(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
             FfiConverterArrayBuffer.lower(message),
             FfiConverterString.lower(path)
@@ -21699,6 +21725,8 @@ export class ExternalSignerImpl
    *
    * # Returns
    * 32-byte HMAC-SHA256, or a `SignerError`
+   *
+   * See also: [JavaScript `htlcHMAC`](https://docs.spark.money/wallets/spark-signer#generate-htlc-hmac)
    */
   public async hmacSha256(
     message: ArrayBuffer,
@@ -21746,8 +21774,10 @@ export class ExternalSignerImpl
    *
    * # Returns
    * Frost commitments with nonces, or a `SignerError`
+   *
+   * See also: [JavaScript `getRandomSigningCommitment`](https://docs.spark.money/wallets/spark-signer#get-random-signing-commitment)
    */
-  public async generateFrostSigningCommitments(asyncOpts_?: {
+  public async generateRandomSigningCommitment(asyncOpts_?: {
     signal: AbortSignal;
   }): Promise<ExternalFrostCommitments> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
@@ -21755,7 +21785,7 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_frost_signing_commitments(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_signing_commitment(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this)
           );
         },
@@ -21931,8 +21961,10 @@ export class ExternalSignerImpl
    *
    * # Returns
    * The 32-byte private key, or an error string
+   *
+   * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
    */
-  public async getStaticDepositPrivateKey(
+  public async staticDepositSecretKey(
     index: /*u32*/ number,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<PrivateKeyBytes> /*throws*/ {
@@ -21941,7 +21973,7 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_get_static_deposit_private_key(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
             FfiConverterUInt32.lower(index)
           );
@@ -21979,8 +22011,10 @@ export class ExternalSignerImpl
    *
    * # Returns
    * The 33-byte public key, or an error string
+   *
+   * See also: [JavaScript `getStaticDepositSigningKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-signing-key)
    */
-  public async getStaticDepositPublicKey(
+  public async staticDepositSigningKey(
     index: /*u32*/ number,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<PublicKeyBytes> /*throws*/ {
@@ -21989,7 +22023,7 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_get_static_deposit_public_key(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_signing_key(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
             FfiConverterUInt32.lower(index)
           );
@@ -22029,7 +22063,7 @@ export class ExternalSignerImpl
    * # Returns
    * The resulting private key source, or an error string
    */
-  public async subtractPrivateKeys(
+  public async subtractSecretKeys(
     signingKey: ExternalPrivateKeySource,
     newSigningKey: ExternalPrivateKeySource,
     asyncOpts_?: { signal: AbortSignal }
@@ -22039,7 +22073,7 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_private_keys(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secret_keys(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
             FfiConverterTypeExternalPrivateKeySource.lower(signingKey),
             FfiConverterTypeExternalPrivateKeySource.lower(newSigningKey)
@@ -22080,8 +22114,10 @@ export class ExternalSignerImpl
    *
    * # Returns
    * Vector of verifiable secret shares, or an error string
+   *
+   * See also: [JavaScript `splitSecretWithProofs`](https://docs.spark.money/wallets/spark-signer#split-secret-with-proofs)
    */
-  public async splitSecret(
+  public async splitSecretWithProofs(
     secret: ExternalSecretToSplit,
     threshold: /*u32*/ number,
     numShares: /*u32*/ number,
@@ -22092,7 +22128,7 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_split_secret(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_split_secret_with_proofs(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
             FfiConverterTypeExternalSecretToSplit.lower(secret),
             FfiConverterUInt32.lower(threshold),
@@ -22231,6 +22267,8 @@ export class ExternalSignerImpl
    *
    * # Returns
    * A signature share, or an error string
+   *
+   * See also: [JavaScript `signFrost`](https://docs.spark.money/wallets/spark-signer#frost-signing)
    */
   public async signFrost(
     request: ExternalSignFrostRequest,
@@ -22279,8 +22317,10 @@ export class ExternalSignerImpl
    *
    * # Returns
    * The aggregated Frost signature, or an error string
+   *
+   * See also: [JavaScript `aggregateFrost`](https://docs.spark.money/wallets/spark-signer#aggregate-frost-signatures)
    */
-  public async aggregateFrostSignatures(
+  public async aggregateFrost(
     request: ExternalAggregateFrostRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<ExternalFrostSignature> /*throws*/ {
@@ -22289,7 +22329,7 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_aggregate_frost_signatures(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_aggregate_frost(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
             FfiConverterTypeExternalAggregateFrostRequest.lower(request)
           );
@@ -22585,7 +22625,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    eciesEncrypt: (
+    encryptEcies: (
       uniffiHandle: bigint,
       message: Uint8Array,
       path: Uint8Array,
@@ -22596,7 +22636,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         signal: AbortSignal
       ): Promise<ArrayBuffer> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.eciesEncrypt(
+        return await jsCallback.encryptEcies(
           FfiConverterArrayBuffer.lift(message),
           FfiConverterString.lift(path),
           { signal }
@@ -22633,7 +22673,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    eciesDecrypt: (
+    decryptEcies: (
       uniffiHandle: bigint,
       message: Uint8Array,
       path: Uint8Array,
@@ -22644,7 +22684,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         signal: AbortSignal
       ): Promise<ArrayBuffer> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.eciesDecrypt(
+        return await jsCallback.decryptEcies(
           FfiConverterArrayBuffer.lift(message),
           FfiConverterString.lift(path),
           { signal }
@@ -22778,7 +22818,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    generateFrostSigningCommitments: (
+    generateRandomSigningCommitment: (
       uniffiHandle: bigint,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
       uniffiCallbackData: bigint
@@ -22787,7 +22827,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         signal: AbortSignal
       ): Promise<ExternalFrostCommitments> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.generateFrostSigningCommitments({ signal });
+        return await jsCallback.generateRandomSigningCommitment({ signal });
       };
       const uniffiHandleSuccess = (returnValue: ExternalFrostCommitments) => {
         uniffiFutureCallback(
@@ -22957,7 +22997,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    getStaticDepositPrivateKey: (
+    staticDepositSecretKey: (
       uniffiHandle: bigint,
       index: number,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
@@ -22967,7 +23007,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         signal: AbortSignal
       ): Promise<PrivateKeyBytes> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.getStaticDepositPrivateKey(
+        return await jsCallback.staticDepositSecretKey(
           FfiConverterUInt32.lift(index),
           { signal }
         );
@@ -23003,7 +23043,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    getStaticDepositPublicKey: (
+    staticDepositSigningKey: (
       uniffiHandle: bigint,
       index: number,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
@@ -23013,7 +23053,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         signal: AbortSignal
       ): Promise<PublicKeyBytes> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.getStaticDepositPublicKey(
+        return await jsCallback.staticDepositSigningKey(
           FfiConverterUInt32.lift(index),
           { signal }
         );
@@ -23049,7 +23089,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    subtractPrivateKeys: (
+    subtractSecretKeys: (
       uniffiHandle: bigint,
       signingKey: Uint8Array,
       newSigningKey: Uint8Array,
@@ -23060,7 +23100,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         signal: AbortSignal
       ): Promise<ExternalPrivateKeySource> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.subtractPrivateKeys(
+        return await jsCallback.subtractSecretKeys(
           FfiConverterTypeExternalPrivateKeySource.lift(signingKey),
           FfiConverterTypeExternalPrivateKeySource.lift(newSigningKey),
           { signal }
@@ -23098,7 +23138,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    splitSecret: (
+    splitSecretWithProofs: (
       uniffiHandle: bigint,
       secret: Uint8Array,
       threshold: number,
@@ -23110,7 +23150,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         signal: AbortSignal
       ): Promise<Array<ExternalVerifiableSecretShare>> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.splitSecret(
+        return await jsCallback.splitSecretWithProofs(
           FfiConverterTypeExternalSecretToSplit.lift(secret),
           FfiConverterUInt32.lift(threshold),
           FfiConverterUInt32.lift(numShares),
@@ -23296,7 +23336,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    aggregateFrostSignatures: (
+    aggregateFrost: (
       uniffiHandle: bigint,
       request: Uint8Array,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
@@ -23306,7 +23346,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         signal: AbortSignal
       ): Promise<ExternalFrostSignature> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.aggregateFrostSignatures(
+        return await jsCallback.aggregateFrost(
           FfiConverterTypeExternalAggregateFrostRequest.lift(request),
           { signal }
         );
@@ -28675,7 +28715,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_identity_public_key() !==
-    44711
+    62941
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_identity_public_key'
@@ -28683,7 +28723,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_derive_public_key() !==
-    63908
+    23137
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_derive_public_key'
@@ -28706,19 +28746,19 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_ecies_encrypt() !==
-    19449
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_ecies() !==
+    60224
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_ecies_encrypt'
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_ecies'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_ecies_decrypt() !==
-    46414
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_decrypt_ecies() !==
+    59601
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_ecies_decrypt'
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_decrypt_ecies'
     );
   }
   if (
@@ -28731,18 +28771,18 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_hmac_sha256() !==
-    19799
+    57517
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_hmac_sha256'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_frost_signing_commitments() !==
-    24833
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_signing_commitment() !==
+    31862
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_frost_signing_commitments'
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_signing_commitment'
     );
   }
   if (
@@ -28770,35 +28810,35 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_private_key() !==
-    57038
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key() !==
+    8728
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_private_key'
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_public_key() !==
-    47081
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_signing_key() !==
+    15562
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_public_key'
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_signing_key'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_private_keys() !==
-    63060
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secret_keys() !==
+    2714
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_private_keys'
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secret_keys'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret() !==
-    22937
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret_with_proofs() !==
+    6228
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret'
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret_with_proofs'
     );
   }
   if (
@@ -28819,18 +28859,18 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost() !==
-    44847
+    2993
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost_signatures() !==
-    61746
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost() !==
+    27769
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost_signatures'
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost'
     );
   }
   if (

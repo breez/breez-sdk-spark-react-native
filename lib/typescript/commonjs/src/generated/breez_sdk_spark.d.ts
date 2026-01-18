@@ -11503,6 +11503,8 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
 export interface ExternalSigner {
     /**
      * Returns the identity public key as 33 bytes (compressed secp256k1 key).
+     *
+     * See also: [JavaScript `getIdentityPublicKey`](https://docs.spark.money/wallets/spark-signer#get-identity-public-key)
      */
     identityPublicKey(): PublicKeyBytes;
     /**
@@ -11513,6 +11515,8 @@ export interface ExternalSigner {
      *
      * # Returns
      * The derived public key as 33 bytes, or a `SignerError`
+     *
+     * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
      */
     derivePublicKey(path: string, asyncOpts_?: {
         signal: AbortSignal;
@@ -11557,7 +11561,7 @@ export interface ExternalSigner {
      * # Returns
      * Encrypted data, or a `SignerError`
      */
-    eciesEncrypt(message: ArrayBuffer, path: string, asyncOpts_?: {
+    encryptEcies(message: ArrayBuffer, path: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ArrayBuffer>;
     /**
@@ -11569,8 +11573,10 @@ export interface ExternalSigner {
      *
      * # Returns
      * Decrypted data, or a `SignerError`
+     *
+     * See also: [JavaScript `decryptEcies`](https://docs.spark.money/wallets/spark-signer#decrypt-ecies)
      */
-    eciesDecrypt(message: ArrayBuffer, path: string, asyncOpts_?: {
+    decryptEcies(message: ArrayBuffer, path: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ArrayBuffer>;
     /**
@@ -11595,6 +11601,8 @@ export interface ExternalSigner {
      *
      * # Returns
      * 32-byte HMAC-SHA256, or a `SignerError`
+     *
+     * See also: [JavaScript `htlcHMAC`](https://docs.spark.money/wallets/spark-signer#generate-htlc-hmac)
      */
     hmacSha256(message: ArrayBuffer, path: string, asyncOpts_?: {
         signal: AbortSignal;
@@ -11604,8 +11612,10 @@ export interface ExternalSigner {
      *
      * # Returns
      * Frost commitments with nonces, or a `SignerError`
+     *
+     * See also: [JavaScript `getRandomSigningCommitment`](https://docs.spark.money/wallets/spark-signer#get-random-signing-commitment)
      */
-    generateFrostSigningCommitments(asyncOpts_?: {
+    generateRandomSigningCommitment(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ExternalFrostCommitments>;
     /**
@@ -11649,8 +11659,10 @@ export interface ExternalSigner {
      *
      * # Returns
      * The 32-byte private key, or an error string
+     *
+     * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
      */
-    getStaticDepositPrivateKey(index: number, asyncOpts_?: {
+    staticDepositSecretKey(index: number, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrivateKeyBytes>;
     /**
@@ -11661,8 +11673,10 @@ export interface ExternalSigner {
      *
      * # Returns
      * The 33-byte public key, or an error string
+     *
+     * See also: [JavaScript `getStaticDepositSigningKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-signing-key)
      */
-    getStaticDepositPublicKey(index: number, asyncOpts_?: {
+    staticDepositSigningKey(index: number, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
@@ -11675,7 +11689,7 @@ export interface ExternalSigner {
      * # Returns
      * The resulting private key source, or an error string
      */
-    subtractPrivateKeys(signingKey: ExternalPrivateKeySource, newSigningKey: ExternalPrivateKeySource, asyncOpts_?: {
+    subtractSecretKeys(signingKey: ExternalPrivateKeySource, newSigningKey: ExternalPrivateKeySource, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ExternalPrivateKeySource>;
     /**
@@ -11688,8 +11702,10 @@ export interface ExternalSigner {
      *
      * # Returns
      * Vector of verifiable secret shares, or an error string
+     *
+     * See also: [JavaScript `splitSecretWithProofs`](https://docs.spark.money/wallets/spark-signer#split-secret-with-proofs)
      */
-    splitSecret(secret: ExternalSecretToSplit, threshold: number, numShares: number, asyncOpts_?: {
+    splitSecretWithProofs(secret: ExternalSecretToSplit, threshold: number, numShares: number, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Array<ExternalVerifiableSecretShare>>;
     /**
@@ -11725,6 +11741,8 @@ export interface ExternalSigner {
      *
      * # Returns
      * A signature share, or an error string
+     *
+     * See also: [JavaScript `signFrost`](https://docs.spark.money/wallets/spark-signer#frost-signing)
      */
     signFrost(request: ExternalSignFrostRequest, asyncOpts_?: {
         signal: AbortSignal;
@@ -11737,8 +11755,10 @@ export interface ExternalSigner {
      *
      * # Returns
      * The aggregated Frost signature, or an error string
+     *
+     * See also: [JavaScript `aggregateFrost`](https://docs.spark.money/wallets/spark-signer#aggregate-frost-signatures)
      */
-    aggregateFrostSignatures(request: ExternalAggregateFrostRequest, asyncOpts_?: {
+    aggregateFrost(request: ExternalAggregateFrostRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ExternalFrostSignature>;
 }
@@ -11762,6 +11782,8 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
     private constructor();
     /**
      * Returns the identity public key as 33 bytes (compressed secp256k1 key).
+     *
+     * See also: [JavaScript `getIdentityPublicKey`](https://docs.spark.money/wallets/spark-signer#get-identity-public-key)
      */
     identityPublicKey(): PublicKeyBytes;
     /**
@@ -11772,6 +11794,8 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      *
      * # Returns
      * The derived public key as 33 bytes, or a `SignerError`
+     *
+     * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
      */
     derivePublicKey(path: string, asyncOpts_?: {
         signal: AbortSignal;
@@ -11816,7 +11840,7 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      * # Returns
      * Encrypted data, or a `SignerError`
      */
-    eciesEncrypt(message: ArrayBuffer, path: string, asyncOpts_?: {
+    encryptEcies(message: ArrayBuffer, path: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ArrayBuffer>;
     /**
@@ -11828,8 +11852,10 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      *
      * # Returns
      * Decrypted data, or a `SignerError`
+     *
+     * See also: [JavaScript `decryptEcies`](https://docs.spark.money/wallets/spark-signer#decrypt-ecies)
      */
-    eciesDecrypt(message: ArrayBuffer, path: string, asyncOpts_?: {
+    decryptEcies(message: ArrayBuffer, path: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ArrayBuffer>;
     /**
@@ -11854,6 +11880,8 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      *
      * # Returns
      * 32-byte HMAC-SHA256, or a `SignerError`
+     *
+     * See also: [JavaScript `htlcHMAC`](https://docs.spark.money/wallets/spark-signer#generate-htlc-hmac)
      */
     hmacSha256(message: ArrayBuffer, path: string, asyncOpts_?: {
         signal: AbortSignal;
@@ -11863,8 +11891,10 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      *
      * # Returns
      * Frost commitments with nonces, or a `SignerError`
+     *
+     * See also: [JavaScript `getRandomSigningCommitment`](https://docs.spark.money/wallets/spark-signer#get-random-signing-commitment)
      */
-    generateFrostSigningCommitments(asyncOpts_?: {
+    generateRandomSigningCommitment(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ExternalFrostCommitments>;
     /**
@@ -11908,8 +11938,10 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      *
      * # Returns
      * The 32-byte private key, or an error string
+     *
+     * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
      */
-    getStaticDepositPrivateKey(index: number, asyncOpts_?: {
+    staticDepositSecretKey(index: number, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrivateKeyBytes>;
     /**
@@ -11920,8 +11952,10 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      *
      * # Returns
      * The 33-byte public key, or an error string
+     *
+     * See also: [JavaScript `getStaticDepositSigningKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-signing-key)
      */
-    getStaticDepositPublicKey(index: number, asyncOpts_?: {
+    staticDepositSigningKey(index: number, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
@@ -11934,7 +11968,7 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      * # Returns
      * The resulting private key source, or an error string
      */
-    subtractPrivateKeys(signingKey: ExternalPrivateKeySource, newSigningKey: ExternalPrivateKeySource, asyncOpts_?: {
+    subtractSecretKeys(signingKey: ExternalPrivateKeySource, newSigningKey: ExternalPrivateKeySource, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ExternalPrivateKeySource>;
     /**
@@ -11947,8 +11981,10 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      *
      * # Returns
      * Vector of verifiable secret shares, or an error string
+     *
+     * See also: [JavaScript `splitSecretWithProofs`](https://docs.spark.money/wallets/spark-signer#split-secret-with-proofs)
      */
-    splitSecret(secret: ExternalSecretToSplit, threshold: number, numShares: number, asyncOpts_?: {
+    splitSecretWithProofs(secret: ExternalSecretToSplit, threshold: number, numShares: number, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Array<ExternalVerifiableSecretShare>>;
     /**
@@ -11984,6 +12020,8 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      *
      * # Returns
      * A signature share, or an error string
+     *
+     * See also: [JavaScript `signFrost`](https://docs.spark.money/wallets/spark-signer#frost-signing)
      */
     signFrost(request: ExternalSignFrostRequest, asyncOpts_?: {
         signal: AbortSignal;
@@ -11996,8 +12034,10 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      *
      * # Returns
      * The aggregated Frost signature, or an error string
+     *
+     * See also: [JavaScript `aggregateFrost`](https://docs.spark.money/wallets/spark-signer#aggregate-frost-signatures)
      */
-    aggregateFrostSignatures(request: ExternalAggregateFrostRequest, asyncOpts_?: {
+    aggregateFrost(request: ExternalAggregateFrostRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ExternalFrostSignature>;
     /**
