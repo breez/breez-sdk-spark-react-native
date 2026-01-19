@@ -1098,32 +1098,32 @@ export declare const ExternalAggregateFrostRequest: Readonly<{
     defaults: () => Partial<ExternalAggregateFrostRequest>;
 }>;
 /**
- * FFI-safe representation of `spark_wallet::EncryptedPrivateKey`
+ * FFI-safe representation of `spark_wallet::EncryptedSecret`
  */
-export type ExternalEncryptedPrivateKey = {
+export type ExternalEncryptedSecret = {
     /**
      * The encrypted ciphertext
      */
     ciphertext: ArrayBuffer;
 };
 /**
- * Generated factory for {@link ExternalEncryptedPrivateKey} record objects.
+ * Generated factory for {@link ExternalEncryptedSecret} record objects.
  */
-export declare const ExternalEncryptedPrivateKey: Readonly<{
+export declare const ExternalEncryptedSecret: Readonly<{
     /**
-     * Create a frozen instance of {@link ExternalEncryptedPrivateKey}, with defaults specified
+     * Create a frozen instance of {@link ExternalEncryptedSecret}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<ExternalEncryptedPrivateKey> & Required<Omit<ExternalEncryptedPrivateKey, never>>) => ExternalEncryptedPrivateKey;
+    create: (partial: Partial<ExternalEncryptedSecret> & Required<Omit<ExternalEncryptedSecret, never>>) => ExternalEncryptedSecret;
     /**
-     * Create a frozen instance of {@link ExternalEncryptedPrivateKey}, with defaults specified
+     * Create a frozen instance of {@link ExternalEncryptedSecret}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<ExternalEncryptedPrivateKey> & Required<Omit<ExternalEncryptedPrivateKey, never>>) => ExternalEncryptedPrivateKey;
+    new: (partial: Partial<ExternalEncryptedSecret> & Required<Omit<ExternalEncryptedSecret, never>>) => ExternalEncryptedSecret;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
-    defaults: () => Partial<ExternalEncryptedPrivateKey>;
+    defaults: () => Partial<ExternalEncryptedSecret>;
 }>;
 /**
  * FFI-safe representation of `spark_wallet::FrostSigningCommitmentsWithNonces`
@@ -1361,7 +1361,7 @@ export type ExternalSignFrostRequest = {
     /**
      * The private key source
      */
-    privateKey: ExternalSecretKeySource;
+    secret: ExternalSecretSource;
     /**
      * The verifying key (33 bytes compressed)
      */
@@ -2973,31 +2973,6 @@ export declare const PrepareSendPaymentResponse: Readonly<{
      */
     defaults: () => Partial<PrepareSendPaymentResponse>;
 }>;
-/**
- * FFI-safe representation of a private key (32 bytes)
- */
-export type PrivateKeyBytes = {
-    bytes: ArrayBuffer;
-};
-/**
- * Generated factory for {@link PrivateKeyBytes} record objects.
- */
-export declare const PrivateKeyBytes: Readonly<{
-    /**
-     * Create a frozen instance of {@link PrivateKeyBytes}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create: (partial: Partial<PrivateKeyBytes> & Required<Omit<PrivateKeyBytes, never>>) => PrivateKeyBytes;
-    /**
-     * Create a frozen instance of {@link PrivateKeyBytes}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: (partial: Partial<PrivateKeyBytes> & Required<Omit<PrivateKeyBytes, never>>) => PrivateKeyBytes;
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Partial<PrivateKeyBytes>;
-}>;
 export type ProvisionalPayment = {
     /**
      * Unique identifier for the payment
@@ -3373,6 +3348,31 @@ export declare const SchnorrSignatureBytes: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<SchnorrSignatureBytes>;
+}>;
+/**
+ * FFI-safe representation of a private key (32 bytes)
+ */
+export type SecretBytes = {
+    bytes: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link SecretBytes} record objects.
+ */
+export declare const SecretBytes: Readonly<{
+    /**
+     * Create a frozen instance of {@link SecretBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SecretBytes> & Required<Omit<SecretBytes, never>>) => SecretBytes;
+    /**
+     * Create a frozen instance of {@link SecretBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SecretBytes> & Required<Omit<SecretBytes, never>>) => SecretBytes;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SecretBytes>;
 }>;
 export type SendOnchainFeeQuote = {
     id: string;
@@ -4923,20 +4923,20 @@ export declare const DepositClaimError: Readonly<{
     };
 }>;
 export type DepositClaimError = InstanceType<(typeof DepositClaimError)[keyof Omit<typeof DepositClaimError, 'instanceOf'>]>;
-export declare enum ExternalSecretKeySource_Tags {
+export declare enum ExternalSecretSource_Tags {
     Derived = "Derived",
     Encrypted = "Encrypted"
 }
 /**
- * FFI-safe representation of `spark_wallet::SecretKeySource`
+ * FFI-safe representation of `spark_wallet::SecretSource`
  */
-export declare const ExternalSecretKeySource: Readonly<{
-    instanceOf: (obj: any) => obj is ExternalSecretKeySource;
+export declare const ExternalSecretSource: Readonly<{
+    instanceOf: (obj: any) => obj is ExternalSecretSource;
     Derived: {
         new (inner: {
             nodeId: ExternalTreeNodeId;
         }): {
-            readonly tag: ExternalSecretKeySource_Tags.Derived;
+            readonly tag: ExternalSecretSource_Tags.Derived;
             readonly inner: Readonly<{
                 nodeId: ExternalTreeNodeId;
             }>;
@@ -4944,12 +4944,12 @@ export declare const ExternalSecretKeySource: Readonly<{
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretKeySource";
+            readonly [uniffiTypeNameSymbol]: "ExternalSecretSource";
         };
         "new"(inner: {
             nodeId: ExternalTreeNodeId;
         }): {
-            readonly tag: ExternalSecretKeySource_Tags.Derived;
+            readonly tag: ExternalSecretSource_Tags.Derived;
             readonly inner: Readonly<{
                 nodeId: ExternalTreeNodeId;
             }>;
@@ -4957,10 +4957,10 @@ export declare const ExternalSecretKeySource: Readonly<{
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretKeySource";
+            readonly [uniffiTypeNameSymbol]: "ExternalSecretSource";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: ExternalSecretKeySource_Tags.Derived;
+            readonly tag: ExternalSecretSource_Tags.Derived;
             readonly inner: Readonly<{
                 nodeId: ExternalTreeNodeId;
             }>;
@@ -4968,55 +4968,55 @@ export declare const ExternalSecretKeySource: Readonly<{
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretKeySource";
+            readonly [uniffiTypeNameSymbol]: "ExternalSecretSource";
         };
     };
     Encrypted: {
         new (inner: {
-            key: ExternalEncryptedPrivateKey;
+            key: ExternalEncryptedSecret;
         }): {
-            readonly tag: ExternalSecretKeySource_Tags.Encrypted;
+            readonly tag: ExternalSecretSource_Tags.Encrypted;
             readonly inner: Readonly<{
-                key: ExternalEncryptedPrivateKey;
+                key: ExternalEncryptedSecret;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretKeySource";
+            readonly [uniffiTypeNameSymbol]: "ExternalSecretSource";
         };
         "new"(inner: {
-            key: ExternalEncryptedPrivateKey;
+            key: ExternalEncryptedSecret;
         }): {
-            readonly tag: ExternalSecretKeySource_Tags.Encrypted;
+            readonly tag: ExternalSecretSource_Tags.Encrypted;
             readonly inner: Readonly<{
-                key: ExternalEncryptedPrivateKey;
+                key: ExternalEncryptedSecret;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretKeySource";
+            readonly [uniffiTypeNameSymbol]: "ExternalSecretSource";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: ExternalSecretKeySource_Tags.Encrypted;
+            readonly tag: ExternalSecretSource_Tags.Encrypted;
             readonly inner: Readonly<{
-                key: ExternalEncryptedPrivateKey;
+                key: ExternalEncryptedSecret;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretKeySource";
+            readonly [uniffiTypeNameSymbol]: "ExternalSecretSource";
         };
     };
 }>;
 /**
- * FFI-safe representation of `spark_wallet::SecretKeySource`
+ * FFI-safe representation of `spark_wallet::SecretSource`
  */
-export type ExternalSecretKeySource = InstanceType<(typeof ExternalSecretKeySource)[keyof Omit<typeof ExternalSecretKeySource, 'instanceOf'>]>;
+export type ExternalSecretSource = InstanceType<(typeof ExternalSecretSource)[keyof Omit<typeof ExternalSecretSource, 'instanceOf'>]>;
 export declare enum ExternalSecretToSplit_Tags {
-    PrivateKey = "PrivateKey",
+    SecretSource = "SecretSource",
     Preimage = "Preimage"
 }
 /**
@@ -5024,13 +5024,13 @@ export declare enum ExternalSecretToSplit_Tags {
  */
 export declare const ExternalSecretToSplit: Readonly<{
     instanceOf: (obj: any) => obj is ExternalSecretToSplit;
-    PrivateKey: {
+    SecretSource: {
         new (inner: {
-            source: ExternalSecretKeySource;
+            source: ExternalSecretSource;
         }): {
-            readonly tag: ExternalSecretToSplit_Tags.PrivateKey;
+            readonly tag: ExternalSecretToSplit_Tags.SecretSource;
             readonly inner: Readonly<{
-                source: ExternalSecretKeySource;
+                source: ExternalSecretSource;
             }>;
             /**
              * @private
@@ -5039,11 +5039,11 @@ export declare const ExternalSecretToSplit: Readonly<{
             readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
         };
         "new"(inner: {
-            source: ExternalSecretKeySource;
+            source: ExternalSecretSource;
         }): {
-            readonly tag: ExternalSecretToSplit_Tags.PrivateKey;
+            readonly tag: ExternalSecretToSplit_Tags.SecretSource;
             readonly inner: Readonly<{
-                source: ExternalSecretKeySource;
+                source: ExternalSecretSource;
             }>;
             /**
              * @private
@@ -5052,9 +5052,9 @@ export declare const ExternalSecretToSplit: Readonly<{
             readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: ExternalSecretToSplit_Tags.PrivateKey;
+            readonly tag: ExternalSecretToSplit_Tags.SecretSource;
             readonly inner: Readonly<{
-                source: ExternalSecretKeySource;
+                source: ExternalSecretSource;
             }>;
             /**
              * @private
@@ -11631,40 +11631,42 @@ export interface ExternalSigner {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
-     * Generates a random secret key.
+     * Generates a random secret.
      *
      * # Returns
-     * A randomly generated secret key source, or an error string
+     * A randomly generated secret source, or an error string
      */
     generateRandomKey(asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<ExternalSecretKeySource>;
+    }): Promise<ExternalSecretSource>;
     /**
-     * Gets an encrypted static deposit secret key by index.
+     * Gets an encrypted static deposit secret by index.
      *
      * # Arguments
      * * `index` - The index of the static deposit key
      *
      * # Returns
-     * The encrypted secret key, or an error string
+     * The encrypted secret source, or an error string
+     *
+     * This is the encrypted version of: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
      */
-    staticDepositSecretKeyEncrypted(index: number, asyncOpts_?: {
+    staticDepositSecretEncrypted(index: number, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<ExternalSecretKeySource>;
+    }): Promise<ExternalSecretSource>;
     /**
-     * Gets a static deposit secret key by index.
+     * Gets a static deposit secret by index.
      *
      * # Arguments
      * * `index` - The index of the static deposit key
      *
      * # Returns
-     * The 32-byte secret key, or an error string
+     * The 32-byte secret, or an error string
      *
      * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
      */
-    staticDepositSecretKey(index: number, asyncOpts_?: {
+    staticDepositSecret(index: number, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<PrivateKeyBytes>;
+    }): Promise<SecretBytes>;
     /**
      * Gets a static deposit public key by index.
      *
@@ -11680,21 +11682,21 @@ export interface ExternalSigner {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
-     * Subtracts one secret key from another.
+     * Subtracts one secret from another.
      *
      * # Arguments
-     * * `signing_key` - The first secret key source
-     * * `new_signing_key` - The second secret key source to subtract
+     * * `signing_key` - The first secret source
+     * * `new_signing_key` - The second secret source to subtract
      *
      * # Returns
-     * The resulting secret key source, or an error string
+     * The resulting secret source, or an error string
      *
      * See also: [JavaScript `subtractSplitAndEncrypt`](https://docs.spark.money/wallets/spark-signer#subtract,-split,-and-encrypt)
      * (this method provides the subtraction step of that higher-level operation)
      */
-    subtractSecretKeys(signingKey: ExternalSecretKeySource, newSigningKey: ExternalSecretKeySource, asyncOpts_?: {
+    subtractSecrets(signingKey: ExternalSecretSource, newSigningKey: ExternalSecretSource, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<ExternalSecretKeySource>;
+    }): Promise<ExternalSecretSource>;
     /**
      * Splits a secret with proofs using Shamir's Secret Sharing.
      *
@@ -11712,28 +11714,28 @@ export interface ExternalSigner {
         signal: AbortSignal;
     }): Promise<Array<ExternalVerifiableSecretShare>>;
     /**
-     * Encrypts a secret key for a specific receiver's public key.
+     * Encrypts a secret for a specific receiver's public key.
      *
      * # Arguments
-     * * `secret_key` - The encrypted secret key to re-encrypt
+     * * `encrypted_secret` - The encrypted secret to re-encrypt
      * * `receiver_public_key` - The receiver's 33-byte public key
      *
      * # Returns
      * Encrypted data for the receiver, or an error string
      */
-    encryptSecretKeyForReceiver(secretKey: ExternalEncryptedPrivateKey, receiverPublicKey: PublicKeyBytes, asyncOpts_?: {
+    encryptSecretForReceiver(encryptedSecret: ExternalEncryptedSecret, receiverPublicKey: PublicKeyBytes, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ArrayBuffer>;
     /**
-     * Gets the public key from a secret key source.
+     * Gets the public key from a secret source.
      *
      * # Arguments
-     * * `secret_key` - The secret key source
+     * * `secret` - The secret source
      *
      * # Returns
      * The corresponding 33-byte public key, or an error string
      */
-    publicKeyFromSecretKeySource(secretKey: ExternalSecretKeySource, asyncOpts_?: {
+    publicKeyFromSecret(secret: ExternalSecretSource, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
@@ -11913,40 +11915,42 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
-     * Generates a random secret key.
+     * Generates a random secret.
      *
      * # Returns
-     * A randomly generated secret key source, or an error string
+     * A randomly generated secret source, or an error string
      */
     generateRandomKey(asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<ExternalSecretKeySource>;
+    }): Promise<ExternalSecretSource>;
     /**
-     * Gets an encrypted static deposit secret key by index.
+     * Gets an encrypted static deposit secret by index.
      *
      * # Arguments
      * * `index` - The index of the static deposit key
      *
      * # Returns
-     * The encrypted secret key, or an error string
+     * The encrypted secret source, or an error string
+     *
+     * This is the encrypted version of: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
      */
-    staticDepositSecretKeyEncrypted(index: number, asyncOpts_?: {
+    staticDepositSecretEncrypted(index: number, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<ExternalSecretKeySource>;
+    }): Promise<ExternalSecretSource>;
     /**
-     * Gets a static deposit secret key by index.
+     * Gets a static deposit secret by index.
      *
      * # Arguments
      * * `index` - The index of the static deposit key
      *
      * # Returns
-     * The 32-byte secret key, or an error string
+     * The 32-byte secret, or an error string
      *
      * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
      */
-    staticDepositSecretKey(index: number, asyncOpts_?: {
+    staticDepositSecret(index: number, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<PrivateKeyBytes>;
+    }): Promise<SecretBytes>;
     /**
      * Gets a static deposit public key by index.
      *
@@ -11962,21 +11966,21 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
-     * Subtracts one secret key from another.
+     * Subtracts one secret from another.
      *
      * # Arguments
-     * * `signing_key` - The first secret key source
-     * * `new_signing_key` - The second secret key source to subtract
+     * * `signing_key` - The first secret source
+     * * `new_signing_key` - The second secret source to subtract
      *
      * # Returns
-     * The resulting secret key source, or an error string
+     * The resulting secret source, or an error string
      *
      * See also: [JavaScript `subtractSplitAndEncrypt`](https://docs.spark.money/wallets/spark-signer#subtract,-split,-and-encrypt)
      * (this method provides the subtraction step of that higher-level operation)
      */
-    subtractSecretKeys(signingKey: ExternalSecretKeySource, newSigningKey: ExternalSecretKeySource, asyncOpts_?: {
+    subtractSecrets(signingKey: ExternalSecretSource, newSigningKey: ExternalSecretSource, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<ExternalSecretKeySource>;
+    }): Promise<ExternalSecretSource>;
     /**
      * Splits a secret with proofs using Shamir's Secret Sharing.
      *
@@ -11994,28 +11998,28 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
         signal: AbortSignal;
     }): Promise<Array<ExternalVerifiableSecretShare>>;
     /**
-     * Encrypts a secret key for a specific receiver's public key.
+     * Encrypts a secret for a specific receiver's public key.
      *
      * # Arguments
-     * * `secret_key` - The encrypted secret key to re-encrypt
+     * * `encrypted_secret` - The encrypted secret to re-encrypt
      * * `receiver_public_key` - The receiver's 33-byte public key
      *
      * # Returns
      * Encrypted data for the receiver, or an error string
      */
-    encryptSecretKeyForReceiver(secretKey: ExternalEncryptedPrivateKey, receiverPublicKey: PublicKeyBytes, asyncOpts_?: {
+    encryptSecretForReceiver(encryptedSecret: ExternalEncryptedSecret, receiverPublicKey: PublicKeyBytes, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ArrayBuffer>;
     /**
-     * Gets the public key from a secret key source.
+     * Gets the public key from a secret source.
      *
      * # Arguments
-     * * `secret_key` - The secret key source
+     * * `secret` - The secret source
      *
      * # Returns
      * The corresponding 33-byte public key, or an error string
      */
-    publicKeyFromSecretKeySource(secretKey: ExternalSecretKeySource, asyncOpts_?: {
+    publicKeyFromSecret(secret: ExternalSecretSource, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
@@ -13323,12 +13327,12 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ExternalAggregateFrostRequest;
             lower(value: ExternalAggregateFrostRequest): UniffiByteArray;
         };
-        FfiConverterTypeExternalEncryptedPrivateKey: {
-            read(from: RustBuffer): ExternalEncryptedPrivateKey;
-            write(value: ExternalEncryptedPrivateKey, into: RustBuffer): void;
-            allocationSize(value: ExternalEncryptedPrivateKey): number;
-            lift(value: UniffiByteArray): ExternalEncryptedPrivateKey;
-            lower(value: ExternalEncryptedPrivateKey): UniffiByteArray;
+        FfiConverterTypeExternalEncryptedSecret: {
+            read(from: RustBuffer): ExternalEncryptedSecret;
+            write(value: ExternalEncryptedSecret, into: RustBuffer): void;
+            allocationSize(value: ExternalEncryptedSecret): number;
+            lift(value: UniffiByteArray): ExternalEncryptedSecret;
+            lower(value: ExternalEncryptedSecret): UniffiByteArray;
         };
         FfiConverterTypeExternalFrostCommitments: {
             read(from: RustBuffer): ExternalFrostCommitments;
@@ -13372,19 +13376,19 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ExternalScalar;
             lower(value: ExternalScalar): UniffiByteArray;
         };
-        FfiConverterTypeExternalSecretKeySource: {
-            read(from: RustBuffer): ExternalSecretKeySource;
-            write(value: ExternalSecretKeySource, into: RustBuffer): void;
-            allocationSize(value: ExternalSecretKeySource): number;
-            lift(value: UniffiByteArray): ExternalSecretKeySource;
-            lower(value: ExternalSecretKeySource): UniffiByteArray;
-        };
         FfiConverterTypeExternalSecretShare: {
             read(from: RustBuffer): ExternalSecretShare;
             write(value: ExternalSecretShare, into: RustBuffer): void;
             allocationSize(value: ExternalSecretShare): number;
             lift(value: UniffiByteArray): ExternalSecretShare;
             lower(value: ExternalSecretShare): UniffiByteArray;
+        };
+        FfiConverterTypeExternalSecretSource: {
+            read(from: RustBuffer): ExternalSecretSource;
+            write(value: ExternalSecretSource, into: RustBuffer): void;
+            allocationSize(value: ExternalSecretSource): number;
+            lift(value: UniffiByteArray): ExternalSecretSource;
+            lower(value: ExternalSecretSource): UniffiByteArray;
         };
         FfiConverterTypeExternalSecretToSplit: {
             read(from: RustBuffer): ExternalSecretToSplit;
@@ -13879,13 +13883,6 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): PrepareSendPaymentResponse;
             lower(value: PrepareSendPaymentResponse): UniffiByteArray;
         };
-        FfiConverterTypePrivateKeyBytes: {
-            read(from: RustBuffer): PrivateKeyBytes;
-            write(value: PrivateKeyBytes, into: RustBuffer): void;
-            allocationSize(value: PrivateKeyBytes): number;
-            lift(value: UniffiByteArray): PrivateKeyBytes;
-            lower(value: PrivateKeyBytes): UniffiByteArray;
-        };
         FfiConverterTypeProvisionalPayment: {
             read(from: RustBuffer): ProvisionalPayment;
             write(value: ProvisionalPayment, into: RustBuffer): void;
@@ -14013,6 +14010,13 @@ declare const _default: Readonly<{
             allocationSize(value: SdkEvent): number;
             lift(value: UniffiByteArray): SdkEvent;
             lower(value: SdkEvent): UniffiByteArray;
+        };
+        FfiConverterTypeSecretBytes: {
+            read(from: RustBuffer): SecretBytes;
+            write(value: SecretBytes, into: RustBuffer): void;
+            allocationSize(value: SecretBytes): number;
+            lift(value: UniffiByteArray): SecretBytes;
+            lower(value: SecretBytes): UniffiByteArray;
         };
         FfiConverterTypeSeed: {
             read(from: RustBuffer): Seed;

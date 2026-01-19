@@ -2854,9 +2854,9 @@ const FfiConverterTypeExternalAggregateFrostRequest = (() => {
 })();
 
 /**
- * FFI-safe representation of `spark_wallet::EncryptedPrivateKey`
+ * FFI-safe representation of `spark_wallet::EncryptedSecret`
  */
-export type ExternalEncryptedPrivateKey = {
+export type ExternalEncryptedSecret = {
   /**
    * The encrypted ciphertext
    */
@@ -2864,25 +2864,25 @@ export type ExternalEncryptedPrivateKey = {
 };
 
 /**
- * Generated factory for {@link ExternalEncryptedPrivateKey} record objects.
+ * Generated factory for {@link ExternalEncryptedSecret} record objects.
  */
-export const ExternalEncryptedPrivateKey = (() => {
+export const ExternalEncryptedSecret = (() => {
   const defaults = () => ({});
   const create = (() => {
     return uniffiCreateRecord<
-      ExternalEncryptedPrivateKey,
+      ExternalEncryptedSecret,
       ReturnType<typeof defaults>
     >(defaults);
   })();
   return Object.freeze({
     /**
-     * Create a frozen instance of {@link ExternalEncryptedPrivateKey}, with defaults specified
+     * Create a frozen instance of {@link ExternalEncryptedSecret}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     create,
 
     /**
-     * Create a frozen instance of {@link ExternalEncryptedPrivateKey}, with defaults specified
+     * Create a frozen instance of {@link ExternalEncryptedSecret}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     new: create,
@@ -2891,12 +2891,12 @@ export const ExternalEncryptedPrivateKey = (() => {
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () =>
-      Object.freeze(defaults()) as Partial<ExternalEncryptedPrivateKey>,
+      Object.freeze(defaults()) as Partial<ExternalEncryptedSecret>,
   });
 })();
 
-const FfiConverterTypeExternalEncryptedPrivateKey = (() => {
-  type TypeName = ExternalEncryptedPrivateKey;
+const FfiConverterTypeExternalEncryptedSecret = (() => {
+  type TypeName = ExternalEncryptedSecret;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
@@ -3389,7 +3389,7 @@ export type ExternalSignFrostRequest = {
   /**
    * The private key source
    */
-  privateKey: ExternalSecretKeySource;
+  secret: ExternalSecretSource;
   /**
    * The verifying key (33 bytes compressed)
    */
@@ -3447,7 +3447,7 @@ const FfiConverterTypeExternalSignFrostRequest = (() => {
       return {
         message: FfiConverterArrayBuffer.read(from),
         publicKey: FfiConverterArrayBuffer.read(from),
-        privateKey: FfiConverterTypeExternalSecretKeySource.read(from),
+        secret: FfiConverterTypeExternalSecretSource.read(from),
         verifyingKey: FfiConverterArrayBuffer.read(from),
         selfNonceCommitment:
           FfiConverterTypeExternalFrostCommitments.read(from),
@@ -3459,7 +3459,7 @@ const FfiConverterTypeExternalSignFrostRequest = (() => {
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterArrayBuffer.write(value.message, into);
       FfiConverterArrayBuffer.write(value.publicKey, into);
-      FfiConverterTypeExternalSecretKeySource.write(value.privateKey, into);
+      FfiConverterTypeExternalSecretSource.write(value.secret, into);
       FfiConverterArrayBuffer.write(value.verifyingKey, into);
       FfiConverterTypeExternalFrostCommitments.write(
         value.selfNonceCommitment,
@@ -3475,9 +3475,7 @@ const FfiConverterTypeExternalSignFrostRequest = (() => {
       return (
         FfiConverterArrayBuffer.allocationSize(value.message) +
         FfiConverterArrayBuffer.allocationSize(value.publicKey) +
-        FfiConverterTypeExternalSecretKeySource.allocationSize(
-          value.privateKey
-        ) +
+        FfiConverterTypeExternalSecretSource.allocationSize(value.secret) +
         FfiConverterArrayBuffer.allocationSize(value.verifyingKey) +
         FfiConverterTypeExternalFrostCommitments.allocationSize(
           value.selfNonceCommitment
@@ -7189,61 +7187,6 @@ const FfiConverterTypePrepareSendPaymentResponse = (() => {
   return new FFIConverter();
 })();
 
-/**
- * FFI-safe representation of a private key (32 bytes)
- */
-export type PrivateKeyBytes = {
-  bytes: ArrayBuffer;
-};
-
-/**
- * Generated factory for {@link PrivateKeyBytes} record objects.
- */
-export const PrivateKeyBytes = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<PrivateKeyBytes, ReturnType<typeof defaults>>(
-      defaults
-    );
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link PrivateKeyBytes}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link PrivateKeyBytes}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Object.freeze(defaults()) as Partial<PrivateKeyBytes>,
-  });
-})();
-
-const FfiConverterTypePrivateKeyBytes = (() => {
-  type TypeName = PrivateKeyBytes;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        bytes: FfiConverterArrayBuffer.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterArrayBuffer.write(value.bytes, into);
-    }
-    allocationSize(value: TypeName): number {
-      return FfiConverterArrayBuffer.allocationSize(value.bytes);
-    }
-  }
-  return new FFIConverter();
-})();
-
 export type ProvisionalPayment = {
   /**
    * Unique identifier for the payment
@@ -8145,6 +8088,61 @@ export const SchnorrSignatureBytes = (() => {
 
 const FfiConverterTypeSchnorrSignatureBytes = (() => {
   type TypeName = SchnorrSignatureBytes;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bytes: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.bytes, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayBuffer.allocationSize(value.bytes);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of a private key (32 bytes)
+ */
+export type SecretBytes = {
+  bytes: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link SecretBytes} record objects.
+ */
+export const SecretBytes = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<SecretBytes, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SecretBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SecretBytes}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<SecretBytes>,
+  });
+})();
+
+const FfiConverterTypeSecretBytes = (() => {
+  type TypeName = SecretBytes;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
@@ -11213,17 +11211,17 @@ const FfiConverterTypeDepositClaimError = (() => {
   return new FFIConverter();
 })();
 
-// Enum: ExternalSecretKeySource
-export enum ExternalSecretKeySource_Tags {
+// Enum: ExternalSecretSource
+export enum ExternalSecretSource_Tags {
   Derived = 'Derived',
   Encrypted = 'Encrypted',
 }
 /**
- * FFI-safe representation of `spark_wallet::SecretKeySource`
+ * FFI-safe representation of `spark_wallet::SecretSource`
  */
-export const ExternalSecretKeySource = (() => {
+export const ExternalSecretSource = (() => {
   type Derived__interface = {
-    tag: ExternalSecretKeySource_Tags.Derived;
+    tag: ExternalSecretSource_Tags.Derived;
     inner: Readonly<{ nodeId: ExternalTreeNodeId }>;
   };
 
@@ -11235,11 +11233,11 @@ export const ExternalSecretKeySource = (() => {
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
-    readonly [uniffiTypeNameSymbol] = 'ExternalSecretKeySource';
-    readonly tag = ExternalSecretKeySource_Tags.Derived;
+    readonly [uniffiTypeNameSymbol] = 'ExternalSecretSource';
+    readonly tag = ExternalSecretSource_Tags.Derived;
     readonly inner: Readonly<{ nodeId: ExternalTreeNodeId }>;
     constructor(inner: { nodeId: ExternalTreeNodeId }) {
-      super('ExternalSecretKeySource', 'Derived');
+      super('ExternalSecretSource', 'Derived');
       this.inner = Object.freeze(inner);
     }
 
@@ -11248,13 +11246,13 @@ export const ExternalSecretKeySource = (() => {
     }
 
     static instanceOf(obj: any): obj is Derived_ {
-      return obj.tag === ExternalSecretKeySource_Tags.Derived;
+      return obj.tag === ExternalSecretSource_Tags.Derived;
     }
   }
 
   type Encrypted__interface = {
-    tag: ExternalSecretKeySource_Tags.Encrypted;
-    inner: Readonly<{ key: ExternalEncryptedPrivateKey }>;
+    tag: ExternalSecretSource_Tags.Encrypted;
+    inner: Readonly<{ key: ExternalEncryptedSecret }>;
   };
 
   /**
@@ -11265,25 +11263,25 @@ export const ExternalSecretKeySource = (() => {
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
-    readonly [uniffiTypeNameSymbol] = 'ExternalSecretKeySource';
-    readonly tag = ExternalSecretKeySource_Tags.Encrypted;
-    readonly inner: Readonly<{ key: ExternalEncryptedPrivateKey }>;
-    constructor(inner: { key: ExternalEncryptedPrivateKey }) {
-      super('ExternalSecretKeySource', 'Encrypted');
+    readonly [uniffiTypeNameSymbol] = 'ExternalSecretSource';
+    readonly tag = ExternalSecretSource_Tags.Encrypted;
+    readonly inner: Readonly<{ key: ExternalEncryptedSecret }>;
+    constructor(inner: { key: ExternalEncryptedSecret }) {
+      super('ExternalSecretSource', 'Encrypted');
       this.inner = Object.freeze(inner);
     }
 
-    static new(inner: { key: ExternalEncryptedPrivateKey }): Encrypted_ {
+    static new(inner: { key: ExternalEncryptedSecret }): Encrypted_ {
       return new Encrypted_(inner);
     }
 
     static instanceOf(obj: any): obj is Encrypted_ {
-      return obj.tag === ExternalSecretKeySource_Tags.Encrypted;
+      return obj.tag === ExternalSecretSource_Tags.Encrypted;
     }
   }
 
-  function instanceOf(obj: any): obj is ExternalSecretKeySource {
-    return obj[uniffiTypeNameSymbol] === 'ExternalSecretKeySource';
+  function instanceOf(obj: any): obj is ExternalSecretSource {
+    return obj[uniffiTypeNameSymbol] === 'ExternalSecretSource';
   }
 
   return Object.freeze({
@@ -11294,30 +11292,30 @@ export const ExternalSecretKeySource = (() => {
 })();
 
 /**
- * FFI-safe representation of `spark_wallet::SecretKeySource`
+ * FFI-safe representation of `spark_wallet::SecretSource`
  */
 
-export type ExternalSecretKeySource = InstanceType<
-  (typeof ExternalSecretKeySource)[keyof Omit<
-    typeof ExternalSecretKeySource,
+export type ExternalSecretSource = InstanceType<
+  (typeof ExternalSecretSource)[keyof Omit<
+    typeof ExternalSecretSource,
     'instanceOf'
   >]
 >;
 
-// FfiConverter for enum ExternalSecretKeySource
-const FfiConverterTypeExternalSecretKeySource = (() => {
+// FfiConverter for enum ExternalSecretSource
+const FfiConverterTypeExternalSecretSource = (() => {
   const ordinalConverter = FfiConverterInt32;
-  type TypeName = ExternalSecretKeySource;
+  type TypeName = ExternalSecretSource;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       switch (ordinalConverter.read(from)) {
         case 1:
-          return new ExternalSecretKeySource.Derived({
+          return new ExternalSecretSource.Derived({
             nodeId: FfiConverterTypeExternalTreeNodeId.read(from),
           });
         case 2:
-          return new ExternalSecretKeySource.Encrypted({
-            key: FfiConverterTypeExternalEncryptedPrivateKey.read(from),
+          return new ExternalSecretSource.Encrypted({
+            key: FfiConverterTypeExternalEncryptedSecret.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -11325,26 +11323,26 @@ const FfiConverterTypeExternalSecretKeySource = (() => {
     }
     write(value: TypeName, into: RustBuffer): void {
       switch (value.tag) {
-        case ExternalSecretKeySource_Tags.Derived: {
+        case ExternalSecretSource_Tags.Derived: {
           ordinalConverter.write(1, into);
           const inner = value.inner;
           FfiConverterTypeExternalTreeNodeId.write(inner.nodeId, into);
           return;
         }
-        case ExternalSecretKeySource_Tags.Encrypted: {
+        case ExternalSecretSource_Tags.Encrypted: {
           ordinalConverter.write(2, into);
           const inner = value.inner;
-          FfiConverterTypeExternalEncryptedPrivateKey.write(inner.key, into);
+          FfiConverterTypeExternalEncryptedSecret.write(inner.key, into);
           return;
         }
         default:
-          // Throwing from here means that ExternalSecretKeySource_Tags hasn't matched an ordinal.
+          // Throwing from here means that ExternalSecretSource_Tags hasn't matched an ordinal.
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
     }
     allocationSize(value: TypeName): number {
       switch (value.tag) {
-        case ExternalSecretKeySource_Tags.Derived: {
+        case ExternalSecretSource_Tags.Derived: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(1);
           size += FfiConverterTypeExternalTreeNodeId.allocationSize(
@@ -11352,10 +11350,10 @@ const FfiConverterTypeExternalSecretKeySource = (() => {
           );
           return size;
         }
-        case ExternalSecretKeySource_Tags.Encrypted: {
+        case ExternalSecretSource_Tags.Encrypted: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
-          size += FfiConverterTypeExternalEncryptedPrivateKey.allocationSize(
+          size += FfiConverterTypeExternalEncryptedSecret.allocationSize(
             inner.key
           );
           return size;
@@ -11370,40 +11368,40 @@ const FfiConverterTypeExternalSecretKeySource = (() => {
 
 // Enum: ExternalSecretToSplit
 export enum ExternalSecretToSplit_Tags {
-  PrivateKey = 'PrivateKey',
+  SecretSource = 'SecretSource',
   Preimage = 'Preimage',
 }
 /**
  * FFI-safe representation of `spark_wallet::SecretToSplit`
  */
 export const ExternalSecretToSplit = (() => {
-  type PrivateKey__interface = {
-    tag: ExternalSecretToSplit_Tags.PrivateKey;
-    inner: Readonly<{ source: ExternalSecretKeySource }>;
+  type SecretSource__interface = {
+    tag: ExternalSecretToSplit_Tags.SecretSource;
+    inner: Readonly<{ source: ExternalSecretSource }>;
   };
 
   /**
-   * A private key to split
+   * A secret source to split
    */
-  class PrivateKey_ extends UniffiEnum implements PrivateKey__interface {
+  class SecretSource_ extends UniffiEnum implements SecretSource__interface {
     /**
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
     readonly [uniffiTypeNameSymbol] = 'ExternalSecretToSplit';
-    readonly tag = ExternalSecretToSplit_Tags.PrivateKey;
-    readonly inner: Readonly<{ source: ExternalSecretKeySource }>;
-    constructor(inner: { source: ExternalSecretKeySource }) {
-      super('ExternalSecretToSplit', 'PrivateKey');
+    readonly tag = ExternalSecretToSplit_Tags.SecretSource;
+    readonly inner: Readonly<{ source: ExternalSecretSource }>;
+    constructor(inner: { source: ExternalSecretSource }) {
+      super('ExternalSecretToSplit', 'SecretSource');
       this.inner = Object.freeze(inner);
     }
 
-    static new(inner: { source: ExternalSecretKeySource }): PrivateKey_ {
-      return new PrivateKey_(inner);
+    static new(inner: { source: ExternalSecretSource }): SecretSource_ {
+      return new SecretSource_(inner);
     }
 
-    static instanceOf(obj: any): obj is PrivateKey_ {
-      return obj.tag === ExternalSecretToSplit_Tags.PrivateKey;
+    static instanceOf(obj: any): obj is SecretSource_ {
+      return obj.tag === ExternalSecretToSplit_Tags.SecretSource;
     }
   }
 
@@ -11443,7 +11441,7 @@ export const ExternalSecretToSplit = (() => {
 
   return Object.freeze({
     instanceOf,
-    PrivateKey: PrivateKey_,
+    SecretSource: SecretSource_,
     Preimage: Preimage_,
   });
 })();
@@ -11467,8 +11465,8 @@ const FfiConverterTypeExternalSecretToSplit = (() => {
     read(from: RustBuffer): TypeName {
       switch (ordinalConverter.read(from)) {
         case 1:
-          return new ExternalSecretToSplit.PrivateKey({
-            source: FfiConverterTypeExternalSecretKeySource.read(from),
+          return new ExternalSecretToSplit.SecretSource({
+            source: FfiConverterTypeExternalSecretSource.read(from),
           });
         case 2:
           return new ExternalSecretToSplit.Preimage({
@@ -11480,10 +11478,10 @@ const FfiConverterTypeExternalSecretToSplit = (() => {
     }
     write(value: TypeName, into: RustBuffer): void {
       switch (value.tag) {
-        case ExternalSecretToSplit_Tags.PrivateKey: {
+        case ExternalSecretToSplit_Tags.SecretSource: {
           ordinalConverter.write(1, into);
           const inner = value.inner;
-          FfiConverterTypeExternalSecretKeySource.write(inner.source, into);
+          FfiConverterTypeExternalSecretSource.write(inner.source, into);
           return;
         }
         case ExternalSecretToSplit_Tags.Preimage: {
@@ -11499,10 +11497,10 @@ const FfiConverterTypeExternalSecretToSplit = (() => {
     }
     allocationSize(value: TypeName): number {
       switch (value.tag) {
-        case ExternalSecretToSplit_Tags.PrivateKey: {
+        case ExternalSecretToSplit_Tags.SecretSource: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(1);
-          size += FfiConverterTypeExternalSecretKeySource.allocationSize(
+          size += FfiConverterTypeExternalSecretSource.allocationSize(
             inner.source
           );
           return size;
@@ -21210,42 +21208,44 @@ export interface ExternalSigner {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<PublicKeyBytes>;
   /**
-   * Generates a random secret key.
+   * Generates a random secret.
    *
    * # Returns
-   * A randomly generated secret key source, or an error string
+   * A randomly generated secret source, or an error string
    */
   generateRandomKey(asyncOpts_?: {
     signal: AbortSignal;
-  }): /*throws*/ Promise<ExternalSecretKeySource>;
+  }): /*throws*/ Promise<ExternalSecretSource>;
   /**
-   * Gets an encrypted static deposit secret key by index.
+   * Gets an encrypted static deposit secret by index.
    *
    * # Arguments
    * * `index` - The index of the static deposit key
    *
    * # Returns
-   * The encrypted secret key, or an error string
+   * The encrypted secret source, or an error string
+   *
+   * This is the encrypted version of: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
    */
-  staticDepositSecretKeyEncrypted(
+  staticDepositSecretEncrypted(
     index: /*u32*/ number,
     asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<ExternalSecretKeySource>;
+  ): /*throws*/ Promise<ExternalSecretSource>;
   /**
-   * Gets a static deposit secret key by index.
+   * Gets a static deposit secret by index.
    *
    * # Arguments
    * * `index` - The index of the static deposit key
    *
    * # Returns
-   * The 32-byte secret key, or an error string
+   * The 32-byte secret, or an error string
    *
    * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
    */
-  staticDepositSecretKey(
+  staticDepositSecret(
     index: /*u32*/ number,
     asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<PrivateKeyBytes>;
+  ): /*throws*/ Promise<SecretBytes>;
   /**
    * Gets a static deposit public key by index.
    *
@@ -21262,23 +21262,23 @@ export interface ExternalSigner {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<PublicKeyBytes>;
   /**
-   * Subtracts one secret key from another.
+   * Subtracts one secret from another.
    *
    * # Arguments
-   * * `signing_key` - The first secret key source
-   * * `new_signing_key` - The second secret key source to subtract
+   * * `signing_key` - The first secret source
+   * * `new_signing_key` - The second secret source to subtract
    *
    * # Returns
-   * The resulting secret key source, or an error string
+   * The resulting secret source, or an error string
    *
    * See also: [JavaScript `subtractSplitAndEncrypt`](https://docs.spark.money/wallets/spark-signer#subtract,-split,-and-encrypt)
    * (this method provides the subtraction step of that higher-level operation)
    */
-  subtractSecretKeys(
-    signingKey: ExternalSecretKeySource,
-    newSigningKey: ExternalSecretKeySource,
+  subtractSecrets(
+    signingKey: ExternalSecretSource,
+    newSigningKey: ExternalSecretSource,
     asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<ExternalSecretKeySource>;
+  ): /*throws*/ Promise<ExternalSecretSource>;
   /**
    * Splits a secret with proofs using Shamir's Secret Sharing.
    *
@@ -21299,31 +21299,31 @@ export interface ExternalSigner {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<Array<ExternalVerifiableSecretShare>>;
   /**
-   * Encrypts a secret key for a specific receiver's public key.
+   * Encrypts a secret for a specific receiver's public key.
    *
    * # Arguments
-   * * `secret_key` - The encrypted secret key to re-encrypt
+   * * `encrypted_secret` - The encrypted secret to re-encrypt
    * * `receiver_public_key` - The receiver's 33-byte public key
    *
    * # Returns
    * Encrypted data for the receiver, or an error string
    */
-  encryptSecretKeyForReceiver(
-    secretKey: ExternalEncryptedPrivateKey,
+  encryptSecretForReceiver(
+    encryptedSecret: ExternalEncryptedSecret,
     receiverPublicKey: PublicKeyBytes,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<ArrayBuffer>;
   /**
-   * Gets the public key from a secret key source.
+   * Gets the public key from a secret source.
    *
    * # Arguments
-   * * `secret_key` - The secret key source
+   * * `secret` - The secret source
    *
    * # Returns
    * The corresponding 33-byte public key, or an error string
    */
-  publicKeyFromSecretKeySource(
-    secretKey: ExternalSecretKeySource,
+  publicKeyFromSecret(
+    secret: ExternalSecretSource,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<PublicKeyBytes>;
   /**
@@ -21866,14 +21866,14 @@ export class ExternalSignerImpl
   }
 
   /**
-   * Generates a random secret key.
+   * Generates a random secret.
    *
    * # Returns
-   * A randomly generated secret key source, or an error string
+   * A randomly generated secret source, or an error string
    */
   public async generateRandomKey(asyncOpts_?: {
     signal: AbortSignal;
-  }): Promise<ExternalSecretKeySource> /*throws*/ {
+  }): Promise<ExternalSecretSource> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
     try {
       return await uniffiRustCallAsync(
@@ -21891,8 +21891,8 @@ export class ExternalSignerImpl
           .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
         /*freeFunc:*/ nativeModule()
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeExternalSecretKeySource.lift.bind(
-          FfiConverterTypeExternalSecretKeySource
+        /*liftFunc:*/ FfiConverterTypeExternalSecretSource.lift.bind(
+          FfiConverterTypeExternalSecretSource
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -21909,24 +21909,26 @@ export class ExternalSignerImpl
   }
 
   /**
-   * Gets an encrypted static deposit secret key by index.
+   * Gets an encrypted static deposit secret by index.
    *
    * # Arguments
    * * `index` - The index of the static deposit key
    *
    * # Returns
-   * The encrypted secret key, or an error string
+   * The encrypted secret source, or an error string
+   *
+   * This is the encrypted version of: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
    */
-  public async staticDepositSecretKeyEncrypted(
+  public async staticDepositSecretEncrypted(
     index: /*u32*/ number,
     asyncOpts_?: { signal: AbortSignal }
-  ): Promise<ExternalSecretKeySource> /*throws*/ {
+  ): Promise<ExternalSecretSource> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
     try {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key_encrypted(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_encrypted(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
             FfiConverterUInt32.lower(index)
           );
@@ -21939,8 +21941,8 @@ export class ExternalSignerImpl
           .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
         /*freeFunc:*/ nativeModule()
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeExternalSecretKeySource.lift.bind(
-          FfiConverterTypeExternalSecretKeySource
+        /*liftFunc:*/ FfiConverterTypeExternalSecretSource.lift.bind(
+          FfiConverterTypeExternalSecretSource
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -21957,26 +21959,26 @@ export class ExternalSignerImpl
   }
 
   /**
-   * Gets a static deposit secret key by index.
+   * Gets a static deposit secret by index.
    *
    * # Arguments
    * * `index` - The index of the static deposit key
    *
    * # Returns
-   * The 32-byte secret key, or an error string
+   * The 32-byte secret, or an error string
    *
    * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
    */
-  public async staticDepositSecretKey(
+  public async staticDepositSecret(
     index: /*u32*/ number,
     asyncOpts_?: { signal: AbortSignal }
-  ): Promise<PrivateKeyBytes> /*throws*/ {
+  ): Promise<SecretBytes> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
     try {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
             FfiConverterUInt32.lower(index)
           );
@@ -21989,8 +21991,8 @@ export class ExternalSignerImpl
           .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
         /*freeFunc:*/ nativeModule()
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypePrivateKeyBytes.lift.bind(
-          FfiConverterTypePrivateKeyBytes
+        /*liftFunc:*/ FfiConverterTypeSecretBytes.lift.bind(
+          FfiConverterTypeSecretBytes
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -22057,32 +22059,32 @@ export class ExternalSignerImpl
   }
 
   /**
-   * Subtracts one secret key from another.
+   * Subtracts one secret from another.
    *
    * # Arguments
-   * * `signing_key` - The first secret key source
-   * * `new_signing_key` - The second secret key source to subtract
+   * * `signing_key` - The first secret source
+   * * `new_signing_key` - The second secret source to subtract
    *
    * # Returns
-   * The resulting secret key source, or an error string
+   * The resulting secret source, or an error string
    *
    * See also: [JavaScript `subtractSplitAndEncrypt`](https://docs.spark.money/wallets/spark-signer#subtract,-split,-and-encrypt)
    * (this method provides the subtraction step of that higher-level operation)
    */
-  public async subtractSecretKeys(
-    signingKey: ExternalSecretKeySource,
-    newSigningKey: ExternalSecretKeySource,
+  public async subtractSecrets(
+    signingKey: ExternalSecretSource,
+    newSigningKey: ExternalSecretSource,
     asyncOpts_?: { signal: AbortSignal }
-  ): Promise<ExternalSecretKeySource> /*throws*/ {
+  ): Promise<ExternalSecretSource> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
     try {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secret_keys(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secrets(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterTypeExternalSecretKeySource.lower(signingKey),
-            FfiConverterTypeExternalSecretKeySource.lower(newSigningKey)
+            FfiConverterTypeExternalSecretSource.lower(signingKey),
+            FfiConverterTypeExternalSecretSource.lower(newSigningKey)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -22093,8 +22095,8 @@ export class ExternalSignerImpl
           .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
         /*freeFunc:*/ nativeModule()
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeExternalSecretKeySource.lift.bind(
-          FfiConverterTypeExternalSecretKeySource
+        /*liftFunc:*/ FfiConverterTypeExternalSecretSource.lift.bind(
+          FfiConverterTypeExternalSecretSource
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -22167,17 +22169,17 @@ export class ExternalSignerImpl
   }
 
   /**
-   * Encrypts a secret key for a specific receiver's public key.
+   * Encrypts a secret for a specific receiver's public key.
    *
    * # Arguments
-   * * `secret_key` - The encrypted secret key to re-encrypt
+   * * `encrypted_secret` - The encrypted secret to re-encrypt
    * * `receiver_public_key` - The receiver's 33-byte public key
    *
    * # Returns
    * Encrypted data for the receiver, or an error string
    */
-  public async encryptSecretKeyForReceiver(
-    secretKey: ExternalEncryptedPrivateKey,
+  public async encryptSecretForReceiver(
+    encryptedSecret: ExternalEncryptedSecret,
     receiverPublicKey: PublicKeyBytes,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<ArrayBuffer> /*throws*/ {
@@ -22186,9 +22188,9 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_key_for_receiver(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_for_receiver(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterTypeExternalEncryptedPrivateKey.lower(secretKey),
+            FfiConverterTypeExternalEncryptedSecret.lower(encryptedSecret),
             FfiConverterTypePublicKeyBytes.lower(receiverPublicKey)
           );
         },
@@ -22218,16 +22220,16 @@ export class ExternalSignerImpl
   }
 
   /**
-   * Gets the public key from a secret key source.
+   * Gets the public key from a secret source.
    *
    * # Arguments
-   * * `secret_key` - The secret key source
+   * * `secret` - The secret source
    *
    * # Returns
    * The corresponding 33-byte public key, or an error string
    */
-  public async publicKeyFromSecretKeySource(
-    secretKey: ExternalSecretKeySource,
+  public async publicKeyFromSecret(
+    secret: ExternalSecretSource,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<PublicKeyBytes> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
@@ -22235,9 +22237,9 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret_key_source(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret(
             uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterTypeExternalSecretKeySource.lower(secretKey)
+            FfiConverterTypeExternalSecretSource.lower(secret)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -22920,16 +22922,16 @@ const uniffiCallbackInterfaceExternalSigner: {
     ) => {
       const uniffiMakeCall = async (
         signal: AbortSignal
-      ): Promise<ExternalSecretKeySource> => {
+      ): Promise<ExternalSecretSource> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
         return await jsCallback.generateRandomKey({ signal });
       };
-      const uniffiHandleSuccess = (returnValue: ExternalSecretKeySource) => {
+      const uniffiHandleSuccess = (returnValue: ExternalSecretSource) => {
         uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
-              FfiConverterTypeExternalSecretKeySource.lower(returnValue),
+              FfiConverterTypeExternalSecretSource.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -22956,7 +22958,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    staticDepositSecretKeyEncrypted: (
+    staticDepositSecretEncrypted: (
       uniffiHandle: bigint,
       index: number,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
@@ -22964,19 +22966,19 @@ const uniffiCallbackInterfaceExternalSigner: {
     ) => {
       const uniffiMakeCall = async (
         signal: AbortSignal
-      ): Promise<ExternalSecretKeySource> => {
+      ): Promise<ExternalSecretSource> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.staticDepositSecretKeyEncrypted(
+        return await jsCallback.staticDepositSecretEncrypted(
           FfiConverterUInt32.lift(index),
           { signal }
         );
       };
-      const uniffiHandleSuccess = (returnValue: ExternalSecretKeySource) => {
+      const uniffiHandleSuccess = (returnValue: ExternalSecretSource) => {
         uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
-              FfiConverterTypeExternalSecretKeySource.lower(returnValue),
+              FfiConverterTypeExternalSecretSource.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -23003,7 +23005,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    staticDepositSecretKey: (
+    staticDepositSecret: (
       uniffiHandle: bigint,
       index: number,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
@@ -23011,18 +23013,18 @@ const uniffiCallbackInterfaceExternalSigner: {
     ) => {
       const uniffiMakeCall = async (
         signal: AbortSignal
-      ): Promise<PrivateKeyBytes> => {
+      ): Promise<SecretBytes> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.staticDepositSecretKey(
+        return await jsCallback.staticDepositSecret(
           FfiConverterUInt32.lift(index),
           { signal }
         );
       };
-      const uniffiHandleSuccess = (returnValue: PrivateKeyBytes) => {
+      const uniffiHandleSuccess = (returnValue: SecretBytes) => {
         uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue: FfiConverterTypePrivateKeyBytes.lower(returnValue),
+            returnValue: FfiConverterTypeSecretBytes.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -23095,7 +23097,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    subtractSecretKeys: (
+    subtractSecrets: (
       uniffiHandle: bigint,
       signingKey: Uint8Array,
       newSigningKey: Uint8Array,
@@ -23104,20 +23106,20 @@ const uniffiCallbackInterfaceExternalSigner: {
     ) => {
       const uniffiMakeCall = async (
         signal: AbortSignal
-      ): Promise<ExternalSecretKeySource> => {
+      ): Promise<ExternalSecretSource> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.subtractSecretKeys(
-          FfiConverterTypeExternalSecretKeySource.lift(signingKey),
-          FfiConverterTypeExternalSecretKeySource.lift(newSigningKey),
+        return await jsCallback.subtractSecrets(
+          FfiConverterTypeExternalSecretSource.lift(signingKey),
+          FfiConverterTypeExternalSecretSource.lift(newSigningKey),
           { signal }
         );
       };
-      const uniffiHandleSuccess = (returnValue: ExternalSecretKeySource) => {
+      const uniffiHandleSuccess = (returnValue: ExternalSecretSource) => {
         uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
-              FfiConverterTypeExternalSecretKeySource.lower(returnValue),
+              FfiConverterTypeExternalSecretSource.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -23199,9 +23201,9 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    encryptSecretKeyForReceiver: (
+    encryptSecretForReceiver: (
       uniffiHandle: bigint,
-      secretKey: Uint8Array,
+      encryptedSecret: Uint8Array,
       receiverPublicKey: Uint8Array,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
       uniffiCallbackData: bigint
@@ -23210,8 +23212,8 @@ const uniffiCallbackInterfaceExternalSigner: {
         signal: AbortSignal
       ): Promise<ArrayBuffer> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.encryptSecretKeyForReceiver(
-          FfiConverterTypeExternalEncryptedPrivateKey.lift(secretKey),
+        return await jsCallback.encryptSecretForReceiver(
+          FfiConverterTypeExternalEncryptedSecret.lift(encryptedSecret),
           FfiConverterTypePublicKeyBytes.lift(receiverPublicKey),
           { signal }
         );
@@ -23247,9 +23249,9 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return UniffiResult.success(uniffiForeignFuture);
     },
-    publicKeyFromSecretKeySource: (
+    publicKeyFromSecret: (
       uniffiHandle: bigint,
-      secretKey: Uint8Array,
+      secret: Uint8Array,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
       uniffiCallbackData: bigint
     ) => {
@@ -23257,8 +23259,8 @@ const uniffiCallbackInterfaceExternalSigner: {
         signal: AbortSignal
       ): Promise<PublicKeyBytes> => {
         const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.publicKeyFromSecretKeySource(
-          FfiConverterTypeExternalSecretKeySource.lift(secretKey),
+        return await jsCallback.publicKeyFromSecret(
+          FfiConverterTypeExternalSecretSource.lift(secret),
           { signal }
         );
       };
@@ -28801,26 +28803,26 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_key() !==
-    24906
+    63908
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_key'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key_encrypted() !==
-    50023
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_encrypted() !==
+    64635
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key_encrypted'
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_encrypted'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key() !==
-    61854
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret() !==
+    35967
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key'
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret'
     );
   }
   if (
@@ -28832,11 +28834,11 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secret_keys() !==
-    4979
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secrets() !==
+    43864
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secret_keys'
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secrets'
     );
   }
   if (
@@ -28848,19 +28850,19 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_key_for_receiver() !==
-    43011
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_for_receiver() !==
+    61924
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_key_for_receiver'
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_for_receiver'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret_key_source() !==
-    35440
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret() !==
+    27909
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret_key_source'
+      'uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret'
     );
   }
   if (
@@ -29332,15 +29334,15 @@ export default Object.freeze({
     FfiConverterTypeDepositInfo,
     FfiConverterTypeEcdsaSignatureBytes,
     FfiConverterTypeExternalAggregateFrostRequest,
-    FfiConverterTypeExternalEncryptedPrivateKey,
+    FfiConverterTypeExternalEncryptedSecret,
     FfiConverterTypeExternalFrostCommitments,
     FfiConverterTypeExternalFrostSignature,
     FfiConverterTypeExternalFrostSignatureShare,
     FfiConverterTypeExternalIdentifier,
     FfiConverterTypeExternalInputParser,
     FfiConverterTypeExternalScalar,
-    FfiConverterTypeExternalSecretKeySource,
     FfiConverterTypeExternalSecretShare,
+    FfiConverterTypeExternalSecretSource,
     FfiConverterTypeExternalSecretToSplit,
     FfiConverterTypeExternalSignFrostRequest,
     FfiConverterTypeExternalSigner,
@@ -29414,7 +29416,6 @@ export default Object.freeze({
     FfiConverterTypePrepareLnurlPayResponse,
     FfiConverterTypePrepareSendPaymentRequest,
     FfiConverterTypePrepareSendPaymentResponse,
-    FfiConverterTypePrivateKeyBytes,
     FfiConverterTypeProvisionalPayment,
     FfiConverterTypeProvisionalPaymentDetails,
     FfiConverterTypePublicKeyBytes,
@@ -29435,6 +29436,7 @@ export default Object.freeze({
     FfiConverterTypeSchnorrSignatureBytes,
     FfiConverterTypeSdkBuilder,
     FfiConverterTypeSdkEvent,
+    FfiConverterTypeSecretBytes,
     FfiConverterTypeSeed,
     FfiConverterTypeSendOnchainFeeQuote,
     FfiConverterTypeSendOnchainSpeedFeeQuote,

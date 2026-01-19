@@ -192,12 +192,12 @@ typedef void (*UniffiCallbackInterfaceExternalSignerMethod15)(
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef void (*UniffiCallbackInterfaceExternalSignerMethod16)(
-    uint64_t uniffi_handle, RustBuffer secret_key,
+    uint64_t uniffi_handle, RustBuffer encrypted_secret,
     RustBuffer receiver_public_key,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef void (*UniffiCallbackInterfaceExternalSignerMethod17)(
-    uint64_t uniffi_handle, RustBuffer secret_key,
+    uint64_t uniffi_handle, RustBuffer secret,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef void (*UniffiCallbackInterfaceExternalSignerMethod18)(
@@ -354,15 +354,13 @@ typedef struct UniffiVTableCallbackInterfaceExternalSigner {
       generate_random_signing_commitment;
   UniffiCallbackInterfaceExternalSignerMethod9 get_public_key_for_node;
   UniffiCallbackInterfaceExternalSignerMethod10 generate_random_key;
-  UniffiCallbackInterfaceExternalSignerMethod11
-      static_deposit_secret_key_encrypted;
-  UniffiCallbackInterfaceExternalSignerMethod12 static_deposit_secret_key;
+  UniffiCallbackInterfaceExternalSignerMethod11 static_deposit_secret_encrypted;
+  UniffiCallbackInterfaceExternalSignerMethod12 static_deposit_secret;
   UniffiCallbackInterfaceExternalSignerMethod13 static_deposit_signing_key;
-  UniffiCallbackInterfaceExternalSignerMethod14 subtract_secret_keys;
+  UniffiCallbackInterfaceExternalSignerMethod14 subtract_secrets;
   UniffiCallbackInterfaceExternalSignerMethod15 split_secret_with_proofs;
-  UniffiCallbackInterfaceExternalSignerMethod16 encrypt_secret_key_for_receiver;
-  UniffiCallbackInterfaceExternalSignerMethod17
-      public_key_from_secret_key_source;
+  UniffiCallbackInterfaceExternalSignerMethod16 encrypt_secret_for_receiver;
+  UniffiCallbackInterfaceExternalSignerMethod17 public_key_from_secret;
   UniffiCallbackInterfaceExternalSignerMethod18 sign_frost;
   UniffiCallbackInterfaceExternalSignerMethod19 aggregate_frost;
   UniffiCallbackInterfaceFree uniffi_free;
@@ -570,26 +568,26 @@ uniffi_breez_sdk_spark_fn_method_externalsigner_get_public_key_for_node(
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_key(void *ptr);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key_encrypted(
+uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_encrypted(
     void *ptr, uint32_t index);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key(
+uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret(
     void *ptr, uint32_t index);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_signing_key(
     void *ptr, uint32_t index);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secret_keys(
+uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secrets(
     void *ptr, RustBuffer signing_key, RustBuffer new_signing_key);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_externalsigner_split_secret_with_proofs(
     void *ptr, RustBuffer secret, uint32_t threshold, uint32_t num_shares);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_key_for_receiver(
-    void *ptr, RustBuffer secret_key, RustBuffer receiver_public_key);
+uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_for_receiver(
+    void *ptr, RustBuffer encrypted_secret, RustBuffer receiver_public_key);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret_key_source(
-    void *ptr, RustBuffer secret_key);
+uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret(
+    void *ptr, RustBuffer secret);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_externalsigner_sign_frost(void *ptr,
                                                            RustBuffer request);
@@ -990,19 +988,19 @@ uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_key();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key_encrypted();
+uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_encrypted();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key();
+uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_signing_key();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secret_keys();
+uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secrets();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret_with_proofs();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_key_for_receiver();
+uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_for_receiver();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret_key_source();
+uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret();
 uint16_t uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost();
@@ -6809,7 +6807,7 @@ static std::function<void(uint64_t, RustBuffer, RustBuffer,
 static void body(jsi::Runtime &rt,
                  std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
                  std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_uniffiHandle, RustBuffer rs_secretKey,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_encryptedSecret,
                  RustBuffer rs_receiverPublicKey,
                  UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
                  uint64_t rs_uniffiCallbackData,
@@ -6819,8 +6817,8 @@ static void body(jsi::Runtime &rt,
   // We'll use the Bridging class to do this…
   auto js_uniffiHandle =
       uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
-  auto js_secretKey = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
-      rt, callInvoker, rs_secretKey);
+  auto js_encryptedSecret = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_encryptedSecret);
   auto js_receiverPublicKey =
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(rt, callInvoker,
                                                           rs_receiverPublicKey);
@@ -6837,7 +6835,7 @@ static void body(jsi::Runtime &rt,
     // Getting the callback function
     auto cb = callbackValue->asObject(rt).asFunction(rt);
     auto uniffiResult =
-        cb.call(rt, js_uniffiHandle, js_secretKey, js_receiverPublicKey,
+        cb.call(rt, js_uniffiHandle, js_encryptedSecret, js_receiverPublicKey,
                 js_uniffiFutureCallback, js_uniffiCallbackData);
 
     // Finally, we need to copy the return value back into the Rust pointer.
@@ -6853,7 +6851,7 @@ static void body(jsi::Runtime &rt,
 }
 
 static void
-callback(uint64_t rs_uniffiHandle, RustBuffer rs_secretKey,
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_encryptedSecret,
          RustBuffer rs_receiverPublicKey,
          UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
          uint64_t rs_uniffiCallbackData,
@@ -6873,7 +6871,7 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_secretKey,
 
   // The runtime, the actual callback jsi::funtion, and the callInvoker
   // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_secretKey, rs_receiverPublicKey,
+  rsLambda(rs_uniffiHandle, rs_encryptedSecret, rs_receiverPublicKey,
            rs_uniffiFutureCallback, rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
@@ -6897,7 +6895,7 @@ makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternals
   auto callbackFunction = value.asObject(rt).asFunction(rt);
   auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
   rsLambda = [&rt, callInvoker, callbackValue](
-                 uint64_t rs_uniffiHandle, RustBuffer rs_secretKey,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_encryptedSecret,
                  RustBuffer rs_receiverPublicKey,
                  UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
                  uint64_t rs_uniffiCallbackData,
@@ -6905,12 +6903,13 @@ makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternals
     // We immediately make a lambda which will do the work of transforming the
     // arguments into JSI values and calling the callback.
     uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_uniffiHandle, rs_secretKey,
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_encryptedSecret,
          rs_receiverPublicKey, rs_uniffiFutureCallback, rs_uniffiCallbackData,
          rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_secretKey,
-               rs_receiverPublicKey, rs_uniffiFutureCallback,
-               rs_uniffiCallbackData, rs_uniffiOutReturn);
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle,
+               rs_encryptedSecret, rs_receiverPublicKey,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
         };
     // We'll then call that lambda from the callInvoker which will
     // look after calling it on the correct thread.
@@ -6960,7 +6959,7 @@ static std::function<void(uint64_t, RustBuffer,
 static void body(jsi::Runtime &rt,
                  std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
                  std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_uniffiHandle, RustBuffer rs_secretKey,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_secret,
                  UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
                  uint64_t rs_uniffiCallbackData,
                  UniffiForeignFuture *rs_uniffiOutReturn) {
@@ -6969,8 +6968,8 @@ static void body(jsi::Runtime &rt,
   // We'll use the Bridging class to do this…
   auto js_uniffiHandle =
       uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
-  auto js_secretKey = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
-      rt, callInvoker, rs_secretKey);
+  auto js_secret = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_secret);
   auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
       UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
                                                    rs_uniffiFutureCallback);
@@ -6983,7 +6982,7 @@ static void body(jsi::Runtime &rt,
   try {
     // Getting the callback function
     auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_secretKey,
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_secret,
                                 js_uniffiFutureCallback, js_uniffiCallbackData);
 
     // Finally, we need to copy the return value back into the Rust pointer.
@@ -6999,7 +6998,7 @@ static void body(jsi::Runtime &rt,
 }
 
 static void
-callback(uint64_t rs_uniffiHandle, RustBuffer rs_secretKey,
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_secret,
          UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
          uint64_t rs_uniffiCallbackData,
          UniffiForeignFuture *rs_uniffiOutReturn) {
@@ -7018,7 +7017,7 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_secretKey,
 
   // The runtime, the actual callback jsi::funtion, and the callInvoker
   // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_secretKey, rs_uniffiFutureCallback,
+  rsLambda(rs_uniffiHandle, rs_secret, rs_uniffiFutureCallback,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
@@ -7042,17 +7041,17 @@ makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternals
   auto callbackFunction = value.asObject(rt).asFunction(rt);
   auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
   rsLambda = [&rt, callInvoker, callbackValue](
-                 uint64_t rs_uniffiHandle, RustBuffer rs_secretKey,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_secret,
                  UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
                  uint64_t rs_uniffiCallbackData,
                  UniffiForeignFuture *rs_uniffiOutReturn) {
     // We immediately make a lambda which will do the work of transforming the
     // arguments into JSI values and calling the callback.
     uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_uniffiHandle, rs_secretKey,
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_secret,
          rs_uniffiFutureCallback, rs_uniffiCallbackData,
          rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_secretKey,
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_secret,
                rs_uniffiFutureCallback, rs_uniffiCallbackData,
                rs_uniffiOutReturn);
         };
@@ -11652,32 +11651,30 @@ template <> struct Bridging<UniffiVTableCallbackInterfaceExternalSigner> {
     rsObject.generate_random_key = uniffi::breez_sdk_spark::cb::
         callbackinterfaceexternalsignermethod10::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "generateRandomKey"));
-    rsObject.static_deposit_secret_key_encrypted = uniffi::breez_sdk_spark::cb::
+    rsObject.static_deposit_secret_encrypted = uniffi::breez_sdk_spark::cb::
         callbackinterfaceexternalsignermethod11::makeCallbackFunction(
             rt, callInvoker,
-            jsObject.getProperty(rt, "staticDepositSecretKeyEncrypted"));
-    rsObject.static_deposit_secret_key = uniffi::breez_sdk_spark::cb::
+            jsObject.getProperty(rt, "staticDepositSecretEncrypted"));
+    rsObject.static_deposit_secret = uniffi::breez_sdk_spark::cb::
         callbackinterfaceexternalsignermethod12::makeCallbackFunction(
-            rt, callInvoker,
-            jsObject.getProperty(rt, "staticDepositSecretKey"));
+            rt, callInvoker, jsObject.getProperty(rt, "staticDepositSecret"));
     rsObject.static_deposit_signing_key = uniffi::breez_sdk_spark::cb::
         callbackinterfaceexternalsignermethod13::makeCallbackFunction(
             rt, callInvoker,
             jsObject.getProperty(rt, "staticDepositSigningKey"));
-    rsObject.subtract_secret_keys = uniffi::breez_sdk_spark::cb::
+    rsObject.subtract_secrets = uniffi::breez_sdk_spark::cb::
         callbackinterfaceexternalsignermethod14::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "subtractSecretKeys"));
+            rt, callInvoker, jsObject.getProperty(rt, "subtractSecrets"));
     rsObject.split_secret_with_proofs = uniffi::breez_sdk_spark::cb::
         callbackinterfaceexternalsignermethod15::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "splitSecretWithProofs"));
-    rsObject.encrypt_secret_key_for_receiver = uniffi::breez_sdk_spark::cb::
+    rsObject.encrypt_secret_for_receiver = uniffi::breez_sdk_spark::cb::
         callbackinterfaceexternalsignermethod16::makeCallbackFunction(
             rt, callInvoker,
-            jsObject.getProperty(rt, "encryptSecretKeyForReceiver"));
-    rsObject.public_key_from_secret_key_source = uniffi::breez_sdk_spark::cb::
+            jsObject.getProperty(rt, "encryptSecretForReceiver"));
+    rsObject.public_key_from_secret = uniffi::breez_sdk_spark::cb::
         callbackinterfaceexternalsignermethod17::makeCallbackFunction(
-            rt, callInvoker,
-            jsObject.getProperty(rt, "publicKeyFromSecretKeySource"));
+            rt, callInvoker, jsObject.getProperty(rt, "publicKeyFromSecret"));
     rsObject.sign_frost = uniffi::breez_sdk_spark::cb::
         callbackinterfaceexternalsignermethod18::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "signFrost"));
@@ -12703,28 +12700,28 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_"
-        "secret_key_encrypted"] = jsi::Function::createFromHostFunction(
+        "secret_encrypted"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(
           rt, "ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_"
-              "deposit_secret_key_encrypted"),
+              "deposit_secret_encrypted"),
       2,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key_encrypted(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_encrypted(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_"
-        "secret_key"] = jsi::Function::createFromHostFunction(
+        "secret"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "externalsigner_static_deposit_secret_key"),
+                                    "externalsigner_static_deposit_secret"),
       2,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_"
@@ -12740,16 +12737,16 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_signing_key(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secret_"
-        "keys"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_"
+        "secrets"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "externalsigner_subtract_secret_keys"),
+                                    "externalsigner_subtract_secrets"),
       3,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secret_keys(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secrets(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_split_secret_"
@@ -12765,29 +12762,28 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_"
-        "key_for_receiver"] = jsi::Function::createFromHostFunction(
+        "for_receiver"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(
-          rt, "ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_"
-              "secret_key_for_receiver"),
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                "externalsigner_encrypt_secret_for_receiver"),
       3,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_key_for_receiver(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_for_receiver(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_"
-        "secret_key_source"] = jsi::Function::createFromHostFunction(
+        "secret"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(
-          rt, "ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_"
-              "from_secret_key_source"),
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "externalsigner_public_key_from_secret"),
       2,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret_key_source(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_frost"] =
@@ -14872,29 +14868,29 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_"
-        "deposit_secret_key_encrypted"] = jsi::Function::createFromHostFunction(
+        "deposit_secret_encrypted"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(
           rt, "ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_"
-              "static_deposit_secret_key_encrypted"),
+              "static_deposit_secret_encrypted"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key_encrypted(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_encrypted(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_"
-        "deposit_secret_key"] = jsi::Function::createFromHostFunction(
+        "deposit_secret"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt,
                                 "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "externalsigner_static_deposit_secret_key"),
+                                "externalsigner_static_deposit_secret"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_"
@@ -14911,16 +14907,15 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_"
-        "secret_keys"] = jsi::Function::createFromHostFunction(
+        "secrets"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "externalsigner_subtract_secret_keys"),
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_externalsigner_subtract_secrets"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secret_keys(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secrets(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_split_"
@@ -14937,29 +14932,29 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_"
-        "secret_key_for_receiver"] = jsi::Function::createFromHostFunction(
+        "secret_for_receiver"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(
-          rt, "ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_"
-              "encrypt_secret_key_for_receiver"),
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "externalsigner_encrypt_secret_for_receiver"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_key_for_receiver(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_for_receiver(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_"
-        "from_secret_key_source"] = jsi::Function::createFromHostFunction(
+        "from_secret"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(
-          rt, "ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_"
-              "public_key_from_secret_key_source"),
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "externalsigner_public_key_from_secret"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret_key_source(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_"
@@ -16932,11 +16927,11 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key_encrypted(
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_encrypted(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key_encrypted(
+      uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_encrypted(
           uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
           uniffi_jsi::Bridging<uint32_t>::fromJs(rt, callInvoker, args[1]));
 
@@ -16944,11 +16939,11 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key(
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key(
+      uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret(
           uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
           uniffi_jsi::Bridging<uint32_t>::fromJs(rt, callInvoker, args[1]));
 
@@ -16968,16 +16963,15 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secret_keys(
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secrets(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secret_keys(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                                args[1]),
-          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                                args[2]));
+  auto value = uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secrets(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[2]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
@@ -16998,11 +16992,11 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_key_for_receiver(
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_for_receiver(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_key_for_receiver(
+      uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_for_receiver(
           uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
           uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                                 args[1]),
@@ -17013,11 +17007,11 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret_key_source(
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret_key_source(
+      uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret(
           uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
           uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                                 args[1]));
@@ -18989,20 +18983,20 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key_encrypted(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_encrypted(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key_encrypted();
+      uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_encrypted();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key();
+      uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -19016,11 +19010,11 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secret_keys(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secrets(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secret_keys();
+      uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secrets();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -19034,20 +19028,20 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_key_for_receiver(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_for_receiver(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_key_for_receiver();
+      uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_for_receiver();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret_key_source(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret_key_source();
+      uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
