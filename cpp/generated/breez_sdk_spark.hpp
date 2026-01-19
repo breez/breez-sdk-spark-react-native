@@ -225,7 +225,7 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_get_static_deposit_private_key_source(
+  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key_encrypted(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
@@ -245,11 +245,11 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_private_key_for_receiver(
+  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_key_for_receiver(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_get_public_key_from_private_key_source(
+  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret_key_source(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_frost(
@@ -843,7 +843,7 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_private_key_source(
+  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key_encrypted(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
@@ -863,11 +863,11 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_private_key_for_receiver(
+  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_key_for_receiver(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_from_private_key_source(
+  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret_key_source(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value

@@ -250,7 +250,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_key(
     ptr: bigint
   ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_get_static_deposit_private_key_source(
+  ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_key_encrypted(
     ptr: bigint,
     index: number
   ): bigint;
@@ -273,14 +273,14 @@ interface NativeModuleInterface {
     threshold: number,
     numShares: number
   ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_private_key_for_receiver(
+  ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_key_for_receiver(
     ptr: bigint,
-    privateKey: Uint8Array,
+    secretKey: Uint8Array,
     receiverPublicKey: Uint8Array
   ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_get_public_key_from_private_key_source(
+  ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret_key_source(
     ptr: bigint,
-    privateKey: Uint8Array
+    secretKey: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_frost(
     ptr: bigint,
@@ -760,13 +760,13 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_signing_commitment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_key(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_static_deposit_private_key_source(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key_encrypted(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_key(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_signing_key(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secret_keys(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret_with_proofs(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_private_key_for_receiver(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_from_private_key_source(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_key_for_receiver(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret_key_source(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_fiatservice_fetch_fiat_currencies(): number;
@@ -1152,14 +1152,14 @@ type UniffiCallbackInterfaceExternalSignerMethod15 = (
 ) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceExternalSignerMethod16 = (
   uniffiHandle: bigint,
-  privateKey: Uint8Array,
+  secretKey: Uint8Array,
   receiverPublicKey: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
 type UniffiCallbackInterfaceExternalSignerMethod17 = (
   uniffiHandle: bigint,
-  privateKey: Uint8Array,
+  secretKey: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiResult<UniffiForeignFuture>;
@@ -1384,13 +1384,13 @@ export type UniffiVTableCallbackInterfaceExternalSigner = {
   generateRandomSigningCommitment: UniffiCallbackInterfaceExternalSignerMethod8;
   getPublicKeyForNode: UniffiCallbackInterfaceExternalSignerMethod9;
   generateRandomKey: UniffiCallbackInterfaceExternalSignerMethod10;
-  getStaticDepositPrivateKeySource: UniffiCallbackInterfaceExternalSignerMethod11;
+  staticDepositSecretKeyEncrypted: UniffiCallbackInterfaceExternalSignerMethod11;
   staticDepositSecretKey: UniffiCallbackInterfaceExternalSignerMethod12;
   staticDepositSigningKey: UniffiCallbackInterfaceExternalSignerMethod13;
   subtractSecretKeys: UniffiCallbackInterfaceExternalSignerMethod14;
   splitSecretWithProofs: UniffiCallbackInterfaceExternalSignerMethod15;
-  encryptPrivateKeyForReceiver: UniffiCallbackInterfaceExternalSignerMethod16;
-  getPublicKeyFromPrivateKeySource: UniffiCallbackInterfaceExternalSignerMethod17;
+  encryptSecretKeyForReceiver: UniffiCallbackInterfaceExternalSignerMethod16;
+  publicKeyFromSecretKeySource: UniffiCallbackInterfaceExternalSignerMethod17;
   signFrost: UniffiCallbackInterfaceExternalSignerMethod18;
   aggregateFrost: UniffiCallbackInterfaceExternalSignerMethod19;
   uniffiFree: UniffiCallbackInterfaceFree;
