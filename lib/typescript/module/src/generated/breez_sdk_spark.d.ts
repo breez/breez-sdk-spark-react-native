@@ -11625,28 +11625,41 @@ export interface ExternalSigner {
      * * `id` - The tree node identifier
      *
      * # Returns
-     * The public key for the node, or an error string
+     * The public key for the node, or a `SignerError`
      */
     getPublicKeyForNode(id: ExternalTreeNodeId, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
-     * Generates a random secret.
+     * Generates a random secret that is encrypted and known only to the signer.
+     *
+     * This method creates a new random secret and returns it in encrypted form.
+     * The plaintext secret never leaves the signer boundary, providing a secure way
+     * to create secrets that can be referenced in subsequent operations without
+     * exposing them.
+     *
+     * This is conceptually similar to Spark's key derivation system where secrets
+     * are represented by opaque references (like tree node IDs or Random) rather than raw values.
+     * The encrypted secret can be passed to other signer methods that need to operate
+     * on it, while keeping the actual secret material protected within the signer.
      *
      * # Returns
-     * A randomly generated secret source, or an error string
+     * An encrypted secret that can be used in subsequent signer operations,
+     * or a `SignerError` if generation fails.
+     *
+     * See also: [Key Derivation System](https://docs.spark.money/wallets/spark-signer#the-keyderivation-system)
      */
-    generateRandomKey(asyncOpts_?: {
+    generateRandomSecret(asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<ExternalSecretSource>;
+    }): Promise<ExternalEncryptedSecret>;
     /**
      * Gets an encrypted static deposit secret by index.
      *
      * # Arguments
-     * * `index` - The index of the static deposit key
+     * * `index` - The index of the static deposit secret
      *
      * # Returns
-     * The encrypted secret source, or an error string
+     * The encrypted secret, or a `SignerError`
      *
      * This is the encrypted version of: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
      */
@@ -11657,10 +11670,10 @@ export interface ExternalSigner {
      * Gets a static deposit secret by index.
      *
      * # Arguments
-     * * `index` - The index of the static deposit key
+     * * `index` - The index of the static deposit secret
      *
      * # Returns
-     * The 32-byte secret, or an error string
+     * The 32-byte secret, or a `SignerError`
      *
      * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
      */
@@ -11668,13 +11681,13 @@ export interface ExternalSigner {
         signal: AbortSignal;
     }): Promise<SecretBytes>;
     /**
-     * Gets a static deposit public key by index.
+     * Gets a static deposit signing public key by index.
      *
      * # Arguments
-     * * `index` - The index of the static deposit key
+     * * `index` - The index of the static deposit public signing key
      *
      * # Returns
-     * The 33-byte public key, or an error string
+     * The 33-byte public key, or a `SignerError`
      *
      * See also: [JavaScript `getStaticDepositSigningKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-signing-key)
      */
@@ -11685,11 +11698,11 @@ export interface ExternalSigner {
      * Subtracts one secret from another.
      *
      * # Arguments
-     * * `signing_key` - The first secret source
-     * * `new_signing_key` - The second secret source to subtract
+     * * `signing_key` - The first secret
+     * * `new_signing_key` - The second secret to subtract
      *
      * # Returns
-     * The resulting secret source, or an error string
+     * The resulting secret, or a `SignerError`
      *
      * See also: [JavaScript `subtractSplitAndEncrypt`](https://docs.spark.money/wallets/spark-signer#subtract,-split,-and-encrypt)
      * (this method provides the subtraction step of that higher-level operation)
@@ -11706,7 +11719,7 @@ export interface ExternalSigner {
      * * `num_shares` - Total number of shares to create
      *
      * # Returns
-     * Vector of verifiable secret shares, or an error string
+     * Vector of verifiable secret shares, or a `SignerError`
      *
      * See also: [JavaScript `splitSecretWithProofs`](https://docs.spark.money/wallets/spark-signer#split-secret-with-proofs)
      */
@@ -11721,19 +11734,21 @@ export interface ExternalSigner {
      * * `receiver_public_key` - The receiver's 33-byte public key
      *
      * # Returns
-     * Encrypted data for the receiver, or an error string
+     * Encrypted data for the receiver, or a `SignerError`
      */
     encryptSecretForReceiver(encryptedSecret: ExternalEncryptedSecret, receiverPublicKey: PublicKeyBytes, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ArrayBuffer>;
     /**
-     * Gets the public key from a secret source.
+     * Gets the public key from a secret.
      *
      * # Arguments
-     * * `secret` - The secret source
+     * * `secret` - The secret
      *
      * # Returns
-     * The corresponding 33-byte public key, or an error string
+     * The corresponding 33-byte public key, or a `SignerError`
+     *
+     * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
      */
     publicKeyFromSecret(secret: ExternalSecretSource, asyncOpts_?: {
         signal: AbortSignal;
@@ -11745,7 +11760,7 @@ export interface ExternalSigner {
      * * `request` - The Frost signing request
      *
      * # Returns
-     * A signature share, or an error string
+     * A signature share, or a `SignerError`
      *
      * See also: [JavaScript `signFrost`](https://docs.spark.money/wallets/spark-signer#frost-signing)
      */
@@ -11759,7 +11774,7 @@ export interface ExternalSigner {
      * * `request` - The Frost aggregation request
      *
      * # Returns
-     * The aggregated Frost signature, or an error string
+     * The aggregated Frost signature, or a `SignerError`
      *
      * See also: [JavaScript `aggregateFrost`](https://docs.spark.money/wallets/spark-signer#aggregate-frost-signatures)
      */
@@ -11909,28 +11924,41 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      * * `id` - The tree node identifier
      *
      * # Returns
-     * The public key for the node, or an error string
+     * The public key for the node, or a `SignerError`
      */
     getPublicKeyForNode(id: ExternalTreeNodeId, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
-     * Generates a random secret.
+     * Generates a random secret that is encrypted and known only to the signer.
+     *
+     * This method creates a new random secret and returns it in encrypted form.
+     * The plaintext secret never leaves the signer boundary, providing a secure way
+     * to create secrets that can be referenced in subsequent operations without
+     * exposing them.
+     *
+     * This is conceptually similar to Spark's key derivation system where secrets
+     * are represented by opaque references (like tree node IDs or Random) rather than raw values.
+     * The encrypted secret can be passed to other signer methods that need to operate
+     * on it, while keeping the actual secret material protected within the signer.
      *
      * # Returns
-     * A randomly generated secret source, or an error string
+     * An encrypted secret that can be used in subsequent signer operations,
+     * or a `SignerError` if generation fails.
+     *
+     * See also: [Key Derivation System](https://docs.spark.money/wallets/spark-signer#the-keyderivation-system)
      */
-    generateRandomKey(asyncOpts_?: {
+    generateRandomSecret(asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<ExternalSecretSource>;
+    }): Promise<ExternalEncryptedSecret>;
     /**
      * Gets an encrypted static deposit secret by index.
      *
      * # Arguments
-     * * `index` - The index of the static deposit key
+     * * `index` - The index of the static deposit secret
      *
      * # Returns
-     * The encrypted secret source, or an error string
+     * The encrypted secret, or a `SignerError`
      *
      * This is the encrypted version of: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
      */
@@ -11941,10 +11969,10 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      * Gets a static deposit secret by index.
      *
      * # Arguments
-     * * `index` - The index of the static deposit key
+     * * `index` - The index of the static deposit secret
      *
      * # Returns
-     * The 32-byte secret, or an error string
+     * The 32-byte secret, or a `SignerError`
      *
      * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
      */
@@ -11952,13 +11980,13 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
         signal: AbortSignal;
     }): Promise<SecretBytes>;
     /**
-     * Gets a static deposit public key by index.
+     * Gets a static deposit signing public key by index.
      *
      * # Arguments
-     * * `index` - The index of the static deposit key
+     * * `index` - The index of the static deposit public signing key
      *
      * # Returns
-     * The 33-byte public key, or an error string
+     * The 33-byte public key, or a `SignerError`
      *
      * See also: [JavaScript `getStaticDepositSigningKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-signing-key)
      */
@@ -11969,11 +11997,11 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      * Subtracts one secret from another.
      *
      * # Arguments
-     * * `signing_key` - The first secret source
-     * * `new_signing_key` - The second secret source to subtract
+     * * `signing_key` - The first secret
+     * * `new_signing_key` - The second secret to subtract
      *
      * # Returns
-     * The resulting secret source, or an error string
+     * The resulting secret, or a `SignerError`
      *
      * See also: [JavaScript `subtractSplitAndEncrypt`](https://docs.spark.money/wallets/spark-signer#subtract,-split,-and-encrypt)
      * (this method provides the subtraction step of that higher-level operation)
@@ -11990,7 +12018,7 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      * * `num_shares` - Total number of shares to create
      *
      * # Returns
-     * Vector of verifiable secret shares, or an error string
+     * Vector of verifiable secret shares, or a `SignerError`
      *
      * See also: [JavaScript `splitSecretWithProofs`](https://docs.spark.money/wallets/spark-signer#split-secret-with-proofs)
      */
@@ -12005,19 +12033,21 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      * * `receiver_public_key` - The receiver's 33-byte public key
      *
      * # Returns
-     * Encrypted data for the receiver, or an error string
+     * Encrypted data for the receiver, or a `SignerError`
      */
     encryptSecretForReceiver(encryptedSecret: ExternalEncryptedSecret, receiverPublicKey: PublicKeyBytes, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ArrayBuffer>;
     /**
-     * Gets the public key from a secret source.
+     * Gets the public key from a secret.
      *
      * # Arguments
-     * * `secret` - The secret source
+     * * `secret` - The secret
      *
      * # Returns
-     * The corresponding 33-byte public key, or an error string
+     * The corresponding 33-byte public key, or a `SignerError`
+     *
+     * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
      */
     publicKeyFromSecret(secret: ExternalSecretSource, asyncOpts_?: {
         signal: AbortSignal;
@@ -12029,7 +12059,7 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      * * `request` - The Frost signing request
      *
      * # Returns
-     * A signature share, or an error string
+     * A signature share, or a `SignerError`
      *
      * See also: [JavaScript `signFrost`](https://docs.spark.money/wallets/spark-signer#frost-signing)
      */
@@ -12043,7 +12073,7 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
      * * `request` - The Frost aggregation request
      *
      * # Returns
-     * The aggregated Frost signature, or an error string
+     * The aggregated Frost signature, or a `SignerError`
      *
      * See also: [JavaScript `aggregateFrost`](https://docs.spark.money/wallets/spark-signer#aggregate-frost-signatures)
      */

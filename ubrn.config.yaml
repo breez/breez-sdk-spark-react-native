@@ -1,6 +1,6 @@
 rust:
   repo: https://github.com/breez/spark-sdk
-  rev: 2263b5f2ab3e56ba952f8d68930e6f0badacfc33
+  rev: b24b3f4df22060be2b82b749edc8fb3dc563420e
   manifestPath: crates/breez-sdk/bindings/Cargo.toml
 bindings:
   cpp: cpp/generated

@@ -221,7 +221,7 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_key(
+  cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_secret(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
@@ -839,7 +839,7 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_key(
+  cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_secret(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value

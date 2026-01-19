@@ -247,7 +247,7 @@ interface NativeModuleInterface {
     ptr: bigint,
     id: Uint8Array
   ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_key(
+  ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_secret(
     ptr: bigint
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_encrypted(
@@ -759,7 +759,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_hmac_sha256(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_signing_commitment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_key(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_secret(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_encrypted(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_signing_key(): number;
@@ -1383,7 +1383,7 @@ export type UniffiVTableCallbackInterfaceExternalSigner = {
   hmacSha256: UniffiCallbackInterfaceExternalSignerMethod7;
   generateRandomSigningCommitment: UniffiCallbackInterfaceExternalSignerMethod8;
   getPublicKeyForNode: UniffiCallbackInterfaceExternalSignerMethod9;
-  generateRandomKey: UniffiCallbackInterfaceExternalSignerMethod10;
+  generateRandomSecret: UniffiCallbackInterfaceExternalSignerMethod10;
   staticDepositSecretEncrypted: UniffiCallbackInterfaceExternalSignerMethod11;
   staticDepositSecret: UniffiCallbackInterfaceExternalSignerMethod12;
   staticDepositSigningKey: UniffiCallbackInterfaceExternalSignerMethod13;
