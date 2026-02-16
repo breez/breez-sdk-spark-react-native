@@ -63,6 +63,9 @@ protected:
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_add_event_listener(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
+  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_buy_bitcoin(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
   jsi::Value
   cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_cancel_leaf_optimization(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -329,10 +332,6 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_real_time_sync_storage(
-      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-      size_t count);
-  jsi::Value
   cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_rest_chain_service(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
@@ -360,7 +359,8 @@ protected:
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_storage_insert_payment(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_storage_set_payment_metadata(
+  jsi::Value
+  cpp_uniffi_breez_sdk_spark_fn_method_storage_insert_payment_metadata(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_storage_get_payment_by_id(
@@ -368,6 +368,10 @@ protected:
       size_t count);
   jsi::Value
   cpp_uniffi_breez_sdk_spark_fn_method_storage_get_payment_by_invoice(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
+  jsi::Value
+  cpp_uniffi_breez_sdk_spark_fn_method_storage_get_payments_by_parent_ids(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_storage_add_deposit(
@@ -385,49 +389,37 @@ protected:
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_storage_set_lnurl_metadata(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_spark_fn_clone_syncstorage(
-      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-      size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_spark_fn_free_syncstorage(
+  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_storage_add_outgoing_change(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_syncstorage_add_outgoing_change(
+  cpp_uniffi_breez_sdk_spark_fn_method_storage_complete_outgoing_sync(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_syncstorage_complete_outgoing_sync(
+  cpp_uniffi_breez_sdk_spark_fn_method_storage_get_pending_outgoing_changes(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
+  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_storage_get_last_revision(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_syncstorage_get_pending_outgoing_changes(
-      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-      size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_syncstorage_get_last_revision(
+  cpp_uniffi_breez_sdk_spark_fn_method_storage_insert_incoming_records(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_syncstorage_insert_incoming_records(
+  cpp_uniffi_breez_sdk_spark_fn_method_storage_delete_incoming_record(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
+  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_storage_get_incoming_records(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_syncstorage_delete_incoming_record(
+  cpp_uniffi_breez_sdk_spark_fn_method_storage_get_latest_outgoing_change(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_syncstorage_rebase_pending_outgoing_records(
-      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-      size_t count);
-  jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_syncstorage_get_incoming_records(
-      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-      size_t count);
-  jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_syncstorage_get_latest_outgoing_change(
-      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-      size_t count);
-  jsi::Value
-  cpp_uniffi_breez_sdk_spark_fn_method_syncstorage_update_record_from_incoming(
+  cpp_uniffi_breez_sdk_spark_fn_method_storage_update_record_from_incoming(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_clone_tokenissuer(
@@ -472,6 +464,9 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_func_default_external_signer(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
+  jsi::Value cpp_uniffi_breez_sdk_spark_fn_func_get_spark_status(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_func_init_logging(
@@ -645,6 +640,9 @@ protected:
   jsi::Value cpp_uniffi_breez_sdk_spark_checksum_func_default_external_signer(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
+  jsi::Value cpp_uniffi_breez_sdk_spark_checksum_func_get_spark_status(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_checksum_func_init_logging(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
@@ -670,6 +668,9 @@ protected:
       size_t count);
   jsi::Value
   cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
+  jsi::Value cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
@@ -927,10 +928,6 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_real_time_sync_storage(
-      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-      size_t count);
-  jsi::Value
   cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
@@ -954,7 +951,7 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_storage_set_payment_metadata(
+  cpp_uniffi_breez_sdk_spark_checksum_method_storage_insert_payment_metadata(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
@@ -963,6 +960,10 @@ protected:
       size_t count);
   jsi::Value
   cpp_uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_invoice(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
+  jsi::Value
+  cpp_uniffi_breez_sdk_spark_checksum_method_storage_get_payments_by_parent_ids(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_checksum_method_storage_add_deposit(
@@ -982,43 +983,39 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_syncstorage_add_outgoing_change(
+  cpp_uniffi_breez_sdk_spark_checksum_method_storage_add_outgoing_change(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_syncstorage_complete_outgoing_sync(
+  cpp_uniffi_breez_sdk_spark_checksum_method_storage_complete_outgoing_sync(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_syncstorage_get_pending_outgoing_changes(
+  cpp_uniffi_breez_sdk_spark_checksum_method_storage_get_pending_outgoing_changes(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_syncstorage_get_last_revision(
+  cpp_uniffi_breez_sdk_spark_checksum_method_storage_get_last_revision(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_syncstorage_insert_incoming_records(
+  cpp_uniffi_breez_sdk_spark_checksum_method_storage_insert_incoming_records(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_syncstorage_delete_incoming_record(
+  cpp_uniffi_breez_sdk_spark_checksum_method_storage_delete_incoming_record(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_syncstorage_rebase_pending_outgoing_records(
+  cpp_uniffi_breez_sdk_spark_checksum_method_storage_get_incoming_records(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_syncstorage_get_incoming_records(
+  cpp_uniffi_breez_sdk_spark_checksum_method_storage_get_latest_outgoing_change(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_syncstorage_get_latest_outgoing_change(
-      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-      size_t count);
-  jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_syncstorage_update_record_from_incoming(
+  cpp_uniffi_breez_sdk_spark_checksum_method_storage_update_record_from_incoming(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value
@@ -1086,9 +1083,6 @@ protected:
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_storage(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_syncstorage(
-      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-      size_t count);
   jsi::Value
   cpp_uniffi_internal_fn_method_bitcoinchainservice_ffi__bless_pointer(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -1112,9 +1106,6 @@ protected:
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_internal_fn_method_storage_ffi__bless_pointer(
-      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-      size_t count);
-  jsi::Value cpp_uniffi_internal_fn_method_syncstorage_ffi__bless_pointer(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_internal_fn_method_tokenissuer_ffi__bless_pointer(

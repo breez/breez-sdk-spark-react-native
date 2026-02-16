@@ -1,18 +1,24 @@
 rust:
   repo: https://github.com/breez/spark-sdk
-  rev: f911a25bbcb4c709945ff4c6f94e7deed1dd8fe1
+  rev: fc03269cffd9bbea07981afb5fca941d9289438d
   manifestPath: crates/breez-sdk/bindings/Cargo.toml
 bindings:
   cpp: cpp/generated
   ts: src/generated
 android:
   useSharedLibrary: true
+  # Disable postgres feature to reduce binary size (not needed for mobile)
+  cargoExtras:
+    - --no-default-features
 ios:
   targets:
     - aarch64-apple-ios
     - aarch64-apple-ios-sim
     - x86_64-apple-ios
   frameworkName: build/RnBreezSdkSpark
+  # Disable postgres feature to reduce binary size (not needed for mobile)
+  cargoExtras:
+    - --no-default-features
 turboModule:
   cpp: cpp
   ts: src

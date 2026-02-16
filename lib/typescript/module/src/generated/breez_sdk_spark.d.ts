@@ -49,6 +49,15 @@ export declare function defaultConfig(network: Network): Config;
  * Result containing the signer as `Arc<dyn ExternalSigner>`
  */
 export declare function defaultExternalSigner(mnemonic: string, passphrase: string | undefined, network: Network, keySetConfig: KeySetConfig | undefined): ExternalSigner;
+/**
+ * Fetches the current status of Spark network services relevant to the SDK.
+ *
+ * This function queries the Spark status API and returns the worst status
+ * across the Spark Operators and SSP services.
+ */
+export declare function getSparkStatus(asyncOpts_?: {
+    signal: AbortSignal;
+}): Promise<SparkStatus>;
 export declare function initLogging(logDir: string | undefined, appLogger: Logger | undefined, logFilter: string | undefined): void;
 /**
  * Trait for event listeners
@@ -495,6 +504,67 @@ export declare const BurnIssuerTokenRequest: Readonly<{
      */
     defaults: () => Partial<BurnIssuerTokenRequest>;
 }>;
+/**
+ * Request to buy Bitcoin using an external provider (`MoonPay`)
+ */
+export type BuyBitcoinRequest = {
+    /**
+     * Optional: Lock the purchase to a specific amount in satoshis.
+     * When provided, the user cannot change the amount in the purchase flow.
+     */
+    lockedAmountSat: /*u64*/ bigint | undefined;
+    /**
+     * Optional: Custom redirect URL after purchase completion
+     */
+    redirectUrl: string | undefined;
+};
+/**
+ * Generated factory for {@link BuyBitcoinRequest} record objects.
+ */
+export declare const BuyBitcoinRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link BuyBitcoinRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<BuyBitcoinRequest> & Required<Omit<BuyBitcoinRequest, "lockedAmountSat" | "redirectUrl">>) => BuyBitcoinRequest;
+    /**
+     * Create a frozen instance of {@link BuyBitcoinRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<BuyBitcoinRequest> & Required<Omit<BuyBitcoinRequest, "lockedAmountSat" | "redirectUrl">>) => BuyBitcoinRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<BuyBitcoinRequest>;
+}>;
+/**
+ * Response containing a URL to complete the Bitcoin purchase
+ */
+export type BuyBitcoinResponse = {
+    /**
+     * The URL to open in a browser to complete the purchase
+     */
+    url: string;
+};
+/**
+ * Generated factory for {@link BuyBitcoinResponse} record objects.
+ */
+export declare const BuyBitcoinResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link BuyBitcoinResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<BuyBitcoinResponse> & Required<Omit<BuyBitcoinResponse, never>>) => BuyBitcoinResponse;
+    /**
+     * Create a frozen instance of {@link BuyBitcoinResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<BuyBitcoinResponse> & Required<Omit<BuyBitcoinResponse, never>>) => BuyBitcoinResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<BuyBitcoinResponse>;
+}>;
 export type CheckLightningAddressRequest = {
     username: string;
 };
@@ -782,6 +852,38 @@ export declare const ConnectWithSignerRequest: Readonly<{
     defaults: () => Partial<ConnectWithSignerRequest>;
 }>;
 /**
+ * Outlines the steps involved in a conversion
+ */
+export type ConversionDetails = {
+    /**
+     * First step is converting from the available asset
+     */
+    from: ConversionStep;
+    /**
+     * Second step is converting to the requested asset
+     */
+    to: ConversionStep;
+};
+/**
+ * Generated factory for {@link ConversionDetails} record objects.
+ */
+export declare const ConversionDetails: Readonly<{
+    /**
+     * Create a frozen instance of {@link ConversionDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ConversionDetails> & Required<Omit<ConversionDetails, never>>) => ConversionDetails;
+    /**
+     * Create a frozen instance of {@link ConversionDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ConversionDetails> & Required<Omit<ConversionDetails, never>>) => ConversionDetails;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ConversionDetails>;
+}>;
+/**
  * Response from estimating a conversion, used when preparing a payment that requires conversion
  */
 export type ConversionEstimate = {
@@ -873,7 +975,7 @@ export type ConversionOptions = {
     conversionType: ConversionType;
     /**
      * The optional maximum slippage in basis points (1/100 of a percent) allowed when
-     * a conversion is needed to fulfill the payment. Defaults to 50 bps (0.5%) if not set.
+     * a conversion is needed to fulfill the payment. Defaults to 10 bps (0.1%) if not set.
      * The conversion will fail if the actual amount received is less than
      * `estimated_amount * (1 - max_slippage_bps / 10_000)`.
      */
@@ -904,6 +1006,51 @@ export declare const ConversionOptions: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<ConversionOptions>;
+}>;
+/**
+ * A single step in a conversion
+ */
+export type ConversionStep = {
+    /**
+     * The underlying payment id of the conversion step
+     */
+    paymentId: string;
+    /**
+     * Payment amount in satoshis or token base units
+     */
+    amount: U128;
+    /**
+     * Fee paid in satoshis or token base units
+     * This represents the payment fee + the conversion fee
+     */
+    fee: U128;
+    /**
+     * Method of payment
+     */
+    method: PaymentMethod;
+    /**
+     * Token metadata if a token is used for payment
+     */
+    tokenMetadata: TokenMetadata | undefined;
+};
+/**
+ * Generated factory for {@link ConversionStep} record objects.
+ */
+export declare const ConversionStep: Readonly<{
+    /**
+     * Create a frozen instance of {@link ConversionStep}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ConversionStep> & Required<Omit<ConversionStep, never>>) => ConversionStep;
+    /**
+     * Create a frozen instance of {@link ConversionStep}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ConversionStep> & Required<Omit<ConversionStep, never>>) => ConversionStep;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ConversionStep>;
 }>;
 export type CreateIssuerTokenRequest = {
     name: string;
@@ -1651,6 +1798,10 @@ export declare const GetInfoRequest: Readonly<{
  */
 export type GetInfoResponse = {
     /**
+     * The identity public key of the wallet as a hex string
+     */
+    identityPubkey: string;
+    /**
      * The balance in satoshis
      */
     balanceSats: bigint;
@@ -1953,7 +2104,7 @@ export declare const LightningAddressDetails: Readonly<{
 export type LightningAddressInfo = {
     description: string;
     lightningAddress: string;
-    lnurl: string;
+    lnurl: LnurlInfo;
     username: string;
 };
 /**
@@ -2219,6 +2370,29 @@ export declare const LnurlErrorDetails: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<LnurlErrorDetails>;
+}>;
+export type LnurlInfo = {
+    url: string;
+    bech32: string;
+};
+/**
+ * Generated factory for {@link LnurlInfo} record objects.
+ */
+export declare const LnurlInfo: Readonly<{
+    /**
+     * Create a frozen instance of {@link LnurlInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<LnurlInfo> & Required<Omit<LnurlInfo, never>>) => LnurlInfo;
+    /**
+     * Create a frozen instance of {@link LnurlInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<LnurlInfo> & Required<Omit<LnurlInfo, never>>) => LnurlInfo;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<LnurlInfo>;
 }>;
 /**
  * Represents the payment LNURL info
@@ -2777,6 +2951,10 @@ export type Payment = {
      * Details of the payment
      */
     details: PaymentDetails | undefined;
+    /**
+     * If set, this payment involved a conversion before the payment
+     */
+    conversionDetails: ConversionDetails | undefined;
 };
 /**
  * Generated factory for {@link Payment} record objects.
@@ -2850,10 +3028,21 @@ export declare const PaymentRequestSource: Readonly<{
     defaults: () => Partial<PaymentRequestSource>;
 }>;
 export type PrepareLnurlPayRequest = {
+    /**
+     * The amount to send in satoshis.
+     */
     amountSats: bigint;
     payRequest: LnurlPayRequestDetails;
     comment: string | undefined;
     validateSuccessActionUrl: boolean | undefined;
+    /**
+     * If provided, the payment will include a token conversion step before sending the payment
+     */
+    conversionOptions: ConversionOptions | undefined;
+    /**
+     * How fees should be handled. Defaults to `FeesExcluded` (fees added on top).
+     */
+    feePolicy: FeePolicy | undefined;
 };
 /**
  * Generated factory for {@link PrepareLnurlPayRequest} record objects.
@@ -2863,24 +3052,39 @@ export declare const PrepareLnurlPayRequest: Readonly<{
      * Create a frozen instance of {@link PrepareLnurlPayRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<PrepareLnurlPayRequest> & Required<Omit<PrepareLnurlPayRequest, "comment" | "validateSuccessActionUrl">>) => PrepareLnurlPayRequest;
+    create: (partial: Partial<PrepareLnurlPayRequest> & Required<Omit<PrepareLnurlPayRequest, "comment" | "validateSuccessActionUrl" | "conversionOptions" | "feePolicy">>) => PrepareLnurlPayRequest;
     /**
      * Create a frozen instance of {@link PrepareLnurlPayRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<PrepareLnurlPayRequest> & Required<Omit<PrepareLnurlPayRequest, "comment" | "validateSuccessActionUrl">>) => PrepareLnurlPayRequest;
+    new: (partial: Partial<PrepareLnurlPayRequest> & Required<Omit<PrepareLnurlPayRequest, "comment" | "validateSuccessActionUrl" | "conversionOptions" | "feePolicy">>) => PrepareLnurlPayRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<PrepareLnurlPayRequest>;
 }>;
 export type PrepareLnurlPayResponse = {
+    /**
+     * The amount to send in satoshis.
+     */
     amountSats: bigint;
     comment: string | undefined;
     payRequest: LnurlPayRequestDetails;
+    /**
+     * The fee in satoshis. For `FeesIncluded` operations, this represents the total fee
+     * (including potential overpayment).
+     */
     feeSats: bigint;
     invoiceDetails: Bolt11InvoiceDetails;
     successAction: SuccessAction | undefined;
+    /**
+     * When set, the payment will include a token conversion step before sending the payment
+     */
+    conversionEstimate: ConversionEstimate | undefined;
+    /**
+     * How fees are handled for this payment.
+     */
+    feePolicy: FeePolicy;
 };
 /**
  * Generated factory for {@link PrepareLnurlPayResponse} record objects.
@@ -2904,19 +3108,25 @@ export declare const PrepareLnurlPayResponse: Readonly<{
 export type PrepareSendPaymentRequest = {
     paymentRequest: string;
     /**
-     * Amount to send. By default is denominated in sats.
-     * If a token identifier is provided, the amount will be denominated in the token base units.
+     * The amount to send.
+     * Optional for payment requests with embedded amounts (e.g., Spark/Bolt11 invoices with amounts).
+     * Required for Spark addresses, Bitcoin addresses, and amountless invoices.
+     * Denominated in satoshis for Bitcoin payments, or token base units for token payments.
      */
     amount: U128 | undefined;
     /**
-     * If provided, the payment will be for a token.
-     * May only be provided if the payment request is a spark address.
+     * Optional token identifier for token payments.
+     * Absence indicates that the payment is a Bitcoin payment.
      */
     tokenIdentifier: string | undefined;
     /**
      * If provided, the payment will include a conversion step before sending the payment
      */
     conversionOptions: ConversionOptions | undefined;
+    /**
+     * How fees should be handled. Defaults to `FeesExcluded` (fees added on top).
+     */
+    feePolicy: FeePolicy | undefined;
 };
 /**
  * Generated factory for {@link PrepareSendPaymentRequest} record objects.
@@ -2926,12 +3136,12 @@ export declare const PrepareSendPaymentRequest: Readonly<{
      * Create a frozen instance of {@link PrepareSendPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier" | "conversionOptions">>) => PrepareSendPaymentRequest;
+    create: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier" | "conversionOptions" | "feePolicy">>) => PrepareSendPaymentRequest;
     /**
      * Create a frozen instance of {@link PrepareSendPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier" | "conversionOptions">>) => PrepareSendPaymentRequest;
+    new: (partial: Partial<PrepareSendPaymentRequest> & Required<Omit<PrepareSendPaymentRequest, "amount" | "tokenIdentifier" | "conversionOptions" | "feePolicy">>) => PrepareSendPaymentRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -2940,19 +3150,23 @@ export declare const PrepareSendPaymentRequest: Readonly<{
 export type PrepareSendPaymentResponse = {
     paymentMethod: SendPaymentMethod;
     /**
-     * Amount to send. By default is denominated in sats.
-     * If a token identifier is provided, the amount will be denominated in the token base units.
+     * The amount for the payment.
+     * Denominated in satoshis for Bitcoin payments, or token base units for token payments.
      */
     amount: U128;
     /**
-     * The presence of this field indicates that the payment is for a token.
-     * If empty, it is a Bitcoin payment.
+     * Optional token identifier for token payments.
+     * Absence indicates that the payment is a Bitcoin payment.
      */
     tokenIdentifier: string | undefined;
     /**
      * When set, the payment will include a conversion step before sending the payment
      */
     conversionEstimate: ConversionEstimate | undefined;
+    /**
+     * How fees are handled for this payment.
+     */
+    feePolicy: FeePolicy;
 };
 /**
  * Generated factory for {@link PrepareSendPaymentResponse} record objects.
@@ -3161,7 +3375,7 @@ export type RecordChange = {
     id: RecordId;
     schemaVersion: string;
     updatedFields: Map<string, string>;
-    revision: bigint;
+    localRevision: bigint;
 };
 /**
  * Generated factory for {@link RecordChange} record objects.
@@ -3752,6 +3966,38 @@ export declare const SparkInvoicePaymentDetails: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<SparkInvoicePaymentDetails>;
+}>;
+/**
+ * The status of the Spark network services relevant to the SDK.
+ */
+export type SparkStatus = {
+    /**
+     * The worst status across all relevant services.
+     */
+    status: ServiceStatus;
+    /**
+     * The last time the status was updated, as a unix timestamp in seconds.
+     */
+    lastUpdated: bigint;
+};
+/**
+ * Generated factory for {@link SparkStatus} record objects.
+ */
+export declare const SparkStatus: Readonly<{
+    /**
+     * Create a frozen instance of {@link SparkStatus}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SparkStatus> & Required<Omit<SparkStatus, never>>) => SparkStatus;
+    /**
+     * Create a frozen instance of {@link SparkStatus}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SparkStatus> & Required<Omit<SparkStatus, never>>) => SparkStatus;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SparkStatus>;
 }>;
 /**
  * Settings for the symbol representation of a currency
@@ -5193,6 +5439,21 @@ export declare const Fee: Readonly<{
     };
 }>;
 export type Fee = InstanceType<(typeof Fee)[keyof Omit<typeof Fee, 'instanceOf'>]>;
+/**
+ * Specifies how fees are handled in a payment.
+ */
+export declare enum FeePolicy {
+    /**
+     * Fees are added on top of the specified amount (default behavior).
+     * The receiver gets the exact amount specified.
+     */
+    FeesExcluded = 0,
+    /**
+     * Fees are deducted from the specified amount.
+     * The receiver gets the amount minus fees.
+     */
+    FeesIncluded = 1
+}
 export declare enum InputType_Tags {
     BitcoinAddress = "BitcoinAddress",
     Bolt11Invoice = "Bolt11Invoice",
@@ -6126,6 +6387,7 @@ export declare const PaymentDetails: Readonly<{
         new (inner: {
             metadata: TokenMetadata;
             txHash: string;
+            txType: TokenTransactionType;
             /**
              * The invoice details if the payment fulfilled a spark invoice
              */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
@@ -6137,6 +6399,7 @@ export declare const PaymentDetails: Readonly<{
             readonly inner: Readonly<{
                 metadata: TokenMetadata;
                 txHash: string;
+                txType: TokenTransactionType;
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
                 conversionInfo: ConversionInfo | undefined;
             }>;
@@ -6149,6 +6412,7 @@ export declare const PaymentDetails: Readonly<{
         "new"(inner: {
             metadata: TokenMetadata;
             txHash: string;
+            txType: TokenTransactionType;
             /**
              * The invoice details if the payment fulfilled a spark invoice
              */ invoiceDetails: SparkInvoicePaymentDetails | undefined;
@@ -6160,6 +6424,7 @@ export declare const PaymentDetails: Readonly<{
             readonly inner: Readonly<{
                 metadata: TokenMetadata;
                 txHash: string;
+                txType: TokenTransactionType;
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
                 conversionInfo: ConversionInfo | undefined;
             }>;
@@ -6174,6 +6439,7 @@ export declare const PaymentDetails: Readonly<{
             readonly inner: Readonly<{
                 metadata: TokenMetadata;
                 txHash: string;
+                txType: TokenTransactionType;
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
                 conversionInfo: ConversionInfo | undefined;
             }>;
@@ -6440,11 +6706,15 @@ export declare const PaymentDetailsFilter: Readonly<{
             /**
              * Filter by transaction hash
              */ txHash: string | undefined;
+            /**
+             * Filter by transaction type
+             */ txType: TokenTransactionType | undefined;
         }): {
             readonly tag: PaymentDetailsFilter_Tags.Token;
             readonly inner: Readonly<{
                 conversionRefundNeeded: boolean | undefined;
                 txHash: string | undefined;
+                txType: TokenTransactionType | undefined;
             }>;
             /**
              * @private
@@ -6459,11 +6729,15 @@ export declare const PaymentDetailsFilter: Readonly<{
             /**
              * Filter by transaction hash
              */ txHash: string | undefined;
+            /**
+             * Filter by transaction type
+             */ txType: TokenTransactionType | undefined;
         }): {
             readonly tag: PaymentDetailsFilter_Tags.Token;
             readonly inner: Readonly<{
                 conversionRefundNeeded: boolean | undefined;
                 txHash: string | undefined;
+                txType: TokenTransactionType | undefined;
             }>;
             /**
              * @private
@@ -6476,6 +6750,7 @@ export declare const PaymentDetailsFilter: Readonly<{
             readonly inner: Readonly<{
                 conversionRefundNeeded: boolean | undefined;
                 txHash: string | undefined;
+                txType: TokenTransactionType | undefined;
             }>;
             /**
              * @private
@@ -8602,7 +8877,9 @@ export declare const SendPaymentOptions: Readonly<{
     instanceOf: (obj: any) => obj is SendPaymentOptions;
     BitcoinAddress: {
         new (inner: {
-            confirmationSpeed: OnchainConfirmationSpeed;
+            /**
+             * Confirmation speed for the on-chain transaction.
+             */ confirmationSpeed: OnchainConfirmationSpeed;
         }): {
             readonly tag: SendPaymentOptions_Tags.BitcoinAddress;
             readonly inner: Readonly<{
@@ -8615,7 +8892,9 @@ export declare const SendPaymentOptions: Readonly<{
             readonly [uniffiTypeNameSymbol]: "SendPaymentOptions";
         };
         "new"(inner: {
-            confirmationSpeed: OnchainConfirmationSpeed;
+            /**
+             * Confirmation speed for the on-chain transaction.
+             */ confirmationSpeed: OnchainConfirmationSpeed;
         }): {
             readonly tag: SendPaymentOptions_Tags.BitcoinAddress;
             readonly inner: Readonly<{
@@ -9486,6 +9765,31 @@ export declare const ServiceConnectivityError: Readonly<{
     };
 }>;
 export type ServiceConnectivityError = InstanceType<(typeof ServiceConnectivityError)[keyof Omit<typeof ServiceConnectivityError, 'instanceOf'>]>;
+/**
+ * The operational status of a Spark service.
+ */
+export declare enum ServiceStatus {
+    /**
+     * Service is fully operational.
+     */
+    Operational = 0,
+    /**
+     * Service is experiencing degraded performance.
+     */
+    Degraded = 1,
+    /**
+     * Service is partially unavailable.
+     */
+    Partial = 2,
+    /**
+     * Service status is unknown.
+     */
+    Unknown = 3,
+    /**
+     * Service is experiencing a major outage.
+     */
+    Major = 4
+}
 export declare enum SignerError_Tags {
     KeyDerivation = "KeyDerivation",
     Signing = "Signing",
@@ -10017,6 +10321,7 @@ export declare enum SparkHtlcStatus {
     Returned = 2
 }
 export declare enum StorageError_Tags {
+    Connection = "Connection",
     Implementation = "Implementation",
     InitializationError = "InitializationError",
     Serialization = "Serialization"
@@ -10026,6 +10331,77 @@ export declare enum StorageError_Tags {
  */
 export declare const StorageError: Readonly<{
     instanceOf: (obj: any) => obj is StorageError;
+    Connection: {
+        new (v0: string): {
+            readonly tag: StorageError_Tags.Connection;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: StorageError_Tags.Connection;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: StorageError_Tags.Connection;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: StorageError_Tags.Connection;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: StorageError_Tags.Connection;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
     Implementation: {
         new (v0: string): {
             readonly tag: StorageError_Tags.Implementation;
@@ -10518,234 +10894,11 @@ export declare const SuccessActionProcessed: Readonly<{
  * Contents are identical to [`SuccessAction`], except for AES where the ciphertext is decrypted.
  */
 export type SuccessActionProcessed = InstanceType<(typeof SuccessActionProcessed)[keyof Omit<typeof SuccessActionProcessed, 'instanceOf'>]>;
-export declare enum SyncStorageError_Tags {
-    Implementation = "Implementation",
-    InitializationError = "InitializationError",
-    Serialization = "Serialization"
+export declare enum TokenTransactionType {
+    Transfer = 0,
+    Mint = 1,
+    Burn = 2
 }
-/**
- * Errors that can occur during storage operations
- */
-export declare const SyncStorageError: Readonly<{
-    instanceOf: (obj: any) => obj is SyncStorageError;
-    Implementation: {
-        new (v0: string): {
-            readonly tag: SyncStorageError_Tags.Implementation;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        "new"(v0: string): {
-            readonly tag: SyncStorageError_Tags.Implementation;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: SyncStorageError_Tags.Implementation;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        hasInner(obj: any): obj is {
-            readonly tag: SyncStorageError_Tags.Implementation;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        getInner(obj: {
-            readonly tag: SyncStorageError_Tags.Implementation;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        }): Readonly<[string]>;
-        isError(error: unknown): error is Error;
-        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
-        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
-        stackTraceLimit: number;
-    };
-    InitializationError: {
-        new (v0: string): {
-            readonly tag: SyncStorageError_Tags.InitializationError;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        "new"(v0: string): {
-            readonly tag: SyncStorageError_Tags.InitializationError;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: SyncStorageError_Tags.InitializationError;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        hasInner(obj: any): obj is {
-            readonly tag: SyncStorageError_Tags.InitializationError;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        getInner(obj: {
-            readonly tag: SyncStorageError_Tags.InitializationError;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        }): Readonly<[string]>;
-        isError(error: unknown): error is Error;
-        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
-        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
-        stackTraceLimit: number;
-    };
-    Serialization: {
-        new (v0: string): {
-            readonly tag: SyncStorageError_Tags.Serialization;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        "new"(v0: string): {
-            readonly tag: SyncStorageError_Tags.Serialization;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: SyncStorageError_Tags.Serialization;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        hasInner(obj: any): obj is {
-            readonly tag: SyncStorageError_Tags.Serialization;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        getInner(obj: {
-            readonly tag: SyncStorageError_Tags.Serialization;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SyncStorageError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        }): Readonly<[string]>;
-        isError(error: unknown): error is Error;
-        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
-        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
-        stackTraceLimit: number;
-    };
-}>;
-/**
- * Errors that can occur during storage operations
- */
-export type SyncStorageError = InstanceType<(typeof SyncStorageError)[keyof Omit<typeof SyncStorageError, 'instanceOf'>]>;
 export declare enum UpdateDepositPayload_Tags {
     ClaimError = "ClaimError",
     Refund = "Refund"
@@ -10900,6 +11053,24 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<string>;
     /**
+     * Initiates a Bitcoin purchase flow via an external provider (`MoonPay`).
+     *
+     * This method generates a URL that the user can open in a browser to complete
+     * the Bitcoin purchase. The purchased Bitcoin will be sent to an automatically
+     * generated deposit address.
+     *
+     * # Arguments
+     *
+     * * `request` - The purchase request containing optional amount and redirect URL
+     *
+     * # Returns
+     *
+     * A response containing the URL to open in a browser to complete the purchase
+     */
+    buyBitcoin(request: BuyBitcoinRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<BuyBitcoinResponse>;
+    /**
      * Cancels the ongoing leaf optimization.
      *
      * This method cancels the ongoing optimization and waits for it to fully stop.
@@ -11001,21 +11172,20 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<ListFiatRatesResponse>;
     /**
-       * Lists payments from the storage with pagination
-       *
-       * This method provides direct access to the payment history stored in the database.
-       * It returns payments in reverse chronological order (newest first).
-       *
-       * # Arguments
-       *
-       * * `request` - Contains pagination parameters (offset and limit)
-       *
-       * # Returns
-       *
-       * * `Ok(ListPaymentsResponse)` - Contains the list of payments if successful
-       * * `Err(SdkError)` - If there was an error accessing the storage
-  
-       */
+     * Lists payments from the storage with pagination
+     *
+     * This method provides direct access to the payment history stored in the database.
+     * It returns payments in reverse chronological order (newest first).
+     *
+     * # Arguments
+     *
+     * * `request` - Contains pagination parameters (offset and limit)
+     *
+     * # Returns
+     *
+     * * `Ok(ListPaymentsResponse)` - Contains the list of payments if successful
+     * * `Err(SdkError)` - If there was an error accessing the storage
+     */
     listPayments(request: ListPaymentsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ListPaymentsResponse>;
@@ -11028,48 +11198,6 @@ export interface BreezSdkInterface {
      * This method implements the LNURL-auth protocol as specified in LUD-04 and LUD-05.
      * It derives a domain-specific linking key, signs the challenge, and sends the
      * authentication request to the service.
-     *
-     * # Arguments
-     *
-     * * `request_data` - The parsed LNURL-auth request details obtained from [`parse`]
-     *
-     * # Returns
-     *
-     * * `Ok(LnurlCallbackStatus::Ok)` - Authentication was successful
-     * * `Ok(LnurlCallbackStatus::ErrorStatus{reason})` - Service returned an error
-     * * `Err(SdkError)` - An error occurred during the authentication process
-     *
-     * # Example
-     *
-     * ```rust,no_run
-     * # use breez_sdk_spark::{BreezSdk, InputType};
-     * # async fn example(sdk: BreezSdk) -> Result<(), Box<dyn std::error::Error>> {
-     * // 1. Parse the LNURL-auth string
-     * let input = sdk.parse("lnurl1...").await?;
-     * let auth_request = match input {
-     * InputType::LnurlAuth(data) => data,
-     * _ => return Err("Not an auth request".into()),
-     * };
-     *
-     * // 2. Show user the domain and get confirmation
-     * println!("Authenticate with {}?", auth_request.domain);
-     *
-     * // 3. Perform authentication
-     * let status = sdk.lnurl_auth(auth_request).await?;
-     * match status {
-     * breez_sdk_spark::LnurlCallbackStatus::Ok => println!("Success!"),
-     * breez_sdk_spark::LnurlCallbackStatus::ErrorStatus { error_details } => {
-     * println!("Error: {}", error_details.reason)
-     * }
-     * }
-     * # Ok(())
-     * # }
-     * ```
-     *
-     * # See Also
-     *
-     * * LUD-04: <https://github.com/lnurl/luds/blob/luds/04.md>
-     * * LUD-05: <https://github.com/lnurl/luds/blob/luds/05.md>
      */
     lnurlAuth(requestData: LnurlAuthRequestDetails, asyncOpts_?: {
         signal: AbortSignal;
@@ -11203,6 +11331,24 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<string>;
     /**
+     * Initiates a Bitcoin purchase flow via an external provider (`MoonPay`).
+     *
+     * This method generates a URL that the user can open in a browser to complete
+     * the Bitcoin purchase. The purchased Bitcoin will be sent to an automatically
+     * generated deposit address.
+     *
+     * # Arguments
+     *
+     * * `request` - The purchase request containing optional amount and redirect URL
+     *
+     * # Returns
+     *
+     * A response containing the URL to open in a browser to complete the purchase
+     */
+    buyBitcoin(request: BuyBitcoinRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<BuyBitcoinResponse>;
+    /**
      * Cancels the ongoing leaf optimization.
      *
      * This method cancels the ongoing optimization and waits for it to fully stop.
@@ -11304,21 +11450,20 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<ListFiatRatesResponse>;
     /**
-       * Lists payments from the storage with pagination
-       *
-       * This method provides direct access to the payment history stored in the database.
-       * It returns payments in reverse chronological order (newest first).
-       *
-       * # Arguments
-       *
-       * * `request` - Contains pagination parameters (offset and limit)
-       *
-       * # Returns
-       *
-       * * `Ok(ListPaymentsResponse)` - Contains the list of payments if successful
-       * * `Err(SdkError)` - If there was an error accessing the storage
-  
-       */
+     * Lists payments from the storage with pagination
+     *
+     * This method provides direct access to the payment history stored in the database.
+     * It returns payments in reverse chronological order (newest first).
+     *
+     * # Arguments
+     *
+     * * `request` - Contains pagination parameters (offset and limit)
+     *
+     * # Returns
+     *
+     * * `Ok(ListPaymentsResponse)` - Contains the list of payments if successful
+     * * `Err(SdkError)` - If there was an error accessing the storage
+     */
     listPayments(request: ListPaymentsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ListPaymentsResponse>;
@@ -11331,48 +11476,6 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
      * This method implements the LNURL-auth protocol as specified in LUD-04 and LUD-05.
      * It derives a domain-specific linking key, signs the challenge, and sends the
      * authentication request to the service.
-     *
-     * # Arguments
-     *
-     * * `request_data` - The parsed LNURL-auth request details obtained from [`parse`]
-     *
-     * # Returns
-     *
-     * * `Ok(LnurlCallbackStatus::Ok)` - Authentication was successful
-     * * `Ok(LnurlCallbackStatus::ErrorStatus{reason})` - Service returned an error
-     * * `Err(SdkError)` - An error occurred during the authentication process
-     *
-     * # Example
-     *
-     * ```rust,no_run
-     * # use breez_sdk_spark::{BreezSdk, InputType};
-     * # async fn example(sdk: BreezSdk) -> Result<(), Box<dyn std::error::Error>> {
-     * // 1. Parse the LNURL-auth string
-     * let input = sdk.parse("lnurl1...").await?;
-     * let auth_request = match input {
-     * InputType::LnurlAuth(data) => data,
-     * _ => return Err("Not an auth request".into()),
-     * };
-     *
-     * // 2. Show user the domain and get confirmation
-     * println!("Authenticate with {}?", auth_request.domain);
-     *
-     * // 3. Perform authentication
-     * let status = sdk.lnurl_auth(auth_request).await?;
-     * match status {
-     * breez_sdk_spark::LnurlCallbackStatus::Ok => println!("Success!"),
-     * breez_sdk_spark::LnurlCallbackStatus::ErrorStatus { error_details } => {
-     * println!("Error: {}", error_details.reason)
-     * }
-     * }
-     * # Ok(())
-     * # }
-     * ```
-     *
-     * # See Also
-     *
-     * * LUD-04: <https://github.com/lnurl/luds/blob/luds/04.md>
-     * * LUD-05: <https://github.com/lnurl/luds/blob/luds/05.md>
      */
     lnurlAuth(requestData: LnurlAuthRequestDetails, asyncOpts_?: {
         signal: AbortSignal;
@@ -11697,6 +11800,8 @@ export interface ExternalSigner {
     /**
      * Subtracts one secret from another.
      *
+     * This is a lower-level primitive used as part of key tweaking operations.
+     *
      * # Arguments
      * * `signing_key` - The first secret
      * * `new_signing_key` - The second secret to subtract
@@ -11996,6 +12101,8 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
     /**
      * Subtracts one secret from another.
      *
+     * This is a lower-level primitive used as part of key tweaking operations.
+     *
      * # Arguments
      * * `signing_key` - The first secret
      * * `new_signing_key` - The second secret to subtract
@@ -12289,14 +12396,6 @@ export interface SdkBuilderInterface {
         signal: AbortSignal;
     }): Promise<void>;
     /**
-     * Sets the real-time sync storage implementation to be used by the SDK.
-     * Arguments:
-     * - `storage`: The sync storage implementation to be used.
-     */
-    withRealTimeSyncStorage(storage: SyncStorage, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
      * Sets the REST chain service to be used by the SDK.
      * Arguments:
      * - `url`: The base URL of the REST API.
@@ -12381,14 +12480,6 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
         signal: AbortSignal;
     }): Promise<void>;
     /**
-     * Sets the real-time sync storage implementation to be used by the SDK.
-     * Arguments:
-     * - `storage`: The sync storage implementation to be used.
-     */
-    withRealTimeSyncStorage(storage: SyncStorage, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
      * Sets the REST chain service to be used by the SDK.
      * Arguments:
      * - `url`: The base URL of the REST API.
@@ -12465,7 +12556,7 @@ export interface Storage {
      *
      * Success or a `StorageError`
      */
-    setPaymentMetadata(paymentId: string, metadata: PaymentMetadata, asyncOpts_?: {
+    insertPaymentMetadata(paymentId: string, metadata: PaymentMetadata, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -12493,6 +12584,21 @@ export interface Storage {
     getPaymentByInvoice(invoice: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Payment | undefined>;
+    /**
+     * Gets payments that have any of the specified parent payment IDs.
+     * Used to load related payments for a set of parent payments.
+     *
+     * # Arguments
+     *
+     * * `parent_payment_ids` - The IDs of the parent payments
+     *
+     * # Returns
+     *
+     * A map of `parent_payment_id` -> Vec<Payment> or a `StorageError`
+     */
+    getPaymentsByParentIds(parentPaymentIds: Array<string>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Map<string, Array<Payment>>>;
     /**
      * Add a deposit to storage
      * # Arguments
@@ -12547,6 +12653,56 @@ export interface Storage {
         signal: AbortSignal;
     }): Promise<void>;
     setLnurlMetadata(metadata: Array<SetLnurlMetadataItem>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    addOutgoingChange(record: UnversionedRecordChange, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise</*u64*/ bigint>;
+    completeOutgoingSync(record: Record, localRevision: bigint, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    getPendingOutgoingChanges(limit: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<OutgoingChange>>;
+    /**
+     * Get the last committed sync revision.
+     *
+     * The `sync_revision` table tracks the highest revision that has been committed
+     * (i.e. acknowledged by the server or received from it). It does NOT include
+     * pending outgoing queue ids. This value is used by the sync protocol to
+     * request changes from the server.
+     */
+    getLastRevision(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise</*u64*/ bigint>;
+    /**
+     * Insert incoming records from remote sync
+     */
+    insertIncomingRecords(records: Array<Record>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Delete an incoming record after it has been processed
+     */
+    deleteIncomingRecord(record: Record, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Get incoming records that need to be processed, up to the specified limit
+     */
+    getIncomingRecords(limit: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<IncomingChange>>;
+    /**
+     * Get the latest outgoing record if any exists
+     */
+    getLatestOutgoingChange(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<OutgoingChange | undefined>;
+    /**
+     * Update the sync state record from an incoming record
+     */
+    updateRecordFromIncoming(record: Record, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
 }
@@ -12607,7 +12763,7 @@ export declare class StorageImpl extends UniffiAbstractObject implements Storage
      *
      * Success or a `StorageError`
      */
-    setPaymentMetadata(paymentId: string, metadata: PaymentMetadata, asyncOpts_?: {
+    insertPaymentMetadata(paymentId: string, metadata: PaymentMetadata, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -12635,6 +12791,21 @@ export declare class StorageImpl extends UniffiAbstractObject implements Storage
     getPaymentByInvoice(invoice: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Payment | undefined>;
+    /**
+     * Gets payments that have any of the specified parent payment IDs.
+     * Used to load related payments for a set of parent payments.
+     *
+     * # Arguments
+     *
+     * * `parent_payment_ids` - The IDs of the parent payments
+     *
+     * # Returns
+     *
+     * A map of `parent_payment_id` -> Vec<Payment> or a `StorageError`
+     */
+    getPaymentsByParentIds(parentPaymentIds: Array<string>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Map<string, Array<Payment>>>;
     /**
      * Add a deposit to storage
      * # Arguments
@@ -12691,126 +12862,61 @@ export declare class StorageImpl extends UniffiAbstractObject implements Storage
     setLnurlMetadata(metadata: Array<SetLnurlMetadataItem>, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
+    addOutgoingChange(record: UnversionedRecordChange, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise</*u64*/ bigint>;
+    completeOutgoingSync(record: Record, localRevision: bigint, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    getPendingOutgoingChanges(limit: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<OutgoingChange>>;
+    /**
+     * Get the last committed sync revision.
+     *
+     * The `sync_revision` table tracks the highest revision that has been committed
+     * (i.e. acknowledged by the server or received from it). It does NOT include
+     * pending outgoing queue ids. This value is used by the sync protocol to
+     * request changes from the server.
+     */
+    getLastRevision(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise</*u64*/ bigint>;
+    /**
+     * Insert incoming records from remote sync
+     */
+    insertIncomingRecords(records: Array<Record>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Delete an incoming record after it has been processed
+     */
+    deleteIncomingRecord(record: Record, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Get incoming records that need to be processed, up to the specified limit
+     */
+    getIncomingRecords(limit: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<IncomingChange>>;
+    /**
+     * Get the latest outgoing record if any exists
+     */
+    getLatestOutgoingChange(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<OutgoingChange | undefined>;
+    /**
+     * Update the sync state record from an incoming record
+     */
+    updateRecordFromIncoming(record: Record, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     /**
      * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
      */
     uniffiDestroy(): void;
     static instanceOf(obj: any): obj is StorageImpl;
-}
-export interface SyncStorage {
-    addOutgoingChange(record: UnversionedRecordChange, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise</*u64*/ bigint>;
-    completeOutgoingSync(record: Record, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    getPendingOutgoingChanges(limit: number, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<Array<OutgoingChange>>;
-    /**
-     * Get the revision number of the last synchronized record
-     */
-    getLastRevision(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise</*u64*/ bigint>;
-    /**
-     * Insert incoming records from remote sync
-     */
-    insertIncomingRecords(records: Array<Record>, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
-     * Delete an incoming record after it has been processed
-     */
-    deleteIncomingRecord(record: Record, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
-     * Update revision numbers of pending outgoing records to be higher than the given revision
-     */
-    rebasePendingOutgoingRecords(revision: bigint, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
-     * Get incoming records that need to be processed, up to the specified limit
-     */
-    getIncomingRecords(limit: number, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<Array<IncomingChange>>;
-    /**
-     * Get the latest outgoing record if any exists
-     */
-    getLatestOutgoingChange(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<OutgoingChange | undefined>;
-    /**
-     * Update the sync state record from an incoming record
-     */
-    updateRecordFromIncoming(record: Record, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-}
-export declare class SyncStorageImpl extends UniffiAbstractObject implements SyncStorage {
-    readonly [uniffiTypeNameSymbol] = "SyncStorageImpl";
-    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
-    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
-    private constructor();
-    addOutgoingChange(record: UnversionedRecordChange, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise</*u64*/ bigint>;
-    completeOutgoingSync(record: Record, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    getPendingOutgoingChanges(limit: number, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<Array<OutgoingChange>>;
-    /**
-     * Get the revision number of the last synchronized record
-     */
-    getLastRevision(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise</*u64*/ bigint>;
-    /**
-     * Insert incoming records from remote sync
-     */
-    insertIncomingRecords(records: Array<Record>, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
-     * Delete an incoming record after it has been processed
-     */
-    deleteIncomingRecord(record: Record, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
-     * Update revision numbers of pending outgoing records to be higher than the given revision
-     */
-    rebasePendingOutgoingRecords(revision: bigint, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
-     * Get incoming records that need to be processed, up to the specified limit
-     */
-    getIncomingRecords(limit: number, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<Array<IncomingChange>>;
-    /**
-     * Get the latest outgoing record if any exists
-     */
-    getLatestOutgoingChange(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<OutgoingChange | undefined>;
-    /**
-     * Update the sync state record from an incoming record
-     */
-    updateRecordFromIncoming(record: Record, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
-     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
-     */
-    uniffiDestroy(): void;
-    static instanceOf(obj: any): obj is SyncStorageImpl;
 }
 export interface TokenIssuerInterface {
     /**
@@ -13189,6 +13295,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): BurnIssuerTokenRequest;
             lower(value: BurnIssuerTokenRequest): UniffiByteArray;
         };
+        FfiConverterTypeBuyBitcoinRequest: {
+            read(from: RustBuffer): BuyBitcoinRequest;
+            write(value: BuyBitcoinRequest, into: RustBuffer): void;
+            allocationSize(value: BuyBitcoinRequest): number;
+            lift(value: UniffiByteArray): BuyBitcoinRequest;
+            lower(value: BuyBitcoinRequest): UniffiByteArray;
+        };
+        FfiConverterTypeBuyBitcoinResponse: {
+            read(from: RustBuffer): BuyBitcoinResponse;
+            write(value: BuyBitcoinResponse, into: RustBuffer): void;
+            allocationSize(value: BuyBitcoinResponse): number;
+            lift(value: UniffiByteArray): BuyBitcoinResponse;
+            lower(value: BuyBitcoinResponse): UniffiByteArray;
+        };
         FfiConverterTypeChainApiType: {
             read(from: RustBuffer): ChainApiType;
             write(value: ChainApiType, into: RustBuffer): void;
@@ -13266,6 +13386,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ConnectWithSignerRequest;
             lower(value: ConnectWithSignerRequest): UniffiByteArray;
         };
+        FfiConverterTypeConversionDetails: {
+            read(from: RustBuffer): ConversionDetails;
+            write(value: ConversionDetails, into: RustBuffer): void;
+            allocationSize(value: ConversionDetails): number;
+            lift(value: UniffiByteArray): ConversionDetails;
+            lower(value: ConversionDetails): UniffiByteArray;
+        };
         FfiConverterTypeConversionEstimate: {
             read(from: RustBuffer): ConversionEstimate;
             write(value: ConversionEstimate, into: RustBuffer): void;
@@ -13300,6 +13427,13 @@ declare const _default: Readonly<{
             allocationSize(value: ConversionStatus): number;
             lift(value: UniffiByteArray): ConversionStatus;
             lower(value: ConversionStatus): UniffiByteArray;
+        };
+        FfiConverterTypeConversionStep: {
+            read(from: RustBuffer): ConversionStep;
+            write(value: ConversionStep, into: RustBuffer): void;
+            allocationSize(value: ConversionStep): number;
+            lift(value: UniffiByteArray): ConversionStep;
+            lower(value: ConversionStep): UniffiByteArray;
         };
         FfiConverterTypeConversionType: {
             read(from: RustBuffer): ConversionType;
@@ -13462,6 +13596,13 @@ declare const _default: Readonly<{
             allocationSize(value: Fee): number;
             lift(value: UniffiByteArray): Fee;
             lower(value: Fee): UniffiByteArray;
+        };
+        FfiConverterTypeFeePolicy: {
+            read(from: RustBuffer): FeePolicy;
+            write(value: FeePolicy, into: RustBuffer): void;
+            allocationSize(value: FeePolicy): number;
+            lift(value: UniffiByteArray): FeePolicy;
+            lower(value: FeePolicy): UniffiByteArray;
         };
         FfiConverterTypeFetchConversionLimitsRequest: {
             read(from: RustBuffer): FetchConversionLimitsRequest;
@@ -13673,6 +13814,13 @@ declare const _default: Readonly<{
             allocationSize(value: LnurlErrorDetails): number;
             lift(value: UniffiByteArray): LnurlErrorDetails;
             lower(value: LnurlErrorDetails): UniffiByteArray;
+        };
+        FfiConverterTypeLnurlInfo: {
+            read(from: RustBuffer): LnurlInfo;
+            write(value: LnurlInfo, into: RustBuffer): void;
+            allocationSize(value: LnurlInfo): number;
+            lift(value: UniffiByteArray): LnurlInfo;
+            lower(value: LnurlInfo): UniffiByteArray;
         };
         FfiConverterTypeLnurlPayInfo: {
             read(from: RustBuffer): LnurlPayInfo;
@@ -14097,6 +14245,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SendPaymentResponse;
             lower(value: SendPaymentResponse): UniffiByteArray;
         };
+        FfiConverterTypeServiceStatus: {
+            read(from: RustBuffer): ServiceStatus;
+            write(value: ServiceStatus, into: RustBuffer): void;
+            allocationSize(value: ServiceStatus): number;
+            lift(value: UniffiByteArray): ServiceStatus;
+            lower(value: ServiceStatus): UniffiByteArray;
+        };
         FfiConverterTypeSetLnurlMetadataItem: {
             read(from: RustBuffer): SetLnurlMetadataItem;
             write(value: SetLnurlMetadataItem, into: RustBuffer): void;
@@ -14167,6 +14322,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SparkInvoicePaymentDetails;
             lower(value: SparkInvoicePaymentDetails): UniffiByteArray;
         };
+        FfiConverterTypeSparkStatus: {
+            read(from: RustBuffer): SparkStatus;
+            write(value: SparkStatus, into: RustBuffer): void;
+            allocationSize(value: SparkStatus): number;
+            lift(value: UniffiByteArray): SparkStatus;
+            lower(value: SparkStatus): UniffiByteArray;
+        };
         FfiConverterTypeStorage: FfiConverterObjectWithCallbacks<Storage>;
         FfiConverterTypeSuccessAction: {
             read(from: RustBuffer): SuccessAction;
@@ -14189,7 +14351,6 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): Symbol;
             lower(value: Symbol): UniffiByteArray;
         };
-        FfiConverterTypeSyncStorage: FfiConverterObjectWithCallbacks<SyncStorage>;
         FfiConverterTypeSyncWalletRequest: {
             read(from: RustBuffer): SyncWalletRequest;
             write(value: SyncWalletRequest, into: RustBuffer): void;
@@ -14218,6 +14379,13 @@ declare const _default: Readonly<{
             allocationSize(value: TokenMetadata): number;
             lift(value: UniffiByteArray): TokenMetadata;
             lower(value: TokenMetadata): UniffiByteArray;
+        };
+        FfiConverterTypeTokenTransactionType: {
+            read(from: RustBuffer): TokenTransactionType;
+            write(value: TokenTransactionType, into: RustBuffer): void;
+            allocationSize(value: TokenTransactionType): number;
+            lift(value: UniffiByteArray): TokenTransactionType;
+            lower(value: TokenTransactionType): UniffiByteArray;
         };
         FfiConverterTypeTxStatus: {
             read(from: RustBuffer): TxStatus;
