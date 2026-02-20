@@ -2063,6 +2063,13 @@ export type Config = {
    * More leaves allow payments to be made without needing a swap, reducing payment latency.
    */
   optimizationConfig: OptimizationConfig;
+  /**
+   * Configuration for automatic conversion of Bitcoin to stable tokens.
+   *
+   * When set, received sats will be automatically converted to the specified token
+   * once the balance exceeds the threshold.
+   */
+  stableBalanceConfig: StableBalanceConfig | undefined;
 };
 
 /**
@@ -2110,6 +2117,8 @@ const FfiConverterTypeConfig = (() => {
         realTimeSyncServerUrl: FfiConverterOptionalString.read(from),
         privateEnabledDefault: FfiConverterBool.read(from),
         optimizationConfig: FfiConverterTypeOptimizationConfig.read(from),
+        stableBalanceConfig:
+          FfiConverterOptionalTypeStableBalanceConfig.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -2127,6 +2136,10 @@ const FfiConverterTypeConfig = (() => {
       FfiConverterOptionalString.write(value.realTimeSyncServerUrl, into);
       FfiConverterBool.write(value.privateEnabledDefault, into);
       FfiConverterTypeOptimizationConfig.write(value.optimizationConfig, into);
+      FfiConverterOptionalTypeStableBalanceConfig.write(
+        value.stableBalanceConfig,
+        into
+      );
     }
     allocationSize(value: TypeName): number {
       return (
@@ -2146,6 +2159,9 @@ const FfiConverterTypeConfig = (() => {
         FfiConverterBool.allocationSize(value.privateEnabledDefault) +
         FfiConverterTypeOptimizationConfig.allocationSize(
           value.optimizationConfig
+        ) +
+        FfiConverterOptionalTypeStableBalanceConfig.allocationSize(
+          value.stableBalanceConfig
         )
       );
     }
@@ -9596,6 +9612,109 @@ const FfiConverterTypeSparkStatus = (() => {
 })();
 
 /**
+ * Configuration for automatic conversion of Bitcoin to stable tokens.
+ *
+ * When configured, the SDK automatically monitors the Bitcoin balance after each
+ * wallet sync. When the balance exceeds the configured threshold plus the reserved
+ * amount, the SDK automatically converts the excess balance (above the reserve)
+ * to the specified stable token.
+ *
+ * When the balance is held in a stable token, Bitcoin payments can still be sent.
+ * The SDK automatically detects when there's not enough Bitcoin balance to cover a
+ * payment and auto-populates the token-to-Bitcoin conversion options to facilitate
+ * the payment.
+ */
+export type StableBalanceConfig = {
+  /**
+   * The token identifier to convert Bitcoin to (required).
+   */
+  tokenIdentifier: string;
+  /**
+   * The minimum sats balance that triggers auto-conversion.
+   *
+   * If not provided, uses the minimum from conversion limits.
+   * If provided but less than the conversion limit minimum, the limit minimum is used.
+   */
+  thresholdSats: /*u64*/ bigint | undefined;
+  /**
+   * Maximum slippage in basis points (1/100 of a percent).
+   *
+   * Defaults to 50 bps (0.5%) if not set.
+   */
+  maxSlippageBps: /*u32*/ number | undefined;
+  /**
+   * Amount of sats to keep as Bitcoin and not convert to stable tokens.
+   *
+   * This reserve ensures you can send Bitcoin payments without hitting
+   * the minimum conversion limit. Defaults to the conversion minimum if not set.
+   */
+  reservedSats: /*u64*/ bigint | undefined;
+};
+
+/**
+ * Generated factory for {@link StableBalanceConfig} record objects.
+ */
+export const StableBalanceConfig = (() => {
+  const defaults = () => ({
+    thresholdSats: undefined,
+    maxSlippageBps: undefined,
+    reservedSats: undefined,
+  });
+  const create = (() => {
+    return uniffiCreateRecord<StableBalanceConfig, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link StableBalanceConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link StableBalanceConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<StableBalanceConfig>,
+  });
+})();
+
+const FfiConverterTypeStableBalanceConfig = (() => {
+  type TypeName = StableBalanceConfig;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        tokenIdentifier: FfiConverterString.read(from),
+        thresholdSats: FfiConverterOptionalUInt64.read(from),
+        maxSlippageBps: FfiConverterOptionalUInt32.read(from),
+        reservedSats: FfiConverterOptionalUInt64.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.tokenIdentifier, into);
+      FfiConverterOptionalUInt64.write(value.thresholdSats, into);
+      FfiConverterOptionalUInt32.write(value.maxSlippageBps, into);
+      FfiConverterOptionalUInt64.write(value.reservedSats, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.tokenIdentifier) +
+        FfiConverterOptionalUInt64.allocationSize(value.thresholdSats) +
+        FfiConverterOptionalUInt32.allocationSize(value.maxSlippageBps) +
+        FfiConverterOptionalUInt64.allocationSize(value.reservedSats)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
  * Settings for the symbol representation of a currency
  */
 export type Symbol = {
@@ -11195,6 +11314,7 @@ const FfiConverterTypeChainServiceError = (() => {
 export enum ConversionPurpose_Tags {
   OngoingPayment = 'OngoingPayment',
   SelfTransfer = 'SelfTransfer',
+  AutoConversion = 'AutoConversion',
 }
 /**
  * The purpose of the conversion, which is used to provide context for the conversion
@@ -11269,6 +11389,36 @@ export const ConversionPurpose = (() => {
     }
   }
 
+  type AutoConversion__interface = {
+    tag: ConversionPurpose_Tags.AutoConversion;
+  };
+
+  /**
+   * Conversion triggered automatically
+   */
+  class AutoConversion_
+    extends UniffiEnum
+    implements AutoConversion__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ConversionPurpose';
+    readonly tag = ConversionPurpose_Tags.AutoConversion;
+    constructor() {
+      super('ConversionPurpose', 'AutoConversion');
+    }
+
+    static new(): AutoConversion_ {
+      return new AutoConversion_();
+    }
+
+    static instanceOf(obj: any): obj is AutoConversion_ {
+      return obj.tag === ConversionPurpose_Tags.AutoConversion;
+    }
+  }
+
   function instanceOf(obj: any): obj is ConversionPurpose {
     return obj[uniffiTypeNameSymbol] === 'ConversionPurpose';
   }
@@ -11277,6 +11427,7 @@ export const ConversionPurpose = (() => {
     instanceOf,
     OngoingPayment: OngoingPayment_,
     SelfTransfer: SelfTransfer_,
+    AutoConversion: AutoConversion_,
   });
 })();
 
@@ -11302,6 +11453,8 @@ const FfiConverterTypeConversionPurpose = (() => {
           });
         case 2:
           return new ConversionPurpose.SelfTransfer();
+        case 3:
+          return new ConversionPurpose.AutoConversion();
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
@@ -11316,6 +11469,10 @@ const FfiConverterTypeConversionPurpose = (() => {
         }
         case ConversionPurpose_Tags.SelfTransfer: {
           ordinalConverter.write(2, into);
+          return;
+        }
+        case ConversionPurpose_Tags.AutoConversion: {
+          ordinalConverter.write(3, into);
           return;
         }
         default:
@@ -11333,6 +11490,9 @@ const FfiConverterTypeConversionPurpose = (() => {
         }
         case ConversionPurpose_Tags.SelfTransfer: {
           return ordinalConverter.allocationSize(2);
+        }
+        case ConversionPurpose_Tags.AutoConversion: {
+          return ordinalConverter.allocationSize(3);
         }
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -13826,10 +13986,9 @@ export const PaymentDetails = (() => {
     tag: PaymentDetails_Tags.Lightning;
     inner: Readonly<{
       description: string | undefined;
-      preimage: string | undefined;
       invoice: string;
-      paymentHash: string;
       destinationPubkey: string;
+      htlcDetails: SparkHtlcDetails;
       lnurlPayInfo: LnurlPayInfo | undefined;
       lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
       lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
@@ -13845,10 +14004,9 @@ export const PaymentDetails = (() => {
     readonly tag = PaymentDetails_Tags.Lightning;
     readonly inner: Readonly<{
       description: string | undefined;
-      preimage: string | undefined;
       invoice: string;
-      paymentHash: string;
       destinationPubkey: string;
+      htlcDetails: SparkHtlcDetails;
       lnurlPayInfo: LnurlPayInfo | undefined;
       lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
       lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
@@ -13858,19 +14016,16 @@ export const PaymentDetails = (() => {
        * Represents the invoice description
        */ description: string | undefined;
       /**
-       * The preimage of the paid invoice (proof of payment).
-       */ preimage: string | undefined;
-      /**
        * Represents the Bolt11/Bolt12 invoice associated with a payment
        * In the case of a Send payment, this is the invoice paid by the user
        * In the case of a Receive payment, this is the invoice paid to the user
        */ invoice: string;
       /**
-       * The payment hash of the invoice
-       */ paymentHash: string;
-      /**
        * The invoice destination/payee pubkey
        */ destinationPubkey: string;
+      /**
+       * The HTLC transfer details
+       */ htlcDetails: SparkHtlcDetails;
       /**
        * Lnurl payment information if this was an lnurl payment.
        */ lnurlPayInfo: LnurlPayInfo | undefined;
@@ -13890,19 +14045,16 @@ export const PaymentDetails = (() => {
        * Represents the invoice description
        */ description: string | undefined;
       /**
-       * The preimage of the paid invoice (proof of payment).
-       */ preimage: string | undefined;
-      /**
        * Represents the Bolt11/Bolt12 invoice associated with a payment
        * In the case of a Send payment, this is the invoice paid by the user
        * In the case of a Receive payment, this is the invoice paid to the user
        */ invoice: string;
       /**
-       * The payment hash of the invoice
-       */ paymentHash: string;
-      /**
        * The invoice destination/payee pubkey
        */ destinationPubkey: string;
+      /**
+       * The HTLC transfer details
+       */ htlcDetails: SparkHtlcDetails;
       /**
        * Lnurl payment information if this was an lnurl payment.
        */ lnurlPayInfo: LnurlPayInfo | undefined;
@@ -14019,10 +14171,9 @@ const FfiConverterTypePaymentDetails = (() => {
         case 3:
           return new PaymentDetails.Lightning({
             description: FfiConverterOptionalString.read(from),
-            preimage: FfiConverterOptionalString.read(from),
             invoice: FfiConverterString.read(from),
-            paymentHash: FfiConverterString.read(from),
             destinationPubkey: FfiConverterString.read(from),
+            htlcDetails: FfiConverterTypeSparkHtlcDetails.read(from),
             lnurlPayInfo: FfiConverterOptionalTypeLnurlPayInfo.read(from),
             lnurlWithdrawInfo:
               FfiConverterOptionalTypeLnurlWithdrawInfo.read(from),
@@ -14080,10 +14231,9 @@ const FfiConverterTypePaymentDetails = (() => {
           ordinalConverter.write(3, into);
           const inner = value.inner;
           FfiConverterOptionalString.write(inner.description, into);
-          FfiConverterOptionalString.write(inner.preimage, into);
           FfiConverterString.write(inner.invoice, into);
-          FfiConverterString.write(inner.paymentHash, into);
           FfiConverterString.write(inner.destinationPubkey, into);
+          FfiConverterTypeSparkHtlcDetails.write(inner.htlcDetails, into);
           FfiConverterOptionalTypeLnurlPayInfo.write(inner.lnurlPayInfo, into);
           FfiConverterOptionalTypeLnurlWithdrawInfo.write(
             inner.lnurlWithdrawInfo,
@@ -14150,10 +14300,11 @@ const FfiConverterTypePaymentDetails = (() => {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(3);
           size += FfiConverterOptionalString.allocationSize(inner.description);
-          size += FfiConverterOptionalString.allocationSize(inner.preimage);
           size += FfiConverterString.allocationSize(inner.invoice);
-          size += FfiConverterString.allocationSize(inner.paymentHash);
           size += FfiConverterString.allocationSize(inner.destinationPubkey);
+          size += FfiConverterTypeSparkHtlcDetails.allocationSize(
+            inner.htlcDetails
+          );
           size += FfiConverterOptionalTypeLnurlPayInfo.allocationSize(
             inner.lnurlPayInfo
           );
@@ -14189,6 +14340,7 @@ const FfiConverterTypePaymentDetails = (() => {
 export enum PaymentDetailsFilter_Tags {
   Spark = 'Spark',
   Token = 'Token',
+  Lightning = 'Lightning',
 }
 export const PaymentDetailsFilter = (() => {
   type Spark__interface = {
@@ -14293,6 +14445,43 @@ export const PaymentDetailsFilter = (() => {
     }
   }
 
+  type Lightning__interface = {
+    tag: PaymentDetailsFilter_Tags.Lightning;
+    inner: Readonly<{ htlcStatus: Array<SparkHtlcStatus> | undefined }>;
+  };
+
+  class Lightning_ extends UniffiEnum implements Lightning__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PaymentDetailsFilter';
+    readonly tag = PaymentDetailsFilter_Tags.Lightning;
+    readonly inner: Readonly<{
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+    }>;
+    constructor(inner: {
+      /**
+       * Filter specific Spark HTLC statuses
+       */ htlcStatus: Array<SparkHtlcStatus> | undefined;
+    }) {
+      super('PaymentDetailsFilter', 'Lightning');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * Filter specific Spark HTLC statuses
+       */ htlcStatus: Array<SparkHtlcStatus> | undefined;
+    }): Lightning_ {
+      return new Lightning_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Lightning_ {
+      return obj.tag === PaymentDetailsFilter_Tags.Lightning;
+    }
+  }
+
   function instanceOf(obj: any): obj is PaymentDetailsFilter {
     return obj[uniffiTypeNameSymbol] === 'PaymentDetailsFilter';
   }
@@ -14301,6 +14490,7 @@ export const PaymentDetailsFilter = (() => {
     instanceOf,
     Spark: Spark_,
     Token: Token_,
+    Lightning: Lightning_,
   });
 })();
 
@@ -14329,6 +14519,10 @@ const FfiConverterTypePaymentDetailsFilter = (() => {
             txHash: FfiConverterOptionalString.read(from),
             txType: FfiConverterOptionalTypeTokenTransactionType.read(from),
           });
+        case 3:
+          return new PaymentDetailsFilter.Lightning({
+            htlcStatus: FfiConverterOptionalArrayTypeSparkHtlcStatus.read(from),
+          });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
@@ -14352,6 +14546,15 @@ const FfiConverterTypePaymentDetailsFilter = (() => {
           FfiConverterOptionalString.write(inner.txHash, into);
           FfiConverterOptionalTypeTokenTransactionType.write(
             inner.txType,
+            into
+          );
+          return;
+        }
+        case PaymentDetailsFilter_Tags.Lightning: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterOptionalArrayTypeSparkHtlcStatus.write(
+            inner.htlcStatus,
             into
           );
           return;
@@ -14383,6 +14586,14 @@ const FfiConverterTypePaymentDetailsFilter = (() => {
           size += FfiConverterOptionalString.allocationSize(inner.txHash);
           size += FfiConverterOptionalTypeTokenTransactionType.allocationSize(
             inner.txType
+          );
+          return size;
+        }
+        case PaymentDetailsFilter_Tags.Lightning: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterOptionalArrayTypeSparkHtlcStatus.allocationSize(
+            inner.htlcStatus
           );
           return size;
         }
@@ -15108,6 +15319,7 @@ export const ReceivePaymentMethod = (() => {
       description: string;
       amountSats: /*u64*/ bigint | undefined;
       expirySecs: /*u32*/ number | undefined;
+      paymentHash: string | undefined;
     }>;
   };
 
@@ -15122,6 +15334,7 @@ export const ReceivePaymentMethod = (() => {
       description: string;
       amountSats: /*u64*/ bigint | undefined;
       expirySecs: /*u32*/ number | undefined;
+      paymentHash: string | undefined;
     }>;
     constructor(inner: {
       description: string;
@@ -15129,6 +15342,11 @@ export const ReceivePaymentMethod = (() => {
       /**
        * The expiry of the invoice as a duration in seconds
        */ expirySecs: /*u32*/ number | undefined;
+      /**
+       * If set, creates a HODL invoice with this payment hash (hex-encoded).
+       * The payer's HTLC will be held until the preimage is provided via
+       * `claim_htlc_payment` or the HTLC expires.
+       */ paymentHash: string | undefined;
     }) {
       super('ReceivePaymentMethod', 'Bolt11Invoice');
       this.inner = Object.freeze(inner);
@@ -15140,6 +15358,11 @@ export const ReceivePaymentMethod = (() => {
       /**
        * The expiry of the invoice as a duration in seconds
        */ expirySecs: /*u32*/ number | undefined;
+      /**
+       * If set, creates a HODL invoice with this payment hash (hex-encoded).
+       * The payer's HTLC will be held until the preimage is provided via
+       * `claim_htlc_payment` or the HTLC expires.
+       */ paymentHash: string | undefined;
     }): Bolt11Invoice_ {
       return new Bolt11Invoice_(inner);
     }
@@ -15193,6 +15416,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
             description: FfiConverterString.read(from),
             amountSats: FfiConverterOptionalUInt64.read(from),
             expirySecs: FfiConverterOptionalUInt32.read(from),
+            paymentHash: FfiConverterOptionalString.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -15224,6 +15448,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
           FfiConverterString.write(inner.description, into);
           FfiConverterOptionalUInt64.write(inner.amountSats, into);
           FfiConverterOptionalUInt32.write(inner.expirySecs, into);
+          FfiConverterOptionalString.write(inner.paymentHash, into);
           return;
         }
         default:
@@ -15259,6 +15484,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
           size += FfiConverterString.allocationSize(inner.description);
           size += FfiConverterOptionalUInt64.allocationSize(inner.amountSats);
           size += FfiConverterOptionalUInt32.allocationSize(inner.expirySecs);
+          size += FfiConverterOptionalString.allocationSize(inner.paymentHash);
           return size;
         }
         default:
@@ -24506,6 +24732,13 @@ const uniffiCallbackInterfacePaymentObserver: {
   },
 };
 
+/**
+ * REST client trait for making HTTP requests.
+ *
+ * This trait provides a way for users to supply their own HTTP client implementation
+ * for use with the SDK. The SDK will use this client for all HTTP operations including
+ * LNURL flows and chain service requests.
+ */
 export interface RestClient {
   /**
    * Makes a GET request and logs on DEBUG.
@@ -24546,6 +24779,13 @@ export interface RestClient {
   ): /*throws*/ Promise<RestResponse>;
 }
 
+/**
+ * REST client trait for making HTTP requests.
+ *
+ * This trait provides a way for users to supply their own HTTP client implementation
+ * for use with the SDK. The SDK will use this client for all HTTP operations including
+ * LNURL flows and chain service requests.
+ */
 export class RestClientImpl extends UniffiAbstractObject implements RestClient {
   readonly [uniffiTypeNameSymbol] = 'RestClientImpl';
   readonly [destructorGuardSymbol]: UniffiRustArcPtr;
@@ -28545,6 +28785,11 @@ const FfiConverterOptionalTypeSparkHtlcOptions = new FfiConverterOptional(
 const FfiConverterOptionalTypeSparkInvoicePaymentDetails =
   new FfiConverterOptional(FfiConverterTypeSparkInvoicePaymentDetails);
 
+// FfiConverter for StableBalanceConfig | undefined
+const FfiConverterOptionalTypeStableBalanceConfig = new FfiConverterOptional(
+  FfiConverterTypeStableBalanceConfig
+);
+
 // FfiConverter for Symbol | undefined
 const FfiConverterOptionalTypeSymbol = new FfiConverterOptional(
   FfiConverterTypeSymbol
@@ -29938,6 +30183,7 @@ export default Object.freeze({
     FfiConverterTypeSparkInvoiceDetails,
     FfiConverterTypeSparkInvoicePaymentDetails,
     FfiConverterTypeSparkStatus,
+    FfiConverterTypeStableBalanceConfig,
     FfiConverterTypeStorage,
     FfiConverterTypeSuccessAction,
     FfiConverterTypeSuccessActionProcessed,

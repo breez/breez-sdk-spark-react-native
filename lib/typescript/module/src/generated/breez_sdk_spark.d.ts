@@ -778,6 +778,13 @@ export type Config = {
      * More leaves allow payments to be made without needing a swap, reducing payment latency.
      */
     optimizationConfig: OptimizationConfig;
+    /**
+     * Configuration for automatic conversion of Bitcoin to stable tokens.
+     *
+     * When set, received sats will be automatically converted to the specified token
+     * once the balance exceeds the threshold.
+     */
+    stableBalanceConfig: StableBalanceConfig | undefined;
 };
 /**
  * Generated factory for {@link Config} record objects.
@@ -4000,6 +4007,64 @@ export declare const SparkStatus: Readonly<{
     defaults: () => Partial<SparkStatus>;
 }>;
 /**
+ * Configuration for automatic conversion of Bitcoin to stable tokens.
+ *
+ * When configured, the SDK automatically monitors the Bitcoin balance after each
+ * wallet sync. When the balance exceeds the configured threshold plus the reserved
+ * amount, the SDK automatically converts the excess balance (above the reserve)
+ * to the specified stable token.
+ *
+ * When the balance is held in a stable token, Bitcoin payments can still be sent.
+ * The SDK automatically detects when there's not enough Bitcoin balance to cover a
+ * payment and auto-populates the token-to-Bitcoin conversion options to facilitate
+ * the payment.
+ */
+export type StableBalanceConfig = {
+    /**
+     * The token identifier to convert Bitcoin to (required).
+     */
+    tokenIdentifier: string;
+    /**
+     * The minimum sats balance that triggers auto-conversion.
+     *
+     * If not provided, uses the minimum from conversion limits.
+     * If provided but less than the conversion limit minimum, the limit minimum is used.
+     */
+    thresholdSats: /*u64*/ bigint | undefined;
+    /**
+     * Maximum slippage in basis points (1/100 of a percent).
+     *
+     * Defaults to 50 bps (0.5%) if not set.
+     */
+    maxSlippageBps: /*u32*/ number | undefined;
+    /**
+     * Amount of sats to keep as Bitcoin and not convert to stable tokens.
+     *
+     * This reserve ensures you can send Bitcoin payments without hitting
+     * the minimum conversion limit. Defaults to the conversion minimum if not set.
+     */
+    reservedSats: /*u64*/ bigint | undefined;
+};
+/**
+ * Generated factory for {@link StableBalanceConfig} record objects.
+ */
+export declare const StableBalanceConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link StableBalanceConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<StableBalanceConfig> & Required<Omit<StableBalanceConfig, "maxSlippageBps" | "thresholdSats" | "reservedSats">>) => StableBalanceConfig;
+    /**
+     * Create a frozen instance of {@link StableBalanceConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<StableBalanceConfig> & Required<Omit<StableBalanceConfig, "maxSlippageBps" | "thresholdSats" | "reservedSats">>) => StableBalanceConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<StableBalanceConfig>;
+}>;
+/**
  * Settings for the symbol representation of a currency
  */
 export type Symbol = {
@@ -4844,7 +4909,8 @@ export declare const ChainServiceError: Readonly<{
 export type ChainServiceError = InstanceType<(typeof ChainServiceError)[keyof Omit<typeof ChainServiceError, 'instanceOf'>]>;
 export declare enum ConversionPurpose_Tags {
     OngoingPayment = "OngoingPayment",
-    SelfTransfer = "SelfTransfer"
+    SelfTransfer = "SelfTransfer",
+    AutoConversion = "AutoConversion"
 }
 /**
  * The purpose of the conversion, which is used to provide context for the conversion
@@ -4914,6 +4980,32 @@ export declare const ConversionPurpose: Readonly<{
         };
         instanceOf(obj: any): obj is {
             readonly tag: ConversionPurpose_Tags.SelfTransfer;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionPurpose";
+        };
+    };
+    AutoConversion: {
+        new (): {
+            readonly tag: ConversionPurpose_Tags.AutoConversion;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionPurpose";
+        };
+        "new"(): {
+            readonly tag: ConversionPurpose_Tags.AutoConversion;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionPurpose";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ConversionPurpose_Tags.AutoConversion;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -6456,19 +6548,16 @@ export declare const PaymentDetails: Readonly<{
              * Represents the invoice description
              */ description: string | undefined;
             /**
-             * The preimage of the paid invoice (proof of payment).
-             */ preimage: string | undefined;
-            /**
              * Represents the Bolt11/Bolt12 invoice associated with a payment
              * In the case of a Send payment, this is the invoice paid by the user
              * In the case of a Receive payment, this is the invoice paid to the user
              */ invoice: string;
             /**
-             * The payment hash of the invoice
-             */ paymentHash: string;
-            /**
              * The invoice destination/payee pubkey
              */ destinationPubkey: string;
+            /**
+             * The HTLC transfer details
+             */ htlcDetails: SparkHtlcDetails;
             /**
              * Lnurl payment information if this was an lnurl payment.
              */ lnurlPayInfo: LnurlPayInfo | undefined;
@@ -6482,10 +6571,9 @@ export declare const PaymentDetails: Readonly<{
             readonly tag: PaymentDetails_Tags.Lightning;
             readonly inner: Readonly<{
                 description: string | undefined;
-                preimage: string | undefined;
                 invoice: string;
-                paymentHash: string;
                 destinationPubkey: string;
+                htlcDetails: SparkHtlcDetails;
                 lnurlPayInfo: LnurlPayInfo | undefined;
                 lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
                 lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
@@ -6501,19 +6589,16 @@ export declare const PaymentDetails: Readonly<{
              * Represents the invoice description
              */ description: string | undefined;
             /**
-             * The preimage of the paid invoice (proof of payment).
-             */ preimage: string | undefined;
-            /**
              * Represents the Bolt11/Bolt12 invoice associated with a payment
              * In the case of a Send payment, this is the invoice paid by the user
              * In the case of a Receive payment, this is the invoice paid to the user
              */ invoice: string;
             /**
-             * The payment hash of the invoice
-             */ paymentHash: string;
-            /**
              * The invoice destination/payee pubkey
              */ destinationPubkey: string;
+            /**
+             * The HTLC transfer details
+             */ htlcDetails: SparkHtlcDetails;
             /**
              * Lnurl payment information if this was an lnurl payment.
              */ lnurlPayInfo: LnurlPayInfo | undefined;
@@ -6527,10 +6612,9 @@ export declare const PaymentDetails: Readonly<{
             readonly tag: PaymentDetails_Tags.Lightning;
             readonly inner: Readonly<{
                 description: string | undefined;
-                preimage: string | undefined;
                 invoice: string;
-                paymentHash: string;
                 destinationPubkey: string;
+                htlcDetails: SparkHtlcDetails;
                 lnurlPayInfo: LnurlPayInfo | undefined;
                 lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
                 lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
@@ -6545,10 +6629,9 @@ export declare const PaymentDetails: Readonly<{
             readonly tag: PaymentDetails_Tags.Lightning;
             readonly inner: Readonly<{
                 description: string | undefined;
-                preimage: string | undefined;
                 invoice: string;
-                paymentHash: string;
                 destinationPubkey: string;
+                htlcDetails: SparkHtlcDetails;
                 lnurlPayInfo: LnurlPayInfo | undefined;
                 lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
                 lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
@@ -6642,7 +6725,8 @@ export declare const PaymentDetails: Readonly<{
 export type PaymentDetails = InstanceType<(typeof PaymentDetails)[keyof Omit<typeof PaymentDetails, 'instanceOf'>]>;
 export declare enum PaymentDetailsFilter_Tags {
     Spark = "Spark",
-    Token = "Token"
+    Token = "Token",
+    Lightning = "Lightning"
 }
 export declare const PaymentDetailsFilter: Readonly<{
     instanceOf: (obj: any) => obj is PaymentDetailsFilter;
@@ -6751,6 +6835,49 @@ export declare const PaymentDetailsFilter: Readonly<{
                 conversionRefundNeeded: boolean | undefined;
                 txHash: string | undefined;
                 txType: TokenTransactionType | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentDetailsFilter";
+        };
+    };
+    Lightning: {
+        new (inner: {
+            /**
+             * Filter specific Spark HTLC statuses
+             */ htlcStatus: Array<SparkHtlcStatus> | undefined;
+        }): {
+            readonly tag: PaymentDetailsFilter_Tags.Lightning;
+            readonly inner: Readonly<{
+                htlcStatus: Array<SparkHtlcStatus> | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentDetailsFilter";
+        };
+        "new"(inner: {
+            /**
+             * Filter specific Spark HTLC statuses
+             */ htlcStatus: Array<SparkHtlcStatus> | undefined;
+        }): {
+            readonly tag: PaymentDetailsFilter_Tags.Lightning;
+            readonly inner: Readonly<{
+                htlcStatus: Array<SparkHtlcStatus> | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentDetailsFilter";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PaymentDetailsFilter_Tags.Lightning;
+            readonly inner: Readonly<{
+                htlcStatus: Array<SparkHtlcStatus> | undefined;
             }>;
             /**
              * @private
@@ -7288,12 +7415,18 @@ export declare const ReceivePaymentMethod: Readonly<{
             /**
              * The expiry of the invoice as a duration in seconds
              */ expirySecs: /*u32*/ number | undefined;
+            /**
+             * If set, creates a HODL invoice with this payment hash (hex-encoded).
+             * The payer's HTLC will be held until the preimage is provided via
+             * `claim_htlc_payment` or the HTLC expires.
+             */ paymentHash: string | undefined;
         }): {
             readonly tag: ReceivePaymentMethod_Tags.Bolt11Invoice;
             readonly inner: Readonly<{
                 description: string;
                 amountSats: /*u64*/ bigint | undefined;
                 expirySecs: /*u32*/ number | undefined;
+                paymentHash: string | undefined;
             }>;
             /**
              * @private
@@ -7307,12 +7440,18 @@ export declare const ReceivePaymentMethod: Readonly<{
             /**
              * The expiry of the invoice as a duration in seconds
              */ expirySecs: /*u32*/ number | undefined;
+            /**
+             * If set, creates a HODL invoice with this payment hash (hex-encoded).
+             * The payer's HTLC will be held until the preimage is provided via
+             * `claim_htlc_payment` or the HTLC expires.
+             */ paymentHash: string | undefined;
         }): {
             readonly tag: ReceivePaymentMethod_Tags.Bolt11Invoice;
             readonly inner: Readonly<{
                 description: string;
                 amountSats: /*u64*/ bigint | undefined;
                 expirySecs: /*u32*/ number | undefined;
+                paymentHash: string | undefined;
             }>;
             /**
              * @private
@@ -7326,6 +7465,7 @@ export declare const ReceivePaymentMethod: Readonly<{
                 description: string;
                 amountSats: /*u64*/ bigint | undefined;
                 expirySecs: /*u32*/ number | undefined;
+                paymentHash: string | undefined;
             }>;
             /**
              * @private
@@ -12269,6 +12409,13 @@ export declare class PaymentObserverImpl extends UniffiAbstractObject implements
     uniffiDestroy(): void;
     static instanceOf(obj: any): obj is PaymentObserverImpl;
 }
+/**
+ * REST client trait for making HTTP requests.
+ *
+ * This trait provides a way for users to supply their own HTTP client implementation
+ * for use with the SDK. The SDK will use this client for all HTTP operations including
+ * LNURL flows and chain service requests.
+ */
 export interface RestClient {
     /**
      * Makes a GET request and logs on DEBUG.
@@ -12300,6 +12447,13 @@ export interface RestClient {
         signal: AbortSignal;
     }): Promise<RestResponse>;
 }
+/**
+ * REST client trait for making HTTP requests.
+ *
+ * This trait provides a way for users to supply their own HTTP client implementation
+ * for use with the SDK. The SDK will use this client for all HTTP operations including
+ * LNURL flows and chain service requests.
+ */
 export declare class RestClientImpl extends UniffiAbstractObject implements RestClient {
     readonly [uniffiTypeNameSymbol] = "RestClientImpl";
     readonly [destructorGuardSymbol]: UniffiRustArcPtr;
@@ -14328,6 +14482,13 @@ declare const _default: Readonly<{
             allocationSize(value: SparkStatus): number;
             lift(value: UniffiByteArray): SparkStatus;
             lower(value: SparkStatus): UniffiByteArray;
+        };
+        FfiConverterTypeStableBalanceConfig: {
+            read(from: RustBuffer): StableBalanceConfig;
+            write(value: StableBalanceConfig, into: RustBuffer): void;
+            allocationSize(value: StableBalanceConfig): number;
+            lift(value: UniffiByteArray): StableBalanceConfig;
+            lower(value: StableBalanceConfig): UniffiByteArray;
         };
         FfiConverterTypeStorage: FfiConverterObjectWithCallbacks<Storage>;
         FfiConverterTypeSuccessAction: {
