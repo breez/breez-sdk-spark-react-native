@@ -2070,6 +2070,12 @@ export type Config = {
    * once the balance exceeds the threshold.
    */
   stableBalanceConfig: StableBalanceConfig | undefined;
+  /**
+   * Maximum number of concurrent transfer claims.
+   *
+   * Default is 4. Increase for server environments with high incoming payment volume.
+   */
+  maxConcurrentClaims: /*u32*/ number;
 };
 
 /**
@@ -2119,6 +2125,7 @@ const FfiConverterTypeConfig = (() => {
         optimizationConfig: FfiConverterTypeOptimizationConfig.read(from),
         stableBalanceConfig:
           FfiConverterOptionalTypeStableBalanceConfig.read(from),
+        maxConcurrentClaims: FfiConverterUInt32.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -2140,6 +2147,7 @@ const FfiConverterTypeConfig = (() => {
         value.stableBalanceConfig,
         into
       );
+      FfiConverterUInt32.write(value.maxConcurrentClaims, into);
     }
     allocationSize(value: TypeName): number {
       return (
@@ -2162,7 +2170,8 @@ const FfiConverterTypeConfig = (() => {
         ) +
         FfiConverterOptionalTypeStableBalanceConfig.allocationSize(
           value.stableBalanceConfig
-        )
+        ) +
+        FfiConverterUInt32.allocationSize(value.maxConcurrentClaims)
       );
     }
   }
@@ -6830,11 +6839,15 @@ export type OptimizationConfig = {
    */
   autoEnabled: boolean;
   /**
-   * The desired multiplicity for the leaf set. Acceptable values are 0-5.
+   * The desired multiplicity for the leaf set.
    *
    * Setting this to 0 will optimize for maximizing unilateral exit.
    * Higher values will optimize for minimizing transfer swaps, with higher values
-   * being more aggressive.
+   * being more aggressive and allowing better TPS rates.
+   *
+   * For end-user wallets, values of 1-5 are recommended. Values above 5 are
+   * intended for high-throughput server environments and are not recommended
+   * for end-user wallets due to significantly higher unilateral exit costs.
    *
    * Default value is 1.
    */
