@@ -2076,6 +2076,11 @@ export type Config = {
    * Default is 4. Increase for server environments with high incoming payment volume.
    */
   maxConcurrentClaims: /*u32*/ number;
+  /**
+   * When true, enables LNURL verify support (LUD-21) and zap receipts (NIP-57).
+   * When false (default), these features are disabled for privacy.
+   */
+  supportLnurlVerify: boolean;
 };
 
 /**
@@ -2126,6 +2131,7 @@ const FfiConverterTypeConfig = (() => {
         stableBalanceConfig:
           FfiConverterOptionalTypeStableBalanceConfig.read(from),
         maxConcurrentClaims: FfiConverterUInt32.read(from),
+        supportLnurlVerify: FfiConverterBool.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -2148,6 +2154,7 @@ const FfiConverterTypeConfig = (() => {
         into
       );
       FfiConverterUInt32.write(value.maxConcurrentClaims, into);
+      FfiConverterBool.write(value.supportLnurlVerify, into);
     }
     allocationSize(value: TypeName): number {
       return (
@@ -2171,7 +2178,8 @@ const FfiConverterTypeConfig = (() => {
         FfiConverterOptionalTypeStableBalanceConfig.allocationSize(
           value.stableBalanceConfig
         ) +
-        FfiConverterUInt32.allocationSize(value.maxConcurrentClaims)
+        FfiConverterUInt32.allocationSize(value.maxConcurrentClaims) +
+        FfiConverterBool.allocationSize(value.supportLnurlVerify)
       );
     }
   }
@@ -8925,6 +8933,7 @@ export type SetLnurlMetadataItem = {
   senderComment: string | undefined;
   nostrZapRequest: string | undefined;
   nostrZapReceipt: string | undefined;
+  preimage: string | undefined;
 };
 
 /**
@@ -8967,6 +8976,7 @@ const FfiConverterTypeSetLnurlMetadataItem = (() => {
         senderComment: FfiConverterOptionalString.read(from),
         nostrZapRequest: FfiConverterOptionalString.read(from),
         nostrZapReceipt: FfiConverterOptionalString.read(from),
+        preimage: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -8974,13 +8984,15 @@ const FfiConverterTypeSetLnurlMetadataItem = (() => {
       FfiConverterOptionalString.write(value.senderComment, into);
       FfiConverterOptionalString.write(value.nostrZapRequest, into);
       FfiConverterOptionalString.write(value.nostrZapReceipt, into);
+      FfiConverterOptionalString.write(value.preimage, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterString.allocationSize(value.paymentHash) +
         FfiConverterOptionalString.allocationSize(value.senderComment) +
         FfiConverterOptionalString.allocationSize(value.nostrZapRequest) +
-        FfiConverterOptionalString.allocationSize(value.nostrZapReceipt)
+        FfiConverterOptionalString.allocationSize(value.nostrZapReceipt) +
+        FfiConverterOptionalString.allocationSize(value.preimage)
       );
     }
   }
@@ -9721,6 +9733,121 @@ const FfiConverterTypeStableBalanceConfig = (() => {
         FfiConverterOptionalUInt64.allocationSize(value.thresholdSats) +
         FfiConverterOptionalUInt32.allocationSize(value.maxSlippageBps) +
         FfiConverterOptionalUInt64.allocationSize(value.reservedSats)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Storage-internal variant of [`ListPaymentsRequest`] that uses
+ * [`StoragePaymentDetailsFilter`] instead of the public [`PaymentDetailsFilter`].
+ */
+export type StorageListPaymentsRequest = {
+  typeFilter: Array<PaymentType> | undefined;
+  statusFilter: Array<PaymentStatus> | undefined;
+  assetFilter: AssetFilter | undefined;
+  paymentDetailsFilter: Array<StoragePaymentDetailsFilter> | undefined;
+  fromTimestamp: /*u64*/ bigint | undefined;
+  toTimestamp: /*u64*/ bigint | undefined;
+  offset: /*u32*/ number | undefined;
+  limit: /*u32*/ number | undefined;
+  sortAscending: boolean | undefined;
+};
+
+/**
+ * Generated factory for {@link StorageListPaymentsRequest} record objects.
+ */
+export const StorageListPaymentsRequest = (() => {
+  const defaults = () => ({
+    typeFilter: undefined,
+    statusFilter: undefined,
+    assetFilter: undefined,
+    paymentDetailsFilter: undefined,
+    fromTimestamp: undefined,
+    toTimestamp: undefined,
+    offset: undefined,
+    limit: undefined,
+    sortAscending: undefined,
+  });
+  const create = (() => {
+    return uniffiCreateRecord<
+      StorageListPaymentsRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link StorageListPaymentsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link StorageListPaymentsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<StorageListPaymentsRequest>,
+  });
+})();
+
+const FfiConverterTypeStorageListPaymentsRequest = (() => {
+  type TypeName = StorageListPaymentsRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        typeFilter: FfiConverterOptionalArrayTypePaymentType.read(from),
+        statusFilter: FfiConverterOptionalArrayTypePaymentStatus.read(from),
+        assetFilter: FfiConverterOptionalTypeAssetFilter.read(from),
+        paymentDetailsFilter:
+          FfiConverterOptionalArrayTypeStoragePaymentDetailsFilter.read(from),
+        fromTimestamp: FfiConverterOptionalUInt64.read(from),
+        toTimestamp: FfiConverterOptionalUInt64.read(from),
+        offset: FfiConverterOptionalUInt32.read(from),
+        limit: FfiConverterOptionalUInt32.read(from),
+        sortAscending: FfiConverterOptionalBool.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalArrayTypePaymentType.write(value.typeFilter, into);
+      FfiConverterOptionalArrayTypePaymentStatus.write(
+        value.statusFilter,
+        into
+      );
+      FfiConverterOptionalTypeAssetFilter.write(value.assetFilter, into);
+      FfiConverterOptionalArrayTypeStoragePaymentDetailsFilter.write(
+        value.paymentDetailsFilter,
+        into
+      );
+      FfiConverterOptionalUInt64.write(value.fromTimestamp, into);
+      FfiConverterOptionalUInt64.write(value.toTimestamp, into);
+      FfiConverterOptionalUInt32.write(value.offset, into);
+      FfiConverterOptionalUInt32.write(value.limit, into);
+      FfiConverterOptionalBool.write(value.sortAscending, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalArrayTypePaymentType.allocationSize(
+          value.typeFilter
+        ) +
+        FfiConverterOptionalArrayTypePaymentStatus.allocationSize(
+          value.statusFilter
+        ) +
+        FfiConverterOptionalTypeAssetFilter.allocationSize(value.assetFilter) +
+        FfiConverterOptionalArrayTypeStoragePaymentDetailsFilter.allocationSize(
+          value.paymentDetailsFilter
+        ) +
+        FfiConverterOptionalUInt64.allocationSize(value.fromTimestamp) +
+        FfiConverterOptionalUInt64.allocationSize(value.toTimestamp) +
+        FfiConverterOptionalUInt32.allocationSize(value.offset) +
+        FfiConverterOptionalUInt32.allocationSize(value.limit) +
+        FfiConverterOptionalBool.allocationSize(value.sortAscending)
       );
     }
   }
@@ -18766,6 +18893,273 @@ const FfiConverterTypeStorageError = (() => {
   return new FFIConverter();
 })();
 
+// Enum: StoragePaymentDetailsFilter
+export enum StoragePaymentDetailsFilter_Tags {
+  Spark = 'Spark',
+  Token = 'Token',
+  Lightning = 'Lightning',
+}
+/**
+ * Storage-internal variant of [`PaymentDetailsFilter`] that includes the
+ * `has_lnurl_preimage` field on the `Lightning` variant, which is not exposed
+ * in the public API.
+ */
+export const StoragePaymentDetailsFilter = (() => {
+  type Spark__interface = {
+    tag: StoragePaymentDetailsFilter_Tags.Spark;
+    inner: Readonly<{
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      conversionRefundNeeded: boolean | undefined;
+    }>;
+  };
+
+  class Spark_ extends UniffiEnum implements Spark__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'StoragePaymentDetailsFilter';
+    readonly tag = StoragePaymentDetailsFilter_Tags.Spark;
+    readonly inner: Readonly<{
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      conversionRefundNeeded: boolean | undefined;
+    }>;
+    constructor(inner: {
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      conversionRefundNeeded: boolean | undefined;
+    }) {
+      super('StoragePaymentDetailsFilter', 'Spark');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      conversionRefundNeeded: boolean | undefined;
+    }): Spark_ {
+      return new Spark_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Spark_ {
+      return obj.tag === StoragePaymentDetailsFilter_Tags.Spark;
+    }
+  }
+
+  type Token__interface = {
+    tag: StoragePaymentDetailsFilter_Tags.Token;
+    inner: Readonly<{
+      conversionRefundNeeded: boolean | undefined;
+      txHash: string | undefined;
+      txType: TokenTransactionType | undefined;
+    }>;
+  };
+
+  class Token_ extends UniffiEnum implements Token__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'StoragePaymentDetailsFilter';
+    readonly tag = StoragePaymentDetailsFilter_Tags.Token;
+    readonly inner: Readonly<{
+      conversionRefundNeeded: boolean | undefined;
+      txHash: string | undefined;
+      txType: TokenTransactionType | undefined;
+    }>;
+    constructor(inner: {
+      conversionRefundNeeded: boolean | undefined;
+      txHash: string | undefined;
+      txType: TokenTransactionType | undefined;
+    }) {
+      super('StoragePaymentDetailsFilter', 'Token');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      conversionRefundNeeded: boolean | undefined;
+      txHash: string | undefined;
+      txType: TokenTransactionType | undefined;
+    }): Token_ {
+      return new Token_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Token_ {
+      return obj.tag === StoragePaymentDetailsFilter_Tags.Token;
+    }
+  }
+
+  type Lightning__interface = {
+    tag: StoragePaymentDetailsFilter_Tags.Lightning;
+    inner: Readonly<{
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      hasLnurlPreimage: boolean | undefined;
+    }>;
+  };
+
+  class Lightning_ extends UniffiEnum implements Lightning__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'StoragePaymentDetailsFilter';
+    readonly tag = StoragePaymentDetailsFilter_Tags.Lightning;
+    readonly inner: Readonly<{
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      hasLnurlPreimage: boolean | undefined;
+    }>;
+    constructor(inner: {
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      hasLnurlPreimage: boolean | undefined;
+    }) {
+      super('StoragePaymentDetailsFilter', 'Lightning');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      hasLnurlPreimage: boolean | undefined;
+    }): Lightning_ {
+      return new Lightning_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Lightning_ {
+      return obj.tag === StoragePaymentDetailsFilter_Tags.Lightning;
+    }
+  }
+
+  function instanceOf(obj: any): obj is StoragePaymentDetailsFilter {
+    return obj[uniffiTypeNameSymbol] === 'StoragePaymentDetailsFilter';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Spark: Spark_,
+    Token: Token_,
+    Lightning: Lightning_,
+  });
+})();
+
+/**
+ * Storage-internal variant of [`PaymentDetailsFilter`] that includes the
+ * `has_lnurl_preimage` field on the `Lightning` variant, which is not exposed
+ * in the public API.
+ */
+
+export type StoragePaymentDetailsFilter = InstanceType<
+  (typeof StoragePaymentDetailsFilter)[keyof Omit<
+    typeof StoragePaymentDetailsFilter,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum StoragePaymentDetailsFilter
+const FfiConverterTypeStoragePaymentDetailsFilter = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = StoragePaymentDetailsFilter;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new StoragePaymentDetailsFilter.Spark({
+            htlcStatus: FfiConverterOptionalArrayTypeSparkHtlcStatus.read(from),
+            conversionRefundNeeded: FfiConverterOptionalBool.read(from),
+          });
+        case 2:
+          return new StoragePaymentDetailsFilter.Token({
+            conversionRefundNeeded: FfiConverterOptionalBool.read(from),
+            txHash: FfiConverterOptionalString.read(from),
+            txType: FfiConverterOptionalTypeTokenTransactionType.read(from),
+          });
+        case 3:
+          return new StoragePaymentDetailsFilter.Lightning({
+            htlcStatus: FfiConverterOptionalArrayTypeSparkHtlcStatus.read(from),
+            hasLnurlPreimage: FfiConverterOptionalBool.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case StoragePaymentDetailsFilter_Tags.Spark: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterOptionalArrayTypeSparkHtlcStatus.write(
+            inner.htlcStatus,
+            into
+          );
+          FfiConverterOptionalBool.write(inner.conversionRefundNeeded, into);
+          return;
+        }
+        case StoragePaymentDetailsFilter_Tags.Token: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterOptionalBool.write(inner.conversionRefundNeeded, into);
+          FfiConverterOptionalString.write(inner.txHash, into);
+          FfiConverterOptionalTypeTokenTransactionType.write(
+            inner.txType,
+            into
+          );
+          return;
+        }
+        case StoragePaymentDetailsFilter_Tags.Lightning: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterOptionalArrayTypeSparkHtlcStatus.write(
+            inner.htlcStatus,
+            into
+          );
+          FfiConverterOptionalBool.write(inner.hasLnurlPreimage, into);
+          return;
+        }
+        default:
+          // Throwing from here means that StoragePaymentDetailsFilter_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case StoragePaymentDetailsFilter_Tags.Spark: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterOptionalArrayTypeSparkHtlcStatus.allocationSize(
+            inner.htlcStatus
+          );
+          size += FfiConverterOptionalBool.allocationSize(
+            inner.conversionRefundNeeded
+          );
+          return size;
+        }
+        case StoragePaymentDetailsFilter_Tags.Token: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterOptionalBool.allocationSize(
+            inner.conversionRefundNeeded
+          );
+          size += FfiConverterOptionalString.allocationSize(inner.txHash);
+          size += FfiConverterOptionalTypeTokenTransactionType.allocationSize(
+            inner.txType
+          );
+          return size;
+        }
+        case StoragePaymentDetailsFilter_Tags.Lightning: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterOptionalArrayTypeSparkHtlcStatus.allocationSize(
+            inner.htlcStatus
+          );
+          size += FfiConverterOptionalBool.allocationSize(
+            inner.hasLnurlPreimage
+          );
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
 // Enum: SuccessAction
 export enum SuccessAction_Tags {
   Aes = 'Aes',
@@ -25798,7 +26192,7 @@ export interface Storage {
    * A vector of payments or a `StorageError`
    */
   listPayments(
-    request: ListPaymentsRequest,
+    request: StorageListPaymentsRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<Array<Payment>>;
   /**
@@ -26143,7 +26537,7 @@ export class StorageImpl extends UniffiAbstractObject implements Storage {
    * A vector of payments or a `StorageError`
    */
   public async listPayments(
-    request: ListPaymentsRequest,
+    request: StorageListPaymentsRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<Array<Payment>> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
@@ -26153,7 +26547,7 @@ export class StorageImpl extends UniffiAbstractObject implements Storage {
         /*rustFutureFunc:*/ () => {
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_storage_list_payments(
             uniffiTypeStorageImplObjectFactory.clonePointer(this),
-            FfiConverterTypeListPaymentsRequest.lower(request)
+            FfiConverterTypeStorageListPaymentsRequest.lower(request)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -27258,7 +27652,7 @@ const uniffiCallbackInterfaceStorage: {
       ): Promise<Array<Payment>> => {
         const jsCallback = FfiConverterTypeStorage.lift(uniffiHandle);
         return await jsCallback.listPayments(
-          FfiConverterTypeListPaymentsRequest.lift(request),
+          FfiConverterTypeStorageListPaymentsRequest.lift(request),
           { signal }
         );
       };
@@ -29040,6 +29434,11 @@ const FfiConverterArrayTypeSparkHtlcStatus = new FfiConverterArray(
   FfiConverterTypeSparkHtlcStatus
 );
 
+// FfiConverter for Array<StoragePaymentDetailsFilter>
+const FfiConverterArrayTypeStoragePaymentDetailsFilter = new FfiConverterArray(
+  FfiConverterTypeStoragePaymentDetailsFilter
+);
+
 // FfiConverter for Array<PaymentDetailsFilter> | undefined
 const FfiConverterOptionalArrayTypePaymentDetailsFilter =
   new FfiConverterOptional(FfiConverterArrayTypePaymentDetailsFilter);
@@ -29058,6 +29457,10 @@ const FfiConverterOptionalArrayTypePaymentType = new FfiConverterOptional(
 const FfiConverterOptionalArrayTypeSparkHtlcStatus = new FfiConverterOptional(
   FfiConverterArrayTypeSparkHtlcStatus
 );
+
+// FfiConverter for Array<StoragePaymentDetailsFilter> | undefined
+const FfiConverterOptionalArrayTypeStoragePaymentDetailsFilter =
+  new FfiConverterOptional(FfiConverterArrayTypeStoragePaymentDetailsFilter);
 
 /**
  * This should be called before anything else.
@@ -29770,7 +30173,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_payments() !==
-    19728
+    51078
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_list_payments'
@@ -30198,6 +30601,8 @@ export default Object.freeze({
     FfiConverterTypeSparkStatus,
     FfiConverterTypeStableBalanceConfig,
     FfiConverterTypeStorage,
+    FfiConverterTypeStorageListPaymentsRequest,
+    FfiConverterTypeStoragePaymentDetailsFilter,
     FfiConverterTypeSuccessAction,
     FfiConverterTypeSuccessActionProcessed,
     FfiConverterTypeSymbol,

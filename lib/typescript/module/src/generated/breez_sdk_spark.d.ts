@@ -791,6 +791,11 @@ export type Config = {
      * Default is 4. Increase for server environments with high incoming payment volume.
      */
     maxConcurrentClaims: number;
+    /**
+     * When true, enables LNURL verify support (LUD-21) and zap receipts (NIP-57).
+     * When false (default), these features are disabled for privacy.
+     */
+    supportLnurlVerify: boolean;
 };
 /**
  * Generated factory for {@link Config} record objects.
@@ -3711,6 +3716,7 @@ export type SetLnurlMetadataItem = {
     senderComment: string | undefined;
     nostrZapRequest: string | undefined;
     nostrZapReceipt: string | undefined;
+    preimage: string | undefined;
 };
 /**
  * Generated factory for {@link SetLnurlMetadataItem} record objects.
@@ -4073,6 +4079,40 @@ export declare const StableBalanceConfig: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<StableBalanceConfig>;
+}>;
+/**
+ * Storage-internal variant of [`ListPaymentsRequest`] that uses
+ * [`StoragePaymentDetailsFilter`] instead of the public [`PaymentDetailsFilter`].
+ */
+export type StorageListPaymentsRequest = {
+    typeFilter: Array<PaymentType> | undefined;
+    statusFilter: Array<PaymentStatus> | undefined;
+    assetFilter: AssetFilter | undefined;
+    paymentDetailsFilter: Array<StoragePaymentDetailsFilter> | undefined;
+    fromTimestamp: /*u64*/ bigint | undefined;
+    toTimestamp: /*u64*/ bigint | undefined;
+    offset: /*u32*/ number | undefined;
+    limit: /*u32*/ number | undefined;
+    sortAscending: boolean | undefined;
+};
+/**
+ * Generated factory for {@link StorageListPaymentsRequest} record objects.
+ */
+export declare const StorageListPaymentsRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link StorageListPaymentsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<StorageListPaymentsRequest> & Required<Omit<StorageListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "paymentDetailsFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => StorageListPaymentsRequest;
+    /**
+     * Create a frozen instance of {@link StorageListPaymentsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<StorageListPaymentsRequest> & Required<Omit<StorageListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "paymentDetailsFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => StorageListPaymentsRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<StorageListPaymentsRequest>;
 }>;
 /**
  * Settings for the symbol representation of a currency
@@ -10770,6 +10810,162 @@ export declare const StorageError: Readonly<{
  * Errors that can occur during storage operations
  */
 export type StorageError = InstanceType<(typeof StorageError)[keyof Omit<typeof StorageError, 'instanceOf'>]>;
+export declare enum StoragePaymentDetailsFilter_Tags {
+    Spark = "Spark",
+    Token = "Token",
+    Lightning = "Lightning"
+}
+/**
+ * Storage-internal variant of [`PaymentDetailsFilter`] that includes the
+ * `has_lnurl_preimage` field on the `Lightning` variant, which is not exposed
+ * in the public API.
+ */
+export declare const StoragePaymentDetailsFilter: Readonly<{
+    instanceOf: (obj: any) => obj is StoragePaymentDetailsFilter;
+    Spark: {
+        new (inner: {
+            htlcStatus: Array<SparkHtlcStatus> | undefined;
+            conversionRefundNeeded: boolean | undefined;
+        }): {
+            readonly tag: StoragePaymentDetailsFilter_Tags.Spark;
+            readonly inner: Readonly<{
+                htlcStatus: Array<SparkHtlcStatus> | undefined;
+                conversionRefundNeeded: boolean | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StoragePaymentDetailsFilter";
+        };
+        "new"(inner: {
+            htlcStatus: Array<SparkHtlcStatus> | undefined;
+            conversionRefundNeeded: boolean | undefined;
+        }): {
+            readonly tag: StoragePaymentDetailsFilter_Tags.Spark;
+            readonly inner: Readonly<{
+                htlcStatus: Array<SparkHtlcStatus> | undefined;
+                conversionRefundNeeded: boolean | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StoragePaymentDetailsFilter";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: StoragePaymentDetailsFilter_Tags.Spark;
+            readonly inner: Readonly<{
+                htlcStatus: Array<SparkHtlcStatus> | undefined;
+                conversionRefundNeeded: boolean | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StoragePaymentDetailsFilter";
+        };
+    };
+    Token: {
+        new (inner: {
+            conversionRefundNeeded: boolean | undefined;
+            txHash: string | undefined;
+            txType: TokenTransactionType | undefined;
+        }): {
+            readonly tag: StoragePaymentDetailsFilter_Tags.Token;
+            readonly inner: Readonly<{
+                conversionRefundNeeded: boolean | undefined;
+                txHash: string | undefined;
+                txType: TokenTransactionType | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StoragePaymentDetailsFilter";
+        };
+        "new"(inner: {
+            conversionRefundNeeded: boolean | undefined;
+            txHash: string | undefined;
+            txType: TokenTransactionType | undefined;
+        }): {
+            readonly tag: StoragePaymentDetailsFilter_Tags.Token;
+            readonly inner: Readonly<{
+                conversionRefundNeeded: boolean | undefined;
+                txHash: string | undefined;
+                txType: TokenTransactionType | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StoragePaymentDetailsFilter";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: StoragePaymentDetailsFilter_Tags.Token;
+            readonly inner: Readonly<{
+                conversionRefundNeeded: boolean | undefined;
+                txHash: string | undefined;
+                txType: TokenTransactionType | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StoragePaymentDetailsFilter";
+        };
+    };
+    Lightning: {
+        new (inner: {
+            htlcStatus: Array<SparkHtlcStatus> | undefined;
+            hasLnurlPreimage: boolean | undefined;
+        }): {
+            readonly tag: StoragePaymentDetailsFilter_Tags.Lightning;
+            readonly inner: Readonly<{
+                htlcStatus: Array<SparkHtlcStatus> | undefined;
+                hasLnurlPreimage: boolean | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StoragePaymentDetailsFilter";
+        };
+        "new"(inner: {
+            htlcStatus: Array<SparkHtlcStatus> | undefined;
+            hasLnurlPreimage: boolean | undefined;
+        }): {
+            readonly tag: StoragePaymentDetailsFilter_Tags.Lightning;
+            readonly inner: Readonly<{
+                htlcStatus: Array<SparkHtlcStatus> | undefined;
+                hasLnurlPreimage: boolean | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StoragePaymentDetailsFilter";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: StoragePaymentDetailsFilter_Tags.Lightning;
+            readonly inner: Readonly<{
+                htlcStatus: Array<SparkHtlcStatus> | undefined;
+                hasLnurlPreimage: boolean | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StoragePaymentDetailsFilter";
+        };
+    };
+}>;
+/**
+ * Storage-internal variant of [`PaymentDetailsFilter`] that includes the
+ * `has_lnurl_preimage` field on the `Lightning` variant, which is not exposed
+ * in the public API.
+ */
+export type StoragePaymentDetailsFilter = InstanceType<(typeof StoragePaymentDetailsFilter)[keyof Omit<typeof StoragePaymentDetailsFilter, 'instanceOf'>]>;
 export declare enum SuccessAction_Tags {
     Aes = "Aes",
     Message = "Message",
@@ -12691,7 +12887,7 @@ export interface Storage {
      *
      * A vector of payments or a `StorageError`
      */
-    listPayments(request: ListPaymentsRequest, asyncOpts_?: {
+    listPayments(request: StorageListPaymentsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Array<Payment>>;
     /**
@@ -12898,7 +13094,7 @@ export declare class StorageImpl extends UniffiAbstractObject implements Storage
      *
      * A vector of payments or a `StorageError`
      */
-    listPayments(request: ListPaymentsRequest, asyncOpts_?: {
+    listPayments(request: StorageListPaymentsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Array<Payment>>;
     /**
@@ -14501,6 +14697,20 @@ declare const _default: Readonly<{
             lower(value: StableBalanceConfig): UniffiByteArray;
         };
         FfiConverterTypeStorage: FfiConverterObjectWithCallbacks<Storage>;
+        FfiConverterTypeStorageListPaymentsRequest: {
+            read(from: RustBuffer): StorageListPaymentsRequest;
+            write(value: StorageListPaymentsRequest, into: RustBuffer): void;
+            allocationSize(value: StorageListPaymentsRequest): number;
+            lift(value: UniffiByteArray): StorageListPaymentsRequest;
+            lower(value: StorageListPaymentsRequest): UniffiByteArray;
+        };
+        FfiConverterTypeStoragePaymentDetailsFilter: {
+            read(from: RustBuffer): StoragePaymentDetailsFilter;
+            write(value: StoragePaymentDetailsFilter, into: RustBuffer): void;
+            allocationSize(value: StoragePaymentDetailsFilter): number;
+            lift(value: UniffiByteArray): StoragePaymentDetailsFilter;
+            lower(value: StoragePaymentDetailsFilter): UniffiByteArray;
+        };
         FfiConverterTypeSuccessAction: {
             read(from: RustBuffer): SuccessAction;
             write(value: SuccessAction, into: RustBuffer): void;
