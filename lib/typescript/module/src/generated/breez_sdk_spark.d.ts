@@ -74,6 +74,35 @@ export interface Logger {
     log(l: LogEntry): void;
 }
 /**
+ * Request to add a new contact.
+ */
+export type AddContactRequest = {
+    name: string;
+    /**
+     * A Lightning address (user@domain).
+     */
+    paymentIdentifier: string;
+};
+/**
+ * Generated factory for {@link AddContactRequest} record objects.
+ */
+export declare const AddContactRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link AddContactRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<AddContactRequest> & Required<Omit<AddContactRequest, never>>) => AddContactRequest;
+    /**
+     * Create a frozen instance of {@link AddContactRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<AddContactRequest> & Required<Omit<AddContactRequest, never>>) => AddContactRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<AddContactRequest>;
+}>;
+/**
  * Payload of the AES success action, as received from the LNURL endpoint
  *
  * See [`AesSuccessActionDataDecrypted`] for a similar wrapper containing the decrypted payload
@@ -868,6 +897,38 @@ export declare const ConnectWithSignerRequest: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<ConnectWithSignerRequest>;
+}>;
+/**
+ * A contact entry containing a name and payment identifier.
+ */
+export type Contact = {
+    id: string;
+    name: string;
+    /**
+     * A Lightning address (user@domain).
+     */
+    paymentIdentifier: string;
+    createdAt: bigint;
+    updatedAt: bigint;
+};
+/**
+ * Generated factory for {@link Contact} record objects.
+ */
+export declare const Contact: Readonly<{
+    /**
+     * Create a frozen instance of {@link Contact}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<Contact> & Required<Omit<Contact, never>>) => Contact;
+    /**
+     * Create a frozen instance of {@link Contact}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<Contact> & Required<Omit<Contact, never>>) => Contact;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<Contact>;
 }>;
 /**
  * Outlines the steps involved in a conversion
@@ -2145,6 +2206,32 @@ export declare const LightningAddressInfo: Readonly<{
     defaults: () => Partial<LightningAddressInfo>;
 }>;
 /**
+ * Request to list contacts with optional pagination.
+ */
+export type ListContactsRequest = {
+    offset: /*u32*/ number | undefined;
+    limit: /*u32*/ number | undefined;
+};
+/**
+ * Generated factory for {@link ListContactsRequest} record objects.
+ */
+export declare const ListContactsRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ListContactsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ListContactsRequest> & Required<Omit<ListContactsRequest, "offset" | "limit">>) => ListContactsRequest;
+    /**
+     * Create a frozen instance of {@link ListContactsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ListContactsRequest> & Required<Omit<ListContactsRequest, "offset" | "limit">>) => ListContactsRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ListContactsRequest>;
+}>;
+/**
  * Response from listing fiat currencies
  */
 export type ListFiatCurrenciesResponse = {
@@ -2237,12 +2324,12 @@ export declare const ListPaymentsRequest: Readonly<{
      * Create a frozen instance of {@link ListPaymentsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "paymentDetailsFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => ListPaymentsRequest;
+    create: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "offset" | "limit" | "typeFilter" | "statusFilter" | "assetFilter" | "paymentDetailsFilter" | "fromTimestamp" | "toTimestamp" | "sortAscending">>) => ListPaymentsRequest;
     /**
      * Create a frozen instance of {@link ListPaymentsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "paymentDetailsFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => ListPaymentsRequest;
+    new: (partial: Partial<ListPaymentsRequest> & Required<Omit<ListPaymentsRequest, "offset" | "limit" | "typeFilter" | "statusFilter" | "assetFilter" | "paymentDetailsFilter" | "fromTimestamp" | "toTimestamp" | "sortAscending">>) => ListPaymentsRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -4103,12 +4190,12 @@ export declare const StorageListPaymentsRequest: Readonly<{
      * Create a frozen instance of {@link StorageListPaymentsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<StorageListPaymentsRequest> & Required<Omit<StorageListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "paymentDetailsFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => StorageListPaymentsRequest;
+    create: (partial: Partial<StorageListPaymentsRequest> & Required<Omit<StorageListPaymentsRequest, "offset" | "limit" | "typeFilter" | "statusFilter" | "assetFilter" | "paymentDetailsFilter" | "fromTimestamp" | "toTimestamp" | "sortAscending">>) => StorageListPaymentsRequest;
     /**
      * Create a frozen instance of {@link StorageListPaymentsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<StorageListPaymentsRequest> & Required<Omit<StorageListPaymentsRequest, "typeFilter" | "statusFilter" | "assetFilter" | "paymentDetailsFilter" | "fromTimestamp" | "toTimestamp" | "offset" | "limit" | "sortAscending">>) => StorageListPaymentsRequest;
+    new: (partial: Partial<StorageListPaymentsRequest> & Required<Omit<StorageListPaymentsRequest, "offset" | "limit" | "typeFilter" | "statusFilter" | "assetFilter" | "paymentDetailsFilter" | "fromTimestamp" | "toTimestamp" | "sortAscending">>) => StorageListPaymentsRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -4337,6 +4424,36 @@ export declare const UnversionedRecordChange: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<UnversionedRecordChange>;
+}>;
+/**
+ * Request to update an existing contact.
+ */
+export type UpdateContactRequest = {
+    id: string;
+    name: string;
+    /**
+     * A Lightning address (user@domain).
+     */
+    paymentIdentifier: string;
+};
+/**
+ * Generated factory for {@link UpdateContactRequest} record objects.
+ */
+export declare const UpdateContactRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link UpdateContactRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<UpdateContactRequest> & Required<Omit<UpdateContactRequest, never>>) => UpdateContactRequest;
+    /**
+     * Create a frozen instance of {@link UpdateContactRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<UpdateContactRequest> & Required<Omit<UpdateContactRequest, never>>) => UpdateContactRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<UpdateContactRequest>;
 }>;
 export type UpdateUserSettingsRequest = {
     sparkPrivateModeEnabled: boolean | undefined;
@@ -10514,7 +10631,8 @@ export declare enum StorageError_Tags {
     Connection = "Connection",
     Implementation = "Implementation",
     InitializationError = "InitializationError",
-    Serialization = "Serialization"
+    Serialization = "Serialization",
+    NotFound = "NotFound"
 }
 /**
  * Errors that can occur during storage operations
@@ -10800,6 +10918,60 @@ export declare const StorageError: Readonly<{
             stack?: string;
             cause?: unknown;
         }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    NotFound: {
+        new (): {
+            readonly tag: StorageError_Tags.NotFound;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(): {
+            readonly tag: StorageError_Tags.NotFound;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: StorageError_Tags.NotFound;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: StorageError_Tags.NotFound;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StorageError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
         isError(error: unknown): error is Error;
         captureStackTrace(targetObject: object, constructorOpt?: Function): void;
         prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
@@ -11385,6 +11557,20 @@ export declare class BitcoinChainServiceImpl extends UniffiAbstractObject implem
  */
 export interface BreezSdkInterface {
     /**
+     * Adds a new contact.
+     *
+     * # Arguments
+     *
+     * * `request` - The request containing the contact details
+     *
+     * # Returns
+     *
+     * The created contact or an error
+     */
+    addContact(request: AddContactRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Contact>;
+    /**
      * Registers a listener to receive SDK events
      *
      * # Arguments
@@ -11446,6 +11632,20 @@ export interface BreezSdkInterface {
     claimHtlcPayment(request: ClaimHtlcPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ClaimHtlcPaymentResponse>;
+    /**
+     * Deletes a contact by its ID.
+     *
+     * # Arguments
+     *
+     * * `id` - The ID of the contact to delete
+     *
+     * # Returns
+     *
+     * Success or an error
+     */
+    deleteContact(id: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     deleteLightningAddress(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
@@ -11504,6 +11704,20 @@ export interface BreezSdkInterface {
     getUserSettings(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<UserSettings>;
+    /**
+     * Lists contacts with optional pagination.
+     *
+     * # Arguments
+     *
+     * * `request` - The request containing optional pagination parameters
+     *
+     * # Returns
+     *
+     * A list of contacts or an error
+     */
+    listContacts(request: ListContactsRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<Contact>>;
     /**
      * List fiat currencies for which there is a known exchange rate,
      * sorted by the canonical name of the currency.
@@ -11644,6 +11858,20 @@ export interface BreezSdkInterface {
     syncWallet(request: SyncWalletRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SyncWalletResponse>;
+    /**
+     * Updates an existing contact.
+     *
+     * # Arguments
+     *
+     * * `request` - The request containing the updated contact details
+     *
+     * # Returns
+     *
+     * The updated contact or an error
+     */
+    updateContact(request: UpdateContactRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Contact>;
     /**
      * Updates the user settings for the wallet.
      *
@@ -11663,6 +11891,20 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
     private constructor();
     /**
+     * Adds a new contact.
+     *
+     * # Arguments
+     *
+     * * `request` - The request containing the contact details
+     *
+     * # Returns
+     *
+     * The created contact or an error
+     */
+    addContact(request: AddContactRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Contact>;
+    /**
      * Registers a listener to receive SDK events
      *
      * # Arguments
@@ -11724,6 +11966,20 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     claimHtlcPayment(request: ClaimHtlcPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ClaimHtlcPaymentResponse>;
+    /**
+     * Deletes a contact by its ID.
+     *
+     * # Arguments
+     *
+     * * `id` - The ID of the contact to delete
+     *
+     * # Returns
+     *
+     * Success or an error
+     */
+    deleteContact(id: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     deleteLightningAddress(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
@@ -11782,6 +12038,20 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     getUserSettings(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<UserSettings>;
+    /**
+     * Lists contacts with optional pagination.
+     *
+     * # Arguments
+     *
+     * * `request` - The request containing optional pagination parameters
+     *
+     * # Returns
+     *
+     * A list of contacts or an error
+     */
+    listContacts(request: ListContactsRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<Contact>>;
     /**
      * List fiat currencies for which there is a known exchange rate,
      * sorted by the canonical name of the currency.
@@ -11922,6 +12192,20 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     syncWallet(request: SyncWalletRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SyncWalletResponse>;
+    /**
+     * Updates an existing contact.
+     *
+     * # Arguments
+     *
+     * * `request` - The request containing the updated contact details
+     *
+     * # Returns
+     *
+     * The updated contact or an error
+     */
+    updateContact(request: UpdateContactRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Contact>;
     /**
      * Updates the user settings for the wallet.
      *
@@ -13015,6 +13299,31 @@ export interface Storage {
     setLnurlMetadata(metadata: Array<SetLnurlMetadataItem>, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
+    /**
+     * Lists contacts from storage with optional pagination
+     */
+    listContacts(request: ListContactsRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<Contact>>;
+    /**
+     * Gets a single contact by its ID
+     */
+    getContact(id: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Contact>;
+    /**
+     * Inserts or updates a contact in storage (upsert by id).
+     * Preserves `created_at` on update.
+     */
+    insertContact(contact: Contact, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Deletes a contact by its ID
+     */
+    deleteContact(id: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     addOutgoingChange(record: UnversionedRecordChange, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise</*u64*/ bigint>;
@@ -13220,6 +13529,31 @@ export declare class StorageImpl extends UniffiAbstractObject implements Storage
         signal: AbortSignal;
     }): Promise<void>;
     setLnurlMetadata(metadata: Array<SetLnurlMetadataItem>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Lists contacts from storage with optional pagination
+     */
+    listContacts(request: ListContactsRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<Contact>>;
+    /**
+     * Gets a single contact by its ID
+     */
+    getContact(id: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Contact>;
+    /**
+     * Inserts or updates a contact in storage (upsert by id).
+     * Preserves `created_at` on update.
+     */
+    insertContact(contact: Contact, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Deletes a contact by its ID
+     */
+    deleteContact(id: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     addOutgoingChange(record: UnversionedRecordChange, asyncOpts_?: {
@@ -13513,6 +13847,13 @@ declare function uniffiEnsureInitialized(): void;
 declare const _default: Readonly<{
     initialize: typeof uniffiEnsureInitialized;
     converters: {
+        FfiConverterTypeAddContactRequest: {
+            read(from: RustBuffer): AddContactRequest;
+            write(value: AddContactRequest, into: RustBuffer): void;
+            allocationSize(value: AddContactRequest): number;
+            lift(value: UniffiByteArray): AddContactRequest;
+            lower(value: AddContactRequest): UniffiByteArray;
+        };
         FfiConverterTypeAesSuccessActionData: {
             read(from: RustBuffer): AesSuccessActionData;
             write(value: AesSuccessActionData, into: RustBuffer): void;
@@ -13676,6 +14017,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ChainApiType;
             lower(value: ChainApiType): UniffiByteArray;
         };
+        FfiConverterTypeChainServiceError: {
+            read(from: RustBuffer): ChainServiceError;
+            write(value: ChainServiceError, into: RustBuffer): void;
+            allocationSize(value: ChainServiceError): number;
+            lift(value: UniffiByteArray): ChainServiceError;
+            lower(value: ChainServiceError): UniffiByteArray;
+        };
         FfiConverterTypeCheckLightningAddressRequest: {
             read(from: RustBuffer): CheckLightningAddressRequest;
             write(value: CheckLightningAddressRequest, into: RustBuffer): void;
@@ -13745,6 +14093,13 @@ declare const _default: Readonly<{
             allocationSize(value: ConnectWithSignerRequest): number;
             lift(value: UniffiByteArray): ConnectWithSignerRequest;
             lower(value: ConnectWithSignerRequest): UniffiByteArray;
+        };
+        FfiConverterTypeContact: {
+            read(from: RustBuffer): Contact;
+            write(value: Contact, into: RustBuffer): void;
+            allocationSize(value: Contact): number;
+            lift(value: UniffiByteArray): Contact;
+            lower(value: Contact): UniffiByteArray;
         };
         FfiConverterTypeConversionDetails: {
             read(from: RustBuffer): ConversionDetails;
@@ -14112,6 +14467,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): LightningAddressInfo;
             lower(value: LightningAddressInfo): UniffiByteArray;
         };
+        FfiConverterTypeListContactsRequest: {
+            read(from: RustBuffer): ListContactsRequest;
+            write(value: ListContactsRequest, into: RustBuffer): void;
+            allocationSize(value: ListContactsRequest): number;
+            lift(value: UniffiByteArray): ListContactsRequest;
+            lower(value: ListContactsRequest): UniffiByteArray;
+        };
         FfiConverterTypeListFiatCurrenciesResponse: {
             read(from: RustBuffer): ListFiatCurrenciesResponse;
             write(value: ListFiatCurrenciesResponse, into: RustBuffer): void;
@@ -14372,6 +14734,13 @@ declare const _default: Readonly<{
             lower(value: PaymentMethod): UniffiByteArray;
         };
         FfiConverterTypePaymentObserver: FfiConverterObjectWithCallbacks<PaymentObserver>;
+        FfiConverterTypePaymentObserverError: {
+            read(from: RustBuffer): PaymentObserverError;
+            write(value: PaymentObserverError, into: RustBuffer): void;
+            allocationSize(value: PaymentObserverError): number;
+            lift(value: UniffiByteArray): PaymentObserverError;
+            lower(value: PaymentObserverError): UniffiByteArray;
+        };
         FfiConverterTypePaymentRequestSource: {
             read(from: RustBuffer): PaymentRequestSource;
             write(value: PaymentRequestSource, into: RustBuffer): void;
@@ -14542,6 +14911,13 @@ declare const _default: Readonly<{
             lower(value: SchnorrSignatureBytes): UniffiByteArray;
         };
         FfiConverterTypeSdkBuilder: FfiConverterObject<SdkBuilderInterface>;
+        FfiConverterTypeSdkError: {
+            read(from: RustBuffer): SdkError;
+            write(value: SdkError, into: RustBuffer): void;
+            allocationSize(value: SdkError): number;
+            lift(value: UniffiByteArray): SdkError;
+            lower(value: SdkError): UniffiByteArray;
+        };
         FfiConverterTypeSdkEvent: {
             read(from: RustBuffer): SdkEvent;
             write(value: SdkEvent, into: RustBuffer): void;
@@ -14605,6 +14981,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SendPaymentResponse;
             lower(value: SendPaymentResponse): UniffiByteArray;
         };
+        FfiConverterTypeServiceConnectivityError: {
+            read(from: RustBuffer): ServiceConnectivityError;
+            write(value: ServiceConnectivityError, into: RustBuffer): void;
+            allocationSize(value: ServiceConnectivityError): number;
+            lift(value: UniffiByteArray): ServiceConnectivityError;
+            lower(value: ServiceConnectivityError): UniffiByteArray;
+        };
         FfiConverterTypeServiceStatus: {
             read(from: RustBuffer): ServiceStatus;
             write(value: ServiceStatus, into: RustBuffer): void;
@@ -14632,6 +15015,13 @@ declare const _default: Readonly<{
             allocationSize(value: SignMessageResponse): number;
             lift(value: UniffiByteArray): SignMessageResponse;
             lower(value: SignMessageResponse): UniffiByteArray;
+        };
+        FfiConverterTypeSignerError: {
+            read(from: RustBuffer): SignerError;
+            write(value: SignerError, into: RustBuffer): void;
+            allocationSize(value: SignerError): number;
+            lift(value: UniffiByteArray): SignerError;
+            lower(value: SignerError): UniffiByteArray;
         };
         FfiConverterTypeSilentPaymentAddressDetails: {
             read(from: RustBuffer): SilentPaymentAddressDetails;
@@ -14697,6 +15087,13 @@ declare const _default: Readonly<{
             lower(value: StableBalanceConfig): UniffiByteArray;
         };
         FfiConverterTypeStorage: FfiConverterObjectWithCallbacks<Storage>;
+        FfiConverterTypeStorageError: {
+            read(from: RustBuffer): StorageError;
+            write(value: StorageError, into: RustBuffer): void;
+            allocationSize(value: StorageError): number;
+            lift(value: UniffiByteArray): StorageError;
+            lower(value: StorageError): UniffiByteArray;
+        };
         FfiConverterTypeStorageListPaymentsRequest: {
             read(from: RustBuffer): StorageListPaymentsRequest;
             write(value: StorageListPaymentsRequest, into: RustBuffer): void;
@@ -14795,6 +15192,13 @@ declare const _default: Readonly<{
             allocationSize(value: UnversionedRecordChange): number;
             lift(value: UniffiByteArray): UnversionedRecordChange;
             lower(value: UnversionedRecordChange): UniffiByteArray;
+        };
+        FfiConverterTypeUpdateContactRequest: {
+            read(from: RustBuffer): UpdateContactRequest;
+            write(value: UpdateContactRequest, into: RustBuffer): void;
+            allocationSize(value: UpdateContactRequest): number;
+            lift(value: UniffiByteArray): UpdateContactRequest;
+            lower(value: UpdateContactRequest): UniffiByteArray;
         };
         FfiConverterTypeUpdateDepositPayload: {
             read(from: RustBuffer): UpdateDepositPayload;
