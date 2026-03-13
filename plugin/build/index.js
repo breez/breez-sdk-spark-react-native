@@ -6,14 +6,14 @@ const withAndroid_1 = require("./withAndroid");
 const withIOS_1 = require("./withIOS");
 const utils_1 = require("./utils");
 const withBreezSdk = (config, options) => {
-    const { skipBinaryDownload = false } = options || {};
+    const { skipBinaryDownload = false, enablePasskey = false } = options || {};
     return (0, config_plugins_1.withPlugins)(config, [
         // Download binary artifacts first
         ...(skipBinaryDownload ? [] : [withBinaryArtifacts_1.withBinaryArtifacts]),
         // Configure Android
         withAndroid_1.withBreezSdkAndroid,
         // Configure iOS
-        withIOS_1.withBreezSdkIOS,
+        [withIOS_1.withBreezSdkIOS, { enablePasskey }],
     ]);
 };
 exports.default = (0, config_plugins_1.createRunOncePlugin)(withBreezSdk, utils_1.sdkPackage.name, utils_1.sdkPackage.version);

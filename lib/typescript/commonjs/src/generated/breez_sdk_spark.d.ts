@@ -2932,6 +2932,43 @@ export declare const MintIssuerTokenRequest: Readonly<{
      */
     defaults: () => Partial<MintIssuerTokenRequest>;
 }>;
+/**
+ * Configuration for Nostr relay connections used in `Passkey`.
+ *
+ * Relay URLs are managed internally by the client:
+ * - Public relays are always included
+ * - Breez relay is added when `breez_api_key` is provided (enables NIP-42 auth)
+ */
+export type NostrRelayConfig = {
+    /**
+     * Optional Breez API key for authenticated access to the Breez relay.
+     * When provided, the Breez relay is added and NIP-42 authentication is enabled.
+     */
+    breezApiKey: string | undefined;
+    /**
+     * Connection timeout in seconds. Defaults to 30 when `None`.
+     */
+    timeoutSecs: /*u32*/ number | undefined;
+};
+/**
+ * Generated factory for {@link NostrRelayConfig} record objects.
+ */
+export declare const NostrRelayConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link NostrRelayConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<NostrRelayConfig> & Required<Omit<NostrRelayConfig, "breezApiKey" | "timeoutSecs">>) => NostrRelayConfig;
+    /**
+     * Create a frozen instance of {@link NostrRelayConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<NostrRelayConfig> & Required<Omit<NostrRelayConfig, "breezApiKey" | "timeoutSecs">>) => NostrRelayConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<NostrRelayConfig>;
+}>;
 export type OptimizationConfig = {
     /**
      * Whether automatic leaf optimization is enabled.
@@ -4558,6 +4595,40 @@ export declare const Utxo: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<Utxo>;
+}>;
+/**
+ * A wallet derived from a passkey.
+ *
+ * Contains the derived seed and the wallet name used during derivation.
+ */
+export type Wallet = {
+    /**
+     * The derived seed.
+     */
+    seed: Seed;
+    /**
+     * The wallet name used for derivation (either user-provided or the default).
+     */
+    name: string;
+};
+/**
+ * Generated factory for {@link Wallet} record objects.
+ */
+export declare const Wallet: Readonly<{
+    /**
+     * Create a frozen instance of {@link Wallet}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<Wallet> & Required<Omit<Wallet, never>>) => Wallet;
+    /**
+     * Create a frozen instance of {@link Wallet}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<Wallet> & Required<Omit<Wallet, never>>) => Wallet;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<Wallet>;
 }>;
 /**
  * Typealias from the type name used in the UDL file to the custom type.  This
@@ -6572,6 +6643,1061 @@ export declare const OptimizationEvent: Readonly<{
     };
 }>;
 export type OptimizationEvent = InstanceType<(typeof OptimizationEvent)[keyof Omit<typeof OptimizationEvent, 'instanceOf'>]>;
+export declare enum PasskeyError_Tags {
+    PrfError = "PrfError",
+    RelayConnectionFailed = "RelayConnectionFailed",
+    NostrWriteFailed = "NostrWriteFailed",
+    NostrReadFailed = "NostrReadFailed",
+    KeyDerivationError = "KeyDerivationError",
+    InvalidPrfOutput = "InvalidPrfOutput",
+    MnemonicError = "MnemonicError",
+    InvalidSalt = "InvalidSalt",
+    Generic = "Generic"
+}
+/**
+ * Error type for passkey operations.
+ */
+export declare const PasskeyError: Readonly<{
+    instanceOf: (obj: any) => obj is PasskeyError;
+    PrfError: {
+        new (v0: PasskeyPrfError): {
+            readonly tag: PasskeyError_Tags.PrfError;
+            readonly inner: Readonly<[PasskeyPrfError]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: PasskeyPrfError): {
+            readonly tag: PasskeyError_Tags.PrfError;
+            readonly inner: Readonly<[PasskeyPrfError]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.PrfError;
+            readonly inner: Readonly<[PasskeyPrfError]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.PrfError;
+            readonly inner: Readonly<[PasskeyPrfError]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyError_Tags.PrfError;
+            readonly inner: Readonly<[PasskeyPrfError]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[PasskeyPrfError]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    RelayConnectionFailed: {
+        new (v0: string): {
+            readonly tag: PasskeyError_Tags.RelayConnectionFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PasskeyError_Tags.RelayConnectionFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.RelayConnectionFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.RelayConnectionFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyError_Tags.RelayConnectionFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    NostrWriteFailed: {
+        new (v0: string): {
+            readonly tag: PasskeyError_Tags.NostrWriteFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PasskeyError_Tags.NostrWriteFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.NostrWriteFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.NostrWriteFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyError_Tags.NostrWriteFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    NostrReadFailed: {
+        new (v0: string): {
+            readonly tag: PasskeyError_Tags.NostrReadFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PasskeyError_Tags.NostrReadFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.NostrReadFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.NostrReadFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyError_Tags.NostrReadFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    KeyDerivationError: {
+        new (v0: string): {
+            readonly tag: PasskeyError_Tags.KeyDerivationError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PasskeyError_Tags.KeyDerivationError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.KeyDerivationError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.KeyDerivationError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyError_Tags.KeyDerivationError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    InvalidPrfOutput: {
+        new (v0: string): {
+            readonly tag: PasskeyError_Tags.InvalidPrfOutput;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PasskeyError_Tags.InvalidPrfOutput;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.InvalidPrfOutput;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.InvalidPrfOutput;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyError_Tags.InvalidPrfOutput;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    MnemonicError: {
+        new (v0: string): {
+            readonly tag: PasskeyError_Tags.MnemonicError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PasskeyError_Tags.MnemonicError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.MnemonicError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.MnemonicError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyError_Tags.MnemonicError;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    InvalidSalt: {
+        new (v0: string): {
+            readonly tag: PasskeyError_Tags.InvalidSalt;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PasskeyError_Tags.InvalidSalt;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.InvalidSalt;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.InvalidSalt;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyError_Tags.InvalidSalt;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    Generic: {
+        new (v0: string): {
+            readonly tag: PasskeyError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PasskeyError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+}>;
+/**
+ * Error type for passkey operations.
+ */
+export type PasskeyError = InstanceType<(typeof PasskeyError)[keyof Omit<typeof PasskeyError, 'instanceOf'>]>;
+export declare enum PasskeyPrfError_Tags {
+    PrfNotSupported = "PrfNotSupported",
+    UserCancelled = "UserCancelled",
+    CredentialNotFound = "CredentialNotFound",
+    AuthenticationFailed = "AuthenticationFailed",
+    PrfEvaluationFailed = "PrfEvaluationFailed",
+    Generic = "Generic"
+}
+/**
+ * Error type for passkey PRF operations.
+ * Platforms implement `PasskeyPrfProvider` and return this error type.
+ */
+export declare const PasskeyPrfError: Readonly<{
+    instanceOf: (obj: any) => obj is PasskeyPrfError;
+    PrfNotSupported: {
+        new (): {
+            readonly tag: PasskeyPrfError_Tags.PrfNotSupported;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(): {
+            readonly tag: PasskeyPrfError_Tags.PrfNotSupported;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyPrfError_Tags.PrfNotSupported;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyPrfError_Tags.PrfNotSupported;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    UserCancelled: {
+        new (): {
+            readonly tag: PasskeyPrfError_Tags.UserCancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(): {
+            readonly tag: PasskeyPrfError_Tags.UserCancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyPrfError_Tags.UserCancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyPrfError_Tags.UserCancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    CredentialNotFound: {
+        new (): {
+            readonly tag: PasskeyPrfError_Tags.CredentialNotFound;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(): {
+            readonly tag: PasskeyPrfError_Tags.CredentialNotFound;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyPrfError_Tags.CredentialNotFound;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyPrfError_Tags.CredentialNotFound;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    AuthenticationFailed: {
+        new (v0: string): {
+            readonly tag: PasskeyPrfError_Tags.AuthenticationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PasskeyPrfError_Tags.AuthenticationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyPrfError_Tags.AuthenticationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyPrfError_Tags.AuthenticationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyPrfError_Tags.AuthenticationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    PrfEvaluationFailed: {
+        new (v0: string): {
+            readonly tag: PasskeyPrfError_Tags.PrfEvaluationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PasskeyPrfError_Tags.PrfEvaluationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyPrfError_Tags.PrfEvaluationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyPrfError_Tags.PrfEvaluationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyPrfError_Tags.PrfEvaluationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    Generic: {
+        new (v0: string): {
+            readonly tag: PasskeyPrfError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PasskeyPrfError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyPrfError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyPrfError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyPrfError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+}>;
+/**
+ * Error type for passkey PRF operations.
+ * Platforms implement `PasskeyPrfProvider` and return this error type.
+ */
+export type PasskeyPrfError = InstanceType<(typeof PasskeyPrfError)[keyof Omit<typeof PasskeyPrfError, 'instanceOf'>]>;
 export declare enum PaymentDetails_Tags {
     Spark = "Spark",
     Token = "Token",
@@ -8581,7 +9707,8 @@ export declare enum SdkEvent_Tags {
     PaymentSucceeded = "PaymentSucceeded",
     PaymentPending = "PaymentPending",
     PaymentFailed = "PaymentFailed",
-    Optimization = "Optimization"
+    Optimization = "Optimization",
+    LightningAddressChanged = "LightningAddressChanged"
 }
 /**
  * Events emitted by the SDK
@@ -8840,6 +9967,45 @@ export declare const SdkEvent: Readonly<{
             readonly tag: SdkEvent_Tags.Optimization;
             readonly inner: Readonly<{
                 optimizationEvent: OptimizationEvent;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+    };
+    LightningAddressChanged: {
+        new (inner: {
+            lightningAddress: LightningAddressInfo | undefined;
+        }): {
+            readonly tag: SdkEvent_Tags.LightningAddressChanged;
+            readonly inner: Readonly<{
+                lightningAddress: LightningAddressInfo | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+        "new"(inner: {
+            lightningAddress: LightningAddressInfo | undefined;
+        }): {
+            readonly tag: SdkEvent_Tags.LightningAddressChanged;
+            readonly inner: Readonly<{
+                lightningAddress: LightningAddressInfo | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkEvent_Tags.LightningAddressChanged;
+            readonly inner: Readonly<{
+                lightningAddress: LightningAddressInfo | undefined;
             }>;
             /**
              * @private
@@ -12867,6 +14033,221 @@ export declare class FiatServiceImpl extends UniffiAbstractObject implements Fia
     static instanceOf(obj: any): obj is FiatServiceImpl;
 }
 /**
+ * Orchestrates passkey-based wallet creation and restore operations.
+ *
+ * This struct coordinates between the platform's passkey PRF provider and
+ * Nostr relays to derive wallet mnemonics and manage wallet names.
+ *
+ * The Nostr identity (derived from the passkey's magic salt) is cached after
+ * the first derivation so that subsequent calls to [`Passkey::list_wallet_names`]
+ * and [`Passkey::store_wallet_name`] do not require additional PRF interactions.
+ */
+export interface PasskeyInterface {
+    /**
+     * Derive a wallet for a given wallet name.
+     *
+     * Uses the passkey PRF to derive a 24-word BIP39 mnemonic from the wallet name
+     * and returns it as a [`Wallet`] containing the seed and resolved name.
+     * This works for both creating a new wallet and restoring an existing one.
+     *
+     * # Arguments
+     * * `wallet_name` - A user-chosen wallet name (e.g., "personal", "business").
+     * If `None`, defaults to [`DEFAULT_WALLET_NAME`].
+     */
+    getWallet(walletName: string | undefined, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Wallet>;
+    /**
+     * Check if passkey PRF is available on this device.
+     *
+     * Delegates to the platform's `PasskeyPrfProvider` implementation.
+     */
+    isAvailable(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<boolean>;
+    /**
+     * List all wallet names published to Nostr for this passkey's identity.
+     *
+     * Queries Nostr relays for all wallet names associated with the Nostr identity
+     * derived from this passkey. Requires 1 PRF call.
+     */
+    listWalletNames(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<string>>;
+    /**
+     * Publish a wallet name to Nostr relays for this passkey's identity.
+     *
+     * Idempotent: if the wallet name already exists, it is not published again.
+     * Requires 1 PRF call.
+     *
+     * # Arguments
+     * * `wallet_name` - A user-chosen wallet name (e.g., "personal", "business")
+     */
+    storeWalletName(walletName: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+}
+/**
+ * Orchestrates passkey-based wallet creation and restore operations.
+ *
+ * This struct coordinates between the platform's passkey PRF provider and
+ * Nostr relays to derive wallet mnemonics and manage wallet names.
+ *
+ * The Nostr identity (derived from the passkey's magic salt) is cached after
+ * the first derivation so that subsequent calls to [`Passkey::list_wallet_names`]
+ * and [`Passkey::store_wallet_name`] do not require additional PRF interactions.
+ */
+export declare class Passkey extends UniffiAbstractObject implements PasskeyInterface {
+    readonly [uniffiTypeNameSymbol] = "Passkey";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    /**
+     * Create a new `Passkey` instance.
+     *
+     * # Arguments
+     * * `prf_provider` - Platform implementation of passkey PRF operations
+     * * `relay_config` - Optional configuration for Nostr relay connections (uses default if None)
+     */
+    constructor(prfProvider: PasskeyPrfProvider, relayConfig: NostrRelayConfig | undefined);
+    /**
+     * Derive a wallet for a given wallet name.
+     *
+     * Uses the passkey PRF to derive a 24-word BIP39 mnemonic from the wallet name
+     * and returns it as a [`Wallet`] containing the seed and resolved name.
+     * This works for both creating a new wallet and restoring an existing one.
+     *
+     * # Arguments
+     * * `wallet_name` - A user-chosen wallet name (e.g., "personal", "business").
+     * If `None`, defaults to [`DEFAULT_WALLET_NAME`].
+     */
+    getWallet(walletName: string | undefined, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Wallet>;
+    /**
+     * Check if passkey PRF is available on this device.
+     *
+     * Delegates to the platform's `PasskeyPrfProvider` implementation.
+     */
+    isAvailable(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<boolean>;
+    /**
+     * List all wallet names published to Nostr for this passkey's identity.
+     *
+     * Queries Nostr relays for all wallet names associated with the Nostr identity
+     * derived from this passkey. Requires 1 PRF call.
+     */
+    listWalletNames(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<string>>;
+    /**
+     * Publish a wallet name to Nostr relays for this passkey's identity.
+     *
+     * Idempotent: if the wallet name already exists, it is not published again.
+     * Requires 1 PRF call.
+     *
+     * # Arguments
+     * * `wallet_name` - A user-chosen wallet name (e.g., "personal", "business")
+     */
+    storeWalletName(walletName: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is Passkey;
+}
+/**
+ * Trait for passkey PRF (Pseudo-Random Function) operations.
+ *
+ * Platforms must implement this trait to provide passkey PRF functionality.
+ * The implementation is responsible for:
+ * - Authenticating the user via platform-specific passkey APIs (`WebAuthn`, native passkey managers)
+ * - Evaluating the PRF extension with the provided salt
+ * - Returning the 32-byte PRF output
+ */
+export interface PasskeyPrfProvider {
+    /**
+     * Derive a 32-byte seed from passkey PRF with the given salt.
+     *
+     * The platform authenticates the user via passkey and evaluates the PRF extension.
+     * The salt is used as input to the PRF to derive a deterministic output.
+     *
+     * # Arguments
+     * * `salt` - The salt string to use for PRF evaluation
+     *
+     * # Returns
+     * * `Ok(Vec<u8>)` - The 32-byte PRF output
+     * * `Err(PasskeyPrfError)` - If authentication fails or PRF is not supported
+     */
+    derivePrfSeed(salt: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ArrayBuffer>;
+    /**
+     * Check if a PRF-capable passkey is available on this device.
+     *
+     * This allows applications to gracefully degrade if passkey PRF is not supported.
+     *
+     * # Returns
+     * * `Ok(true)` - PRF-capable passkey is available
+     * * `Ok(false)` - No PRF-capable passkey available
+     * * `Err(PasskeyPrfError)` - If the check fails
+     */
+    isPrfAvailable(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<boolean>;
+}
+/**
+ * Trait for passkey PRF (Pseudo-Random Function) operations.
+ *
+ * Platforms must implement this trait to provide passkey PRF functionality.
+ * The implementation is responsible for:
+ * - Authenticating the user via platform-specific passkey APIs (`WebAuthn`, native passkey managers)
+ * - Evaluating the PRF extension with the provided salt
+ * - Returning the 32-byte PRF output
+ */
+export declare class PasskeyPrfProviderImpl extends UniffiAbstractObject implements PasskeyPrfProvider {
+    readonly [uniffiTypeNameSymbol] = "PasskeyPrfProviderImpl";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    /**
+     * Derive a 32-byte seed from passkey PRF with the given salt.
+     *
+     * The platform authenticates the user via passkey and evaluates the PRF extension.
+     * The salt is used as input to the PRF to derive a deterministic output.
+     *
+     * # Arguments
+     * * `salt` - The salt string to use for PRF evaluation
+     *
+     * # Returns
+     * * `Ok(Vec<u8>)` - The 32-byte PRF output
+     * * `Err(PasskeyPrfError)` - If authentication fails or PRF is not supported
+     */
+    derivePrfSeed(salt: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ArrayBuffer>;
+    /**
+     * Check if a PRF-capable passkey is available on this device.
+     *
+     * This allows applications to gracefully degrade if passkey PRF is not supported.
+     *
+     * # Returns
+     * * `Ok(true)` - PRF-capable passkey is available
+     * * `Ok(false)` - No PRF-capable passkey available
+     * * `Err(PasskeyPrfError)` - If the check fails
+     */
+    isPrfAvailable(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<boolean>;
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is PasskeyPrfProviderImpl;
+}
+/**
  * This interface is used to observe outgoing payments before Lightning, Spark and onchain Bitcoin payments.
  * If the implementation returns an error, the payment is cancelled.
  */
@@ -14017,13 +15398,6 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ChainApiType;
             lower(value: ChainApiType): UniffiByteArray;
         };
-        FfiConverterTypeChainServiceError: {
-            read(from: RustBuffer): ChainServiceError;
-            write(value: ChainServiceError, into: RustBuffer): void;
-            allocationSize(value: ChainServiceError): number;
-            lift(value: UniffiByteArray): ChainServiceError;
-            lower(value: ChainServiceError): UniffiByteArray;
-        };
         FfiConverterTypeCheckLightningAddressRequest: {
             read(from: RustBuffer): CheckLightningAddressRequest;
             write(value: CheckLightningAddressRequest, into: RustBuffer): void;
@@ -14663,6 +16037,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): Network;
             lower(value: Network): UniffiByteArray;
         };
+        FfiConverterTypeNostrRelayConfig: {
+            read(from: RustBuffer): NostrRelayConfig;
+            write(value: NostrRelayConfig, into: RustBuffer): void;
+            allocationSize(value: NostrRelayConfig): number;
+            lift(value: UniffiByteArray): NostrRelayConfig;
+            lower(value: NostrRelayConfig): UniffiByteArray;
+        };
         FfiConverterTypeOnchainConfirmationSpeed: {
             read(from: RustBuffer): OnchainConfirmationSpeed;
             write(value: OnchainConfirmationSpeed, into: RustBuffer): void;
@@ -14698,6 +16079,8 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): OutgoingChange;
             lower(value: OutgoingChange): UniffiByteArray;
         };
+        FfiConverterTypePasskey: FfiConverterObject<PasskeyInterface>;
+        FfiConverterTypePasskeyPrfProvider: FfiConverterObjectWithCallbacks<PasskeyPrfProvider>;
         FfiConverterTypePayment: {
             read(from: RustBuffer): Payment;
             write(value: Payment, into: RustBuffer): void;
@@ -14734,13 +16117,6 @@ declare const _default: Readonly<{
             lower(value: PaymentMethod): UniffiByteArray;
         };
         FfiConverterTypePaymentObserver: FfiConverterObjectWithCallbacks<PaymentObserver>;
-        FfiConverterTypePaymentObserverError: {
-            read(from: RustBuffer): PaymentObserverError;
-            write(value: PaymentObserverError, into: RustBuffer): void;
-            allocationSize(value: PaymentObserverError): number;
-            lift(value: UniffiByteArray): PaymentObserverError;
-            lower(value: PaymentObserverError): UniffiByteArray;
-        };
         FfiConverterTypePaymentRequestSource: {
             read(from: RustBuffer): PaymentRequestSource;
             write(value: PaymentRequestSource, into: RustBuffer): void;
@@ -14911,13 +16287,6 @@ declare const _default: Readonly<{
             lower(value: SchnorrSignatureBytes): UniffiByteArray;
         };
         FfiConverterTypeSdkBuilder: FfiConverterObject<SdkBuilderInterface>;
-        FfiConverterTypeSdkError: {
-            read(from: RustBuffer): SdkError;
-            write(value: SdkError, into: RustBuffer): void;
-            allocationSize(value: SdkError): number;
-            lift(value: UniffiByteArray): SdkError;
-            lower(value: SdkError): UniffiByteArray;
-        };
         FfiConverterTypeSdkEvent: {
             read(from: RustBuffer): SdkEvent;
             write(value: SdkEvent, into: RustBuffer): void;
@@ -14981,13 +16350,6 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SendPaymentResponse;
             lower(value: SendPaymentResponse): UniffiByteArray;
         };
-        FfiConverterTypeServiceConnectivityError: {
-            read(from: RustBuffer): ServiceConnectivityError;
-            write(value: ServiceConnectivityError, into: RustBuffer): void;
-            allocationSize(value: ServiceConnectivityError): number;
-            lift(value: UniffiByteArray): ServiceConnectivityError;
-            lower(value: ServiceConnectivityError): UniffiByteArray;
-        };
         FfiConverterTypeServiceStatus: {
             read(from: RustBuffer): ServiceStatus;
             write(value: ServiceStatus, into: RustBuffer): void;
@@ -15015,13 +16377,6 @@ declare const _default: Readonly<{
             allocationSize(value: SignMessageResponse): number;
             lift(value: UniffiByteArray): SignMessageResponse;
             lower(value: SignMessageResponse): UniffiByteArray;
-        };
-        FfiConverterTypeSignerError: {
-            read(from: RustBuffer): SignerError;
-            write(value: SignerError, into: RustBuffer): void;
-            allocationSize(value: SignerError): number;
-            lift(value: UniffiByteArray): SignerError;
-            lower(value: SignerError): UniffiByteArray;
         };
         FfiConverterTypeSilentPaymentAddressDetails: {
             read(from: RustBuffer): SilentPaymentAddressDetails;
@@ -15087,13 +16442,6 @@ declare const _default: Readonly<{
             lower(value: StableBalanceConfig): UniffiByteArray;
         };
         FfiConverterTypeStorage: FfiConverterObjectWithCallbacks<Storage>;
-        FfiConverterTypeStorageError: {
-            read(from: RustBuffer): StorageError;
-            write(value: StorageError, into: RustBuffer): void;
-            allocationSize(value: StorageError): number;
-            lift(value: UniffiByteArray): StorageError;
-            lower(value: StorageError): UniffiByteArray;
-        };
         FfiConverterTypeStorageListPaymentsRequest: {
             read(from: RustBuffer): StorageListPaymentsRequest;
             write(value: StorageListPaymentsRequest, into: RustBuffer): void;
@@ -15234,6 +16582,13 @@ declare const _default: Readonly<{
             allocationSize(value: Utxo): number;
             lift(value: UniffiByteArray): Utxo;
             lower(value: Utxo): UniffiByteArray;
+        };
+        FfiConverterTypeWallet: {
+            read(from: RustBuffer): Wallet;
+            write(value: Wallet, into: RustBuffer): void;
+            allocationSize(value: Wallet): number;
+            lift(value: UniffiByteArray): Wallet;
+            lower(value: Wallet): UniffiByteArray;
         };
         FfiConverterTypeu128: {
             lift(value: Uint8Array<ArrayBufferLike>): bigint;

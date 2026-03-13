@@ -34,6 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.withBinaryArtifacts = void 0;
+const config_plugins_1 = require("@expo/config-plugins");
 const path = __importStar(require("path"));
 const fs = __importStar(require("fs"));
 const child_process_1 = require("child_process");
@@ -42,22 +43,19 @@ const child_process_1 = require("child_process");
  * This runs during expo prebuild to ensure binaries are available
  */
 const withBinaryArtifacts = (config) => {
-    return {
-        ...config,
-        async prebuildAsync(config) {
+    return (0, config_plugins_1.withDangerousMod)(config, ['android', (config) => {
             try {
-                await downloadBinaryArtifacts();
+                downloadBinaryArtifacts();
             }
             catch (error) {
                 console.warn('Failed to download Breez SDK binary artifacts:', error);
                 console.warn('You may need to run the postinstall script manually or check your network connection.');
             }
             return config;
-        },
-    };
+        }]);
 };
 exports.withBinaryArtifacts = withBinaryArtifacts;
-async function downloadBinaryArtifacts() {
+function downloadBinaryArtifacts() {
     const packageRoot = findPackageRoot();
     if (!packageRoot) {
         throw new Error('Could not find @breeztech/breez-sdk-spark-react-native package');
