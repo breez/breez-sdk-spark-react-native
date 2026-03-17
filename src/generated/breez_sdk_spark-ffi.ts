@@ -339,17 +339,17 @@ interface NativeModuleInterface {
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_passkey_get_wallet(
     ptr: bigint,
-    walletName: Uint8Array
+    label: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_passkey_is_available(
     ptr: bigint
   ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_passkey_list_wallet_names(
+  ubrn_uniffi_breez_sdk_spark_fn_method_passkey_list_labels(
     ptr: bigint
   ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_passkey_store_wallet_name(
+  ubrn_uniffi_breez_sdk_spark_fn_method_passkey_store_label(
     ptr: bigint,
-    walletName: Uint8Array
+    label: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_clone_passkeyprfprovider(
     ptr: bigint,
@@ -847,8 +847,8 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_fiatservice_fetch_fiat_rates(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_get_wallet(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_is_available(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_list_wallet_names(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_store_wallet_name(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_list_labels(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_store_label(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_derive_prf_seed(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_is_prf_available(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_paymentobserver_before_send(): number;

@@ -4599,7 +4599,7 @@ export declare const Utxo: Readonly<{
 /**
  * A wallet derived from a passkey.
  *
- * Contains the derived seed and the wallet name used during derivation.
+ * Contains the derived seed and the label used during derivation.
  */
 export type Wallet = {
     /**
@@ -4607,9 +4607,9 @@ export type Wallet = {
      */
     seed: Seed;
     /**
-     * The wallet name used for derivation (either user-provided or the default).
+     * The label used for derivation (either user-provided or the default).
      */
-    name: string;
+    label: string;
 };
 /**
  * Generated factory for {@link Wallet} record objects.
@@ -14036,25 +14036,25 @@ export declare class FiatServiceImpl extends UniffiAbstractObject implements Fia
  * Orchestrates passkey-based wallet creation and restore operations.
  *
  * This struct coordinates between the platform's passkey PRF provider and
- * Nostr relays to derive wallet mnemonics and manage wallet names.
+ * Nostr relays to derive wallet mnemonics and manage labels.
  *
  * The Nostr identity (derived from the passkey's magic salt) is cached after
- * the first derivation so that subsequent calls to [`Passkey::list_wallet_names`]
- * and [`Passkey::store_wallet_name`] do not require additional PRF interactions.
+ * the first derivation so that subsequent calls to [`Passkey::list_labels`]
+ * and [`Passkey::store_label`] do not require additional PRF interactions.
  */
 export interface PasskeyInterface {
     /**
-     * Derive a wallet for a given wallet name.
+     * Derive a wallet for a given label.
      *
-     * Uses the passkey PRF to derive a 24-word BIP39 mnemonic from the wallet name
-     * and returns it as a [`Wallet`] containing the seed and resolved name.
+     * Uses the passkey PRF to derive a 12-word BIP39 mnemonic from the label
+     * and returns it as a [`Wallet`] containing the seed and resolved label.
      * This works for both creating a new wallet and restoring an existing one.
      *
      * # Arguments
-     * * `wallet_name` - A user-chosen wallet name (e.g., "personal", "business").
-     * If `None`, defaults to [`DEFAULT_WALLET_NAME`].
+     * * `label` - A user-chosen label (e.g., "personal", "business").
+     * If `None`, defaults to [`DEFAULT_LABEL`].
      */
-    getWallet(walletName: string | undefined, asyncOpts_?: {
+    getWallet(label: string | undefined, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Wallet>;
     /**
@@ -14066,24 +14066,24 @@ export interface PasskeyInterface {
         signal: AbortSignal;
     }): Promise<boolean>;
     /**
-     * List all wallet names published to Nostr for this passkey's identity.
+     * List all labels published to Nostr for this passkey's identity.
      *
-     * Queries Nostr relays for all wallet names associated with the Nostr identity
+     * Queries Nostr relays for all labels associated with the Nostr identity
      * derived from this passkey. Requires 1 PRF call.
      */
-    listWalletNames(asyncOpts_?: {
+    listLabels(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Array<string>>;
     /**
-     * Publish a wallet name to Nostr relays for this passkey's identity.
+     * Publish a label to Nostr relays for this passkey's identity.
      *
-     * Idempotent: if the wallet name already exists, it is not published again.
+     * Idempotent: if the label already exists, it is not published again.
      * Requires 1 PRF call.
      *
      * # Arguments
-     * * `wallet_name` - A user-chosen wallet name (e.g., "personal", "business")
+     * * `label` - A user-chosen label (e.g., "personal", "business")
      */
-    storeWalletName(walletName: string, asyncOpts_?: {
+    storeLabel(label: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
 }
@@ -14091,11 +14091,11 @@ export interface PasskeyInterface {
  * Orchestrates passkey-based wallet creation and restore operations.
  *
  * This struct coordinates between the platform's passkey PRF provider and
- * Nostr relays to derive wallet mnemonics and manage wallet names.
+ * Nostr relays to derive wallet mnemonics and manage labels.
  *
  * The Nostr identity (derived from the passkey's magic salt) is cached after
- * the first derivation so that subsequent calls to [`Passkey::list_wallet_names`]
- * and [`Passkey::store_wallet_name`] do not require additional PRF interactions.
+ * the first derivation so that subsequent calls to [`Passkey::list_labels`]
+ * and [`Passkey::store_label`] do not require additional PRF interactions.
  */
 export declare class Passkey extends UniffiAbstractObject implements PasskeyInterface {
     readonly [uniffiTypeNameSymbol] = "Passkey";
@@ -14110,17 +14110,17 @@ export declare class Passkey extends UniffiAbstractObject implements PasskeyInte
      */
     constructor(prfProvider: PasskeyPrfProvider, relayConfig: NostrRelayConfig | undefined);
     /**
-     * Derive a wallet for a given wallet name.
+     * Derive a wallet for a given label.
      *
-     * Uses the passkey PRF to derive a 24-word BIP39 mnemonic from the wallet name
-     * and returns it as a [`Wallet`] containing the seed and resolved name.
+     * Uses the passkey PRF to derive a 12-word BIP39 mnemonic from the label
+     * and returns it as a [`Wallet`] containing the seed and resolved label.
      * This works for both creating a new wallet and restoring an existing one.
      *
      * # Arguments
-     * * `wallet_name` - A user-chosen wallet name (e.g., "personal", "business").
-     * If `None`, defaults to [`DEFAULT_WALLET_NAME`].
+     * * `label` - A user-chosen label (e.g., "personal", "business").
+     * If `None`, defaults to [`DEFAULT_LABEL`].
      */
-    getWallet(walletName: string | undefined, asyncOpts_?: {
+    getWallet(label: string | undefined, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Wallet>;
     /**
@@ -14132,24 +14132,24 @@ export declare class Passkey extends UniffiAbstractObject implements PasskeyInte
         signal: AbortSignal;
     }): Promise<boolean>;
     /**
-     * List all wallet names published to Nostr for this passkey's identity.
+     * List all labels published to Nostr for this passkey's identity.
      *
-     * Queries Nostr relays for all wallet names associated with the Nostr identity
+     * Queries Nostr relays for all labels associated with the Nostr identity
      * derived from this passkey. Requires 1 PRF call.
      */
-    listWalletNames(asyncOpts_?: {
+    listLabels(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Array<string>>;
     /**
-     * Publish a wallet name to Nostr relays for this passkey's identity.
+     * Publish a label to Nostr relays for this passkey's identity.
      *
-     * Idempotent: if the wallet name already exists, it is not published again.
+     * Idempotent: if the label already exists, it is not published again.
      * Requires 1 PRF call.
      *
      * # Arguments
-     * * `wallet_name` - A user-chosen wallet name (e.g., "personal", "business")
+     * * `label` - A user-chosen label (e.g., "personal", "business")
      */
-    storeWalletName(walletName: string, asyncOpts_?: {
+    storeLabel(label: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**

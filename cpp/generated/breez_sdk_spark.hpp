@@ -302,10 +302,10 @@ protected:
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_passkey_is_available(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_passkey_list_wallet_names(
+  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_passkey_list_labels(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_passkey_store_wallet_name(
+  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_passkey_store_label(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value cpp_uniffi_breez_sdk_spark_fn_clone_passkeyprfprovider(
@@ -964,12 +964,10 @@ protected:
   jsi::Value cpp_uniffi_breez_sdk_spark_checksum_method_passkey_is_available(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_passkey_list_wallet_names(
+  jsi::Value cpp_uniffi_breez_sdk_spark_checksum_method_passkey_list_labels(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
-  jsi::Value
-  cpp_uniffi_breez_sdk_spark_checksum_method_passkey_store_wallet_name(
+  jsi::Value cpp_uniffi_breez_sdk_spark_checksum_method_passkey_store_label(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value

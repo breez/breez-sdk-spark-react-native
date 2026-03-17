@@ -660,13 +660,14 @@ void *uniffi_breez_sdk_spark_fn_constructor_passkey_new(
     RustCallStatus *uniffi_out_err);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_passkey_get_wallet(void *ptr,
-                                                    RustBuffer wallet_name);
+                                                    RustBuffer label);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_passkey_is_available(void *ptr);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_passkey_list_wallet_names(void *ptr);
-/*handle*/ uint64_t uniffi_breez_sdk_spark_fn_method_passkey_store_wallet_name(
-    void *ptr, RustBuffer wallet_name);
+uniffi_breez_sdk_spark_fn_method_passkey_list_labels(void *ptr);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_passkey_store_label(void *ptr,
+                                                     RustBuffer label);
 void *uniffi_breez_sdk_spark_fn_clone_passkeyprfprovider(
     void *ptr, RustCallStatus *uniffi_out_err);
 void uniffi_breez_sdk_spark_fn_free_passkeyprfprovider(
@@ -1089,8 +1090,8 @@ uniffi_breez_sdk_spark_checksum_method_fiatservice_fetch_fiat_currencies();
 uint16_t uniffi_breez_sdk_spark_checksum_method_fiatservice_fetch_fiat_rates();
 uint16_t uniffi_breez_sdk_spark_checksum_method_passkey_get_wallet();
 uint16_t uniffi_breez_sdk_spark_checksum_method_passkey_is_available();
-uint16_t uniffi_breez_sdk_spark_checksum_method_passkey_list_wallet_names();
-uint16_t uniffi_breez_sdk_spark_checksum_method_passkey_store_wallet_name();
+uint16_t uniffi_breez_sdk_spark_checksum_method_passkey_list_labels();
+uint16_t uniffi_breez_sdk_spark_checksum_method_passkey_store_label();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_derive_prf_seed();
 uint16_t
@@ -13944,28 +13945,28 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_passkey_is_available(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkey_list_wallet_names"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkey_list_labels"] =
       jsi::Function::createFromHostFunction(
           rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                        "passkey_list_wallet_names"),
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_method_passkey_list_labels"),
           1,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_passkey_list_wallet_names(
+                ->cpp_uniffi_breez_sdk_spark_fn_method_passkey_list_labels(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkey_store_wallet_name"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkey_store_label"] =
       jsi::Function::createFromHostFunction(
           rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                        "passkey_store_wallet_name"),
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_method_passkey_store_label"),
           2,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_passkey_store_wallet_name(
+                ->cpp_uniffi_breez_sdk_spark_fn_method_passkey_store_label(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_fn_clone_passkeyprfprovider"] =
@@ -16287,30 +16288,30 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_passkey_is_available(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_list_wallet_"
-        "names"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_passkey_list_wallet_names"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_passkey_list_wallet_names(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_store_wallet_"
-        "name"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_passkey_store_wallet_name"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_passkey_store_wallet_name(
-                rt, thisVal, args, count);
-      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_list_labels"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                        "method_passkey_list_labels"),
+          0,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_checksum_method_passkey_list_labels(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_store_label"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                        "method_passkey_store_label"),
+          0,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_checksum_method_passkey_store_label(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_derive_"
         "prf_seed"] = jsi::Function::createFromHostFunction(
       rt,
@@ -18628,21 +18629,21 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_passkey_is_available(
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_passkey_list_wallet_names(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_passkey_list_wallet_names(
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_passkey_list_labels(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_passkey_list_labels(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_passkey_store_wallet_name(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_passkey_store_wallet_name(
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_passkey_store_label(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_passkey_store_label(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[1]));
@@ -20777,20 +20778,18 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_passkey_list_wallet_names(
+    cpp_uniffi_breez_sdk_spark_checksum_method_passkey_list_labels(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_checksum_method_passkey_list_wallet_names();
+  auto value = uniffi_breez_sdk_spark_checksum_method_passkey_list_labels();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_passkey_store_wallet_name(
+    cpp_uniffi_breez_sdk_spark_checksum_method_passkey_store_label(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_checksum_method_passkey_store_wallet_name();
+  auto value = uniffi_breez_sdk_spark_checksum_method_passkey_store_label();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }

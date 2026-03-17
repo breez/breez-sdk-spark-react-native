@@ -10989,7 +10989,7 @@ const FfiConverterTypeUtxo = (() => {
 /**
  * A wallet derived from a passkey.
  *
- * Contains the derived seed and the wallet name used during derivation.
+ * Contains the derived seed and the label used during derivation.
  */
 export type Wallet = {
   /**
@@ -10997,9 +10997,9 @@ export type Wallet = {
    */
   seed: Seed;
   /**
-   * The wallet name used for derivation (either user-provided or the default).
+   * The label used for derivation (either user-provided or the default).
    */
-  name: string;
+  label: string;
 };
 
 /**
@@ -11036,17 +11036,17 @@ const FfiConverterTypeWallet = (() => {
     read(from: RustBuffer): TypeName {
       return {
         seed: FfiConverterTypeSeed.read(from),
-        name: FfiConverterString.read(from),
+        label: FfiConverterString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterTypeSeed.write(value.seed, into);
-      FfiConverterString.write(value.name, into);
+      FfiConverterString.write(value.label, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterTypeSeed.allocationSize(value.seed) +
-        FfiConverterString.allocationSize(value.name)
+        FfiConverterString.allocationSize(value.label)
       );
     }
   }
@@ -26611,26 +26611,26 @@ const uniffiCallbackInterfaceFiatService: {
  * Orchestrates passkey-based wallet creation and restore operations.
  *
  * This struct coordinates between the platform's passkey PRF provider and
- * Nostr relays to derive wallet mnemonics and manage wallet names.
+ * Nostr relays to derive wallet mnemonics and manage labels.
  *
  * The Nostr identity (derived from the passkey's magic salt) is cached after
- * the first derivation so that subsequent calls to [`Passkey::list_wallet_names`]
- * and [`Passkey::store_wallet_name`] do not require additional PRF interactions.
+ * the first derivation so that subsequent calls to [`Passkey::list_labels`]
+ * and [`Passkey::store_label`] do not require additional PRF interactions.
  */
 export interface PasskeyInterface {
   /**
-   * Derive a wallet for a given wallet name.
+   * Derive a wallet for a given label.
    *
-   * Uses the passkey PRF to derive a 24-word BIP39 mnemonic from the wallet name
-   * and returns it as a [`Wallet`] containing the seed and resolved name.
+   * Uses the passkey PRF to derive a 12-word BIP39 mnemonic from the label
+   * and returns it as a [`Wallet`] containing the seed and resolved label.
    * This works for both creating a new wallet and restoring an existing one.
    *
    * # Arguments
-   * * `wallet_name` - A user-chosen wallet name (e.g., "personal", "business").
-   * If `None`, defaults to [`DEFAULT_WALLET_NAME`].
+   * * `label` - A user-chosen label (e.g., "personal", "business").
+   * If `None`, defaults to [`DEFAULT_LABEL`].
    */
   getWallet(
-    walletName: string | undefined,
+    label: string | undefined,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<Wallet>;
   /**
@@ -26642,25 +26642,25 @@ export interface PasskeyInterface {
     signal: AbortSignal;
   }): /*throws*/ Promise<boolean>;
   /**
-   * List all wallet names published to Nostr for this passkey's identity.
+   * List all labels published to Nostr for this passkey's identity.
    *
-   * Queries Nostr relays for all wallet names associated with the Nostr identity
+   * Queries Nostr relays for all labels associated with the Nostr identity
    * derived from this passkey. Requires 1 PRF call.
    */
-  listWalletNames(asyncOpts_?: {
+  listLabels(asyncOpts_?: {
     signal: AbortSignal;
   }): /*throws*/ Promise<Array<string>>;
   /**
-   * Publish a wallet name to Nostr relays for this passkey's identity.
+   * Publish a label to Nostr relays for this passkey's identity.
    *
-   * Idempotent: if the wallet name already exists, it is not published again.
+   * Idempotent: if the label already exists, it is not published again.
    * Requires 1 PRF call.
    *
    * # Arguments
-   * * `wallet_name` - A user-chosen wallet name (e.g., "personal", "business")
+   * * `label` - A user-chosen label (e.g., "personal", "business")
    */
-  storeWalletName(
-    walletName: string,
+  storeLabel(
+    label: string,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<void>;
 }
@@ -26669,11 +26669,11 @@ export interface PasskeyInterface {
  * Orchestrates passkey-based wallet creation and restore operations.
  *
  * This struct coordinates between the platform's passkey PRF provider and
- * Nostr relays to derive wallet mnemonics and manage wallet names.
+ * Nostr relays to derive wallet mnemonics and manage labels.
  *
  * The Nostr identity (derived from the passkey's magic salt) is cached after
- * the first derivation so that subsequent calls to [`Passkey::list_wallet_names`]
- * and [`Passkey::store_wallet_name`] do not require additional PRF interactions.
+ * the first derivation so that subsequent calls to [`Passkey::list_labels`]
+ * and [`Passkey::store_label`] do not require additional PRF interactions.
  */
 export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
   readonly [uniffiTypeNameSymbol] = 'Passkey';
@@ -26706,18 +26706,18 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
   }
 
   /**
-   * Derive a wallet for a given wallet name.
+   * Derive a wallet for a given label.
    *
-   * Uses the passkey PRF to derive a 24-word BIP39 mnemonic from the wallet name
-   * and returns it as a [`Wallet`] containing the seed and resolved name.
+   * Uses the passkey PRF to derive a 12-word BIP39 mnemonic from the label
+   * and returns it as a [`Wallet`] containing the seed and resolved label.
    * This works for both creating a new wallet and restoring an existing one.
    *
    * # Arguments
-   * * `wallet_name` - A user-chosen wallet name (e.g., "personal", "business").
-   * If `None`, defaults to [`DEFAULT_WALLET_NAME`].
+   * * `label` - A user-chosen label (e.g., "personal", "business").
+   * If `None`, defaults to [`DEFAULT_LABEL`].
    */
   public async getWallet(
-    walletName: string | undefined,
+    label: string | undefined,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<Wallet> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
@@ -26727,7 +26727,7 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
         /*rustFutureFunc:*/ () => {
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkey_get_wallet(
             uniffiTypePasskeyObjectFactory.clonePointer(this),
-            FfiConverterOptionalString.lower(walletName)
+            FfiConverterOptionalString.lower(label)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -26794,12 +26794,12 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
   }
 
   /**
-   * List all wallet names published to Nostr for this passkey's identity.
+   * List all labels published to Nostr for this passkey's identity.
    *
-   * Queries Nostr relays for all wallet names associated with the Nostr identity
+   * Queries Nostr relays for all labels associated with the Nostr identity
    * derived from this passkey. Requires 1 PRF call.
    */
-  public async listWalletNames(asyncOpts_?: {
+  public async listLabels(asyncOpts_?: {
     signal: AbortSignal;
   }): Promise<Array<string>> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
@@ -26807,7 +26807,7 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkey_list_wallet_names(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkey_list_labels(
             uniffiTypePasskeyObjectFactory.clonePointer(this)
           );
         },
@@ -26837,16 +26837,16 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
   }
 
   /**
-   * Publish a wallet name to Nostr relays for this passkey's identity.
+   * Publish a label to Nostr relays for this passkey's identity.
    *
-   * Idempotent: if the wallet name already exists, it is not published again.
+   * Idempotent: if the label already exists, it is not published again.
    * Requires 1 PRF call.
    *
    * # Arguments
-   * * `wallet_name` - A user-chosen wallet name (e.g., "personal", "business")
+   * * `label` - A user-chosen label (e.g., "personal", "business")
    */
-  public async storeWalletName(
-    walletName: string,
+  public async storeLabel(
+    label: string,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
@@ -26854,9 +26854,9 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkey_store_wallet_name(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkey_store_label(
             uniffiTypePasskeyObjectFactory.clonePointer(this),
-            FfiConverterString.lower(walletName)
+            FfiConverterString.lower(label)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -32859,7 +32859,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_get_wallet() !==
-    499
+    28830
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_passkey_get_wallet'
@@ -32874,19 +32874,19 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_list_wallet_names() !==
-    37080
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_list_labels() !==
+    5351
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_passkey_list_wallet_names'
+      'uniffi_breez_sdk_spark_checksum_method_passkey_list_labels'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_store_wallet_name() !==
-    2664
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_store_label() !==
+    42949
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_passkey_store_wallet_name'
+      'uniffi_breez_sdk_spark_checksum_method_passkey_store_label'
     );
   }
   if (
