@@ -31,6 +31,9 @@ interface NativeModuleInterface {
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_bitcoinchainservice(
+    vtable: UniffiVTableCallbackInterfaceBitcoinChainService
+  ): void;
   ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_address_utxos(
     ptr: bigint,
     address: Uint8Array
@@ -147,6 +150,9 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_list_webhooks(
+    ptr: bigint
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_lnurl_auth(
     ptr: bigint,
     requestData: Uint8Array
@@ -186,6 +192,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_register_webhook(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(
     ptr: bigint,
     id: Uint8Array
@@ -199,10 +209,13 @@ interface NativeModuleInterface {
     request: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_optimization(
-    ptr: bigint,
-    uniffi_out_err: UniffiRustCallStatus
-  ): void;
+    ptr: bigint
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_unregister_webhook(
     ptr: bigint,
     request: Uint8Array
   ): bigint;
@@ -221,6 +234,9 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_free_externalsigner(
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
+  ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsigner(
+    vtable: UniffiVTableCallbackInterfaceExternalSigner
   ): void;
   ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_identity_public_key(
     ptr: bigint,
@@ -318,6 +334,9 @@ interface NativeModuleInterface {
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_fiatservice(
+    vtable: UniffiVTableCallbackInterfaceFiatService
+  ): void;
   ubrn_uniffi_breez_sdk_spark_fn_method_fiatservice_fetch_fiat_currencies(
     ptr: bigint
   ): bigint;
@@ -359,6 +378,9 @@ interface NativeModuleInterface {
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_passkeyprfprovider(
+    vtable: UniffiVTableCallbackInterfacePasskeyPrfProvider
+  ): void;
   ubrn_uniffi_breez_sdk_spark_fn_method_passkeyprfprovider_derive_prf_seed(
     ptr: bigint,
     salt: Uint8Array
@@ -374,6 +396,9 @@ interface NativeModuleInterface {
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_paymentobserver(
+    vtable: UniffiVTableCallbackInterfacePaymentObserver
+  ): void;
   ubrn_uniffi_breez_sdk_spark_fn_method_paymentobserver_before_send(
     ptr: bigint,
     payments: Uint8Array
@@ -385,6 +410,9 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_free_restclient(
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
+  ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_restclient(
+    vtable: UniffiVTableCallbackInterfaceRestClient
   ): void;
   ubrn_uniffi_breez_sdk_spark_fn_method_restclient_get_request(
     ptr: bigint,
@@ -459,6 +487,9 @@ interface NativeModuleInterface {
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_storage(
+    vtable: UniffiVTableCallbackInterfaceStorage
+  ): void;
   ubrn_uniffi_breez_sdk_spark_fn_method_storage_delete_cached_item(
     ptr: bigint,
     key: Uint8Array
@@ -501,7 +532,8 @@ interface NativeModuleInterface {
     ptr: bigint,
     txid: Uint8Array,
     vout: number,
-    amountSats: bigint
+    amountSats: bigint,
+    isMature: number
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_storage_delete_deposit(
     ptr: bigint,
@@ -606,6 +638,12 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_eventlistener(
+    vtable: UniffiVTableCallbackInterfaceEventListener
+  ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_logger(
+    vtable: UniffiVTableCallbackInterfaceLogger
+  ): void;
   ubrn_uniffi_breez_sdk_spark_fn_func_connect(request: Uint8Array): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_func_connect_with_signer(
     request: Uint8Array
@@ -806,6 +844,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_rates(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_payments(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_unclaimed_deposits(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_webhooks(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_auth(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_pay(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_withdraw(): number;
@@ -816,11 +855,13 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_recommended_fees(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_deposit(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_register_lightning_address(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_register_webhook(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_unregister_webhook(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_update_contact(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_update_user_settings(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_identity_public_key(): number;
@@ -903,33 +944,6 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_eventlistener_on_event(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_logger_log(): number;
   ubrn_ffi_breez_sdk_spark_uniffi_contract_version(): number;
-  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_eventlistener(
-    vtable: UniffiVTableCallbackInterfaceEventListener
-  ): void;
-  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_logger(
-    vtable: UniffiVTableCallbackInterfaceLogger
-  ): void;
-  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_bitcoinchainservice(
-    vtable: UniffiVTableCallbackInterfaceBitcoinChainService
-  ): void;
-  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsigner(
-    vtable: UniffiVTableCallbackInterfaceExternalSigner
-  ): void;
-  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_fiatservice(
-    vtable: UniffiVTableCallbackInterfaceFiatService
-  ): void;
-  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_passkeyprfprovider(
-    vtable: UniffiVTableCallbackInterfacePasskeyPrfProvider
-  ): void;
-  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_paymentobserver(
-    vtable: UniffiVTableCallbackInterfacePaymentObserver
-  ): void;
-  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_restclient(
-    vtable: UniffiVTableCallbackInterfaceRestClient
-  ): void;
-  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_storage(
-    vtable: UniffiVTableCallbackInterfaceStorage
-  ): void;
   ubrn_uniffi_internal_fn_method_bitcoinchainservice_ffi__bless_pointer(
     pointer: bigint,
     uniffi_out_err: UniffiRustCallStatus
@@ -1104,7 +1118,7 @@ type UniffiCallbackInterfaceEventListenerMethod0 = (
   event: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceLoggerMethod0 = (
   uniffiHandle: bigint,
   l: Uint8Array
@@ -1114,30 +1128,30 @@ type UniffiCallbackInterfaceBitcoinChainServiceMethod0 = (
   address: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceBitcoinChainServiceMethod1 = (
   uniffiHandle: bigint,
   txid: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceBitcoinChainServiceMethod2 = (
   uniffiHandle: bigint,
   txid: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceBitcoinChainServiceMethod3 = (
   uniffiHandle: bigint,
   tx: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceBitcoinChainServiceMethod4 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod0 = (
   uniffiHandle: bigint
 ) => UniffiResult<Uint8Array>;
@@ -1146,90 +1160,90 @@ type UniffiCallbackInterfaceExternalSignerMethod1 = (
   path: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod2 = (
   uniffiHandle: bigint,
   message: Uint8Array,
   path: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod3 = (
   uniffiHandle: bigint,
   message: Uint8Array,
   path: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod4 = (
   uniffiHandle: bigint,
   message: Uint8Array,
   path: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod5 = (
   uniffiHandle: bigint,
   message: Uint8Array,
   path: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod6 = (
   uniffiHandle: bigint,
   hash: Uint8Array,
   path: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod7 = (
   uniffiHandle: bigint,
   message: Uint8Array,
   path: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod8 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod9 = (
   uniffiHandle: bigint,
   id: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod10 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod11 = (
   uniffiHandle: bigint,
   index: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod12 = (
   uniffiHandle: bigint,
   index: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod13 = (
   uniffiHandle: bigint,
   index: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod14 = (
   uniffiHandle: bigint,
   signingKey: Uint8Array,
   newSigningKey: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod15 = (
   uniffiHandle: bigint,
   secret: Uint8Array,
@@ -1237,66 +1251,66 @@ type UniffiCallbackInterfaceExternalSignerMethod15 = (
   numShares: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod16 = (
   uniffiHandle: bigint,
   encryptedSecret: Uint8Array,
   receiverPublicKey: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod17 = (
   uniffiHandle: bigint,
   secret: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod18 = (
   uniffiHandle: bigint,
   request: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSignerMethod19 = (
   uniffiHandle: bigint,
   request: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceFiatServiceMethod0 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceFiatServiceMethod1 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfacePasskeyPrfProviderMethod0 = (
   uniffiHandle: bigint,
   salt: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfacePasskeyPrfProviderMethod1 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteI8,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfacePaymentObserverMethod0 = (
   uniffiHandle: bigint,
   payments: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceRestClientMethod0 = (
   uniffiHandle: bigint,
   url: Uint8Array,
   headers: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceRestClientMethod1 = (
   uniffiHandle: bigint,
   url: Uint8Array,
@@ -1304,7 +1318,7 @@ type UniffiCallbackInterfaceRestClientMethod1 = (
   body: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceRestClientMethod2 = (
   uniffiHandle: bigint,
   url: Uint8Array,
@@ -1312,83 +1326,84 @@ type UniffiCallbackInterfaceRestClientMethod2 = (
   body: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod0 = (
   uniffiHandle: bigint,
   key: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod1 = (
   uniffiHandle: bigint,
   key: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod2 = (
   uniffiHandle: bigint,
   key: Uint8Array,
   value: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod3 = (
   uniffiHandle: bigint,
   request: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod4 = (
   uniffiHandle: bigint,
   payment: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod5 = (
   uniffiHandle: bigint,
   paymentId: Uint8Array,
   metadata: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod6 = (
   uniffiHandle: bigint,
   id: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod7 = (
   uniffiHandle: bigint,
   invoice: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod8 = (
   uniffiHandle: bigint,
   parentPaymentIds: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod9 = (
   uniffiHandle: bigint,
   txid: Uint8Array,
   vout: number,
   amountSats: bigint,
+  isMature: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod10 = (
   uniffiHandle: bigint,
   txid: Uint8Array,
   vout: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod11 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod12 = (
   uniffiHandle: bigint,
   txid: Uint8Array,
@@ -1396,90 +1411,90 @@ type UniffiCallbackInterfaceStorageMethod12 = (
   payload: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod13 = (
   uniffiHandle: bigint,
   metadata: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod14 = (
   uniffiHandle: bigint,
   request: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod15 = (
   uniffiHandle: bigint,
   id: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod16 = (
   uniffiHandle: bigint,
   contact: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod17 = (
   uniffiHandle: bigint,
   id: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod18 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteU64,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod19 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   localRevision: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod20 = (
   uniffiHandle: bigint,
   limit: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod21 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteU64,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod22 = (
   uniffiHandle: bigint,
   records: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod23 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod24 = (
   uniffiHandle: bigint,
   limit: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod25 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod26 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
-) => UniffiResult<UniffiForeignFuture>;
+) => UniffiForeignFuture;
 export type UniffiVTableCallbackInterfaceEventListener = {
   onEvent: UniffiCallbackInterfaceEventListenerMethod0;
   uniffiFree: UniffiCallbackInterfaceFree;
