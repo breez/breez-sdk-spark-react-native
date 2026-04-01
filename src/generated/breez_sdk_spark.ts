@@ -84,7 +84,7 @@ import {
 } from 'uniffi-bindgen-react-native';
 
 // Get converters from the other files, if any.
-const uniffiCaller = new UniffiRustCaller(() => ({ code: 0 }));
+const uniffiCaller = new UniffiRustCaller();
 
 const uniffiIsDebug =
   // @ts-ignore -- The process global might not be defined
@@ -337,8 +337,7 @@ const uniffiCallbackInterfaceEventListener: {
         });
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -346,12 +345,11 @@ const uniffiCallbackInterfaceEventListener: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -361,7 +359,7 @@ const uniffiCallbackInterfaceEventListener: {
         /*handleError:*/ uniffiHandleError,
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
       // EventListener: this will throw a stale handle error if the handle isn't found.
@@ -1555,6 +1553,77 @@ const FfiConverterTypeBurnIssuerTokenRequest = (() => {
 })();
 
 /**
+ * Request to buy Bitcoin using an external provider (`MoonPay`)
+ */
+export type BuyBitcoinRequest = {
+  /**
+   * Optional: Lock the purchase to a specific amount in satoshis.
+   * When provided, the user cannot change the amount in the purchase flow.
+   */
+  lockedAmountSat: /*u64*/ bigint | undefined;
+  /**
+   * Optional: Custom redirect URL after purchase completion
+   */
+  redirectUrl: string | undefined;
+};
+
+/**
+ * Generated factory for {@link BuyBitcoinRequest} record objects.
+ */
+export const BuyBitcoinRequest = (() => {
+  const defaults = () => ({
+    lockedAmountSat: undefined,
+    redirectUrl: undefined,
+  });
+  const create = (() => {
+    return uniffiCreateRecord<BuyBitcoinRequest, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link BuyBitcoinRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link BuyBitcoinRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<BuyBitcoinRequest>,
+  });
+})();
+
+const FfiConverterTypeBuyBitcoinRequest = (() => {
+  type TypeName = BuyBitcoinRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        lockedAmountSat: FfiConverterOptionalUInt64.read(from),
+        redirectUrl: FfiConverterOptionalString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalUInt64.write(value.lockedAmountSat, into);
+      FfiConverterOptionalString.write(value.redirectUrl, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalUInt64.allocationSize(value.lockedAmountSat) +
+        FfiConverterOptionalString.allocationSize(value.redirectUrl)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
  * Response containing a URL to complete the Bitcoin purchase
  */
 export type BuyBitcoinResponse = {
@@ -2073,13 +2142,10 @@ export type Config = {
    */
   maxConcurrentClaims: /*u32*/ number;
   /**
-   * Optional custom Spark environment configuration.
-   *
-   * When set, overrides the default Spark operator pool, service provider,
-   * threshold, and token settings. Use this to connect to alternative Spark
-   * deployments (e.g. dev/staging environments).
+   * When true, enables LNURL verify support (LUD-21) and zap receipts (NIP-57).
+   * When false (default), these features are disabled for privacy.
    */
-  sparkConfig: SparkConfig | undefined;
+  supportLnurlVerify: boolean;
 };
 
 /**
@@ -2130,7 +2196,7 @@ const FfiConverterTypeConfig = (() => {
         stableBalanceConfig:
           FfiConverterOptionalTypeStableBalanceConfig.read(from),
         maxConcurrentClaims: FfiConverterUInt32.read(from),
-        sparkConfig: FfiConverterOptionalTypeSparkConfig.read(from),
+        supportLnurlVerify: FfiConverterBool.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -2153,7 +2219,7 @@ const FfiConverterTypeConfig = (() => {
         into
       );
       FfiConverterUInt32.write(value.maxConcurrentClaims, into);
-      FfiConverterOptionalTypeSparkConfig.write(value.sparkConfig, into);
+      FfiConverterBool.write(value.supportLnurlVerify, into);
     }
     allocationSize(value: TypeName): number {
       return (
@@ -2178,7 +2244,7 @@ const FfiConverterTypeConfig = (() => {
           value.stableBalanceConfig
         ) +
         FfiConverterUInt32.allocationSize(value.maxConcurrentClaims) +
-        FfiConverterOptionalTypeSparkConfig.allocationSize(value.sparkConfig)
+        FfiConverterBool.allocationSize(value.supportLnurlVerify)
       );
     }
   }
@@ -2391,24 +2457,17 @@ const FfiConverterTypeContact = (() => {
 })();
 
 /**
- * Outlines the steps involved in a conversion.
- *
- * Built progressively: `status` is available immediately from payment metadata,
- * while `from`/`to` steps are enriched later from child payments.
+ * Outlines the steps involved in a conversion
  */
 export type ConversionDetails = {
   /**
-   * Current status of the conversion
+   * First step is converting from the available asset
    */
-  status: ConversionStatus;
+  from: ConversionStep;
   /**
-   * The send step of the conversion (e.g., sats sent to Flashnet)
+   * Second step is converting to the requested asset
    */
-  from: ConversionStep | undefined;
-  /**
-   * The receive step of the conversion (e.g., tokens received from Flashnet)
-   */
-  to: ConversionStep | undefined;
+  to: ConversionStep;
 };
 
 /**
@@ -2446,21 +2505,18 @@ const FfiConverterTypeConversionDetails = (() => {
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
-        status: FfiConverterTypeConversionStatus.read(from),
-        from: FfiConverterOptionalTypeConversionStep.read(from),
-        to: FfiConverterOptionalTypeConversionStep.read(from),
+        from: FfiConverterTypeConversionStep.read(from),
+        to: FfiConverterTypeConversionStep.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
-      FfiConverterTypeConversionStatus.write(value.status, into);
-      FfiConverterOptionalTypeConversionStep.write(value.from, into);
-      FfiConverterOptionalTypeConversionStep.write(value.to, into);
+      FfiConverterTypeConversionStep.write(value.from, into);
+      FfiConverterTypeConversionStep.write(value.to, into);
     }
     allocationSize(value: TypeName): number {
       return (
-        FfiConverterTypeConversionStatus.allocationSize(value.status) +
-        FfiConverterOptionalTypeConversionStep.allocationSize(value.from) +
-        FfiConverterOptionalTypeConversionStep.allocationSize(value.to)
+        FfiConverterTypeConversionStep.allocationSize(value.from) +
+        FfiConverterTypeConversionStep.allocationSize(value.to)
       );
     }
   }
@@ -2485,10 +2541,6 @@ export type ConversionEstimate = {
    * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
    */
   fee: U128;
-  /**
-   * The reason the conversion amount was adjusted, if applicable.
-   */
-  amountAdjustment: AmountAdjustmentReason | undefined;
 };
 
 /**
@@ -2529,27 +2581,18 @@ const FfiConverterTypeConversionEstimate = (() => {
         options: FfiConverterTypeConversionOptions.read(from),
         amount: FfiConverterTypeu128.read(from),
         fee: FfiConverterTypeu128.read(from),
-        amountAdjustment:
-          FfiConverterOptionalTypeAmountAdjustmentReason.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterTypeConversionOptions.write(value.options, into);
       FfiConverterTypeu128.write(value.amount, into);
       FfiConverterTypeu128.write(value.fee, into);
-      FfiConverterOptionalTypeAmountAdjustmentReason.write(
-        value.amountAdjustment,
-        into
-      );
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterTypeConversionOptions.allocationSize(value.options) +
         FfiConverterTypeu128.allocationSize(value.amount) +
-        FfiConverterTypeu128.allocationSize(value.fee) +
-        FfiConverterOptionalTypeAmountAdjustmentReason.allocationSize(
-          value.amountAdjustment
-        )
+        FfiConverterTypeu128.allocationSize(value.fee)
       );
     }
   }
@@ -2578,10 +2621,6 @@ export type ConversionInfo = {
    * The purpose of the conversion
    */
   purpose: ConversionPurpose | undefined;
-  /**
-   * The reason the conversion amount was adjusted, if applicable.
-   */
-  amountAdjustment: AmountAdjustmentReason | undefined;
 };
 
 /**
@@ -2624,8 +2663,6 @@ const FfiConverterTypeConversionInfo = (() => {
         status: FfiConverterTypeConversionStatus.read(from),
         fee: FfiConverterOptionalTypeu128.read(from),
         purpose: FfiConverterOptionalTypeConversionPurpose.read(from),
-        amountAdjustment:
-          FfiConverterOptionalTypeAmountAdjustmentReason.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -2634,10 +2671,6 @@ const FfiConverterTypeConversionInfo = (() => {
       FfiConverterTypeConversionStatus.write(value.status, into);
       FfiConverterOptionalTypeu128.write(value.fee, into);
       FfiConverterOptionalTypeConversionPurpose.write(value.purpose, into);
-      FfiConverterOptionalTypeAmountAdjustmentReason.write(
-        value.amountAdjustment,
-        into
-      );
     }
     allocationSize(value: TypeName): number {
       return (
@@ -2645,12 +2678,7 @@ const FfiConverterTypeConversionInfo = (() => {
         FfiConverterString.allocationSize(value.conversionId) +
         FfiConverterTypeConversionStatus.allocationSize(value.status) +
         FfiConverterOptionalTypeu128.allocationSize(value.fee) +
-        FfiConverterOptionalTypeConversionPurpose.allocationSize(
-          value.purpose
-        ) +
-        FfiConverterOptionalTypeAmountAdjustmentReason.allocationSize(
-          value.amountAdjustment
-        )
+        FfiConverterOptionalTypeConversionPurpose.allocationSize(value.purpose)
       );
     }
   }
@@ -2767,10 +2795,6 @@ export type ConversionStep = {
    * Token metadata if a token is used for payment
    */
   tokenMetadata: TokenMetadata | undefined;
-  /**
-   * The reason the conversion amount was adjusted, if applicable.
-   */
-  amountAdjustment: AmountAdjustmentReason | undefined;
 };
 
 /**
@@ -2813,8 +2837,6 @@ const FfiConverterTypeConversionStep = (() => {
         fee: FfiConverterTypeu128.read(from),
         method: FfiConverterTypePaymentMethod.read(from),
         tokenMetadata: FfiConverterOptionalTypeTokenMetadata.read(from),
-        amountAdjustment:
-          FfiConverterOptionalTypeAmountAdjustmentReason.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -2823,10 +2845,6 @@ const FfiConverterTypeConversionStep = (() => {
       FfiConverterTypeu128.write(value.fee, into);
       FfiConverterTypePaymentMethod.write(value.method, into);
       FfiConverterOptionalTypeTokenMetadata.write(value.tokenMetadata, into);
-      FfiConverterOptionalTypeAmountAdjustmentReason.write(
-        value.amountAdjustment,
-        into
-      );
     }
     allocationSize(value: TypeName): number {
       return (
@@ -2836,9 +2854,6 @@ const FfiConverterTypeConversionStep = (() => {
         FfiConverterTypePaymentMethod.allocationSize(value.method) +
         FfiConverterOptionalTypeTokenMetadata.allocationSize(
           value.tokenMetadata
-        ) +
-        FfiConverterOptionalTypeAmountAdjustmentReason.allocationSize(
-          value.amountAdjustment
         )
       );
     }
@@ -3063,7 +3078,6 @@ export type DepositInfo = {
   txid: string;
   vout: /*u32*/ number;
   amountSats: /*u64*/ bigint;
-  isMature: boolean;
   refundTx: string | undefined;
   refundTxId: string | undefined;
   claimError: DepositClaimError | undefined;
@@ -3107,7 +3121,6 @@ const FfiConverterTypeDepositInfo = (() => {
         txid: FfiConverterString.read(from),
         vout: FfiConverterUInt32.read(from),
         amountSats: FfiConverterUInt64.read(from),
-        isMature: FfiConverterBool.read(from),
         refundTx: FfiConverterOptionalString.read(from),
         refundTxId: FfiConverterOptionalString.read(from),
         claimError: FfiConverterOptionalTypeDepositClaimError.read(from),
@@ -3117,7 +3130,6 @@ const FfiConverterTypeDepositInfo = (() => {
       FfiConverterString.write(value.txid, into);
       FfiConverterUInt32.write(value.vout, into);
       FfiConverterUInt64.write(value.amountSats, into);
-      FfiConverterBool.write(value.isMature, into);
       FfiConverterOptionalString.write(value.refundTx, into);
       FfiConverterOptionalString.write(value.refundTxId, into);
       FfiConverterOptionalTypeDepositClaimError.write(value.claimError, into);
@@ -3127,7 +3139,6 @@ const FfiConverterTypeDepositInfo = (() => {
         FfiConverterString.allocationSize(value.txid) +
         FfiConverterUInt32.allocationSize(value.vout) +
         FfiConverterUInt64.allocationSize(value.amountSats) +
-        FfiConverterBool.allocationSize(value.isMature) +
         FfiConverterOptionalString.allocationSize(value.refundTx) +
         FfiConverterOptionalString.allocationSize(value.refundTxId) +
         FfiConverterOptionalTypeDepositClaimError.allocationSize(
@@ -7426,7 +7437,6 @@ export type PaymentMetadata = {
   lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
   lnurlDescription: string | undefined;
   conversionInfo: ConversionInfo | undefined;
-  conversionStatus: ConversionStatus | undefined;
 };
 
 /**
@@ -7469,7 +7479,6 @@ const FfiConverterTypePaymentMetadata = (() => {
         lnurlWithdrawInfo: FfiConverterOptionalTypeLnurlWithdrawInfo.read(from),
         lnurlDescription: FfiConverterOptionalString.read(from),
         conversionInfo: FfiConverterOptionalTypeConversionInfo.read(from),
-        conversionStatus: FfiConverterOptionalTypeConversionStatus.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -7481,10 +7490,6 @@ const FfiConverterTypePaymentMetadata = (() => {
       );
       FfiConverterOptionalString.write(value.lnurlDescription, into);
       FfiConverterOptionalTypeConversionInfo.write(value.conversionInfo, into);
-      FfiConverterOptionalTypeConversionStatus.write(
-        value.conversionStatus,
-        into
-      );
     }
     allocationSize(value: TypeName): number {
       return (
@@ -7498,9 +7503,6 @@ const FfiConverterTypePaymentMetadata = (() => {
         FfiConverterOptionalString.allocationSize(value.lnurlDescription) +
         FfiConverterOptionalTypeConversionInfo.allocationSize(
           value.conversionInfo
-        ) +
-        FfiConverterOptionalTypeConversionStatus.allocationSize(
-          value.conversionStatus
         )
       );
     }
@@ -8768,142 +8770,6 @@ const FfiConverterTypeRegisterLightningAddressRequest = (() => {
   return new FFIConverter();
 })();
 
-/**
- * Request to register a new webhook.
- */
-export type RegisterWebhookRequest = {
-  /**
-   * The URL that will receive webhook notifications.
-   */
-  url: string;
-  /**
-   * A secret used for HMAC-SHA256 signature verification of webhook payloads.
-   */
-  secret: string;
-  /**
-   * The event types to subscribe to.
-   */
-  eventTypes: Array<WebhookEventType>;
-};
-
-/**
- * Generated factory for {@link RegisterWebhookRequest} record objects.
- */
-export const RegisterWebhookRequest = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<
-      RegisterWebhookRequest,
-      ReturnType<typeof defaults>
-    >(defaults);
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link RegisterWebhookRequest}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link RegisterWebhookRequest}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () =>
-      Object.freeze(defaults()) as Partial<RegisterWebhookRequest>,
-  });
-})();
-
-const FfiConverterTypeRegisterWebhookRequest = (() => {
-  type TypeName = RegisterWebhookRequest;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        url: FfiConverterString.read(from),
-        secret: FfiConverterString.read(from),
-        eventTypes: FfiConverterArrayTypeWebhookEventType.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterString.write(value.url, into);
-      FfiConverterString.write(value.secret, into);
-      FfiConverterArrayTypeWebhookEventType.write(value.eventTypes, into);
-    }
-    allocationSize(value: TypeName): number {
-      return (
-        FfiConverterString.allocationSize(value.url) +
-        FfiConverterString.allocationSize(value.secret) +
-        FfiConverterArrayTypeWebhookEventType.allocationSize(value.eventTypes)
-      );
-    }
-  }
-  return new FFIConverter();
-})();
-
-/**
- * Response from registering a webhook.
- */
-export type RegisterWebhookResponse = {
-  /**
-   * The unique identifier of the newly registered webhook.
-   */
-  webhookId: string;
-};
-
-/**
- * Generated factory for {@link RegisterWebhookResponse} record objects.
- */
-export const RegisterWebhookResponse = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<
-      RegisterWebhookResponse,
-      ReturnType<typeof defaults>
-    >(defaults);
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link RegisterWebhookResponse}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link RegisterWebhookResponse}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () =>
-      Object.freeze(defaults()) as Partial<RegisterWebhookResponse>,
-  });
-})();
-
-const FfiConverterTypeRegisterWebhookResponse = (() => {
-  type TypeName = RegisterWebhookResponse;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        webhookId: FfiConverterString.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterString.write(value.webhookId, into);
-    }
-    allocationSize(value: TypeName): number {
-      return FfiConverterString.allocationSize(value.webhookId);
-    }
-  }
-  return new FFIConverter();
-})();
-
 export type RestResponse = {
   status: /*u16*/ number;
   body: string;
@@ -9339,6 +9205,7 @@ export type SetLnurlMetadataItem = {
   senderComment: string | undefined;
   nostrZapRequest: string | undefined;
   nostrZapReceipt: string | undefined;
+  preimage: string | undefined;
 };
 
 /**
@@ -9381,6 +9248,7 @@ const FfiConverterTypeSetLnurlMetadataItem = (() => {
         senderComment: FfiConverterOptionalString.read(from),
         nostrZapRequest: FfiConverterOptionalString.read(from),
         nostrZapReceipt: FfiConverterOptionalString.read(from),
+        preimage: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -9388,13 +9256,15 @@ const FfiConverterTypeSetLnurlMetadataItem = (() => {
       FfiConverterOptionalString.write(value.senderComment, into);
       FfiConverterOptionalString.write(value.nostrZapRequest, into);
       FfiConverterOptionalString.write(value.nostrZapReceipt, into);
+      FfiConverterOptionalString.write(value.preimage, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterString.allocationSize(value.paymentHash) +
         FfiConverterOptionalString.allocationSize(value.senderComment) +
         FfiConverterOptionalString.allocationSize(value.nostrZapRequest) +
-        FfiConverterOptionalString.allocationSize(value.nostrZapReceipt)
+        FfiConverterOptionalString.allocationSize(value.nostrZapReceipt) +
+        FfiConverterOptionalString.allocationSize(value.preimage)
       );
     }
   }
@@ -9653,115 +9523,6 @@ const FfiConverterTypeSparkAddressDetails = (() => {
         FfiConverterString.allocationSize(value.identityPublicKey) +
         FfiConverterTypeBitcoinNetwork.allocationSize(value.network) +
         FfiConverterTypePaymentRequestSource.allocationSize(value.source)
-      );
-    }
-  }
-  return new FFIConverter();
-})();
-
-/**
- * Configuration for a custom Spark environment.
- *
- * When set on [`Config`], overrides the default Spark operator pool,
- * service provider, threshold, and token settings. This allows connecting
- * to alternative Spark deployments (e.g. dev/staging environments).
- */
-export type SparkConfig = {
-  /**
-   * Hex-encoded identifier of the coordinator operator.
-   */
-  coordinatorIdentifier: string;
-  /**
-   * The FROST signing threshold (e.g. 2 of 3).
-   */
-  threshold: /*u32*/ number;
-  /**
-   * The set of signing operators.
-   */
-  signingOperators: Array<SparkSigningOperator>;
-  /**
-   * Service provider (SSP) configuration.
-   */
-  sspConfig: SparkSspConfig;
-  /**
-   * Expected bond amount in sats for token withdrawals.
-   */
-  expectedWithdrawBondSats: /*u64*/ bigint;
-  /**
-   * Expected relative block locktime for token withdrawals.
-   */
-  expectedWithdrawRelativeBlockLocktime: /*u64*/ bigint;
-};
-
-/**
- * Generated factory for {@link SparkConfig} record objects.
- */
-export const SparkConfig = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<SparkConfig, ReturnType<typeof defaults>>(
-      defaults
-    );
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link SparkConfig}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link SparkConfig}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Object.freeze(defaults()) as Partial<SparkConfig>,
-  });
-})();
-
-const FfiConverterTypeSparkConfig = (() => {
-  type TypeName = SparkConfig;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        coordinatorIdentifier: FfiConverterString.read(from),
-        threshold: FfiConverterUInt32.read(from),
-        signingOperators: FfiConverterArrayTypeSparkSigningOperator.read(from),
-        sspConfig: FfiConverterTypeSparkSspConfig.read(from),
-        expectedWithdrawBondSats: FfiConverterUInt64.read(from),
-        expectedWithdrawRelativeBlockLocktime: FfiConverterUInt64.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterString.write(value.coordinatorIdentifier, into);
-      FfiConverterUInt32.write(value.threshold, into);
-      FfiConverterArrayTypeSparkSigningOperator.write(
-        value.signingOperators,
-        into
-      );
-      FfiConverterTypeSparkSspConfig.write(value.sspConfig, into);
-      FfiConverterUInt64.write(value.expectedWithdrawBondSats, into);
-      FfiConverterUInt64.write(
-        value.expectedWithdrawRelativeBlockLocktime,
-        into
-      );
-    }
-    allocationSize(value: TypeName): number {
-      return (
-        FfiConverterString.allocationSize(value.coordinatorIdentifier) +
-        FfiConverterUInt32.allocationSize(value.threshold) +
-        FfiConverterArrayTypeSparkSigningOperator.allocationSize(
-          value.signingOperators
-        ) +
-        FfiConverterTypeSparkSspConfig.allocationSize(value.sspConfig) +
-        FfiConverterUInt64.allocationSize(value.expectedWithdrawBondSats) +
-        FfiConverterUInt64.allocationSize(
-          value.expectedWithdrawRelativeBlockLocktime
-        )
       );
     }
   }
@@ -10081,163 +9842,6 @@ const FfiConverterTypeSparkInvoicePaymentDetails = (() => {
 })();
 
 /**
- * A Spark signing operator.
- */
-export type SparkSigningOperator = {
-  /**
-   * Sequential operator ID (0-indexed).
-   */
-  id: /*u32*/ number;
-  /**
-   * Hex-encoded 32-byte FROST identifier.
-   */
-  identifier: string;
-  /**
-   * gRPC address of the operator (e.g. `https://0.spark.lightspark.com`).
-   */
-  address: string;
-  /**
-   * Hex-encoded compressed public key of the operator.
-   */
-  identityPublicKey: string;
-};
-
-/**
- * Generated factory for {@link SparkSigningOperator} record objects.
- */
-export const SparkSigningOperator = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<
-      SparkSigningOperator,
-      ReturnType<typeof defaults>
-    >(defaults);
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link SparkSigningOperator}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link SparkSigningOperator}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Object.freeze(defaults()) as Partial<SparkSigningOperator>,
-  });
-})();
-
-const FfiConverterTypeSparkSigningOperator = (() => {
-  type TypeName = SparkSigningOperator;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        id: FfiConverterUInt32.read(from),
-        identifier: FfiConverterString.read(from),
-        address: FfiConverterString.read(from),
-        identityPublicKey: FfiConverterString.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterUInt32.write(value.id, into);
-      FfiConverterString.write(value.identifier, into);
-      FfiConverterString.write(value.address, into);
-      FfiConverterString.write(value.identityPublicKey, into);
-    }
-    allocationSize(value: TypeName): number {
-      return (
-        FfiConverterUInt32.allocationSize(value.id) +
-        FfiConverterString.allocationSize(value.identifier) +
-        FfiConverterString.allocationSize(value.address) +
-        FfiConverterString.allocationSize(value.identityPublicKey)
-      );
-    }
-  }
-  return new FFIConverter();
-})();
-
-/**
- * Configuration for the Spark Service Provider (SSP).
- */
-export type SparkSspConfig = {
-  /**
-   * Base URL of the SSP GraphQL API.
-   */
-  baseUrl: string;
-  /**
-   * Hex-encoded compressed public key of the SSP.
-   */
-  identityPublicKey: string;
-  /**
-   * Optional GraphQL schema endpoint path (e.g. "graphql/spark/rc").
-   * Defaults to the hardcoded schema endpoint if not set.
-   */
-  schemaEndpoint: string | undefined;
-};
-
-/**
- * Generated factory for {@link SparkSspConfig} record objects.
- */
-export const SparkSspConfig = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<SparkSspConfig, ReturnType<typeof defaults>>(
-      defaults
-    );
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link SparkSspConfig}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link SparkSspConfig}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Object.freeze(defaults()) as Partial<SparkSspConfig>,
-  });
-})();
-
-const FfiConverterTypeSparkSspConfig = (() => {
-  type TypeName = SparkSspConfig;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        baseUrl: FfiConverterString.read(from),
-        identityPublicKey: FfiConverterString.read(from),
-        schemaEndpoint: FfiConverterOptionalString.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterString.write(value.baseUrl, into);
-      FfiConverterString.write(value.identityPublicKey, into);
-      FfiConverterOptionalString.write(value.schemaEndpoint, into);
-    }
-    allocationSize(value: TypeName): number {
-      return (
-        FfiConverterString.allocationSize(value.baseUrl) +
-        FfiConverterString.allocationSize(value.identityPublicKey) +
-        FfiConverterOptionalString.allocationSize(value.schemaEndpoint)
-      );
-    }
-  }
-  return new FFIConverter();
-})();
-
-/**
  * The status of the Spark network services relevant to the SDK.
  */
 export type SparkStatus = {
@@ -10310,28 +9914,18 @@ const FfiConverterTypeSparkStatus = (() => {
  * When configured, the SDK automatically monitors the Bitcoin balance after each
  * wallet sync. When the balance exceeds the configured threshold plus the reserved
  * amount, the SDK automatically converts the excess balance (above the reserve)
- * to the active stable token.
+ * to the specified stable token.
  *
  * When the balance is held in a stable token, Bitcoin payments can still be sent.
  * The SDK automatically detects when there's not enough Bitcoin balance to cover a
  * payment and auto-populates the token-to-Bitcoin conversion options to facilitate
  * the payment.
- *
- * The active token can be changed at runtime via [`UpdateUserSettingsRequest`].
  */
 export type StableBalanceConfig = {
   /**
-   * Available tokens that can be used for stable balance.
+   * The token identifier to convert Bitcoin to (required).
    */
-  tokens: Array<StableBalanceToken>;
-  /**
-   * The label of the token to activate by default.
-   *
-   * If `None`, stable balance starts deactivated. The user can activate it
-   * at runtime via [`UpdateUserSettingsRequest`]. If a user setting is cached
-   * locally, it takes precedence over this default.
-   */
-  defaultActiveLabel: string | undefined;
+  tokenIdentifier: string;
   /**
    * The minimum sats balance that triggers auto-conversion.
    *
@@ -10345,6 +9939,13 @@ export type StableBalanceConfig = {
    * Defaults to 50 bps (0.5%) if not set.
    */
   maxSlippageBps: /*u32*/ number | undefined;
+  /**
+   * Amount of sats to keep as Bitcoin and not convert to stable tokens.
+   *
+   * This reserve ensures you can send Bitcoin payments without hitting
+   * the minimum conversion limit. Defaults to the conversion minimum if not set.
+   */
+  reservedSats: /*u64*/ bigint | undefined;
 };
 
 /**
@@ -10352,9 +9953,9 @@ export type StableBalanceConfig = {
  */
 export const StableBalanceConfig = (() => {
   const defaults = () => ({
-    defaultActiveLabel: undefined,
     thresholdSats: undefined,
     maxSlippageBps: undefined,
+    reservedSats: undefined,
   });
   const create = (() => {
     return uniffiCreateRecord<StableBalanceConfig, ReturnType<typeof defaults>>(
@@ -10386,95 +9987,24 @@ const FfiConverterTypeStableBalanceConfig = (() => {
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
-        tokens: FfiConverterArrayTypeStableBalanceToken.read(from),
-        defaultActiveLabel: FfiConverterOptionalString.read(from),
+        tokenIdentifier: FfiConverterString.read(from),
         thresholdSats: FfiConverterOptionalUInt64.read(from),
         maxSlippageBps: FfiConverterOptionalUInt32.read(from),
+        reservedSats: FfiConverterOptionalUInt64.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
-      FfiConverterArrayTypeStableBalanceToken.write(value.tokens, into);
-      FfiConverterOptionalString.write(value.defaultActiveLabel, into);
+      FfiConverterString.write(value.tokenIdentifier, into);
       FfiConverterOptionalUInt64.write(value.thresholdSats, into);
       FfiConverterOptionalUInt32.write(value.maxSlippageBps, into);
+      FfiConverterOptionalUInt64.write(value.reservedSats, into);
     }
     allocationSize(value: TypeName): number {
       return (
-        FfiConverterArrayTypeStableBalanceToken.allocationSize(value.tokens) +
-        FfiConverterOptionalString.allocationSize(value.defaultActiveLabel) +
+        FfiConverterString.allocationSize(value.tokenIdentifier) +
         FfiConverterOptionalUInt64.allocationSize(value.thresholdSats) +
-        FfiConverterOptionalUInt32.allocationSize(value.maxSlippageBps)
-      );
-    }
-  }
-  return new FFIConverter();
-})();
-
-/**
- * A stable token that can be used for automatic balance conversion.
- */
-export type StableBalanceToken = {
-  /**
-   * Integrator-defined display label for the token, e.g. "USD".
-   *
-   * This is a short, human-readable name set by the integrator for display purposes.
-   * It is **not** a canonical Spark token ticker — it has no protocol-level meaning.
-   * Labels must be unique within the [`StableBalanceConfig::tokens`] list.
-   */
-  label: string;
-  /**
-   * The full token identifier string used for conversions.
-   */
-  tokenIdentifier: string;
-};
-
-/**
- * Generated factory for {@link StableBalanceToken} record objects.
- */
-export const StableBalanceToken = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<StableBalanceToken, ReturnType<typeof defaults>>(
-      defaults
-    );
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link StableBalanceToken}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link StableBalanceToken}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Object.freeze(defaults()) as Partial<StableBalanceToken>,
-  });
-})();
-
-const FfiConverterTypeStableBalanceToken = (() => {
-  type TypeName = StableBalanceToken;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        label: FfiConverterString.read(from),
-        tokenIdentifier: FfiConverterString.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterString.write(value.label, into);
-      FfiConverterString.write(value.tokenIdentifier, into);
-    }
-    allocationSize(value: TypeName): number {
-      return (
-        FfiConverterString.allocationSize(value.label) +
-        FfiConverterString.allocationSize(value.tokenIdentifier)
+        FfiConverterOptionalUInt32.allocationSize(value.maxSlippageBps) +
+        FfiConverterOptionalUInt64.allocationSize(value.reservedSats)
       );
     }
   }
@@ -11077,66 +10607,6 @@ const FfiConverterTypeUnfreezeIssuerTokenResponse = (() => {
   return new FFIConverter();
 })();
 
-/**
- * Request to unregister an existing webhook.
- */
-export type UnregisterWebhookRequest = {
-  /**
-   * The unique identifier of the webhook to unregister.
-   */
-  webhookId: string;
-};
-
-/**
- * Generated factory for {@link UnregisterWebhookRequest} record objects.
- */
-export const UnregisterWebhookRequest = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<
-      UnregisterWebhookRequest,
-      ReturnType<typeof defaults>
-    >(defaults);
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link UnregisterWebhookRequest}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link UnregisterWebhookRequest}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () =>
-      Object.freeze(defaults()) as Partial<UnregisterWebhookRequest>,
-  });
-})();
-
-const FfiConverterTypeUnregisterWebhookRequest = (() => {
-  type TypeName = UnregisterWebhookRequest;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        webhookId: FfiConverterString.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterString.write(value.webhookId, into);
-    }
-    allocationSize(value: TypeName): number {
-      return FfiConverterString.allocationSize(value.webhookId);
-    }
-  }
-  return new FFIConverter();
-})();
-
 export type UnversionedRecordChange = {
   id: RecordId;
   schemaVersion: string;
@@ -11272,17 +10742,13 @@ const FfiConverterTypeUpdateContactRequest = (() => {
 
 export type UpdateUserSettingsRequest = {
   sparkPrivateModeEnabled: boolean | undefined;
-  /**
-   * Update the active stable balance token. `None` means no change.
-   */
-  stableBalanceActiveLabel: StableBalanceActiveLabel | undefined;
 };
 
 /**
  * Generated factory for {@link UpdateUserSettingsRequest} record objects.
  */
 export const UpdateUserSettingsRequest = (() => {
-  const defaults = () => ({ stableBalanceActiveLabel: undefined });
+  const defaults = () => ({});
   const create = (() => {
     return uniffiCreateRecord<
       UpdateUserSettingsRequest,
@@ -11316,23 +10782,14 @@ const FfiConverterTypeUpdateUserSettingsRequest = (() => {
     read(from: RustBuffer): TypeName {
       return {
         sparkPrivateModeEnabled: FfiConverterOptionalBool.read(from),
-        stableBalanceActiveLabel:
-          FfiConverterOptionalTypeStableBalanceActiveLabel.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterOptionalBool.write(value.sparkPrivateModeEnabled, into);
-      FfiConverterOptionalTypeStableBalanceActiveLabel.write(
-        value.stableBalanceActiveLabel,
-        into
-      );
     }
     allocationSize(value: TypeName): number {
-      return (
-        FfiConverterOptionalBool.allocationSize(value.sparkPrivateModeEnabled) +
-        FfiConverterOptionalTypeStableBalanceActiveLabel.allocationSize(
-          value.stableBalanceActiveLabel
-        )
+      return FfiConverterOptionalBool.allocationSize(
+        value.sparkPrivateModeEnabled
       );
     }
   }
@@ -11415,10 +10872,6 @@ const FfiConverterTypeUrlSuccessActionData = (() => {
 
 export type UserSettings = {
   sparkPrivateModeEnabled: boolean;
-  /**
-   * The label of the currently active stable balance token, or `None` if deactivated.
-   */
-  stableBalanceActiveLabel: string | undefined;
 };
 
 /**
@@ -11457,20 +10910,13 @@ const FfiConverterTypeUserSettings = (() => {
     read(from: RustBuffer): TypeName {
       return {
         sparkPrivateModeEnabled: FfiConverterBool.read(from),
-        stableBalanceActiveLabel: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterBool.write(value.sparkPrivateModeEnabled, into);
-      FfiConverterOptionalString.write(value.stableBalanceActiveLabel, into);
     }
     allocationSize(value: TypeName): number {
-      return (
-        FfiConverterBool.allocationSize(value.sparkPrivateModeEnabled) +
-        FfiConverterOptionalString.allocationSize(
-          value.stableBalanceActiveLabel
-        )
-      );
+      return FfiConverterBool.allocationSize(value.sparkPrivateModeEnabled);
     }
   }
   return new FFIConverter();
@@ -11601,78 +11047,6 @@ const FfiConverterTypeWallet = (() => {
       return (
         FfiConverterTypeSeed.allocationSize(value.seed) +
         FfiConverterString.allocationSize(value.label)
-      );
-    }
-  }
-  return new FFIConverter();
-})();
-
-/**
- * A registered webhook entry.
- */
-export type Webhook = {
-  /**
-   * Unique identifier for this webhook.
-   */
-  id: string;
-  /**
-   * The URL that receives webhook notifications.
-   */
-  url: string;
-  /**
-   * The event types this webhook is subscribed to.
-   */
-  eventTypes: Array<WebhookEventType>;
-};
-
-/**
- * Generated factory for {@link Webhook} record objects.
- */
-export const Webhook = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<Webhook, ReturnType<typeof defaults>>(defaults);
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link Webhook}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link Webhook}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Object.freeze(defaults()) as Partial<Webhook>,
-  });
-})();
-
-const FfiConverterTypeWebhook = (() => {
-  type TypeName = Webhook;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        id: FfiConverterString.read(from),
-        url: FfiConverterString.read(from),
-        eventTypes: FfiConverterArrayTypeWebhookEventType.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterString.write(value.id, into);
-      FfiConverterString.write(value.url, into);
-      FfiConverterArrayTypeWebhookEventType.write(value.eventTypes, into);
-    }
-    allocationSize(value: TypeName): number {
-      return (
-        FfiConverterString.allocationSize(value.id) +
-        FfiConverterString.allocationSize(value.url) +
-        FfiConverterArrayTypeWebhookEventType.allocationSize(value.eventTypes)
       );
     }
   }
@@ -12046,50 +11420,6 @@ const FfiConverterTypeAmount = (() => {
   return new FFIConverter();
 })();
 
-/**
- * The reason why a conversion amount was adjusted from the originally requested value.
- */
-export enum AmountAdjustmentReason {
-  /**
-   * The amount was increased to meet the minimum conversion limit.
-   */
-  FlooredToMinLimit,
-  /**
-   * The amount was increased to convert the full token balance,
-   * avoiding a remaining balance below the minimum conversion limit (token dust).
-   */
-  IncreasedToAvoidDust,
-}
-
-const FfiConverterTypeAmountAdjustmentReason = (() => {
-  const ordinalConverter = FfiConverterInt32;
-  type TypeName = AmountAdjustmentReason;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      switch (ordinalConverter.read(from)) {
-        case 1:
-          return AmountAdjustmentReason.FlooredToMinLimit;
-        case 2:
-          return AmountAdjustmentReason.IncreasedToAvoidDust;
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      switch (value) {
-        case AmountAdjustmentReason.FlooredToMinLimit:
-          return ordinalConverter.write(1, into);
-        case AmountAdjustmentReason.IncreasedToAvoidDust:
-          return ordinalConverter.write(2, into);
-      }
-    }
-    allocationSize(value: TypeName): number {
-      return ordinalConverter.allocationSize(0);
-    }
-  }
-  return new FFIConverter();
-})();
-
 // Enum: AssetFilter
 export enum AssetFilter_Tags {
   Bitcoin = 'Bitcoin',
@@ -12279,196 +11609,6 @@ const FfiConverterTypeBitcoinNetwork = (() => {
     }
     allocationSize(value: TypeName): number {
       return ordinalConverter.allocationSize(0);
-    }
-  }
-  return new FFIConverter();
-})();
-
-// Enum: BuyBitcoinRequest
-export enum BuyBitcoinRequest_Tags {
-  Moonpay = 'Moonpay',
-  CashApp = 'CashApp',
-}
-/**
- * The available providers for buying Bitcoin
- * Request to buy Bitcoin using an external provider.
- *
- * Each variant carries only the parameters relevant to that provider.
- */
-export const BuyBitcoinRequest = (() => {
-  type Moonpay__interface = {
-    tag: BuyBitcoinRequest_Tags.Moonpay;
-    inner: Readonly<{
-      lockedAmountSat: /*u64*/ bigint | undefined;
-      redirectUrl: string | undefined;
-    }>;
-  };
-
-  /**
-   * `MoonPay`: Fiat-to-Bitcoin via credit card, Apple Pay, etc.
-   * Uses an on-chain deposit address.
-   */
-  class Moonpay_ extends UniffiEnum implements Moonpay__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'BuyBitcoinRequest';
-    readonly tag = BuyBitcoinRequest_Tags.Moonpay;
-    readonly inner: Readonly<{
-      lockedAmountSat: /*u64*/ bigint | undefined;
-      redirectUrl: string | undefined;
-    }>;
-    constructor(inner: {
-      /**
-       * Lock the purchase to a specific amount in satoshis.
-       */ lockedAmountSat: /*u64*/ bigint | undefined;
-      /**
-       * Custom redirect URL after purchase completion.
-       */ redirectUrl: string | undefined;
-    }) {
-      super('BuyBitcoinRequest', 'Moonpay');
-      this.inner = Object.freeze(inner);
-    }
-
-    static new(inner: {
-      /**
-       * Lock the purchase to a specific amount in satoshis.
-       */ lockedAmountSat: /*u64*/ bigint | undefined;
-      /**
-       * Custom redirect URL after purchase completion.
-       */ redirectUrl: string | undefined;
-    }): Moonpay_ {
-      return new Moonpay_(inner);
-    }
-
-    static instanceOf(obj: any): obj is Moonpay_ {
-      return obj.tag === BuyBitcoinRequest_Tags.Moonpay;
-    }
-  }
-
-  type CashApp__interface = {
-    tag: BuyBitcoinRequest_Tags.CashApp;
-    inner: Readonly<{ amountSats: /*u64*/ bigint | undefined }>;
-  };
-
-  /**
-   * `CashApp`: Pay via the Lightning Network.
-   * Generates a bolt11 invoice and returns a `cash.app` deep link.
-   * Only available on mainnet.
-   */
-  class CashApp_ extends UniffiEnum implements CashApp__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'BuyBitcoinRequest';
-    readonly tag = BuyBitcoinRequest_Tags.CashApp;
-    readonly inner: Readonly<{ amountSats: /*u64*/ bigint | undefined }>;
-    constructor(inner: {
-      /**
-       * Amount in satoshis for the Lightning invoice.
-       */ amountSats: /*u64*/ bigint | undefined;
-    }) {
-      super('BuyBitcoinRequest', 'CashApp');
-      this.inner = Object.freeze(inner);
-    }
-
-    static new(inner: {
-      /**
-       * Amount in satoshis for the Lightning invoice.
-       */ amountSats: /*u64*/ bigint | undefined;
-    }): CashApp_ {
-      return new CashApp_(inner);
-    }
-
-    static instanceOf(obj: any): obj is CashApp_ {
-      return obj.tag === BuyBitcoinRequest_Tags.CashApp;
-    }
-  }
-
-  function instanceOf(obj: any): obj is BuyBitcoinRequest {
-    return obj[uniffiTypeNameSymbol] === 'BuyBitcoinRequest';
-  }
-
-  return Object.freeze({
-    instanceOf,
-    Moonpay: Moonpay_,
-    CashApp: CashApp_,
-  });
-})();
-
-/**
- * The available providers for buying Bitcoin
- * Request to buy Bitcoin using an external provider.
- *
- * Each variant carries only the parameters relevant to that provider.
- */
-
-export type BuyBitcoinRequest = InstanceType<
-  (typeof BuyBitcoinRequest)[keyof Omit<typeof BuyBitcoinRequest, 'instanceOf'>]
->;
-
-// FfiConverter for enum BuyBitcoinRequest
-const FfiConverterTypeBuyBitcoinRequest = (() => {
-  const ordinalConverter = FfiConverterInt32;
-  type TypeName = BuyBitcoinRequest;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      switch (ordinalConverter.read(from)) {
-        case 1:
-          return new BuyBitcoinRequest.Moonpay({
-            lockedAmountSat: FfiConverterOptionalUInt64.read(from),
-            redirectUrl: FfiConverterOptionalString.read(from),
-          });
-        case 2:
-          return new BuyBitcoinRequest.CashApp({
-            amountSats: FfiConverterOptionalUInt64.read(from),
-          });
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      switch (value.tag) {
-        case BuyBitcoinRequest_Tags.Moonpay: {
-          ordinalConverter.write(1, into);
-          const inner = value.inner;
-          FfiConverterOptionalUInt64.write(inner.lockedAmountSat, into);
-          FfiConverterOptionalString.write(inner.redirectUrl, into);
-          return;
-        }
-        case BuyBitcoinRequest_Tags.CashApp: {
-          ordinalConverter.write(2, into);
-          const inner = value.inner;
-          FfiConverterOptionalUInt64.write(inner.amountSats, into);
-          return;
-        }
-        default:
-          // Throwing from here means that BuyBitcoinRequest_Tags hasn't matched an ordinal.
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    allocationSize(value: TypeName): number {
-      switch (value.tag) {
-        case BuyBitcoinRequest_Tags.Moonpay: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(1);
-          size += FfiConverterOptionalUInt64.allocationSize(
-            inner.lockedAmountSat
-          );
-          size += FfiConverterOptionalString.allocationSize(inner.redirectUrl);
-          return size;
-        }
-        case BuyBitcoinRequest_Tags.CashApp: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(2);
-          size += FfiConverterOptionalUInt64.allocationSize(inner.amountSats);
-          return size;
-        }
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
     }
   }
   return new FFIConverter();
@@ -12915,17 +12055,9 @@ const FfiConverterTypeConversionPurpose = (() => {
  */
 export enum ConversionStatus {
   /**
-   * Conversion is in-flight (queued or started, not yet completed)
-   */
-  Pending,
-  /**
    * The conversion was successful
    */
   Completed,
-  /**
-   * The conversion failed (e.g., the initial send payment failed)
-   */
-  Failed,
   /**
    * The conversion failed and no refund was made yet, which requires action by the SDK to
    * perform the refund. This can happen if there was a failure during the conversion process.
@@ -12944,14 +12076,10 @@ const FfiConverterTypeConversionStatus = (() => {
     read(from: RustBuffer): TypeName {
       switch (ordinalConverter.read(from)) {
         case 1:
-          return ConversionStatus.Pending;
-        case 2:
           return ConversionStatus.Completed;
-        case 3:
-          return ConversionStatus.Failed;
-        case 4:
+        case 2:
           return ConversionStatus.RefundNeeded;
-        case 5:
+        case 3:
           return ConversionStatus.Refunded;
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -12959,16 +12087,12 @@ const FfiConverterTypeConversionStatus = (() => {
     }
     write(value: TypeName, into: RustBuffer): void {
       switch (value) {
-        case ConversionStatus.Pending:
-          return ordinalConverter.write(1, into);
         case ConversionStatus.Completed:
-          return ordinalConverter.write(2, into);
-        case ConversionStatus.Failed:
-          return ordinalConverter.write(3, into);
+          return ordinalConverter.write(1, into);
         case ConversionStatus.RefundNeeded:
-          return ordinalConverter.write(4, into);
+          return ordinalConverter.write(2, into);
         case ConversionStatus.Refunded:
-          return ordinalConverter.write(5, into);
+          return ordinalConverter.write(3, into);
       }
     }
     allocationSize(value: TypeName): number {
@@ -17639,7 +16763,6 @@ export const ReceivePaymentMethod = (() => {
 
   type BitcoinAddress__interface = {
     tag: ReceivePaymentMethod_Tags.BitcoinAddress;
-    inner: Readonly<{ newAddress: boolean | undefined }>;
   };
 
   class BitcoinAddress_
@@ -17652,26 +16775,12 @@ export const ReceivePaymentMethod = (() => {
      */
     readonly [uniffiTypeNameSymbol] = 'ReceivePaymentMethod';
     readonly tag = ReceivePaymentMethod_Tags.BitcoinAddress;
-    readonly inner: Readonly<{ newAddress: boolean | undefined }>;
-    constructor(inner: {
-      /**
-       * If true, rotate to a new deposit address. Previous ones remain valid.
-       * If false or absent, return the existing address (creating one if none
-       * exists yet).
-       */ newAddress: boolean | undefined;
-    }) {
+    constructor() {
       super('ReceivePaymentMethod', 'BitcoinAddress');
-      this.inner = Object.freeze(inner);
     }
 
-    static new(inner: {
-      /**
-       * If true, rotate to a new deposit address. Previous ones remain valid.
-       * If false or absent, return the existing address (creating one if none
-       * exists yet).
-       */ newAddress: boolean | undefined;
-    }): BitcoinAddress_ {
-      return new BitcoinAddress_(inner);
+    static new(): BitcoinAddress_ {
+      return new BitcoinAddress_();
     }
 
     static instanceOf(obj: any): obj is BitcoinAddress_ {
@@ -17776,9 +16885,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
             senderPublicKey: FfiConverterOptionalString.read(from),
           });
         case 3:
-          return new ReceivePaymentMethod.BitcoinAddress({
-            newAddress: FfiConverterOptionalBool.read(from),
-          });
+          return new ReceivePaymentMethod.BitcoinAddress();
         case 4:
           return new ReceivePaymentMethod.Bolt11Invoice({
             description: FfiConverterString.read(from),
@@ -17808,8 +16915,6 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
         }
         case ReceivePaymentMethod_Tags.BitcoinAddress: {
           ordinalConverter.write(3, into);
-          const inner = value.inner;
-          FfiConverterOptionalBool.write(inner.newAddress, into);
           return;
         }
         case ReceivePaymentMethod_Tags.Bolt11Invoice: {
@@ -17846,10 +16951,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
           return size;
         }
         case ReceivePaymentMethod_Tags.BitcoinAddress: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(3);
-          size += FfiConverterOptionalBool.allocationSize(inner.newAddress);
-          return size;
+          return ordinalConverter.allocationSize(3);
         }
         case ReceivePaymentMethod_Tags.Bolt11Invoice: {
           const inner = value.inner;
@@ -18605,7 +17707,6 @@ export enum SdkEvent_Tags {
   PaymentFailed = 'PaymentFailed',
   Optimization = 'Optimization',
   LightningAddressChanged = 'LightningAddressChanged',
-  NewDeposits = 'NewDeposits',
 }
 /**
  * Events emitted by the SDK
@@ -18853,33 +17954,6 @@ export const SdkEvent = (() => {
     }
   }
 
-  type NewDeposits__interface = {
-    tag: SdkEvent_Tags.NewDeposits;
-    inner: Readonly<{ newDeposits: Array<DepositInfo> }>;
-  };
-
-  class NewDeposits_ extends UniffiEnum implements NewDeposits__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'SdkEvent';
-    readonly tag = SdkEvent_Tags.NewDeposits;
-    readonly inner: Readonly<{ newDeposits: Array<DepositInfo> }>;
-    constructor(inner: { newDeposits: Array<DepositInfo> }) {
-      super('SdkEvent', 'NewDeposits');
-      this.inner = Object.freeze(inner);
-    }
-
-    static new(inner: { newDeposits: Array<DepositInfo> }): NewDeposits_ {
-      return new NewDeposits_(inner);
-    }
-
-    static instanceOf(obj: any): obj is NewDeposits_ {
-      return obj.tag === SdkEvent_Tags.NewDeposits;
-    }
-  }
-
   function instanceOf(obj: any): obj is SdkEvent {
     return obj[uniffiTypeNameSymbol] === 'SdkEvent';
   }
@@ -18894,7 +17968,6 @@ export const SdkEvent = (() => {
     PaymentFailed: PaymentFailed_,
     Optimization: Optimization_,
     LightningAddressChanged: LightningAddressChanged_,
-    NewDeposits: NewDeposits_,
   });
 })();
 
@@ -18943,10 +18016,6 @@ const FfiConverterTypeSdkEvent = (() => {
           return new SdkEvent.LightningAddressChanged({
             lightningAddress:
               FfiConverterOptionalTypeLightningAddressInfo.read(from),
-          });
-        case 9:
-          return new SdkEvent.NewDeposits({
-            newDeposits: FfiConverterArrayTypeDepositInfo.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -19006,12 +18075,6 @@ const FfiConverterTypeSdkEvent = (() => {
           );
           return;
         }
-        case SdkEvent_Tags.NewDeposits: {
-          ordinalConverter.write(9, into);
-          const inner = value.inner;
-          FfiConverterArrayTypeDepositInfo.write(inner.newDeposits, into);
-          return;
-        }
         default:
           // Throwing from here means that SdkEvent_Tags hasn't matched an ordinal.
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -19069,14 +18132,6 @@ const FfiConverterTypeSdkEvent = (() => {
           let size = ordinalConverter.allocationSize(8);
           size += FfiConverterOptionalTypeLightningAddressInfo.allocationSize(
             inner.lightningAddress
-          );
-          return size;
-        }
-        case SdkEvent_Tags.NewDeposits: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(9);
-          size += FfiConverterArrayTypeDepositInfo.allocationSize(
-            inner.newDeposits
           );
           return size;
         }
@@ -20958,147 +20013,6 @@ const FfiConverterTypeSparkHtlcStatus = (() => {
   return new FFIConverter();
 })();
 
-// Enum: StableBalanceActiveLabel
-export enum StableBalanceActiveLabel_Tags {
-  Set = 'Set',
-  Unset = 'Unset',
-}
-/**
- * Specifies how to update the active stable balance token.
- */
-export const StableBalanceActiveLabel = (() => {
-  type Set__interface = {
-    tag: StableBalanceActiveLabel_Tags.Set;
-    inner: Readonly<{ label: string }>;
-  };
-
-  /**
-   * Activate stable balance with the given label.
-   */
-  class Set_ extends UniffiEnum implements Set__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'StableBalanceActiveLabel';
-    readonly tag = StableBalanceActiveLabel_Tags.Set;
-    readonly inner: Readonly<{ label: string }>;
-    constructor(inner: { label: string }) {
-      super('StableBalanceActiveLabel', 'Set');
-      this.inner = Object.freeze(inner);
-    }
-
-    static new(inner: { label: string }): Set_ {
-      return new Set_(inner);
-    }
-
-    static instanceOf(obj: any): obj is Set_ {
-      return obj.tag === StableBalanceActiveLabel_Tags.Set;
-    }
-  }
-
-  type Unset__interface = {
-    tag: StableBalanceActiveLabel_Tags.Unset;
-  };
-
-  /**
-   * Deactivate stable balance.
-   */
-  class Unset_ extends UniffiEnum implements Unset__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'StableBalanceActiveLabel';
-    readonly tag = StableBalanceActiveLabel_Tags.Unset;
-    constructor() {
-      super('StableBalanceActiveLabel', 'Unset');
-    }
-
-    static new(): Unset_ {
-      return new Unset_();
-    }
-
-    static instanceOf(obj: any): obj is Unset_ {
-      return obj.tag === StableBalanceActiveLabel_Tags.Unset;
-    }
-  }
-
-  function instanceOf(obj: any): obj is StableBalanceActiveLabel {
-    return obj[uniffiTypeNameSymbol] === 'StableBalanceActiveLabel';
-  }
-
-  return Object.freeze({
-    instanceOf,
-    Set: Set_,
-    Unset: Unset_,
-  });
-})();
-
-/**
- * Specifies how to update the active stable balance token.
- */
-
-export type StableBalanceActiveLabel = InstanceType<
-  (typeof StableBalanceActiveLabel)[keyof Omit<
-    typeof StableBalanceActiveLabel,
-    'instanceOf'
-  >]
->;
-
-// FfiConverter for enum StableBalanceActiveLabel
-const FfiConverterTypeStableBalanceActiveLabel = (() => {
-  const ordinalConverter = FfiConverterInt32;
-  type TypeName = StableBalanceActiveLabel;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      switch (ordinalConverter.read(from)) {
-        case 1:
-          return new StableBalanceActiveLabel.Set({
-            label: FfiConverterString.read(from),
-          });
-        case 2:
-          return new StableBalanceActiveLabel.Unset();
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      switch (value.tag) {
-        case StableBalanceActiveLabel_Tags.Set: {
-          ordinalConverter.write(1, into);
-          const inner = value.inner;
-          FfiConverterString.write(inner.label, into);
-          return;
-        }
-        case StableBalanceActiveLabel_Tags.Unset: {
-          ordinalConverter.write(2, into);
-          return;
-        }
-        default:
-          // Throwing from here means that StableBalanceActiveLabel_Tags hasn't matched an ordinal.
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    allocationSize(value: TypeName): number {
-      switch (value.tag) {
-        case StableBalanceActiveLabel_Tags.Set: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(1);
-          size += FfiConverterString.allocationSize(inner.label);
-          return size;
-        }
-        case StableBalanceActiveLabel_Tags.Unset: {
-          return ordinalConverter.allocationSize(2);
-        }
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-  }
-  return new FFIConverter();
-})();
-
 // Error type: StorageError
 
 // Enum: StorageError
@@ -21418,7 +20332,9 @@ export enum StoragePaymentDetailsFilter_Tags {
   Lightning = 'Lightning',
 }
 /**
- * Storage-internal variant of [`PaymentDetailsFilter`].
+ * Storage-internal variant of [`PaymentDetailsFilter`] that includes the
+ * `has_lnurl_preimage` field on the `Lightning` variant, which is not exposed
+ * in the public API.
  */
 export const StoragePaymentDetailsFilter = (() => {
   type Spark__interface = {
@@ -21505,7 +20421,10 @@ export const StoragePaymentDetailsFilter = (() => {
 
   type Lightning__interface = {
     tag: StoragePaymentDetailsFilter_Tags.Lightning;
-    inner: Readonly<{ htlcStatus: Array<SparkHtlcStatus> | undefined }>;
+    inner: Readonly<{
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      hasLnurlPreimage: boolean | undefined;
+    }>;
   };
 
   class Lightning_ extends UniffiEnum implements Lightning__interface {
@@ -21517,14 +20436,19 @@ export const StoragePaymentDetailsFilter = (() => {
     readonly tag = StoragePaymentDetailsFilter_Tags.Lightning;
     readonly inner: Readonly<{
       htlcStatus: Array<SparkHtlcStatus> | undefined;
+      hasLnurlPreimage: boolean | undefined;
     }>;
-    constructor(inner: { htlcStatus: Array<SparkHtlcStatus> | undefined }) {
+    constructor(inner: {
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      hasLnurlPreimage: boolean | undefined;
+    }) {
       super('StoragePaymentDetailsFilter', 'Lightning');
       this.inner = Object.freeze(inner);
     }
 
     static new(inner: {
       htlcStatus: Array<SparkHtlcStatus> | undefined;
+      hasLnurlPreimage: boolean | undefined;
     }): Lightning_ {
       return new Lightning_(inner);
     }
@@ -21547,7 +20471,9 @@ export const StoragePaymentDetailsFilter = (() => {
 })();
 
 /**
- * Storage-internal variant of [`PaymentDetailsFilter`].
+ * Storage-internal variant of [`PaymentDetailsFilter`] that includes the
+ * `has_lnurl_preimage` field on the `Lightning` variant, which is not exposed
+ * in the public API.
  */
 
 export type StoragePaymentDetailsFilter = InstanceType<
@@ -21578,6 +20504,7 @@ const FfiConverterTypeStoragePaymentDetailsFilter = (() => {
         case 3:
           return new StoragePaymentDetailsFilter.Lightning({
             htlcStatus: FfiConverterOptionalArrayTypeSparkHtlcStatus.read(from),
+            hasLnurlPreimage: FfiConverterOptionalBool.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -21613,6 +20540,7 @@ const FfiConverterTypeStoragePaymentDetailsFilter = (() => {
             inner.htlcStatus,
             into
           );
+          FfiConverterOptionalBool.write(inner.hasLnurlPreimage, into);
           return;
         }
         default:
@@ -21650,6 +20578,9 @@ const FfiConverterTypeStoragePaymentDetailsFilter = (() => {
           let size = ordinalConverter.allocationSize(3);
           size += FfiConverterOptionalArrayTypeSparkHtlcStatus.allocationSize(
             inner.htlcStatus
+          );
+          size += FfiConverterOptionalBool.allocationSize(
+            inner.hasLnurlPreimage
           );
           return size;
         }
@@ -22260,268 +21191,6 @@ const FfiConverterTypeUpdateDepositPayload = (() => {
   return new FFIConverter();
 })();
 
-// Enum: WebhookEventType
-export enum WebhookEventType_Tags {
-  LightningReceiveFinished = 'LightningReceiveFinished',
-  LightningSendFinished = 'LightningSendFinished',
-  CoopExitFinished = 'CoopExitFinished',
-  StaticDepositFinished = 'StaticDepositFinished',
-  Unknown = 'Unknown',
-}
-/**
- * The type of event that triggers a webhook notification.
- */
-export const WebhookEventType = (() => {
-  type LightningReceiveFinished__interface = {
-    tag: WebhookEventType_Tags.LightningReceiveFinished;
-  };
-
-  /**
-   * Triggered when a Lightning receive operation completes.
-   */
-  class LightningReceiveFinished_
-    extends UniffiEnum
-    implements LightningReceiveFinished__interface
-  {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'WebhookEventType';
-    readonly tag = WebhookEventType_Tags.LightningReceiveFinished;
-    constructor() {
-      super('WebhookEventType', 'LightningReceiveFinished');
-    }
-
-    static new(): LightningReceiveFinished_ {
-      return new LightningReceiveFinished_();
-    }
-
-    static instanceOf(obj: any): obj is LightningReceiveFinished_ {
-      return obj.tag === WebhookEventType_Tags.LightningReceiveFinished;
-    }
-  }
-
-  type LightningSendFinished__interface = {
-    tag: WebhookEventType_Tags.LightningSendFinished;
-  };
-
-  /**
-   * Triggered when a Lightning send operation completes.
-   */
-  class LightningSendFinished_
-    extends UniffiEnum
-    implements LightningSendFinished__interface
-  {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'WebhookEventType';
-    readonly tag = WebhookEventType_Tags.LightningSendFinished;
-    constructor() {
-      super('WebhookEventType', 'LightningSendFinished');
-    }
-
-    static new(): LightningSendFinished_ {
-      return new LightningSendFinished_();
-    }
-
-    static instanceOf(obj: any): obj is LightningSendFinished_ {
-      return obj.tag === WebhookEventType_Tags.LightningSendFinished;
-    }
-  }
-
-  type CoopExitFinished__interface = {
-    tag: WebhookEventType_Tags.CoopExitFinished;
-  };
-
-  /**
-   * Triggered when a cooperative exit completes.
-   */
-  class CoopExitFinished_
-    extends UniffiEnum
-    implements CoopExitFinished__interface
-  {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'WebhookEventType';
-    readonly tag = WebhookEventType_Tags.CoopExitFinished;
-    constructor() {
-      super('WebhookEventType', 'CoopExitFinished');
-    }
-
-    static new(): CoopExitFinished_ {
-      return new CoopExitFinished_();
-    }
-
-    static instanceOf(obj: any): obj is CoopExitFinished_ {
-      return obj.tag === WebhookEventType_Tags.CoopExitFinished;
-    }
-  }
-
-  type StaticDepositFinished__interface = {
-    tag: WebhookEventType_Tags.StaticDepositFinished;
-  };
-
-  /**
-   * Triggered when a static deposit completes.
-   */
-  class StaticDepositFinished_
-    extends UniffiEnum
-    implements StaticDepositFinished__interface
-  {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'WebhookEventType';
-    readonly tag = WebhookEventType_Tags.StaticDepositFinished;
-    constructor() {
-      super('WebhookEventType', 'StaticDepositFinished');
-    }
-
-    static new(): StaticDepositFinished_ {
-      return new StaticDepositFinished_();
-    }
-
-    static instanceOf(obj: any): obj is StaticDepositFinished_ {
-      return obj.tag === WebhookEventType_Tags.StaticDepositFinished;
-    }
-  }
-
-  type Unknown__interface = {
-    tag: WebhookEventType_Tags.Unknown;
-    inner: Readonly<[string]>;
-  };
-
-  /**
-   * An event type not yet recognized by this version of the SDK.
-   */
-  class Unknown_ extends UniffiEnum implements Unknown__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'WebhookEventType';
-    readonly tag = WebhookEventType_Tags.Unknown;
-    readonly inner: Readonly<[string]>;
-    constructor(v0: string) {
-      super('WebhookEventType', 'Unknown');
-      this.inner = Object.freeze([v0]);
-    }
-
-    static new(v0: string): Unknown_ {
-      return new Unknown_(v0);
-    }
-
-    static instanceOf(obj: any): obj is Unknown_ {
-      return obj.tag === WebhookEventType_Tags.Unknown;
-    }
-  }
-
-  function instanceOf(obj: any): obj is WebhookEventType {
-    return obj[uniffiTypeNameSymbol] === 'WebhookEventType';
-  }
-
-  return Object.freeze({
-    instanceOf,
-    LightningReceiveFinished: LightningReceiveFinished_,
-    LightningSendFinished: LightningSendFinished_,
-    CoopExitFinished: CoopExitFinished_,
-    StaticDepositFinished: StaticDepositFinished_,
-    Unknown: Unknown_,
-  });
-})();
-
-/**
- * The type of event that triggers a webhook notification.
- */
-
-export type WebhookEventType = InstanceType<
-  (typeof WebhookEventType)[keyof Omit<typeof WebhookEventType, 'instanceOf'>]
->;
-
-// FfiConverter for enum WebhookEventType
-const FfiConverterTypeWebhookEventType = (() => {
-  const ordinalConverter = FfiConverterInt32;
-  type TypeName = WebhookEventType;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      switch (ordinalConverter.read(from)) {
-        case 1:
-          return new WebhookEventType.LightningReceiveFinished();
-        case 2:
-          return new WebhookEventType.LightningSendFinished();
-        case 3:
-          return new WebhookEventType.CoopExitFinished();
-        case 4:
-          return new WebhookEventType.StaticDepositFinished();
-        case 5:
-          return new WebhookEventType.Unknown(FfiConverterString.read(from));
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      switch (value.tag) {
-        case WebhookEventType_Tags.LightningReceiveFinished: {
-          ordinalConverter.write(1, into);
-          return;
-        }
-        case WebhookEventType_Tags.LightningSendFinished: {
-          ordinalConverter.write(2, into);
-          return;
-        }
-        case WebhookEventType_Tags.CoopExitFinished: {
-          ordinalConverter.write(3, into);
-          return;
-        }
-        case WebhookEventType_Tags.StaticDepositFinished: {
-          ordinalConverter.write(4, into);
-          return;
-        }
-        case WebhookEventType_Tags.Unknown: {
-          ordinalConverter.write(5, into);
-          const inner = value.inner;
-          FfiConverterString.write(inner[0], into);
-          return;
-        }
-        default:
-          // Throwing from here means that WebhookEventType_Tags hasn't matched an ordinal.
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    allocationSize(value: TypeName): number {
-      switch (value.tag) {
-        case WebhookEventType_Tags.LightningReceiveFinished: {
-          return ordinalConverter.allocationSize(1);
-        }
-        case WebhookEventType_Tags.LightningSendFinished: {
-          return ordinalConverter.allocationSize(2);
-        }
-        case WebhookEventType_Tags.CoopExitFinished: {
-          return ordinalConverter.allocationSize(3);
-        }
-        case WebhookEventType_Tags.StaticDepositFinished: {
-          return ordinalConverter.allocationSize(4);
-        }
-        case WebhookEventType_Tags.Unknown: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(5);
-          size += FfiConverterString.allocationSize(inner[0]);
-          return size;
-        }
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-  }
-  return new FFIConverter();
-})();
-
 // FfiConverter for Map<string, TokenBalance>
 const FfiConverterMapStringTypeTokenBalance = new FfiConverterMap(
   FfiConverterString,
@@ -22780,69 +21449,67 @@ export class BitcoinChainServiceImpl
 }
 
 const uniffiTypeBitcoinChainServiceImplObjectFactory: UniffiObjectFactory<BitcoinChainService> =
-  (() => {
-    return {
-      create(pointer: UnsafeMutableRawPointer): BitcoinChainService {
-        const instance = Object.create(BitcoinChainServiceImpl.prototype);
-        instance[pointerLiteralSymbol] = pointer;
-        instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'BitcoinChainServiceImpl';
-        return instance;
-      },
+  {
+    create(pointer: UnsafeMutableRawPointer): BitcoinChainService {
+      const instance = Object.create(BitcoinChainServiceImpl.prototype);
+      instance[pointerLiteralSymbol] = pointer;
+      instance[destructorGuardSymbol] = this.bless(pointer);
+      instance[uniffiTypeNameSymbol] = 'BitcoinChainServiceImpl';
+      return instance;
+    },
 
-      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
-        return uniffiCaller.rustCall(
-          /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_bitcoinchainservice_ffi__bless_pointer(
-              p,
-              status
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+      return uniffiCaller.rustCall(
+        /*caller:*/ (status) =>
+          nativeModule().ubrn_uniffi_internal_fn_method_bitcoinchainservice_ffi__bless_pointer(
+            p,
+            status
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      unbless(ptr: UniffiRustArcPtr) {
-        ptr.markDestroyed();
-      },
+    unbless(ptr: UniffiRustArcPtr) {
+      ptr.markDestroyed();
+    },
 
-      pointer(obj: BitcoinChainService): UnsafeMutableRawPointer {
-        if ((obj as any)[destructorGuardSymbol] === undefined) {
-          throw new UniffiInternalError.UnexpectedNullPointer();
-        }
-        return (obj as any)[pointerLiteralSymbol];
-      },
+    pointer(obj: BitcoinChainService): UnsafeMutableRawPointer {
+      if ((obj as any)[destructorGuardSymbol] === undefined) {
+        throw new UniffiInternalError.UnexpectedNullPointer();
+      }
+      return (obj as any)[pointerLiteralSymbol];
+    },
 
-      clonePointer(obj: BitcoinChainService): UnsafeMutableRawPointer {
-        const pointer = this.pointer(obj);
-        return uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_bitcoinchainservice(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    clonePointer(obj: BitcoinChainService): UnsafeMutableRawPointer {
+      const pointer = this.pointer(obj);
+      return uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_bitcoinchainservice(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      freePointer(pointer: UnsafeMutableRawPointer): void {
-        uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_bitcoinchainservice(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    freePointer(pointer: UnsafeMutableRawPointer): void {
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_bitcoinchainservice(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      isConcreteType(obj: any): obj is BitcoinChainService {
-        return (
-          obj[destructorGuardSymbol] &&
-          obj[uniffiTypeNameSymbol] === 'BitcoinChainServiceImpl'
-        );
-      },
-    };
-  })();
+    isConcreteType(obj: any): obj is BitcoinChainService {
+      return (
+        obj[destructorGuardSymbol] &&
+        obj[uniffiTypeNameSymbol] === 'BitcoinChainServiceImpl'
+      );
+    },
+  };
 // FfiConverter for BitcoinChainService
 const FfiConverterTypeBitcoinChainService = new FfiConverterObjectWithCallbacks(
   uniffiTypeBitcoinChainServiceImplObjectFactory
@@ -22875,8 +21542,7 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         );
       };
       const uniffiHandleSuccess = (returnValue: Array<Utxo>) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterArrayTypeUtxo.lower(returnValue),
@@ -22885,13 +21551,12 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -22905,7 +21570,7 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     getTransactionStatus: (
       uniffiHandle: bigint,
@@ -22922,8 +21587,7 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         );
       };
       const uniffiHandleSuccess = (returnValue: TxStatus) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypeTxStatus.lower(returnValue),
@@ -22932,13 +21596,12 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -22952,7 +21615,7 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     getTransactionHex: (
       uniffiHandle: bigint,
@@ -22969,8 +21632,7 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         );
       };
       const uniffiHandleSuccess = (returnValue: string) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterString.lower(returnValue),
@@ -22979,13 +21641,12 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -22999,7 +21660,7 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     broadcastTransaction: (
       uniffiHandle: bigint,
@@ -23016,8 +21677,7 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -23025,12 +21685,11 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -23044,7 +21703,7 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     recommendedFees: (
       uniffiHandle: bigint,
@@ -23059,8 +21718,7 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         return await jsCallback.recommendedFees({ signal });
       };
       const uniffiHandleSuccess = (returnValue: RecommendedFees) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypeRecommendedFees.lower(returnValue),
@@ -23069,13 +21727,12 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -23089,7 +21746,7 @@ const uniffiCallbackInterfaceBitcoinChainService: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
       // BitcoinChainService: this will throw a stale handle error if the handle isn't found.
@@ -23139,13 +21796,19 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<string>;
   /**
-   * Initiates a Bitcoin purchase flow via an external provider.
+   * Initiates a Bitcoin purchase flow via an external provider (`MoonPay`).
    *
-   * Returns a URL the user should open to complete the purchase.
-   * The request variant determines the provider and its parameters:
+   * This method generates a URL that the user can open in a browser to complete
+   * the Bitcoin purchase. The purchased Bitcoin will be sent to an automatically
+   * generated deposit address.
    *
-   * - [`BuyBitcoinRequest::Moonpay`]: Fiat-to-Bitcoin via on-chain deposit.
-   * - [`BuyBitcoinRequest::CashApp`]: Lightning invoice + `cash.app` deep link (mainnet only).
+   * # Arguments
+   *
+   * * `request` - The purchase request containing optional amount and redirect URL
+   *
+   * # Returns
+   *
+   * A response containing the URL to open in a browser to complete the purchase
    */
   buyBitcoin(
     request: BuyBitcoinRequest,
@@ -23312,16 +21975,6 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<ListUnclaimedDepositsResponse>;
   /**
-   * Lists all webhooks currently registered for this wallet.
-   *
-   * # Returns
-   *
-   * A list of registered webhooks with their IDs, URLs, and subscribed event types
-   */
-  listWebhooks(asyncOpts_?: {
-    signal: AbortSignal;
-  }): /*throws*/ Promise<Array<Webhook>>;
-  /**
    * Performs LNURL-auth with the service.
    *
    * This method implements the LNURL-auth protocol as specified in LUD-04 and LUD-05.
@@ -23398,25 +22051,6 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<LightningAddressInfo>;
   /**
-   * Registers a webhook to receive notifications for wallet events.
-   *
-   * When registered events occur (e.g., a Lightning payment is received),
-   * the Spark service provider will send an HTTP POST to the specified URL
-   * with a payload signed using HMAC-SHA256 with the provided secret.
-   *
-   * # Arguments
-   *
-   * * `request` - The webhook registration details including URL, secret, and event types
-   *
-   * # Returns
-   *
-   * A response containing the unique identifier of the registered webhook
-   */
-  registerWebhook(
-    request: RegisterWebhookRequest,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<RegisterWebhookResponse>;
-  /**
    * Removes a previously registered event listener
    *
    * # Arguments
@@ -23451,7 +22085,7 @@ export interface BreezSdkInterface {
    * immediately. Progress is reported via events.
    * If optimization is already running, no new task will be started.
    */
-  startLeafOptimization(asyncOpts_?: { signal: AbortSignal }): Promise<void>;
+  startLeafOptimization(): void;
   /**
    * Synchronizes the wallet with the Spark network
    */
@@ -23459,20 +22093,6 @@ export interface BreezSdkInterface {
     request: SyncWalletRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<SyncWalletResponse>;
-  /**
-   * Unregisters a previously registered webhook.
-   *
-   * After unregistering, the Spark service provider will no longer send
-   * notifications to the webhook URL.
-   *
-   * # Arguments
-   *
-   * * `request` - The unregister request containing the webhook ID
-   */
-  unregisterWebhook(
-    request: UnregisterWebhookRequest,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<void>;
   /**
    * Updates an existing contact.
    *
@@ -23614,13 +22234,19 @@ export class BreezSdk
   }
 
   /**
-   * Initiates a Bitcoin purchase flow via an external provider.
+   * Initiates a Bitcoin purchase flow via an external provider (`MoonPay`).
    *
-   * Returns a URL the user should open to complete the purchase.
-   * The request variant determines the provider and its parameters:
+   * This method generates a URL that the user can open in a browser to complete
+   * the Bitcoin purchase. The purchased Bitcoin will be sent to an automatically
+   * generated deposit address.
    *
-   * - [`BuyBitcoinRequest::Moonpay`]: Fiat-to-Bitcoin via on-chain deposit.
-   * - [`BuyBitcoinRequest::CashApp`]: Lightning invoice + `cash.app` deep link (mainnet only).
+   * # Arguments
+   *
+   * * `request` - The purchase request containing optional amount and redirect URL
+   *
+   * # Returns
+   *
+   * A response containing the URL to open in a browser to complete the purchase
    */
   public async buyBitcoin(
     request: BuyBitcoinRequest,
@@ -24498,50 +23124,6 @@ export class BreezSdk
   }
 
   /**
-   * Lists all webhooks currently registered for this wallet.
-   *
-   * # Returns
-   *
-   * A list of registered webhooks with their IDs, URLs, and subscribed event types
-   */
-  public async listWebhooks(asyncOpts_?: {
-    signal: AbortSignal;
-  }): Promise<Array<Webhook>> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_list_webhooks(
-            uniffiTypeBreezSdkObjectFactory.clonePointer(this)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterArrayTypeWebhook.lift.bind(
-          FfiConverterArrayTypeWebhook
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
-          FfiConverterTypeSdkError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
    * Performs LNURL-auth with the service.
    *
    * This method implements the LNURL-auth protocol as specified in LUD-04 and LUD-05.
@@ -24967,60 +23549,6 @@ export class BreezSdk
   }
 
   /**
-   * Registers a webhook to receive notifications for wallet events.
-   *
-   * When registered events occur (e.g., a Lightning payment is received),
-   * the Spark service provider will send an HTTP POST to the specified URL
-   * with a payload signed using HMAC-SHA256 with the provided secret.
-   *
-   * # Arguments
-   *
-   * * `request` - The webhook registration details including URL, secret, and event types
-   *
-   * # Returns
-   *
-   * A response containing the unique identifier of the registered webhook
-   */
-  public async registerWebhook(
-    request: RegisterWebhookRequest,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<RegisterWebhookResponse> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_register_webhook(
-            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
-            FfiConverterTypeRegisterWebhookRequest.lower(request)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeRegisterWebhookResponse.lift.bind(
-          FfiConverterTypeRegisterWebhookResponse
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
-          FfiConverterTypeSdkError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
    * Removes a previously registered event listener
    *
    * # Arguments
@@ -25155,36 +23683,16 @@ export class BreezSdk
    * immediately. Progress is reported via events.
    * If optimization is already running, no new task will be started.
    */
-  public async startLeafOptimization(asyncOpts_?: {
-    signal: AbortSignal;
-  }): Promise<void> {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_optimization(
-            uniffiTypeBreezSdkObjectFactory.clonePointer(this)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
-        /*liftFunc:*/ (_v) => {},
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
+  public startLeafOptimization(): void {
+    uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) => {
+        nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_optimization(
+          uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+          callStatus
+        );
+      },
+      /*liftString:*/ FfiConverterString.lift
+    );
   }
 
   /**
@@ -25215,53 +23723,6 @@ export class BreezSdk
         /*liftFunc:*/ FfiConverterTypeSyncWalletResponse.lift.bind(
           FfiConverterTypeSyncWalletResponse
         ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
-          FfiConverterTypeSdkError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Unregisters a previously registered webhook.
-   *
-   * After unregistering, the Spark service provider will no longer send
-   * notifications to the webhook URL.
-   *
-   * # Arguments
-   *
-   * * `request` - The unregister request containing the webhook ID
-   */
-  public async unregisterWebhook(
-    request: UnregisterWebhookRequest,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<void> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_unregister_webhook(
-            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
-            FfiConverterTypeUnregisterWebhookRequest.lower(request)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
-        /*liftFunc:*/ (_v) => {},
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
         /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
@@ -25387,68 +23848,66 @@ export class BreezSdk
 }
 
 const uniffiTypeBreezSdkObjectFactory: UniffiObjectFactory<BreezSdkInterface> =
-  (() => {
-    return {
-      create(pointer: UnsafeMutableRawPointer): BreezSdkInterface {
-        const instance = Object.create(BreezSdk.prototype);
-        instance[pointerLiteralSymbol] = pointer;
-        instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'BreezSdk';
-        return instance;
-      },
+  {
+    create(pointer: UnsafeMutableRawPointer): BreezSdkInterface {
+      const instance = Object.create(BreezSdk.prototype);
+      instance[pointerLiteralSymbol] = pointer;
+      instance[destructorGuardSymbol] = this.bless(pointer);
+      instance[uniffiTypeNameSymbol] = 'BreezSdk';
+      return instance;
+    },
 
-      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
-        return uniffiCaller.rustCall(
-          /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_breezsdk_ffi__bless_pointer(
-              p,
-              status
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+      return uniffiCaller.rustCall(
+        /*caller:*/ (status) =>
+          nativeModule().ubrn_uniffi_internal_fn_method_breezsdk_ffi__bless_pointer(
+            p,
+            status
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      unbless(ptr: UniffiRustArcPtr) {
-        ptr.markDestroyed();
-      },
+    unbless(ptr: UniffiRustArcPtr) {
+      ptr.markDestroyed();
+    },
 
-      pointer(obj: BreezSdkInterface): UnsafeMutableRawPointer {
-        if ((obj as any)[destructorGuardSymbol] === undefined) {
-          throw new UniffiInternalError.UnexpectedNullPointer();
-        }
-        return (obj as any)[pointerLiteralSymbol];
-      },
+    pointer(obj: BreezSdkInterface): UnsafeMutableRawPointer {
+      if ((obj as any)[destructorGuardSymbol] === undefined) {
+        throw new UniffiInternalError.UnexpectedNullPointer();
+      }
+      return (obj as any)[pointerLiteralSymbol];
+    },
 
-      clonePointer(obj: BreezSdkInterface): UnsafeMutableRawPointer {
-        const pointer = this.pointer(obj);
-        return uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_breezsdk(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    clonePointer(obj: BreezSdkInterface): UnsafeMutableRawPointer {
+      const pointer = this.pointer(obj);
+      return uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_breezsdk(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      freePointer(pointer: UnsafeMutableRawPointer): void {
-        uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_breezsdk(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    freePointer(pointer: UnsafeMutableRawPointer): void {
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_breezsdk(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      isConcreteType(obj: any): obj is BreezSdkInterface {
-        return (
-          obj[destructorGuardSymbol] && obj[uniffiTypeNameSymbol] === 'BreezSdk'
-        );
-      },
-    };
-  })();
+    isConcreteType(obj: any): obj is BreezSdkInterface {
+      return (
+        obj[destructorGuardSymbol] && obj[uniffiTypeNameSymbol] === 'BreezSdk'
+      );
+    },
+  };
 // FfiConverter for BreezSdkInterface
 const FfiConverterTypeBreezSdk = new FfiConverterObject(
   uniffiTypeBreezSdkObjectFactory
@@ -26824,69 +25283,67 @@ export class ExternalSignerImpl
 }
 
 const uniffiTypeExternalSignerImplObjectFactory: UniffiObjectFactory<ExternalSigner> =
-  (() => {
-    return {
-      create(pointer: UnsafeMutableRawPointer): ExternalSigner {
-        const instance = Object.create(ExternalSignerImpl.prototype);
-        instance[pointerLiteralSymbol] = pointer;
-        instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'ExternalSignerImpl';
-        return instance;
-      },
+  {
+    create(pointer: UnsafeMutableRawPointer): ExternalSigner {
+      const instance = Object.create(ExternalSignerImpl.prototype);
+      instance[pointerLiteralSymbol] = pointer;
+      instance[destructorGuardSymbol] = this.bless(pointer);
+      instance[uniffiTypeNameSymbol] = 'ExternalSignerImpl';
+      return instance;
+    },
 
-      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
-        return uniffiCaller.rustCall(
-          /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_externalsigner_ffi__bless_pointer(
-              p,
-              status
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+      return uniffiCaller.rustCall(
+        /*caller:*/ (status) =>
+          nativeModule().ubrn_uniffi_internal_fn_method_externalsigner_ffi__bless_pointer(
+            p,
+            status
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      unbless(ptr: UniffiRustArcPtr) {
-        ptr.markDestroyed();
-      },
+    unbless(ptr: UniffiRustArcPtr) {
+      ptr.markDestroyed();
+    },
 
-      pointer(obj: ExternalSigner): UnsafeMutableRawPointer {
-        if ((obj as any)[destructorGuardSymbol] === undefined) {
-          throw new UniffiInternalError.UnexpectedNullPointer();
-        }
-        return (obj as any)[pointerLiteralSymbol];
-      },
+    pointer(obj: ExternalSigner): UnsafeMutableRawPointer {
+      if ((obj as any)[destructorGuardSymbol] === undefined) {
+        throw new UniffiInternalError.UnexpectedNullPointer();
+      }
+      return (obj as any)[pointerLiteralSymbol];
+    },
 
-      clonePointer(obj: ExternalSigner): UnsafeMutableRawPointer {
-        const pointer = this.pointer(obj);
-        return uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_externalsigner(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    clonePointer(obj: ExternalSigner): UnsafeMutableRawPointer {
+      const pointer = this.pointer(obj);
+      return uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_externalsigner(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      freePointer(pointer: UnsafeMutableRawPointer): void {
-        uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_externalsigner(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    freePointer(pointer: UnsafeMutableRawPointer): void {
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_externalsigner(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      isConcreteType(obj: any): obj is ExternalSigner {
-        return (
-          obj[destructorGuardSymbol] &&
-          obj[uniffiTypeNameSymbol] === 'ExternalSignerImpl'
-        );
-      },
-    };
-  })();
+    isConcreteType(obj: any): obj is ExternalSigner {
+      return (
+        obj[destructorGuardSymbol] &&
+        obj[uniffiTypeNameSymbol] === 'ExternalSignerImpl'
+      );
+    },
+  };
 // FfiConverter for ExternalSigner
 const FfiConverterTypeExternalSigner = new FfiConverterObjectWithCallbacks(
   uniffiTypeExternalSignerImplObjectFactory
@@ -26944,8 +25401,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         });
       };
       const uniffiHandleSuccess = (returnValue: PublicKeyBytes) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypePublicKeyBytes.lower(returnValue),
@@ -26954,13 +25410,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -26974,7 +25429,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     signEcdsa: (
       uniffiHandle: bigint,
@@ -26994,8 +25449,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleSuccess = (returnValue: EcdsaSignatureBytes) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypeEcdsaSignatureBytes.lower(returnValue),
@@ -27004,13 +25458,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27024,7 +25477,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     signEcdsaRecoverable: (
       uniffiHandle: bigint,
@@ -27046,8 +25499,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       const uniffiHandleSuccess = (
         returnValue: RecoverableEcdsaSignatureBytes
       ) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
@@ -27057,13 +25509,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27077,7 +25528,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     encryptEcies: (
       uniffiHandle: bigint,
@@ -27097,8 +25548,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleSuccess = (returnValue: ArrayBuffer) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterArrayBuffer.lower(returnValue),
@@ -27107,13 +25557,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27127,7 +25576,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     decryptEcies: (
       uniffiHandle: bigint,
@@ -27147,8 +25596,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleSuccess = (returnValue: ArrayBuffer) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterArrayBuffer.lower(returnValue),
@@ -27157,13 +25605,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27177,7 +25624,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     signHashSchnorr: (
       uniffiHandle: bigint,
@@ -27197,8 +25644,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleSuccess = (returnValue: SchnorrSignatureBytes) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
@@ -27208,13 +25654,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27228,7 +25673,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     hmacSha256: (
       uniffiHandle: bigint,
@@ -27248,8 +25693,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleSuccess = (returnValue: HashedMessageBytes) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypeHashedMessageBytes.lower(returnValue),
@@ -27258,13 +25702,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27278,7 +25721,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     generateRandomSigningCommitment: (
       uniffiHandle: bigint,
@@ -27292,8 +25735,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         return await jsCallback.generateRandomSigningCommitment({ signal });
       };
       const uniffiHandleSuccess = (returnValue: ExternalFrostCommitments) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
@@ -27303,13 +25745,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27323,7 +25764,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     getPublicKeyForNode: (
       uniffiHandle: bigint,
@@ -27341,8 +25782,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleSuccess = (returnValue: PublicKeyBytes) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypePublicKeyBytes.lower(returnValue),
@@ -27351,13 +25791,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27371,7 +25810,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     generateRandomSecret: (
       uniffiHandle: bigint,
@@ -27385,8 +25824,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         return await jsCallback.generateRandomSecret({ signal });
       };
       const uniffiHandleSuccess = (returnValue: ExternalEncryptedSecret) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
@@ -27396,13 +25834,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27416,7 +25853,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     staticDepositSecretEncrypted: (
       uniffiHandle: bigint,
@@ -27434,8 +25871,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleSuccess = (returnValue: ExternalSecretSource) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
@@ -27445,13 +25881,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27465,7 +25900,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     staticDepositSecret: (
       uniffiHandle: bigint,
@@ -27483,8 +25918,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleSuccess = (returnValue: SecretBytes) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypeSecretBytes.lower(returnValue),
@@ -27493,13 +25927,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27513,7 +25946,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     staticDepositSigningKey: (
       uniffiHandle: bigint,
@@ -27531,8 +25964,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleSuccess = (returnValue: PublicKeyBytes) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypePublicKeyBytes.lower(returnValue),
@@ -27541,13 +25973,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27561,7 +25992,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     subtractSecrets: (
       uniffiHandle: bigint,
@@ -27581,8 +26012,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleSuccess = (returnValue: ExternalSecretSource) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
@@ -27592,13 +26022,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27612,7 +26041,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     splitSecretWithProofs: (
       uniffiHandle: bigint,
@@ -27636,8 +26065,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       const uniffiHandleSuccess = (
         returnValue: Array<ExternalVerifiableSecretShare>
       ) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
@@ -27649,13 +26077,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27669,7 +26096,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     encryptSecretForReceiver: (
       uniffiHandle: bigint,
@@ -27689,8 +26116,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleSuccess = (returnValue: ArrayBuffer) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterArrayBuffer.lower(returnValue),
@@ -27699,13 +26125,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27719,7 +26144,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     publicKeyFromSecret: (
       uniffiHandle: bigint,
@@ -27737,8 +26162,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleSuccess = (returnValue: PublicKeyBytes) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypePublicKeyBytes.lower(returnValue),
@@ -27747,13 +26171,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27767,7 +26190,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     signFrost: (
       uniffiHandle: bigint,
@@ -27787,8 +26210,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       const uniffiHandleSuccess = (
         returnValue: ExternalFrostSignatureShare
       ) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
@@ -27798,13 +26220,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27818,7 +26239,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     aggregateFrost: (
       uniffiHandle: bigint,
@@ -27836,8 +26257,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleSuccess = (returnValue: ExternalFrostSignature) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
@@ -27847,13 +26267,12 @@ const uniffiCallbackInterfaceExternalSigner: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -27867,7 +26286,7 @@ const uniffiCallbackInterfaceExternalSigner: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
       // ExternalSigner: this will throw a stale handle error if the handle isn't found.
@@ -28016,69 +26435,67 @@ export class FiatServiceImpl
 }
 
 const uniffiTypeFiatServiceImplObjectFactory: UniffiObjectFactory<FiatService> =
-  (() => {
-    return {
-      create(pointer: UnsafeMutableRawPointer): FiatService {
-        const instance = Object.create(FiatServiceImpl.prototype);
-        instance[pointerLiteralSymbol] = pointer;
-        instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'FiatServiceImpl';
-        return instance;
-      },
+  {
+    create(pointer: UnsafeMutableRawPointer): FiatService {
+      const instance = Object.create(FiatServiceImpl.prototype);
+      instance[pointerLiteralSymbol] = pointer;
+      instance[destructorGuardSymbol] = this.bless(pointer);
+      instance[uniffiTypeNameSymbol] = 'FiatServiceImpl';
+      return instance;
+    },
 
-      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
-        return uniffiCaller.rustCall(
-          /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_fiatservice_ffi__bless_pointer(
-              p,
-              status
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+      return uniffiCaller.rustCall(
+        /*caller:*/ (status) =>
+          nativeModule().ubrn_uniffi_internal_fn_method_fiatservice_ffi__bless_pointer(
+            p,
+            status
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      unbless(ptr: UniffiRustArcPtr) {
-        ptr.markDestroyed();
-      },
+    unbless(ptr: UniffiRustArcPtr) {
+      ptr.markDestroyed();
+    },
 
-      pointer(obj: FiatService): UnsafeMutableRawPointer {
-        if ((obj as any)[destructorGuardSymbol] === undefined) {
-          throw new UniffiInternalError.UnexpectedNullPointer();
-        }
-        return (obj as any)[pointerLiteralSymbol];
-      },
+    pointer(obj: FiatService): UnsafeMutableRawPointer {
+      if ((obj as any)[destructorGuardSymbol] === undefined) {
+        throw new UniffiInternalError.UnexpectedNullPointer();
+      }
+      return (obj as any)[pointerLiteralSymbol];
+    },
 
-      clonePointer(obj: FiatService): UnsafeMutableRawPointer {
-        const pointer = this.pointer(obj);
-        return uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_fiatservice(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    clonePointer(obj: FiatService): UnsafeMutableRawPointer {
+      const pointer = this.pointer(obj);
+      return uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_fiatservice(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      freePointer(pointer: UnsafeMutableRawPointer): void {
-        uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_fiatservice(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    freePointer(pointer: UnsafeMutableRawPointer): void {
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_fiatservice(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      isConcreteType(obj: any): obj is FiatService {
-        return (
-          obj[destructorGuardSymbol] &&
-          obj[uniffiTypeNameSymbol] === 'FiatServiceImpl'
-        );
-      },
-    };
-  })();
+    isConcreteType(obj: any): obj is FiatService {
+      return (
+        obj[destructorGuardSymbol] &&
+        obj[uniffiTypeNameSymbol] === 'FiatServiceImpl'
+      );
+    },
+  };
 // FfiConverter for FiatService
 const FfiConverterTypeFiatService = new FfiConverterObjectWithCallbacks(
   uniffiTypeFiatServiceImplObjectFactory
@@ -28106,8 +26523,7 @@ const uniffiCallbackInterfaceFiatService: {
         return await jsCallback.fetchFiatCurrencies({ signal });
       };
       const uniffiHandleSuccess = (returnValue: Array<FiatCurrency>) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterArrayTypeFiatCurrency.lower(returnValue),
@@ -28116,13 +26532,12 @@ const uniffiCallbackInterfaceFiatService: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -28136,7 +26551,7 @@ const uniffiCallbackInterfaceFiatService: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     fetchFiatRates: (
       uniffiHandle: bigint,
@@ -28150,8 +26565,7 @@ const uniffiCallbackInterfaceFiatService: {
         return await jsCallback.fetchFiatRates({ signal });
       };
       const uniffiHandleSuccess = (returnValue: Array<Rate>) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterArrayTypeRate.lower(returnValue),
@@ -28160,13 +26574,12 @@ const uniffiCallbackInterfaceFiatService: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -28180,7 +26593,7 @@ const uniffiCallbackInterfaceFiatService: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
       // FiatService: this will throw a stale handle error if the handle isn't found.
@@ -28487,69 +26900,66 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
   }
 }
 
-const uniffiTypePasskeyObjectFactory: UniffiObjectFactory<PasskeyInterface> =
-  (() => {
-    return {
-      create(pointer: UnsafeMutableRawPointer): PasskeyInterface {
-        const instance = Object.create(Passkey.prototype);
-        instance[pointerLiteralSymbol] = pointer;
-        instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'Passkey';
-        return instance;
-      },
+const uniffiTypePasskeyObjectFactory: UniffiObjectFactory<PasskeyInterface> = {
+  create(pointer: UnsafeMutableRawPointer): PasskeyInterface {
+    const instance = Object.create(Passkey.prototype);
+    instance[pointerLiteralSymbol] = pointer;
+    instance[destructorGuardSymbol] = this.bless(pointer);
+    instance[uniffiTypeNameSymbol] = 'Passkey';
+    return instance;
+  },
 
-      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
-        return uniffiCaller.rustCall(
-          /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_passkey_ffi__bless_pointer(
-              p,
-              status
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+  bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+    return uniffiCaller.rustCall(
+      /*caller:*/ (status) =>
+        nativeModule().ubrn_uniffi_internal_fn_method_passkey_ffi__bless_pointer(
+          p,
+          status
+        ),
+      /*liftString:*/ FfiConverterString.lift
+    );
+  },
 
-      unbless(ptr: UniffiRustArcPtr) {
-        ptr.markDestroyed();
-      },
+  unbless(ptr: UniffiRustArcPtr) {
+    ptr.markDestroyed();
+  },
 
-      pointer(obj: PasskeyInterface): UnsafeMutableRawPointer {
-        if ((obj as any)[destructorGuardSymbol] === undefined) {
-          throw new UniffiInternalError.UnexpectedNullPointer();
-        }
-        return (obj as any)[pointerLiteralSymbol];
-      },
+  pointer(obj: PasskeyInterface): UnsafeMutableRawPointer {
+    if ((obj as any)[destructorGuardSymbol] === undefined) {
+      throw new UniffiInternalError.UnexpectedNullPointer();
+    }
+    return (obj as any)[pointerLiteralSymbol];
+  },
 
-      clonePointer(obj: PasskeyInterface): UnsafeMutableRawPointer {
-        const pointer = this.pointer(obj);
-        return uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_passkey(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+  clonePointer(obj: PasskeyInterface): UnsafeMutableRawPointer {
+    const pointer = this.pointer(obj);
+    return uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) =>
+        nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_passkey(
+          pointer,
+          callStatus
+        ),
+      /*liftString:*/ FfiConverterString.lift
+    );
+  },
 
-      freePointer(pointer: UnsafeMutableRawPointer): void {
-        uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_passkey(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+  freePointer(pointer: UnsafeMutableRawPointer): void {
+    uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) =>
+        nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_passkey(
+          pointer,
+          callStatus
+        ),
+      /*liftString:*/ FfiConverterString.lift
+    );
+  },
 
-      isConcreteType(obj: any): obj is PasskeyInterface {
-        return (
-          obj[destructorGuardSymbol] && obj[uniffiTypeNameSymbol] === 'Passkey'
-        );
-      },
-    };
-  })();
+  isConcreteType(obj: any): obj is PasskeyInterface {
+    return (
+      obj[destructorGuardSymbol] && obj[uniffiTypeNameSymbol] === 'Passkey'
+    );
+  },
+};
 // FfiConverter for PasskeyInterface
 const FfiConverterTypePasskey = new FfiConverterObject(
   uniffiTypePasskeyObjectFactory
@@ -28738,69 +27148,67 @@ export class PasskeyPrfProviderImpl
 }
 
 const uniffiTypePasskeyPrfProviderImplObjectFactory: UniffiObjectFactory<PasskeyPrfProvider> =
-  (() => {
-    return {
-      create(pointer: UnsafeMutableRawPointer): PasskeyPrfProvider {
-        const instance = Object.create(PasskeyPrfProviderImpl.prototype);
-        instance[pointerLiteralSymbol] = pointer;
-        instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'PasskeyPrfProviderImpl';
-        return instance;
-      },
+  {
+    create(pointer: UnsafeMutableRawPointer): PasskeyPrfProvider {
+      const instance = Object.create(PasskeyPrfProviderImpl.prototype);
+      instance[pointerLiteralSymbol] = pointer;
+      instance[destructorGuardSymbol] = this.bless(pointer);
+      instance[uniffiTypeNameSymbol] = 'PasskeyPrfProviderImpl';
+      return instance;
+    },
 
-      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
-        return uniffiCaller.rustCall(
-          /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_passkeyprfprovider_ffi__bless_pointer(
-              p,
-              status
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+      return uniffiCaller.rustCall(
+        /*caller:*/ (status) =>
+          nativeModule().ubrn_uniffi_internal_fn_method_passkeyprfprovider_ffi__bless_pointer(
+            p,
+            status
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      unbless(ptr: UniffiRustArcPtr) {
-        ptr.markDestroyed();
-      },
+    unbless(ptr: UniffiRustArcPtr) {
+      ptr.markDestroyed();
+    },
 
-      pointer(obj: PasskeyPrfProvider): UnsafeMutableRawPointer {
-        if ((obj as any)[destructorGuardSymbol] === undefined) {
-          throw new UniffiInternalError.UnexpectedNullPointer();
-        }
-        return (obj as any)[pointerLiteralSymbol];
-      },
+    pointer(obj: PasskeyPrfProvider): UnsafeMutableRawPointer {
+      if ((obj as any)[destructorGuardSymbol] === undefined) {
+        throw new UniffiInternalError.UnexpectedNullPointer();
+      }
+      return (obj as any)[pointerLiteralSymbol];
+    },
 
-      clonePointer(obj: PasskeyPrfProvider): UnsafeMutableRawPointer {
-        const pointer = this.pointer(obj);
-        return uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_passkeyprfprovider(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    clonePointer(obj: PasskeyPrfProvider): UnsafeMutableRawPointer {
+      const pointer = this.pointer(obj);
+      return uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_passkeyprfprovider(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      freePointer(pointer: UnsafeMutableRawPointer): void {
-        uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_passkeyprfprovider(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    freePointer(pointer: UnsafeMutableRawPointer): void {
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_passkeyprfprovider(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      isConcreteType(obj: any): obj is PasskeyPrfProvider {
-        return (
-          obj[destructorGuardSymbol] &&
-          obj[uniffiTypeNameSymbol] === 'PasskeyPrfProviderImpl'
-        );
-      },
-    };
-  })();
+    isConcreteType(obj: any): obj is PasskeyPrfProvider {
+      return (
+        obj[destructorGuardSymbol] &&
+        obj[uniffiTypeNameSymbol] === 'PasskeyPrfProviderImpl'
+      );
+    },
+  };
 // FfiConverter for PasskeyPrfProvider
 const FfiConverterTypePasskeyPrfProvider = new FfiConverterObjectWithCallbacks(
   uniffiTypePasskeyPrfProviderImplObjectFactory
@@ -28832,8 +27240,7 @@ const uniffiCallbackInterfacePasskeyPrfProvider: {
         });
       };
       const uniffiHandleSuccess = (returnValue: ArrayBuffer) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterArrayBuffer.lower(returnValue),
@@ -28842,13 +27249,12 @@ const uniffiCallbackInterfacePasskeyPrfProvider: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -28862,7 +27268,7 @@ const uniffiCallbackInterfacePasskeyPrfProvider: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     isPrfAvailable: (
       uniffiHandle: bigint,
@@ -28875,8 +27281,7 @@ const uniffiCallbackInterfacePasskeyPrfProvider: {
         return await jsCallback.isPrfAvailable({ signal });
       };
       const uniffiHandleSuccess = (returnValue: boolean) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructI8 */ {
             returnValue: FfiConverterBool.lower(returnValue),
@@ -28885,13 +27290,12 @@ const uniffiCallbackInterfacePasskeyPrfProvider: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructI8 */ {
             returnValue: 0,
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -28905,7 +27309,7 @@ const uniffiCallbackInterfacePasskeyPrfProvider: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
       // PasskeyPrfProvider: this will throw a stale handle error if the handle isn't found.
@@ -29011,69 +27415,67 @@ export class PaymentObserverImpl
 }
 
 const uniffiTypePaymentObserverImplObjectFactory: UniffiObjectFactory<PaymentObserver> =
-  (() => {
-    return {
-      create(pointer: UnsafeMutableRawPointer): PaymentObserver {
-        const instance = Object.create(PaymentObserverImpl.prototype);
-        instance[pointerLiteralSymbol] = pointer;
-        instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'PaymentObserverImpl';
-        return instance;
-      },
+  {
+    create(pointer: UnsafeMutableRawPointer): PaymentObserver {
+      const instance = Object.create(PaymentObserverImpl.prototype);
+      instance[pointerLiteralSymbol] = pointer;
+      instance[destructorGuardSymbol] = this.bless(pointer);
+      instance[uniffiTypeNameSymbol] = 'PaymentObserverImpl';
+      return instance;
+    },
 
-      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
-        return uniffiCaller.rustCall(
-          /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_paymentobserver_ffi__bless_pointer(
-              p,
-              status
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+      return uniffiCaller.rustCall(
+        /*caller:*/ (status) =>
+          nativeModule().ubrn_uniffi_internal_fn_method_paymentobserver_ffi__bless_pointer(
+            p,
+            status
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      unbless(ptr: UniffiRustArcPtr) {
-        ptr.markDestroyed();
-      },
+    unbless(ptr: UniffiRustArcPtr) {
+      ptr.markDestroyed();
+    },
 
-      pointer(obj: PaymentObserver): UnsafeMutableRawPointer {
-        if ((obj as any)[destructorGuardSymbol] === undefined) {
-          throw new UniffiInternalError.UnexpectedNullPointer();
-        }
-        return (obj as any)[pointerLiteralSymbol];
-      },
+    pointer(obj: PaymentObserver): UnsafeMutableRawPointer {
+      if ((obj as any)[destructorGuardSymbol] === undefined) {
+        throw new UniffiInternalError.UnexpectedNullPointer();
+      }
+      return (obj as any)[pointerLiteralSymbol];
+    },
 
-      clonePointer(obj: PaymentObserver): UnsafeMutableRawPointer {
-        const pointer = this.pointer(obj);
-        return uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_paymentobserver(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    clonePointer(obj: PaymentObserver): UnsafeMutableRawPointer {
+      const pointer = this.pointer(obj);
+      return uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_paymentobserver(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      freePointer(pointer: UnsafeMutableRawPointer): void {
-        uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_paymentobserver(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    freePointer(pointer: UnsafeMutableRawPointer): void {
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_paymentobserver(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      isConcreteType(obj: any): obj is PaymentObserver {
-        return (
-          obj[destructorGuardSymbol] &&
-          obj[uniffiTypeNameSymbol] === 'PaymentObserverImpl'
-        );
-      },
-    };
-  })();
+    isConcreteType(obj: any): obj is PaymentObserver {
+      return (
+        obj[destructorGuardSymbol] &&
+        obj[uniffiTypeNameSymbol] === 'PaymentObserverImpl'
+      );
+    },
+  };
 // FfiConverter for PaymentObserver
 const FfiConverterTypePaymentObserver = new FfiConverterObjectWithCallbacks(
   uniffiTypePaymentObserverImplObjectFactory
@@ -29103,8 +27505,7 @@ const uniffiCallbackInterfacePaymentObserver: {
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -29112,12 +27513,11 @@ const uniffiCallbackInterfacePaymentObserver: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -29131,7 +27531,7 @@ const uniffiCallbackInterfacePaymentObserver: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
       // PaymentObserver: this will throw a stale handle error if the handle isn't found.
@@ -29376,70 +27776,67 @@ export class RestClientImpl extends UniffiAbstractObject implements RestClient {
   }
 }
 
-const uniffiTypeRestClientImplObjectFactory: UniffiObjectFactory<RestClient> =
-  (() => {
-    return {
-      create(pointer: UnsafeMutableRawPointer): RestClient {
-        const instance = Object.create(RestClientImpl.prototype);
-        instance[pointerLiteralSymbol] = pointer;
-        instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'RestClientImpl';
-        return instance;
-      },
+const uniffiTypeRestClientImplObjectFactory: UniffiObjectFactory<RestClient> = {
+  create(pointer: UnsafeMutableRawPointer): RestClient {
+    const instance = Object.create(RestClientImpl.prototype);
+    instance[pointerLiteralSymbol] = pointer;
+    instance[destructorGuardSymbol] = this.bless(pointer);
+    instance[uniffiTypeNameSymbol] = 'RestClientImpl';
+    return instance;
+  },
 
-      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
-        return uniffiCaller.rustCall(
-          /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_restclient_ffi__bless_pointer(
-              p,
-              status
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+  bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+    return uniffiCaller.rustCall(
+      /*caller:*/ (status) =>
+        nativeModule().ubrn_uniffi_internal_fn_method_restclient_ffi__bless_pointer(
+          p,
+          status
+        ),
+      /*liftString:*/ FfiConverterString.lift
+    );
+  },
 
-      unbless(ptr: UniffiRustArcPtr) {
-        ptr.markDestroyed();
-      },
+  unbless(ptr: UniffiRustArcPtr) {
+    ptr.markDestroyed();
+  },
 
-      pointer(obj: RestClient): UnsafeMutableRawPointer {
-        if ((obj as any)[destructorGuardSymbol] === undefined) {
-          throw new UniffiInternalError.UnexpectedNullPointer();
-        }
-        return (obj as any)[pointerLiteralSymbol];
-      },
+  pointer(obj: RestClient): UnsafeMutableRawPointer {
+    if ((obj as any)[destructorGuardSymbol] === undefined) {
+      throw new UniffiInternalError.UnexpectedNullPointer();
+    }
+    return (obj as any)[pointerLiteralSymbol];
+  },
 
-      clonePointer(obj: RestClient): UnsafeMutableRawPointer {
-        const pointer = this.pointer(obj);
-        return uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_restclient(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+  clonePointer(obj: RestClient): UnsafeMutableRawPointer {
+    const pointer = this.pointer(obj);
+    return uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) =>
+        nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_restclient(
+          pointer,
+          callStatus
+        ),
+      /*liftString:*/ FfiConverterString.lift
+    );
+  },
 
-      freePointer(pointer: UnsafeMutableRawPointer): void {
-        uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_restclient(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+  freePointer(pointer: UnsafeMutableRawPointer): void {
+    uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) =>
+        nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_restclient(
+          pointer,
+          callStatus
+        ),
+      /*liftString:*/ FfiConverterString.lift
+    );
+  },
 
-      isConcreteType(obj: any): obj is RestClient {
-        return (
-          obj[destructorGuardSymbol] &&
-          obj[uniffiTypeNameSymbol] === 'RestClientImpl'
-        );
-      },
-    };
-  })();
+  isConcreteType(obj: any): obj is RestClient {
+    return (
+      obj[destructorGuardSymbol] &&
+      obj[uniffiTypeNameSymbol] === 'RestClientImpl'
+    );
+  },
+};
 // FfiConverter for RestClient
 const FfiConverterTypeRestClient = new FfiConverterObjectWithCallbacks(
   uniffiTypeRestClientImplObjectFactory
@@ -29473,8 +27870,7 @@ const uniffiCallbackInterfaceRestClient: {
         );
       };
       const uniffiHandleSuccess = (returnValue: RestResponse) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypeRestResponse.lower(returnValue),
@@ -29483,13 +27879,12 @@ const uniffiCallbackInterfaceRestClient: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -29503,7 +27898,7 @@ const uniffiCallbackInterfaceRestClient: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     postRequest: (
       uniffiHandle: bigint,
@@ -29525,8 +27920,7 @@ const uniffiCallbackInterfaceRestClient: {
         );
       };
       const uniffiHandleSuccess = (returnValue: RestResponse) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypeRestResponse.lower(returnValue),
@@ -29535,13 +27929,12 @@ const uniffiCallbackInterfaceRestClient: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -29555,7 +27948,7 @@ const uniffiCallbackInterfaceRestClient: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     deleteRequest: (
       uniffiHandle: bigint,
@@ -29577,8 +27970,7 @@ const uniffiCallbackInterfaceRestClient: {
         );
       };
       const uniffiHandleSuccess = (returnValue: RestResponse) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypeRestResponse.lower(returnValue),
@@ -29587,13 +27979,12 @@ const uniffiCallbackInterfaceRestClient: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -29607,7 +27998,7 @@ const uniffiCallbackInterfaceRestClient: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
       // RestClient: this will throw a stale handle error if the handle isn't found.
@@ -30113,69 +28504,66 @@ export class SdkBuilder
 }
 
 const uniffiTypeSdkBuilderObjectFactory: UniffiObjectFactory<SdkBuilderInterface> =
-  (() => {
-    return {
-      create(pointer: UnsafeMutableRawPointer): SdkBuilderInterface {
-        const instance = Object.create(SdkBuilder.prototype);
-        instance[pointerLiteralSymbol] = pointer;
-        instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'SdkBuilder';
-        return instance;
-      },
+  {
+    create(pointer: UnsafeMutableRawPointer): SdkBuilderInterface {
+      const instance = Object.create(SdkBuilder.prototype);
+      instance[pointerLiteralSymbol] = pointer;
+      instance[destructorGuardSymbol] = this.bless(pointer);
+      instance[uniffiTypeNameSymbol] = 'SdkBuilder';
+      return instance;
+    },
 
-      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
-        return uniffiCaller.rustCall(
-          /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_sdkbuilder_ffi__bless_pointer(
-              p,
-              status
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+      return uniffiCaller.rustCall(
+        /*caller:*/ (status) =>
+          nativeModule().ubrn_uniffi_internal_fn_method_sdkbuilder_ffi__bless_pointer(
+            p,
+            status
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      unbless(ptr: UniffiRustArcPtr) {
-        ptr.markDestroyed();
-      },
+    unbless(ptr: UniffiRustArcPtr) {
+      ptr.markDestroyed();
+    },
 
-      pointer(obj: SdkBuilderInterface): UnsafeMutableRawPointer {
-        if ((obj as any)[destructorGuardSymbol] === undefined) {
-          throw new UniffiInternalError.UnexpectedNullPointer();
-        }
-        return (obj as any)[pointerLiteralSymbol];
-      },
+    pointer(obj: SdkBuilderInterface): UnsafeMutableRawPointer {
+      if ((obj as any)[destructorGuardSymbol] === undefined) {
+        throw new UniffiInternalError.UnexpectedNullPointer();
+      }
+      return (obj as any)[pointerLiteralSymbol];
+    },
 
-      clonePointer(obj: SdkBuilderInterface): UnsafeMutableRawPointer {
-        const pointer = this.pointer(obj);
-        return uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_sdkbuilder(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    clonePointer(obj: SdkBuilderInterface): UnsafeMutableRawPointer {
+      const pointer = this.pointer(obj);
+      return uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_sdkbuilder(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      freePointer(pointer: UnsafeMutableRawPointer): void {
-        uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_sdkbuilder(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    freePointer(pointer: UnsafeMutableRawPointer): void {
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_sdkbuilder(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      isConcreteType(obj: any): obj is SdkBuilderInterface {
-        return (
-          obj[destructorGuardSymbol] &&
-          obj[uniffiTypeNameSymbol] === 'SdkBuilder'
-        );
-      },
-    };
-  })();
+    isConcreteType(obj: any): obj is SdkBuilderInterface {
+      return (
+        obj[destructorGuardSymbol] && obj[uniffiTypeNameSymbol] === 'SdkBuilder'
+      );
+    },
+  };
 // FfiConverter for SdkBuilderInterface
 const FfiConverterTypeSdkBuilder = new FfiConverterObject(
   uniffiTypeSdkBuilderObjectFactory
@@ -30289,13 +28677,12 @@ export interface Storage {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<Map<string, Array<Payment>>>;
   /**
-   * Add a deposit to storage (upsert: updates `is_mature` and `amount_sats` on conflict)
+   * Add a deposit to storage
    * # Arguments
    *
    * * `txid` - The transaction ID of the deposit
    * * `vout` - The output index of the deposit
    * * `amount_sats` - The amount of the deposit in sats
-   * * `is_mature` - Whether the deposit UTXO has enough confirmations to be claimable
    *
    * # Returns
    *
@@ -30305,7 +28692,6 @@ export interface Storage {
     txid: string,
     vout: /*u32*/ number,
     amountSats: /*u64*/ bigint,
-    isMature: boolean,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<void>;
   /**
@@ -30872,13 +29258,12 @@ export class StorageImpl extends UniffiAbstractObject implements Storage {
   }
 
   /**
-   * Add a deposit to storage (upsert: updates `is_mature` and `amount_sats` on conflict)
+   * Add a deposit to storage
    * # Arguments
    *
    * * `txid` - The transaction ID of the deposit
    * * `vout` - The output index of the deposit
    * * `amount_sats` - The amount of the deposit in sats
-   * * `is_mature` - Whether the deposit UTXO has enough confirmations to be claimable
    *
    * # Returns
    *
@@ -30888,7 +29273,6 @@ export class StorageImpl extends UniffiAbstractObject implements Storage {
     txid: string,
     vout: /*u32*/ number,
     amountSats: /*u64*/ bigint,
-    isMature: boolean,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
@@ -30900,8 +29284,7 @@ export class StorageImpl extends UniffiAbstractObject implements Storage {
             uniffiTypeStorageImplObjectFactory.clonePointer(this),
             FfiConverterString.lower(txid),
             FfiConverterUInt32.lower(vout),
-            FfiConverterUInt64.lower(amountSats),
-            FfiConverterBool.lower(isMature)
+            FfiConverterUInt64.lower(amountSats)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -31653,70 +30036,66 @@ export class StorageImpl extends UniffiAbstractObject implements Storage {
   }
 }
 
-const uniffiTypeStorageImplObjectFactory: UniffiObjectFactory<Storage> =
-  (() => {
-    return {
-      create(pointer: UnsafeMutableRawPointer): Storage {
-        const instance = Object.create(StorageImpl.prototype);
-        instance[pointerLiteralSymbol] = pointer;
-        instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'StorageImpl';
-        return instance;
-      },
+const uniffiTypeStorageImplObjectFactory: UniffiObjectFactory<Storage> = {
+  create(pointer: UnsafeMutableRawPointer): Storage {
+    const instance = Object.create(StorageImpl.prototype);
+    instance[pointerLiteralSymbol] = pointer;
+    instance[destructorGuardSymbol] = this.bless(pointer);
+    instance[uniffiTypeNameSymbol] = 'StorageImpl';
+    return instance;
+  },
 
-      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
-        return uniffiCaller.rustCall(
-          /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_storage_ffi__bless_pointer(
-              p,
-              status
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+  bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+    return uniffiCaller.rustCall(
+      /*caller:*/ (status) =>
+        nativeModule().ubrn_uniffi_internal_fn_method_storage_ffi__bless_pointer(
+          p,
+          status
+        ),
+      /*liftString:*/ FfiConverterString.lift
+    );
+  },
 
-      unbless(ptr: UniffiRustArcPtr) {
-        ptr.markDestroyed();
-      },
+  unbless(ptr: UniffiRustArcPtr) {
+    ptr.markDestroyed();
+  },
 
-      pointer(obj: Storage): UnsafeMutableRawPointer {
-        if ((obj as any)[destructorGuardSymbol] === undefined) {
-          throw new UniffiInternalError.UnexpectedNullPointer();
-        }
-        return (obj as any)[pointerLiteralSymbol];
-      },
+  pointer(obj: Storage): UnsafeMutableRawPointer {
+    if ((obj as any)[destructorGuardSymbol] === undefined) {
+      throw new UniffiInternalError.UnexpectedNullPointer();
+    }
+    return (obj as any)[pointerLiteralSymbol];
+  },
 
-      clonePointer(obj: Storage): UnsafeMutableRawPointer {
-        const pointer = this.pointer(obj);
-        return uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_storage(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+  clonePointer(obj: Storage): UnsafeMutableRawPointer {
+    const pointer = this.pointer(obj);
+    return uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) =>
+        nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_storage(
+          pointer,
+          callStatus
+        ),
+      /*liftString:*/ FfiConverterString.lift
+    );
+  },
 
-      freePointer(pointer: UnsafeMutableRawPointer): void {
-        uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_storage(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+  freePointer(pointer: UnsafeMutableRawPointer): void {
+    uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) =>
+        nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_storage(
+          pointer,
+          callStatus
+        ),
+      /*liftString:*/ FfiConverterString.lift
+    );
+  },
 
-      isConcreteType(obj: any): obj is Storage {
-        return (
-          obj[destructorGuardSymbol] &&
-          obj[uniffiTypeNameSymbol] === 'StorageImpl'
-        );
-      },
-    };
-  })();
+  isConcreteType(obj: any): obj is Storage {
+    return (
+      obj[destructorGuardSymbol] && obj[uniffiTypeNameSymbol] === 'StorageImpl'
+    );
+  },
+};
 // FfiConverter for Storage
 const FfiConverterTypeStorage = new FfiConverterObjectWithCallbacks(
   uniffiTypeStorageImplObjectFactory
@@ -31745,8 +30124,7 @@ const uniffiCallbackInterfaceStorage: {
         });
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -31754,12 +30132,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -31773,7 +30150,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     getCachedItem: (
       uniffiHandle: bigint,
@@ -31790,8 +30167,7 @@ const uniffiCallbackInterfaceStorage: {
         });
       };
       const uniffiHandleSuccess = (returnValue: string | undefined) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterOptionalString.lower(returnValue),
@@ -31800,13 +30176,12 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -31820,7 +30195,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     setCachedItem: (
       uniffiHandle: bigint,
@@ -31838,8 +30213,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -31847,12 +30221,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -31866,7 +30239,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     listPayments: (
       uniffiHandle: bigint,
@@ -31884,8 +30257,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: Array<Payment>) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterArrayTypePayment.lower(returnValue),
@@ -31894,13 +30266,12 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -31914,7 +30285,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     insertPayment: (
       uniffiHandle: bigint,
@@ -31930,8 +30301,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -31939,12 +30309,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -31958,7 +30327,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     insertPaymentMetadata: (
       uniffiHandle: bigint,
@@ -31976,8 +30345,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -31985,12 +30353,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32004,7 +30371,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     getPaymentById: (
       uniffiHandle: bigint,
@@ -32019,8 +30386,7 @@ const uniffiCallbackInterfaceStorage: {
         });
       };
       const uniffiHandleSuccess = (returnValue: Payment) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypePayment.lower(returnValue),
@@ -32029,13 +30395,12 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32049,7 +30414,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     getPaymentByInvoice: (
       uniffiHandle: bigint,
@@ -32067,8 +30432,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: Payment | undefined) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterOptionalTypePayment.lower(returnValue),
@@ -32077,13 +30441,12 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32097,7 +30460,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     getPaymentsByParentIds: (
       uniffiHandle: bigint,
@@ -32117,8 +30480,7 @@ const uniffiCallbackInterfaceStorage: {
       const uniffiHandleSuccess = (
         returnValue: Map<string, Array<Payment>>
       ) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
@@ -32128,13 +30490,12 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32148,14 +30509,13 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     addDeposit: (
       uniffiHandle: bigint,
       txid: Uint8Array,
       vout: number,
       amountSats: bigint,
-      isMature: number,
       uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
       uniffiCallbackData: bigint
     ) => {
@@ -32165,13 +30525,11 @@ const uniffiCallbackInterfaceStorage: {
           FfiConverterString.lift(txid),
           FfiConverterUInt32.lift(vout),
           FfiConverterUInt64.lift(amountSats),
-          FfiConverterBool.lift(isMature),
           { signal }
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -32179,12 +30537,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32198,7 +30555,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     deleteDeposit: (
       uniffiHandle: bigint,
@@ -32216,8 +30573,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -32225,12 +30581,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32244,7 +30599,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     listDeposits: (
       uniffiHandle: bigint,
@@ -32258,8 +30613,7 @@ const uniffiCallbackInterfaceStorage: {
         return await jsCallback.listDeposits({ signal });
       };
       const uniffiHandleSuccess = (returnValue: Array<DepositInfo>) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterArrayTypeDepositInfo.lower(returnValue),
@@ -32268,13 +30622,12 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32288,7 +30641,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     updateDeposit: (
       uniffiHandle: bigint,
@@ -32308,8 +30661,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -32317,12 +30669,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32336,7 +30687,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     setLnurlMetadata: (
       uniffiHandle: bigint,
@@ -32352,8 +30703,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -32361,12 +30711,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32380,7 +30729,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     listContacts: (
       uniffiHandle: bigint,
@@ -32398,8 +30747,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: Array<Contact>) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterArrayTypeContact.lower(returnValue),
@@ -32408,13 +30756,12 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32428,7 +30775,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     getContact: (
       uniffiHandle: bigint,
@@ -32443,8 +30790,7 @@ const uniffiCallbackInterfaceStorage: {
         });
       };
       const uniffiHandleSuccess = (returnValue: Contact) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypeContact.lower(returnValue),
@@ -32453,13 +30799,12 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32473,7 +30818,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     insertContact: (
       uniffiHandle: bigint,
@@ -32489,8 +30834,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -32498,12 +30842,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32517,7 +30860,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     deleteContact: (
       uniffiHandle: bigint,
@@ -32532,8 +30875,7 @@ const uniffiCallbackInterfaceStorage: {
         });
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -32541,12 +30883,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32560,7 +30901,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     addOutgoingChange: (
       uniffiHandle: bigint,
@@ -32578,8 +30919,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: /*u64*/ bigint) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructU64 */ {
             returnValue: FfiConverterUInt64.lower(returnValue),
@@ -32588,13 +30928,12 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructU64 */ {
             returnValue: 0n,
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32608,7 +30947,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     completeOutgoingSync: (
       uniffiHandle: bigint,
@@ -32626,8 +30965,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -32635,12 +30973,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32654,7 +30991,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     getPendingOutgoingChanges: (
       uniffiHandle: bigint,
@@ -32672,8 +31009,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: Array<OutgoingChange>) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterArrayTypeOutgoingChange.lower(returnValue),
@@ -32682,13 +31018,12 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32702,7 +31037,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     getLastRevision: (
       uniffiHandle: bigint,
@@ -32716,8 +31051,7 @@ const uniffiCallbackInterfaceStorage: {
         return await jsCallback.getLastRevision({ signal });
       };
       const uniffiHandleSuccess = (returnValue: /*u64*/ bigint) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructU64 */ {
             returnValue: FfiConverterUInt64.lower(returnValue),
@@ -32726,13 +31060,12 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructU64 */ {
             returnValue: 0n,
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32746,7 +31079,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     insertIncomingRecords: (
       uniffiHandle: bigint,
@@ -32762,8 +31095,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -32771,12 +31103,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32790,7 +31121,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     deleteIncomingRecord: (
       uniffiHandle: bigint,
@@ -32806,8 +31137,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -32815,12 +31145,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32834,7 +31163,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     getIncomingRecords: (
       uniffiHandle: bigint,
@@ -32852,8 +31181,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: Array<IncomingChange>) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterArrayTypeIncomingChange.lower(returnValue),
@@ -32862,13 +31190,12 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32882,7 +31209,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     getLatestOutgoingChange: (
       uniffiHandle: bigint,
@@ -32896,8 +31223,7 @@ const uniffiCallbackInterfaceStorage: {
         return await jsCallback.getLatestOutgoingChange({ signal });
       };
       const uniffiHandleSuccess = (returnValue: OutgoingChange | undefined) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
@@ -32907,13 +31233,12 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: /*empty*/ new Uint8Array(0),
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32927,7 +31252,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     updateRecordFromIncoming: (
       uniffiHandle: bigint,
@@ -32943,8 +31268,7 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleSuccess = (returnValue: void) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             callStatus: uniffiCaller.createCallStatus(),
@@ -32952,12 +31276,11 @@ const uniffiCallbackInterfaceStorage: {
         );
       };
       const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
+        uniffiFutureCallback(
           uniffiCallbackData,
           /* UniffiForeignFutureStructVoid */ {
             // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+            callStatus: { code, errorBuf },
           }
         );
       };
@@ -32971,7 +31294,7 @@ const uniffiCallbackInterfaceStorage: {
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
-      return uniffiForeignFuture;
+      return UniffiResult.success(uniffiForeignFuture);
     },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
       // Storage: this will throw a stale handle error if the handle isn't found.
@@ -33483,69 +31806,67 @@ export class TokenIssuer
 }
 
 const uniffiTypeTokenIssuerObjectFactory: UniffiObjectFactory<TokenIssuerInterface> =
-  (() => {
-    return {
-      create(pointer: UnsafeMutableRawPointer): TokenIssuerInterface {
-        const instance = Object.create(TokenIssuer.prototype);
-        instance[pointerLiteralSymbol] = pointer;
-        instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'TokenIssuer';
-        return instance;
-      },
+  {
+    create(pointer: UnsafeMutableRawPointer): TokenIssuerInterface {
+      const instance = Object.create(TokenIssuer.prototype);
+      instance[pointerLiteralSymbol] = pointer;
+      instance[destructorGuardSymbol] = this.bless(pointer);
+      instance[uniffiTypeNameSymbol] = 'TokenIssuer';
+      return instance;
+    },
 
-      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
-        return uniffiCaller.rustCall(
-          /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_tokenissuer_ffi__bless_pointer(
-              p,
-              status
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+      return uniffiCaller.rustCall(
+        /*caller:*/ (status) =>
+          nativeModule().ubrn_uniffi_internal_fn_method_tokenissuer_ffi__bless_pointer(
+            p,
+            status
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      unbless(ptr: UniffiRustArcPtr) {
-        ptr.markDestroyed();
-      },
+    unbless(ptr: UniffiRustArcPtr) {
+      ptr.markDestroyed();
+    },
 
-      pointer(obj: TokenIssuerInterface): UnsafeMutableRawPointer {
-        if ((obj as any)[destructorGuardSymbol] === undefined) {
-          throw new UniffiInternalError.UnexpectedNullPointer();
-        }
-        return (obj as any)[pointerLiteralSymbol];
-      },
+    pointer(obj: TokenIssuerInterface): UnsafeMutableRawPointer {
+      if ((obj as any)[destructorGuardSymbol] === undefined) {
+        throw new UniffiInternalError.UnexpectedNullPointer();
+      }
+      return (obj as any)[pointerLiteralSymbol];
+    },
 
-      clonePointer(obj: TokenIssuerInterface): UnsafeMutableRawPointer {
-        const pointer = this.pointer(obj);
-        return uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_tokenissuer(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    clonePointer(obj: TokenIssuerInterface): UnsafeMutableRawPointer {
+      const pointer = this.pointer(obj);
+      return uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_tokenissuer(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      freePointer(pointer: UnsafeMutableRawPointer): void {
-        uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_tokenissuer(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
+    freePointer(pointer: UnsafeMutableRawPointer): void {
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) =>
+          nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_tokenissuer(
+            pointer,
+            callStatus
+          ),
+        /*liftString:*/ FfiConverterString.lift
+      );
+    },
 
-      isConcreteType(obj: any): obj is TokenIssuerInterface {
-        return (
-          obj[destructorGuardSymbol] &&
-          obj[uniffiTypeNameSymbol] === 'TokenIssuer'
-        );
-      },
-    };
-  })();
+    isConcreteType(obj: any): obj is TokenIssuerInterface {
+      return (
+        obj[destructorGuardSymbol] &&
+        obj[uniffiTypeNameSymbol] === 'TokenIssuer'
+      );
+    },
+  };
 // FfiConverter for TokenIssuerInterface
 const FfiConverterTypeTokenIssuer = new FfiConverterObject(
   uniffiTypeTokenIssuerObjectFactory
@@ -33582,11 +31903,6 @@ const FfiConverterOptionalTypeConversionInfo = new FfiConverterOptional(
 // FfiConverter for ConversionOptions | undefined
 const FfiConverterOptionalTypeConversionOptions = new FfiConverterOptional(
   FfiConverterTypeConversionOptions
-);
-
-// FfiConverter for ConversionStep | undefined
-const FfiConverterOptionalTypeConversionStep = new FfiConverterOptional(
-  FfiConverterTypeConversionStep
 );
 
 // FfiConverter for Credentials | undefined
@@ -33637,11 +31953,6 @@ const FfiConverterOptionalTypePayment = new FfiConverterOptional(
 // FfiConverter for Record | undefined
 const FfiConverterOptionalTypeRecord = new FfiConverterOptional(
   FfiConverterTypeRecord
-);
-
-// FfiConverter for SparkConfig | undefined
-const FfiConverterOptionalTypeSparkConfig = new FfiConverterOptional(
-  FfiConverterTypeSparkConfig
 );
 
 // FfiConverter for SparkHtlcDetails | undefined
@@ -33789,16 +32100,6 @@ const FfiConverterArrayTypeSetLnurlMetadataItem = new FfiConverterArray(
   FfiConverterTypeSetLnurlMetadataItem
 );
 
-// FfiConverter for Array<SparkSigningOperator>
-const FfiConverterArrayTypeSparkSigningOperator = new FfiConverterArray(
-  FfiConverterTypeSparkSigningOperator
-);
-
-// FfiConverter for Array<StableBalanceToken>
-const FfiConverterArrayTypeStableBalanceToken = new FfiConverterArray(
-  FfiConverterTypeStableBalanceToken
-);
-
 // FfiConverter for Array<TokenMetadata>
 const FfiConverterArrayTypeTokenMetadata = new FfiConverterArray(
   FfiConverterTypeTokenMetadata
@@ -33806,11 +32107,6 @@ const FfiConverterArrayTypeTokenMetadata = new FfiConverterArray(
 
 // FfiConverter for Array<Utxo>
 const FfiConverterArrayTypeUtxo = new FfiConverterArray(FfiConverterTypeUtxo);
-
-// FfiConverter for Array<Webhook>
-const FfiConverterArrayTypeWebhook = new FfiConverterArray(
-  FfiConverterTypeWebhook
-);
 
 // FfiConverter for Array<string>
 const FfiConverterArrayString = new FfiConverterArray(FfiConverterString);
@@ -33831,11 +32127,6 @@ const FfiConverterOptionalTypeAmount = new FfiConverterOptional(
   FfiConverterTypeAmount
 );
 
-// FfiConverter for AmountAdjustmentReason | undefined
-const FfiConverterOptionalTypeAmountAdjustmentReason = new FfiConverterOptional(
-  FfiConverterTypeAmountAdjustmentReason
-);
-
 // FfiConverter for AssetFilter | undefined
 const FfiConverterOptionalTypeAssetFilter = new FfiConverterOptional(
   FfiConverterTypeAssetFilter
@@ -33844,11 +32135,6 @@ const FfiConverterOptionalTypeAssetFilter = new FfiConverterOptional(
 // FfiConverter for ConversionPurpose | undefined
 const FfiConverterOptionalTypeConversionPurpose = new FfiConverterOptional(
   FfiConverterTypeConversionPurpose
-);
-
-// FfiConverter for ConversionStatus | undefined
-const FfiConverterOptionalTypeConversionStatus = new FfiConverterOptional(
-  FfiConverterTypeConversionStatus
 );
 
 // FfiConverter for DepositClaimError | undefined
@@ -33880,10 +32166,6 @@ const FfiConverterOptionalTypePaymentDetails = new FfiConverterOptional(
 const FfiConverterOptionalTypeSendPaymentOptions = new FfiConverterOptional(
   FfiConverterTypeSendPaymentOptions
 );
-
-// FfiConverter for StableBalanceActiveLabel | undefined
-const FfiConverterOptionalTypeStableBalanceActiveLabel =
-  new FfiConverterOptional(FfiConverterTypeStableBalanceActiveLabel);
 
 // FfiConverter for SuccessAction | undefined
 const FfiConverterOptionalTypeSuccessAction = new FfiConverterOptional(
@@ -33939,11 +32221,6 @@ const FfiConverterArrayTypeStoragePaymentDetailsFilter = new FfiConverterArray(
   FfiConverterTypeStoragePaymentDetailsFilter
 );
 
-// FfiConverter for Array<WebhookEventType>
-const FfiConverterArrayTypeWebhookEventType = new FfiConverterArray(
-  FfiConverterTypeWebhookEventType
-);
-
 // FfiConverter for Array<PaymentDetailsFilter> | undefined
 const FfiConverterOptionalArrayTypePaymentDetailsFilter =
   new FfiConverterOptional(FfiConverterArrayTypePaymentDetailsFilter);
@@ -33979,7 +32256,7 @@ const FfiConverterOptionalArrayTypeStoragePaymentDetailsFilter =
  */
 function uniffiEnsureInitialized() {
   // Get the bindings contract version from our ComponentInterface
-  const bindingsContractVersion = 29;
+  const bindingsContractVersion = 26;
   // Get the scaffolding contract version by calling the into the dylib
   const scaffoldingContractVersion =
     nativeModule().ubrn_ffi_breez_sdk_spark_uniffi_contract_version();
@@ -34094,7 +32371,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin() !==
-    34179
+    32150
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin'
@@ -34269,14 +32546,6 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_webhooks() !==
-    28432
-  ) {
-    throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_breezsdk_list_webhooks'
-    );
-  }
-  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_auth() !==
     125
   ) {
@@ -34357,14 +32626,6 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_register_webhook() !==
-    13529
-  ) {
-    throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_breezsdk_register_webhook'
-    );
-  }
-  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener() !==
     41066
   ) {
@@ -34390,7 +32651,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization() !==
-    44923
+    22827
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization'
@@ -34402,14 +32663,6 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet'
-    );
-  }
-  if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_unregister_webhook() !==
-    34100
-  ) {
-    throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_breezsdk_unregister_webhook'
     );
   }
   if (
@@ -34830,7 +33083,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_add_deposit() !==
-    35363
+    13181
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_add_deposit'
@@ -35080,7 +33333,6 @@ export default Object.freeze({
     FfiConverterTypeAesSuccessActionDataDecrypted,
     FfiConverterTypeAesSuccessActionDataResult,
     FfiConverterTypeAmount,
-    FfiConverterTypeAmountAdjustmentReason,
     FfiConverterTypeAssetFilter,
     FfiConverterTypeBip21Details,
     FfiConverterTypeBip21Extra,
@@ -35102,7 +33354,6 @@ export default Object.freeze({
     FfiConverterTypeBuyBitcoinRequest,
     FfiConverterTypeBuyBitcoinResponse,
     FfiConverterTypeChainApiType,
-    FfiConverterTypeChainServiceError,
     FfiConverterTypeCheckLightningAddressRequest,
     FfiConverterTypeCheckMessageRequest,
     FfiConverterTypeCheckMessageResponse,
@@ -35203,8 +33454,6 @@ export default Object.freeze({
     FfiConverterTypeOptimizationProgress,
     FfiConverterTypeOutgoingChange,
     FfiConverterTypePasskey,
-    FfiConverterTypePasskeyError,
-    FfiConverterTypePasskeyPrfError,
     FfiConverterTypePasskeyPrfProvider,
     FfiConverterTypePayment,
     FfiConverterTypePaymentDetails,
@@ -35212,7 +33461,6 @@ export default Object.freeze({
     FfiConverterTypePaymentMetadata,
     FfiConverterTypePaymentMethod,
     FfiConverterTypePaymentObserver,
-    FfiConverterTypePaymentObserverError,
     FfiConverterTypePaymentRequestSource,
     FfiConverterTypePaymentStatus,
     FfiConverterTypePaymentType,
@@ -35235,13 +33483,10 @@ export default Object.freeze({
     FfiConverterTypeRefundDepositRequest,
     FfiConverterTypeRefundDepositResponse,
     FfiConverterTypeRegisterLightningAddressRequest,
-    FfiConverterTypeRegisterWebhookRequest,
-    FfiConverterTypeRegisterWebhookResponse,
     FfiConverterTypeRestClient,
     FfiConverterTypeRestResponse,
     FfiConverterTypeSchnorrSignatureBytes,
     FfiConverterTypeSdkBuilder,
-    FfiConverterTypeSdkError,
     FfiConverterTypeSdkEvent,
     FfiConverterTypeSecretBytes,
     FfiConverterTypeSeed,
@@ -35251,28 +33496,20 @@ export default Object.freeze({
     FfiConverterTypeSendPaymentOptions,
     FfiConverterTypeSendPaymentRequest,
     FfiConverterTypeSendPaymentResponse,
-    FfiConverterTypeServiceConnectivityError,
     FfiConverterTypeServiceStatus,
     FfiConverterTypeSetLnurlMetadataItem,
     FfiConverterTypeSignMessageRequest,
     FfiConverterTypeSignMessageResponse,
-    FfiConverterTypeSignerError,
     FfiConverterTypeSilentPaymentAddressDetails,
     FfiConverterTypeSparkAddressDetails,
-    FfiConverterTypeSparkConfig,
     FfiConverterTypeSparkHtlcDetails,
     FfiConverterTypeSparkHtlcOptions,
     FfiConverterTypeSparkHtlcStatus,
     FfiConverterTypeSparkInvoiceDetails,
     FfiConverterTypeSparkInvoicePaymentDetails,
-    FfiConverterTypeSparkSigningOperator,
-    FfiConverterTypeSparkSspConfig,
     FfiConverterTypeSparkStatus,
-    FfiConverterTypeStableBalanceActiveLabel,
     FfiConverterTypeStableBalanceConfig,
-    FfiConverterTypeStableBalanceToken,
     FfiConverterTypeStorage,
-    FfiConverterTypeStorageError,
     FfiConverterTypeStorageListPaymentsRequest,
     FfiConverterTypeStoragePaymentDetailsFilter,
     FfiConverterTypeSuccessAction,
@@ -35287,7 +33524,6 @@ export default Object.freeze({
     FfiConverterTypeTxStatus,
     FfiConverterTypeUnfreezeIssuerTokenRequest,
     FfiConverterTypeUnfreezeIssuerTokenResponse,
-    FfiConverterTypeUnregisterWebhookRequest,
     FfiConverterTypeUnversionedRecordChange,
     FfiConverterTypeUpdateContactRequest,
     FfiConverterTypeUpdateDepositPayload,
@@ -35296,8 +33532,6 @@ export default Object.freeze({
     FfiConverterTypeUserSettings,
     FfiConverterTypeUtxo,
     FfiConverterTypeWallet,
-    FfiConverterTypeWebhook,
-    FfiConverterTypeWebhookEventType,
     FfiConverterTypeu128,
   },
 });
