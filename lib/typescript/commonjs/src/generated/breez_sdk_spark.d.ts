@@ -534,39 +534,6 @@ export declare const BurnIssuerTokenRequest: Readonly<{
     defaults: () => Partial<BurnIssuerTokenRequest>;
 }>;
 /**
- * Request to buy Bitcoin using an external provider (`MoonPay`)
- */
-export type BuyBitcoinRequest = {
-    /**
-     * Optional: Lock the purchase to a specific amount in satoshis.
-     * When provided, the user cannot change the amount in the purchase flow.
-     */
-    lockedAmountSat: /*u64*/ bigint | undefined;
-    /**
-     * Optional: Custom redirect URL after purchase completion
-     */
-    redirectUrl: string | undefined;
-};
-/**
- * Generated factory for {@link BuyBitcoinRequest} record objects.
- */
-export declare const BuyBitcoinRequest: Readonly<{
-    /**
-     * Create a frozen instance of {@link BuyBitcoinRequest}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create: (partial: Partial<BuyBitcoinRequest> & Required<Omit<BuyBitcoinRequest, "lockedAmountSat" | "redirectUrl">>) => BuyBitcoinRequest;
-    /**
-     * Create a frozen instance of {@link BuyBitcoinRequest}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: (partial: Partial<BuyBitcoinRequest> & Required<Omit<BuyBitcoinRequest, "lockedAmountSat" | "redirectUrl">>) => BuyBitcoinRequest;
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Partial<BuyBitcoinRequest>;
-}>;
-/**
  * Response containing a URL to complete the Bitcoin purchase
  */
 export type BuyBitcoinResponse = {
@@ -821,10 +788,13 @@ export type Config = {
      */
     maxConcurrentClaims: number;
     /**
-     * When true, enables LNURL verify support (LUD-21) and zap receipts (NIP-57).
-     * When false (default), these features are disabled for privacy.
+     * Optional custom Spark environment configuration.
+     *
+     * When set, overrides the default Spark operator pool, service provider,
+     * threshold, and token settings. Use this to connect to alternative Spark
+     * deployments (e.g. dev/staging environments).
      */
-    supportLnurlVerify: boolean;
+    sparkConfig: SparkConfig | undefined;
 };
 /**
  * Generated factory for {@link Config} record objects.
@@ -931,17 +901,24 @@ export declare const Contact: Readonly<{
     defaults: () => Partial<Contact>;
 }>;
 /**
- * Outlines the steps involved in a conversion
+ * Outlines the steps involved in a conversion.
+ *
+ * Built progressively: `status` is available immediately from payment metadata,
+ * while `from`/`to` steps are enriched later from child payments.
  */
 export type ConversionDetails = {
     /**
-     * First step is converting from the available asset
+     * Current status of the conversion
      */
-    from: ConversionStep;
+    status: ConversionStatus;
     /**
-     * Second step is converting to the requested asset
+     * The send step of the conversion (e.g., sats sent to Flashnet)
      */
-    to: ConversionStep;
+    from: ConversionStep | undefined;
+    /**
+     * The receive step of the conversion (e.g., tokens received from Flashnet)
+     */
+    to: ConversionStep | undefined;
 };
 /**
  * Generated factory for {@link ConversionDetails} record objects.
@@ -971,15 +948,26 @@ export type ConversionEstimate = {
      */
     options: ConversionOptions;
     /**
-     * The estimated amount to be received from the conversion
-     * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+     * The input amount for the conversion.
+     * For `FromBitcoin`: the satoshis required to produce the desired token output.
+     * For `ToBitcoin`: the token amount being converted.
      */
-    amount: U128;
+    amountIn: U128;
     /**
-     * The fee estimated for the conversion
+     * The estimated output amount from the conversion.
+     * For `FromBitcoin`: the estimated token amount received.
+     * For `ToBitcoin`: the estimated satoshis received.
+     */
+    amountOut: U128;
+    /**
+     * The fee estimated for the conversion.
      * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
      */
     fee: U128;
+    /**
+     * The reason the conversion amount was adjusted, if applicable.
+     */
+    amountAdjustment: AmountAdjustmentReason | undefined;
 };
 /**
  * Generated factory for {@link ConversionEstimate} record objects.
@@ -1022,6 +1010,10 @@ export type ConversionInfo = {
      * The purpose of the conversion
      */
     purpose: ConversionPurpose | undefined;
+    /**
+     * The reason the conversion amount was adjusted, if applicable.
+     */
+    amountAdjustment: AmountAdjustmentReason | undefined;
 };
 /**
  * Generated factory for {@link ConversionInfo} record objects.
@@ -1111,6 +1103,10 @@ export type ConversionStep = {
      * Token metadata if a token is used for payment
      */
     tokenMetadata: TokenMetadata | undefined;
+    /**
+     * The reason the conversion amount was adjusted, if applicable.
+     */
+    amountAdjustment: AmountAdjustmentReason | undefined;
 };
 /**
  * Generated factory for {@link ConversionStep} record objects.
@@ -1215,6 +1211,7 @@ export type DepositInfo = {
     txid: string;
     vout: number;
     amountSats: bigint;
+    isMature: boolean;
     refundTx: string | undefined;
     refundTxId: string | undefined;
     claimError: DepositClaimError | undefined;
@@ -3130,6 +3127,7 @@ export type PaymentMetadata = {
     lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
     lnurlDescription: string | undefined;
     conversionInfo: ConversionInfo | undefined;
+    conversionStatus: ConversionStatus | undefined;
 };
 /**
  * Generated factory for {@link PaymentMetadata} record objects.
@@ -3175,12 +3173,17 @@ export declare const PaymentRequestSource: Readonly<{
 }>;
 export type PrepareLnurlPayRequest = {
     /**
-     * The amount to send in satoshis.
+     * The amount to send. Denominated in satoshis, or in token base units
+     * when `token_identifier` is set.
      */
-    amountSats: bigint;
+    amount: U128;
     payRequest: LnurlPayRequestDetails;
     comment: string | undefined;
     validateSuccessActionUrl: boolean | undefined;
+    /**
+     * The token identifier when sending a token amount with conversion.
+     */
+    tokenIdentifier: string | undefined;
     /**
      * If provided, the payment will include a token conversion step before sending the payment
      */
@@ -3198,12 +3201,12 @@ export declare const PrepareLnurlPayRequest: Readonly<{
      * Create a frozen instance of {@link PrepareLnurlPayRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<PrepareLnurlPayRequest> & Required<Omit<PrepareLnurlPayRequest, "comment" | "validateSuccessActionUrl" | "conversionOptions" | "feePolicy">>) => PrepareLnurlPayRequest;
+    create: (partial: Partial<PrepareLnurlPayRequest> & Required<Omit<PrepareLnurlPayRequest, "tokenIdentifier" | "comment" | "validateSuccessActionUrl" | "conversionOptions" | "feePolicy">>) => PrepareLnurlPayRequest;
     /**
      * Create a frozen instance of {@link PrepareLnurlPayRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<PrepareLnurlPayRequest> & Required<Omit<PrepareLnurlPayRequest, "comment" | "validateSuccessActionUrl" | "conversionOptions" | "feePolicy">>) => PrepareLnurlPayRequest;
+    new: (partial: Partial<PrepareLnurlPayRequest> & Required<Omit<PrepareLnurlPayRequest, "tokenIdentifier" | "comment" | "validateSuccessActionUrl" | "conversionOptions" | "feePolicy">>) => PrepareLnurlPayRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -3211,7 +3214,10 @@ export declare const PrepareLnurlPayRequest: Readonly<{
 }>;
 export type PrepareLnurlPayResponse = {
     /**
-     * The amount to send in satoshis.
+     * The amount for the payment, always denominated in sats, even when a
+     * `token_identifier` and conversion are present.
+     * When a conversion is present, the token input amount is available in
+     * `conversion_estimate.amount_in`.
      */
     amountSats: bigint;
     comment: string | undefined;
@@ -3296,8 +3302,10 @@ export declare const PrepareSendPaymentRequest: Readonly<{
 export type PrepareSendPaymentResponse = {
     paymentMethod: SendPaymentMethod;
     /**
-     * The amount for the payment.
-     * Denominated in satoshis for Bitcoin payments, or token base units for token payments.
+     * The amount to be sent, denominated in satoshis for Bitcoin payments
+     * (including token-to-Bitcoin conversions), or token base units for token payments.
+     * When a conversion is present, the input amount is in
+     * `conversion_estimate.amount_in`.
      */
     amount: U128;
     /**
@@ -3661,6 +3669,70 @@ export declare const RegisterLightningAddressRequest: Readonly<{
      */
     defaults: () => Partial<RegisterLightningAddressRequest>;
 }>;
+/**
+ * Request to register a new webhook.
+ */
+export type RegisterWebhookRequest = {
+    /**
+     * The URL that will receive webhook notifications.
+     */
+    url: string;
+    /**
+     * A secret used for HMAC-SHA256 signature verification of webhook payloads.
+     */
+    secret: string;
+    /**
+     * The event types to subscribe to.
+     */
+    eventTypes: Array<WebhookEventType>;
+};
+/**
+ * Generated factory for {@link RegisterWebhookRequest} record objects.
+ */
+export declare const RegisterWebhookRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link RegisterWebhookRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<RegisterWebhookRequest> & Required<Omit<RegisterWebhookRequest, never>>) => RegisterWebhookRequest;
+    /**
+     * Create a frozen instance of {@link RegisterWebhookRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<RegisterWebhookRequest> & Required<Omit<RegisterWebhookRequest, never>>) => RegisterWebhookRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<RegisterWebhookRequest>;
+}>;
+/**
+ * Response from registering a webhook.
+ */
+export type RegisterWebhookResponse = {
+    /**
+     * The unique identifier of the newly registered webhook.
+     */
+    webhookId: string;
+};
+/**
+ * Generated factory for {@link RegisterWebhookResponse} record objects.
+ */
+export declare const RegisterWebhookResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link RegisterWebhookResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<RegisterWebhookResponse> & Required<Omit<RegisterWebhookResponse, never>>) => RegisterWebhookResponse;
+    /**
+     * Create a frozen instance of {@link RegisterWebhookResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<RegisterWebhookResponse> & Required<Omit<RegisterWebhookResponse, never>>) => RegisterWebhookResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<RegisterWebhookResponse>;
+}>;
 export type RestResponse = {
     status: number;
     body: string;
@@ -3840,7 +3912,6 @@ export type SetLnurlMetadataItem = {
     senderComment: string | undefined;
     nostrZapRequest: string | undefined;
     nostrZapReceipt: string | undefined;
-    preimage: string | undefined;
 };
 /**
  * Generated factory for {@link SetLnurlMetadataItem} record objects.
@@ -3967,6 +4038,58 @@ export declare const SparkAddressDetails: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<SparkAddressDetails>;
+}>;
+/**
+ * Configuration for a custom Spark environment.
+ *
+ * When set on [`Config`], overrides the default Spark operator pool,
+ * service provider, threshold, and token settings. This allows connecting
+ * to alternative Spark deployments (e.g. dev/staging environments).
+ */
+export type SparkConfig = {
+    /**
+     * Hex-encoded identifier of the coordinator operator.
+     */
+    coordinatorIdentifier: string;
+    /**
+     * The FROST signing threshold (e.g. 2 of 3).
+     */
+    threshold: number;
+    /**
+     * The set of signing operators.
+     */
+    signingOperators: Array<SparkSigningOperator>;
+    /**
+     * Service provider (SSP) configuration.
+     */
+    sspConfig: SparkSspConfig;
+    /**
+     * Expected bond amount in sats for token withdrawals.
+     */
+    expectedWithdrawBondSats: bigint;
+    /**
+     * Expected relative block locktime for token withdrawals.
+     */
+    expectedWithdrawRelativeBlockLocktime: bigint;
+};
+/**
+ * Generated factory for {@link SparkConfig} record objects.
+ */
+export declare const SparkConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link SparkConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SparkConfig> & Required<Omit<SparkConfig, never>>) => SparkConfig;
+    /**
+     * Create a frozen instance of {@link SparkConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SparkConfig> & Required<Omit<SparkConfig, never>>) => SparkConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SparkConfig>;
 }>;
 export type SparkHtlcDetails = {
     /**
@@ -4115,6 +4238,83 @@ export declare const SparkInvoicePaymentDetails: Readonly<{
     defaults: () => Partial<SparkInvoicePaymentDetails>;
 }>;
 /**
+ * A Spark signing operator.
+ */
+export type SparkSigningOperator = {
+    /**
+     * Sequential operator ID (0-indexed).
+     */
+    id: number;
+    /**
+     * Hex-encoded 32-byte FROST identifier.
+     */
+    identifier: string;
+    /**
+     * gRPC address of the operator (e.g. `https://0.spark.lightspark.com`).
+     */
+    address: string;
+    /**
+     * Hex-encoded compressed public key of the operator.
+     */
+    identityPublicKey: string;
+};
+/**
+ * Generated factory for {@link SparkSigningOperator} record objects.
+ */
+export declare const SparkSigningOperator: Readonly<{
+    /**
+     * Create a frozen instance of {@link SparkSigningOperator}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SparkSigningOperator> & Required<Omit<SparkSigningOperator, never>>) => SparkSigningOperator;
+    /**
+     * Create a frozen instance of {@link SparkSigningOperator}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SparkSigningOperator> & Required<Omit<SparkSigningOperator, never>>) => SparkSigningOperator;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SparkSigningOperator>;
+}>;
+/**
+ * Configuration for the Spark Service Provider (SSP).
+ */
+export type SparkSspConfig = {
+    /**
+     * Base URL of the SSP GraphQL API.
+     */
+    baseUrl: string;
+    /**
+     * Hex-encoded compressed public key of the SSP.
+     */
+    identityPublicKey: string;
+    /**
+     * Optional GraphQL schema endpoint path (e.g. "graphql/spark/rc").
+     * Defaults to the hardcoded schema endpoint if not set.
+     */
+    schemaEndpoint: string | undefined;
+};
+/**
+ * Generated factory for {@link SparkSspConfig} record objects.
+ */
+export declare const SparkSspConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link SparkSspConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SparkSspConfig> & Required<Omit<SparkSspConfig, never>>) => SparkSspConfig;
+    /**
+     * Create a frozen instance of {@link SparkSspConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SparkSspConfig> & Required<Omit<SparkSspConfig, never>>) => SparkSspConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SparkSspConfig>;
+}>;
+/**
  * The status of the Spark network services relevant to the SDK.
  */
 export type SparkStatus = {
@@ -4152,18 +4352,28 @@ export declare const SparkStatus: Readonly<{
  * When configured, the SDK automatically monitors the Bitcoin balance after each
  * wallet sync. When the balance exceeds the configured threshold plus the reserved
  * amount, the SDK automatically converts the excess balance (above the reserve)
- * to the specified stable token.
+ * to the active stable token.
  *
  * When the balance is held in a stable token, Bitcoin payments can still be sent.
  * The SDK automatically detects when there's not enough Bitcoin balance to cover a
  * payment and auto-populates the token-to-Bitcoin conversion options to facilitate
  * the payment.
+ *
+ * The active token can be changed at runtime via [`UpdateUserSettingsRequest`].
  */
 export type StableBalanceConfig = {
     /**
-     * The token identifier to convert Bitcoin to (required).
+     * Available tokens that can be used for stable balance.
      */
-    tokenIdentifier: string;
+    tokens: Array<StableBalanceToken>;
+    /**
+     * The label of the token to activate by default.
+     *
+     * If `None`, stable balance starts deactivated. The user can activate it
+     * at runtime via [`UpdateUserSettingsRequest`]. If a user setting is cached
+     * locally, it takes precedence over this default.
+     */
+    defaultActiveLabel: string | undefined;
     /**
      * The minimum sats balance that triggers auto-conversion.
      *
@@ -4174,16 +4384,9 @@ export type StableBalanceConfig = {
     /**
      * Maximum slippage in basis points (1/100 of a percent).
      *
-     * Defaults to 50 bps (0.5%) if not set.
+     * Defaults to 10 bps (0.1%) if not set.
      */
     maxSlippageBps: /*u32*/ number | undefined;
-    /**
-     * Amount of sats to keep as Bitcoin and not convert to stable tokens.
-     *
-     * This reserve ensures you can send Bitcoin payments without hitting
-     * the minimum conversion limit. Defaults to the conversion minimum if not set.
-     */
-    reservedSats: /*u64*/ bigint | undefined;
 };
 /**
  * Generated factory for {@link StableBalanceConfig} record objects.
@@ -4193,16 +4396,52 @@ export declare const StableBalanceConfig: Readonly<{
      * Create a frozen instance of {@link StableBalanceConfig}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<StableBalanceConfig> & Required<Omit<StableBalanceConfig, "maxSlippageBps" | "thresholdSats" | "reservedSats">>) => StableBalanceConfig;
+    create: (partial: Partial<StableBalanceConfig> & Required<Omit<StableBalanceConfig, "maxSlippageBps" | "defaultActiveLabel" | "thresholdSats">>) => StableBalanceConfig;
     /**
      * Create a frozen instance of {@link StableBalanceConfig}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<StableBalanceConfig> & Required<Omit<StableBalanceConfig, "maxSlippageBps" | "thresholdSats" | "reservedSats">>) => StableBalanceConfig;
+    new: (partial: Partial<StableBalanceConfig> & Required<Omit<StableBalanceConfig, "maxSlippageBps" | "defaultActiveLabel" | "thresholdSats">>) => StableBalanceConfig;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<StableBalanceConfig>;
+}>;
+/**
+ * A stable token that can be used for automatic balance conversion.
+ */
+export type StableBalanceToken = {
+    /**
+     * Integrator-defined display label for the token, e.g. "USD".
+     *
+     * This is a short, human-readable name set by the integrator for display purposes.
+     * It is **not** a canonical Spark token ticker — it has no protocol-level meaning.
+     * Labels must be unique within the [`StableBalanceConfig::tokens`] list.
+     */
+    label: string;
+    /**
+     * The full token identifier string used for conversions.
+     */
+    tokenIdentifier: string;
+};
+/**
+ * Generated factory for {@link StableBalanceToken} record objects.
+ */
+export declare const StableBalanceToken: Readonly<{
+    /**
+     * Create a frozen instance of {@link StableBalanceToken}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<StableBalanceToken> & Required<Omit<StableBalanceToken, never>>) => StableBalanceToken;
+    /**
+     * Create a frozen instance of {@link StableBalanceToken}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<StableBalanceToken> & Required<Omit<StableBalanceToken, never>>) => StableBalanceToken;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<StableBalanceToken>;
 }>;
 /**
  * Storage-internal variant of [`ListPaymentsRequest`] that uses
@@ -4438,6 +4677,34 @@ export declare const UnfreezeIssuerTokenResponse: Readonly<{
      */
     defaults: () => Partial<UnfreezeIssuerTokenResponse>;
 }>;
+/**
+ * Request to unregister an existing webhook.
+ */
+export type UnregisterWebhookRequest = {
+    /**
+     * The unique identifier of the webhook to unregister.
+     */
+    webhookId: string;
+};
+/**
+ * Generated factory for {@link UnregisterWebhookRequest} record objects.
+ */
+export declare const UnregisterWebhookRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link UnregisterWebhookRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<UnregisterWebhookRequest> & Required<Omit<UnregisterWebhookRequest, never>>) => UnregisterWebhookRequest;
+    /**
+     * Create a frozen instance of {@link UnregisterWebhookRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<UnregisterWebhookRequest> & Required<Omit<UnregisterWebhookRequest, never>>) => UnregisterWebhookRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<UnregisterWebhookRequest>;
+}>;
 export type UnversionedRecordChange = {
     id: RecordId;
     schemaVersion: string;
@@ -4494,6 +4761,10 @@ export declare const UpdateContactRequest: Readonly<{
 }>;
 export type UpdateUserSettingsRequest = {
     sparkPrivateModeEnabled: boolean | undefined;
+    /**
+     * Update the active stable balance token. `None` means no change.
+     */
+    stableBalanceActiveLabel: StableBalanceActiveLabel | undefined;
 };
 /**
  * Generated factory for {@link UpdateUserSettingsRequest} record objects.
@@ -4503,12 +4774,12 @@ export declare const UpdateUserSettingsRequest: Readonly<{
      * Create a frozen instance of {@link UpdateUserSettingsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<UpdateUserSettingsRequest> & Required<Omit<UpdateUserSettingsRequest, never>>) => UpdateUserSettingsRequest;
+    create: (partial: Partial<UpdateUserSettingsRequest> & Required<Omit<UpdateUserSettingsRequest, "stableBalanceActiveLabel">>) => UpdateUserSettingsRequest;
     /**
      * Create a frozen instance of {@link UpdateUserSettingsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<UpdateUserSettingsRequest> & Required<Omit<UpdateUserSettingsRequest, never>>) => UpdateUserSettingsRequest;
+    new: (partial: Partial<UpdateUserSettingsRequest> & Required<Omit<UpdateUserSettingsRequest, "stableBalanceActiveLabel">>) => UpdateUserSettingsRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -4551,6 +4822,10 @@ export declare const UrlSuccessActionData: Readonly<{
 }>;
 export type UserSettings = {
     sparkPrivateModeEnabled: boolean;
+    /**
+     * The label of the currently active stable balance token, or `None` if deactivated.
+     */
+    stableBalanceActiveLabel: string | undefined;
 };
 /**
  * Generated factory for {@link UserSettings} record objects.
@@ -4629,6 +4904,42 @@ export declare const Wallet: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<Wallet>;
+}>;
+/**
+ * A registered webhook entry.
+ */
+export type Webhook = {
+    /**
+     * Unique identifier for this webhook.
+     */
+    id: string;
+    /**
+     * The URL that receives webhook notifications.
+     */
+    url: string;
+    /**
+     * The event types this webhook is subscribed to.
+     */
+    eventTypes: Array<WebhookEventType>;
+};
+/**
+ * Generated factory for {@link Webhook} record objects.
+ */
+export declare const Webhook: Readonly<{
+    /**
+     * Create a frozen instance of {@link Webhook}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<Webhook> & Required<Omit<Webhook, never>>) => Webhook;
+    /**
+     * Create a frozen instance of {@link Webhook}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<Webhook> & Required<Omit<Webhook, never>>) => Webhook;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<Webhook>;
 }>;
 /**
  * Typealias from the type name used in the UDL file to the custom type.  This
@@ -4826,6 +5137,20 @@ export declare const Amount: Readonly<{
     };
 }>;
 export type Amount = InstanceType<(typeof Amount)[keyof Omit<typeof Amount, 'instanceOf'>]>;
+/**
+ * The reason why a conversion amount was adjusted from the originally requested value.
+ */
+export declare enum AmountAdjustmentReason {
+    /**
+     * The amount was increased to meet the minimum conversion limit.
+     */
+    FlooredToMinLimit = 0,
+    /**
+     * The amount was increased to convert the full token balance,
+     * avoiding a remaining balance below the minimum conversion limit (token dust).
+     */
+    IncreasedToAvoidDust = 1
+}
 export declare enum AssetFilter_Tags {
     Bitcoin = "Bitcoin",
     Token = "Token"
@@ -4919,6 +5244,121 @@ export declare enum BitcoinNetwork {
     Signet = 3,
     Regtest = 4
 }
+export declare enum BuyBitcoinRequest_Tags {
+    Moonpay = "Moonpay",
+    CashApp = "CashApp"
+}
+/**
+ * The available providers for buying Bitcoin
+ * Request to buy Bitcoin using an external provider.
+ *
+ * Each variant carries only the parameters relevant to that provider.
+ */
+export declare const BuyBitcoinRequest: Readonly<{
+    instanceOf: (obj: any) => obj is BuyBitcoinRequest;
+    Moonpay: {
+        new (inner: {
+            /**
+             * Lock the purchase to a specific amount in satoshis.
+             */ lockedAmountSat: /*u64*/ bigint | undefined;
+            /**
+             * Custom redirect URL after purchase completion.
+             */ redirectUrl: string | undefined;
+        }): {
+            readonly tag: BuyBitcoinRequest_Tags.Moonpay;
+            readonly inner: Readonly<{
+                lockedAmountSat: /*u64*/ bigint | undefined;
+                redirectUrl: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BuyBitcoinRequest";
+        };
+        "new"(inner: {
+            /**
+             * Lock the purchase to a specific amount in satoshis.
+             */ lockedAmountSat: /*u64*/ bigint | undefined;
+            /**
+             * Custom redirect URL after purchase completion.
+             */ redirectUrl: string | undefined;
+        }): {
+            readonly tag: BuyBitcoinRequest_Tags.Moonpay;
+            readonly inner: Readonly<{
+                lockedAmountSat: /*u64*/ bigint | undefined;
+                redirectUrl: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BuyBitcoinRequest";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: BuyBitcoinRequest_Tags.Moonpay;
+            readonly inner: Readonly<{
+                lockedAmountSat: /*u64*/ bigint | undefined;
+                redirectUrl: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BuyBitcoinRequest";
+        };
+    };
+    CashApp: {
+        new (inner: {
+            /**
+             * Amount in satoshis for the Lightning invoice.
+             */ amountSats: /*u64*/ bigint | undefined;
+        }): {
+            readonly tag: BuyBitcoinRequest_Tags.CashApp;
+            readonly inner: Readonly<{
+                amountSats: /*u64*/ bigint | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BuyBitcoinRequest";
+        };
+        "new"(inner: {
+            /**
+             * Amount in satoshis for the Lightning invoice.
+             */ amountSats: /*u64*/ bigint | undefined;
+        }): {
+            readonly tag: BuyBitcoinRequest_Tags.CashApp;
+            readonly inner: Readonly<{
+                amountSats: /*u64*/ bigint | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BuyBitcoinRequest";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: BuyBitcoinRequest_Tags.CashApp;
+            readonly inner: Readonly<{
+                amountSats: /*u64*/ bigint | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BuyBitcoinRequest";
+        };
+    };
+}>;
+/**
+ * The available providers for buying Bitcoin
+ * Request to buy Bitcoin using an external provider.
+ *
+ * Each variant carries only the parameters relevant to that provider.
+ */
+export type BuyBitcoinRequest = InstanceType<(typeof BuyBitcoinRequest)[keyof Omit<typeof BuyBitcoinRequest, 'instanceOf'>]>;
 export declare enum ChainApiType {
     Esplora = 0,
     MempoolSpace = 1
@@ -5262,18 +5702,26 @@ export type ConversionPurpose = InstanceType<(typeof ConversionPurpose)[keyof Om
  */
 export declare enum ConversionStatus {
     /**
+     * Conversion is in-flight (queued or started, not yet completed)
+     */
+    Pending = 0,
+    /**
      * The conversion was successful
      */
-    Completed = 0,
+    Completed = 1,
+    /**
+     * The conversion failed (e.g., the initial send payment failed)
+     */
+    Failed = 2,
     /**
      * The conversion failed and no refund was made yet, which requires action by the SDK to
      * perform the refund. This can happen if there was a failure during the conversion process.
      */
-    RefundNeeded = 1,
+    RefundNeeded = 3,
     /**
      * The conversion failed and a refund was made
      */
-    Refunded = 2
+    Refunded = 4
 }
 export declare enum ConversionType_Tags {
     FromBitcoin = "FromBitcoin",
@@ -8676,16 +9124,34 @@ export declare const ReceivePaymentMethod: Readonly<{
         };
     };
     BitcoinAddress: {
-        new (): {
+        new (inner: {
+            /**
+             * If true, rotate to a new deposit address. Previous ones remain valid.
+             * If false or absent, return the existing address (creating one if none
+             * exists yet).
+             */ newAddress: boolean | undefined;
+        }): {
             readonly tag: ReceivePaymentMethod_Tags.BitcoinAddress;
+            readonly inner: Readonly<{
+                newAddress: boolean | undefined;
+            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
             readonly [uniffiTypeNameSymbol]: "ReceivePaymentMethod";
         };
-        "new"(): {
+        "new"(inner: {
+            /**
+             * If true, rotate to a new deposit address. Previous ones remain valid.
+             * If false or absent, return the existing address (creating one if none
+             * exists yet).
+             */ newAddress: boolean | undefined;
+        }): {
             readonly tag: ReceivePaymentMethod_Tags.BitcoinAddress;
+            readonly inner: Readonly<{
+                newAddress: boolean | undefined;
+            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -8694,6 +9160,9 @@ export declare const ReceivePaymentMethod: Readonly<{
         };
         instanceOf(obj: any): obj is {
             readonly tag: ReceivePaymentMethod_Tags.BitcoinAddress;
+            readonly inner: Readonly<{
+                newAddress: boolean | undefined;
+            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -9708,7 +10177,8 @@ export declare enum SdkEvent_Tags {
     PaymentPending = "PaymentPending",
     PaymentFailed = "PaymentFailed",
     Optimization = "Optimization",
-    LightningAddressChanged = "LightningAddressChanged"
+    LightningAddressChanged = "LightningAddressChanged",
+    NewDeposits = "NewDeposits"
 }
 /**
  * Events emitted by the SDK
@@ -10006,6 +10476,45 @@ export declare const SdkEvent: Readonly<{
             readonly tag: SdkEvent_Tags.LightningAddressChanged;
             readonly inner: Readonly<{
                 lightningAddress: LightningAddressInfo | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+    };
+    NewDeposits: {
+        new (inner: {
+            newDeposits: Array<DepositInfo>;
+        }): {
+            readonly tag: SdkEvent_Tags.NewDeposits;
+            readonly inner: Readonly<{
+                newDeposits: Array<DepositInfo>;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+        "new"(inner: {
+            newDeposits: Array<DepositInfo>;
+        }): {
+            readonly tag: SdkEvent_Tags.NewDeposits;
+            readonly inner: Readonly<{
+                newDeposits: Array<DepositInfo>;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkEvent_Tags.NewDeposits;
+            readonly inner: Readonly<{
+                newDeposits: Array<DepositInfo>;
             }>;
             /**
              * @private
@@ -11793,6 +12302,85 @@ export declare enum SparkHtlcStatus {
      */
     Returned = 2
 }
+export declare enum StableBalanceActiveLabel_Tags {
+    Set = "Set",
+    Unset = "Unset"
+}
+/**
+ * Specifies how to update the active stable balance token.
+ */
+export declare const StableBalanceActiveLabel: Readonly<{
+    instanceOf: (obj: any) => obj is StableBalanceActiveLabel;
+    Set: {
+        new (inner: {
+            label: string;
+        }): {
+            readonly tag: StableBalanceActiveLabel_Tags.Set;
+            readonly inner: Readonly<{
+                label: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StableBalanceActiveLabel";
+        };
+        "new"(inner: {
+            label: string;
+        }): {
+            readonly tag: StableBalanceActiveLabel_Tags.Set;
+            readonly inner: Readonly<{
+                label: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StableBalanceActiveLabel";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: StableBalanceActiveLabel_Tags.Set;
+            readonly inner: Readonly<{
+                label: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StableBalanceActiveLabel";
+        };
+    };
+    Unset: {
+        new (): {
+            readonly tag: StableBalanceActiveLabel_Tags.Unset;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StableBalanceActiveLabel";
+        };
+        "new"(): {
+            readonly tag: StableBalanceActiveLabel_Tags.Unset;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StableBalanceActiveLabel";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: StableBalanceActiveLabel_Tags.Unset;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "StableBalanceActiveLabel";
+        };
+    };
+}>;
+/**
+ * Specifies how to update the active stable balance token.
+ */
+export type StableBalanceActiveLabel = InstanceType<(typeof StableBalanceActiveLabel)[keyof Omit<typeof StableBalanceActiveLabel, 'instanceOf'>]>;
 export declare enum StorageError_Tags {
     Connection = "Connection",
     Implementation = "Implementation",
@@ -12154,9 +12742,7 @@ export declare enum StoragePaymentDetailsFilter_Tags {
     Lightning = "Lightning"
 }
 /**
- * Storage-internal variant of [`PaymentDetailsFilter`] that includes the
- * `has_lnurl_preimage` field on the `Lightning` variant, which is not exposed
- * in the public API.
+ * Storage-internal variant of [`PaymentDetailsFilter`].
  */
 export declare const StoragePaymentDetailsFilter: Readonly<{
     instanceOf: (obj: any) => obj is StoragePaymentDetailsFilter;
@@ -12256,12 +12842,10 @@ export declare const StoragePaymentDetailsFilter: Readonly<{
     Lightning: {
         new (inner: {
             htlcStatus: Array<SparkHtlcStatus> | undefined;
-            hasLnurlPreimage: boolean | undefined;
         }): {
             readonly tag: StoragePaymentDetailsFilter_Tags.Lightning;
             readonly inner: Readonly<{
                 htlcStatus: Array<SparkHtlcStatus> | undefined;
-                hasLnurlPreimage: boolean | undefined;
             }>;
             /**
              * @private
@@ -12271,12 +12855,10 @@ export declare const StoragePaymentDetailsFilter: Readonly<{
         };
         "new"(inner: {
             htlcStatus: Array<SparkHtlcStatus> | undefined;
-            hasLnurlPreimage: boolean | undefined;
         }): {
             readonly tag: StoragePaymentDetailsFilter_Tags.Lightning;
             readonly inner: Readonly<{
                 htlcStatus: Array<SparkHtlcStatus> | undefined;
-                hasLnurlPreimage: boolean | undefined;
             }>;
             /**
              * @private
@@ -12288,7 +12870,6 @@ export declare const StoragePaymentDetailsFilter: Readonly<{
             readonly tag: StoragePaymentDetailsFilter_Tags.Lightning;
             readonly inner: Readonly<{
                 htlcStatus: Array<SparkHtlcStatus> | undefined;
-                hasLnurlPreimage: boolean | undefined;
             }>;
             /**
              * @private
@@ -12299,9 +12880,7 @@ export declare const StoragePaymentDetailsFilter: Readonly<{
     };
 }>;
 /**
- * Storage-internal variant of [`PaymentDetailsFilter`] that includes the
- * `has_lnurl_preimage` field on the `Lightning` variant, which is not exposed
- * in the public API.
+ * Storage-internal variant of [`PaymentDetailsFilter`].
  */
 export type StoragePaymentDetailsFilter = InstanceType<(typeof StoragePaymentDetailsFilter)[keyof Omit<typeof StoragePaymentDetailsFilter, 'instanceOf'>]>;
 export declare enum SuccessAction_Tags {
@@ -12674,6 +13253,156 @@ export declare const UpdateDepositPayload: Readonly<{
     };
 }>;
 export type UpdateDepositPayload = InstanceType<(typeof UpdateDepositPayload)[keyof Omit<typeof UpdateDepositPayload, 'instanceOf'>]>;
+export declare enum WebhookEventType_Tags {
+    LightningReceiveFinished = "LightningReceiveFinished",
+    LightningSendFinished = "LightningSendFinished",
+    CoopExitFinished = "CoopExitFinished",
+    StaticDepositFinished = "StaticDepositFinished",
+    Unknown = "Unknown"
+}
+/**
+ * The type of event that triggers a webhook notification.
+ */
+export declare const WebhookEventType: Readonly<{
+    instanceOf: (obj: any) => obj is WebhookEventType;
+    LightningReceiveFinished: {
+        new (): {
+            readonly tag: WebhookEventType_Tags.LightningReceiveFinished;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+        "new"(): {
+            readonly tag: WebhookEventType_Tags.LightningReceiveFinished;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: WebhookEventType_Tags.LightningReceiveFinished;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+    };
+    LightningSendFinished: {
+        new (): {
+            readonly tag: WebhookEventType_Tags.LightningSendFinished;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+        "new"(): {
+            readonly tag: WebhookEventType_Tags.LightningSendFinished;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: WebhookEventType_Tags.LightningSendFinished;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+    };
+    CoopExitFinished: {
+        new (): {
+            readonly tag: WebhookEventType_Tags.CoopExitFinished;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+        "new"(): {
+            readonly tag: WebhookEventType_Tags.CoopExitFinished;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: WebhookEventType_Tags.CoopExitFinished;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+    };
+    StaticDepositFinished: {
+        new (): {
+            readonly tag: WebhookEventType_Tags.StaticDepositFinished;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+        "new"(): {
+            readonly tag: WebhookEventType_Tags.StaticDepositFinished;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: WebhookEventType_Tags.StaticDepositFinished;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+    };
+    Unknown: {
+        new (v0: string): {
+            readonly tag: WebhookEventType_Tags.Unknown;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+        "new"(v0: string): {
+            readonly tag: WebhookEventType_Tags.Unknown;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: WebhookEventType_Tags.Unknown;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "WebhookEventType";
+        };
+    };
+}>;
+/**
+ * The type of event that triggers a webhook notification.
+ */
+export type WebhookEventType = InstanceType<(typeof WebhookEventType)[keyof Omit<typeof WebhookEventType, 'instanceOf'>]>;
 export interface BitcoinChainService {
     getAddressUtxos(address: string, asyncOpts_?: {
         signal: AbortSignal;
@@ -12751,19 +13480,13 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<string>;
     /**
-     * Initiates a Bitcoin purchase flow via an external provider (`MoonPay`).
+     * Initiates a Bitcoin purchase flow via an external provider.
      *
-     * This method generates a URL that the user can open in a browser to complete
-     * the Bitcoin purchase. The purchased Bitcoin will be sent to an automatically
-     * generated deposit address.
+     * Returns a URL the user should open to complete the purchase.
+     * The request variant determines the provider and its parameters:
      *
-     * # Arguments
-     *
-     * * `request` - The purchase request containing optional amount and redirect URL
-     *
-     * # Returns
-     *
-     * A response containing the URL to open in a browser to complete the purchase
+     * - [`BuyBitcoinRequest::Moonpay`]: Fiat-to-Bitcoin via on-chain deposit.
+     * - [`BuyBitcoinRequest::CashApp`]: Lightning invoice + `cash.app` deep link (mainnet only).
      */
     buyBitcoin(request: BuyBitcoinRequest, asyncOpts_?: {
         signal: AbortSignal;
@@ -12919,6 +13642,16 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<ListUnclaimedDepositsResponse>;
     /**
+     * Lists all webhooks currently registered for this wallet.
+     *
+     * # Returns
+     *
+     * A list of registered webhooks with their IDs, URLs, and subscribed event types
+     */
+    listWebhooks(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<Webhook>>;
+    /**
      * Performs LNURL-auth with the service.
      *
      * This method implements the LNURL-auth protocol as specified in LUD-04 and LUD-05.
@@ -12986,6 +13719,24 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<LightningAddressInfo>;
     /**
+     * Registers a webhook to receive notifications for wallet events.
+     *
+     * When registered events occur (e.g., a Lightning payment is received),
+     * the Spark service provider will send an HTTP POST to the specified URL
+     * with a payload signed using HMAC-SHA256 with the provided secret.
+     *
+     * # Arguments
+     *
+     * * `request` - The webhook registration details including URL, secret, and event types
+     *
+     * # Returns
+     *
+     * A response containing the unique identifier of the registered webhook
+     */
+    registerWebhook(request: RegisterWebhookRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<RegisterWebhookResponse>;
+    /**
      * Removes a previously registered event listener
      *
      * # Arguments
@@ -13017,13 +13768,28 @@ export interface BreezSdkInterface {
      * immediately. Progress is reported via events.
      * If optimization is already running, no new task will be started.
      */
-    startLeafOptimization(): void;
+    startLeafOptimization(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     /**
      * Synchronizes the wallet with the Spark network
      */
     syncWallet(request: SyncWalletRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SyncWalletResponse>;
+    /**
+     * Unregisters a previously registered webhook.
+     *
+     * After unregistering, the Spark service provider will no longer send
+     * notifications to the webhook URL.
+     *
+     * # Arguments
+     *
+     * * `request` - The unregister request containing the webhook ID
+     */
+    unregisterWebhook(request: UnregisterWebhookRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     /**
      * Updates an existing contact.
      *
@@ -13085,19 +13851,13 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<string>;
     /**
-     * Initiates a Bitcoin purchase flow via an external provider (`MoonPay`).
+     * Initiates a Bitcoin purchase flow via an external provider.
      *
-     * This method generates a URL that the user can open in a browser to complete
-     * the Bitcoin purchase. The purchased Bitcoin will be sent to an automatically
-     * generated deposit address.
+     * Returns a URL the user should open to complete the purchase.
+     * The request variant determines the provider and its parameters:
      *
-     * # Arguments
-     *
-     * * `request` - The purchase request containing optional amount and redirect URL
-     *
-     * # Returns
-     *
-     * A response containing the URL to open in a browser to complete the purchase
+     * - [`BuyBitcoinRequest::Moonpay`]: Fiat-to-Bitcoin via on-chain deposit.
+     * - [`BuyBitcoinRequest::CashApp`]: Lightning invoice + `cash.app` deep link (mainnet only).
      */
     buyBitcoin(request: BuyBitcoinRequest, asyncOpts_?: {
         signal: AbortSignal;
@@ -13253,6 +14013,16 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<ListUnclaimedDepositsResponse>;
     /**
+     * Lists all webhooks currently registered for this wallet.
+     *
+     * # Returns
+     *
+     * A list of registered webhooks with their IDs, URLs, and subscribed event types
+     */
+    listWebhooks(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<Webhook>>;
+    /**
      * Performs LNURL-auth with the service.
      *
      * This method implements the LNURL-auth protocol as specified in LUD-04 and LUD-05.
@@ -13320,6 +14090,24 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<LightningAddressInfo>;
     /**
+     * Registers a webhook to receive notifications for wallet events.
+     *
+     * When registered events occur (e.g., a Lightning payment is received),
+     * the Spark service provider will send an HTTP POST to the specified URL
+     * with a payload signed using HMAC-SHA256 with the provided secret.
+     *
+     * # Arguments
+     *
+     * * `request` - The webhook registration details including URL, secret, and event types
+     *
+     * # Returns
+     *
+     * A response containing the unique identifier of the registered webhook
+     */
+    registerWebhook(request: RegisterWebhookRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<RegisterWebhookResponse>;
+    /**
      * Removes a previously registered event listener
      *
      * # Arguments
@@ -13351,13 +14139,28 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
      * immediately. Progress is reported via events.
      * If optimization is already running, no new task will be started.
      */
-    startLeafOptimization(): void;
+    startLeafOptimization(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     /**
      * Synchronizes the wallet with the Spark network
      */
     syncWallet(request: SyncWalletRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SyncWalletResponse>;
+    /**
+     * Unregisters a previously registered webhook.
+     *
+     * After unregistering, the Spark service provider will no longer send
+     * notifications to the webhook URL.
+     *
+     * # Arguments
+     *
+     * * `request` - The unregister request containing the webhook ID
+     */
+    unregisterWebhook(request: UnregisterWebhookRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     /**
      * Updates an existing contact.
      *
@@ -14625,18 +15428,19 @@ export interface Storage {
         signal: AbortSignal;
     }): Promise<Map<string, Array<Payment>>>;
     /**
-     * Add a deposit to storage
+     * Add a deposit to storage (upsert: updates `is_mature` and `amount_sats` on conflict)
      * # Arguments
      *
      * * `txid` - The transaction ID of the deposit
      * * `vout` - The output index of the deposit
      * * `amount_sats` - The amount of the deposit in sats
+     * * `is_mature` - Whether the deposit UTXO has enough confirmations to be claimable
      *
      * # Returns
      *
      * Success or a `StorageError`
      */
-    addDeposit(txid: string, vout: number, amountSats: bigint, asyncOpts_?: {
+    addDeposit(txid: string, vout: number, amountSats: bigint, isMature: boolean, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -14857,18 +15661,19 @@ export declare class StorageImpl extends UniffiAbstractObject implements Storage
         signal: AbortSignal;
     }): Promise<Map<string, Array<Payment>>>;
     /**
-     * Add a deposit to storage
+     * Add a deposit to storage (upsert: updates `is_mature` and `amount_sats` on conflict)
      * # Arguments
      *
      * * `txid` - The transaction ID of the deposit
      * * `vout` - The output index of the deposit
      * * `amount_sats` - The amount of the deposit in sats
+     * * `is_mature` - Whether the deposit UTXO has enough confirmations to be claimable
      *
      * # Returns
      *
      * Success or a `StorageError`
      */
-    addDeposit(txid: string, vout: number, amountSats: bigint, asyncOpts_?: {
+    addDeposit(txid: string, vout: number, amountSats: bigint, isMature: boolean, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -15263,6 +16068,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): Amount;
             lower(value: Amount): UniffiByteArray;
         };
+        FfiConverterTypeAmountAdjustmentReason: {
+            read(from: RustBuffer): AmountAdjustmentReason;
+            write(value: AmountAdjustmentReason, into: RustBuffer): void;
+            allocationSize(value: AmountAdjustmentReason): number;
+            lift(value: UniffiByteArray): AmountAdjustmentReason;
+            lower(value: AmountAdjustmentReason): UniffiByteArray;
+        };
         FfiConverterTypeAssetFilter: {
             read(from: RustBuffer): AssetFilter;
             write(value: AssetFilter, into: RustBuffer): void;
@@ -15397,6 +16209,13 @@ declare const _default: Readonly<{
             allocationSize(value: ChainApiType): number;
             lift(value: UniffiByteArray): ChainApiType;
             lower(value: ChainApiType): UniffiByteArray;
+        };
+        FfiConverterTypeChainServiceError: {
+            read(from: RustBuffer): ChainServiceError;
+            write(value: ChainServiceError, into: RustBuffer): void;
+            allocationSize(value: ChainServiceError): number;
+            lift(value: UniffiByteArray): ChainServiceError;
+            lower(value: ChainServiceError): UniffiByteArray;
         };
         FfiConverterTypeCheckLightningAddressRequest: {
             read(from: RustBuffer): CheckLightningAddressRequest;
@@ -16080,6 +16899,20 @@ declare const _default: Readonly<{
             lower(value: OutgoingChange): UniffiByteArray;
         };
         FfiConverterTypePasskey: FfiConverterObject<PasskeyInterface>;
+        FfiConverterTypePasskeyError: {
+            read(from: RustBuffer): PasskeyError;
+            write(value: PasskeyError, into: RustBuffer): void;
+            allocationSize(value: PasskeyError): number;
+            lift(value: UniffiByteArray): PasskeyError;
+            lower(value: PasskeyError): UniffiByteArray;
+        };
+        FfiConverterTypePasskeyPrfError: {
+            read(from: RustBuffer): PasskeyPrfError;
+            write(value: PasskeyPrfError, into: RustBuffer): void;
+            allocationSize(value: PasskeyPrfError): number;
+            lift(value: UniffiByteArray): PasskeyPrfError;
+            lower(value: PasskeyPrfError): UniffiByteArray;
+        };
         FfiConverterTypePasskeyPrfProvider: FfiConverterObjectWithCallbacks<PasskeyPrfProvider>;
         FfiConverterTypePayment: {
             read(from: RustBuffer): Payment;
@@ -16117,6 +16950,13 @@ declare const _default: Readonly<{
             lower(value: PaymentMethod): UniffiByteArray;
         };
         FfiConverterTypePaymentObserver: FfiConverterObjectWithCallbacks<PaymentObserver>;
+        FfiConverterTypePaymentObserverError: {
+            read(from: RustBuffer): PaymentObserverError;
+            write(value: PaymentObserverError, into: RustBuffer): void;
+            allocationSize(value: PaymentObserverError): number;
+            lift(value: UniffiByteArray): PaymentObserverError;
+            lower(value: PaymentObserverError): UniffiByteArray;
+        };
         FfiConverterTypePaymentRequestSource: {
             read(from: RustBuffer): PaymentRequestSource;
             write(value: PaymentRequestSource, into: RustBuffer): void;
@@ -16271,6 +17111,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): RegisterLightningAddressRequest;
             lower(value: RegisterLightningAddressRequest): UniffiByteArray;
         };
+        FfiConverterTypeRegisterWebhookRequest: {
+            read(from: RustBuffer): RegisterWebhookRequest;
+            write(value: RegisterWebhookRequest, into: RustBuffer): void;
+            allocationSize(value: RegisterWebhookRequest): number;
+            lift(value: UniffiByteArray): RegisterWebhookRequest;
+            lower(value: RegisterWebhookRequest): UniffiByteArray;
+        };
+        FfiConverterTypeRegisterWebhookResponse: {
+            read(from: RustBuffer): RegisterWebhookResponse;
+            write(value: RegisterWebhookResponse, into: RustBuffer): void;
+            allocationSize(value: RegisterWebhookResponse): number;
+            lift(value: UniffiByteArray): RegisterWebhookResponse;
+            lower(value: RegisterWebhookResponse): UniffiByteArray;
+        };
         FfiConverterTypeRestClient: FfiConverterObjectWithCallbacks<RestClient>;
         FfiConverterTypeRestResponse: {
             read(from: RustBuffer): RestResponse;
@@ -16287,6 +17141,13 @@ declare const _default: Readonly<{
             lower(value: SchnorrSignatureBytes): UniffiByteArray;
         };
         FfiConverterTypeSdkBuilder: FfiConverterObject<SdkBuilderInterface>;
+        FfiConverterTypeSdkError: {
+            read(from: RustBuffer): SdkError;
+            write(value: SdkError, into: RustBuffer): void;
+            allocationSize(value: SdkError): number;
+            lift(value: UniffiByteArray): SdkError;
+            lower(value: SdkError): UniffiByteArray;
+        };
         FfiConverterTypeSdkEvent: {
             read(from: RustBuffer): SdkEvent;
             write(value: SdkEvent, into: RustBuffer): void;
@@ -16350,6 +17211,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SendPaymentResponse;
             lower(value: SendPaymentResponse): UniffiByteArray;
         };
+        FfiConverterTypeServiceConnectivityError: {
+            read(from: RustBuffer): ServiceConnectivityError;
+            write(value: ServiceConnectivityError, into: RustBuffer): void;
+            allocationSize(value: ServiceConnectivityError): number;
+            lift(value: UniffiByteArray): ServiceConnectivityError;
+            lower(value: ServiceConnectivityError): UniffiByteArray;
+        };
         FfiConverterTypeServiceStatus: {
             read(from: RustBuffer): ServiceStatus;
             write(value: ServiceStatus, into: RustBuffer): void;
@@ -16378,6 +17246,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SignMessageResponse;
             lower(value: SignMessageResponse): UniffiByteArray;
         };
+        FfiConverterTypeSignerError: {
+            read(from: RustBuffer): SignerError;
+            write(value: SignerError, into: RustBuffer): void;
+            allocationSize(value: SignerError): number;
+            lift(value: UniffiByteArray): SignerError;
+            lower(value: SignerError): UniffiByteArray;
+        };
         FfiConverterTypeSilentPaymentAddressDetails: {
             read(from: RustBuffer): SilentPaymentAddressDetails;
             write(value: SilentPaymentAddressDetails, into: RustBuffer): void;
@@ -16391,6 +17266,13 @@ declare const _default: Readonly<{
             allocationSize(value: SparkAddressDetails): number;
             lift(value: UniffiByteArray): SparkAddressDetails;
             lower(value: SparkAddressDetails): UniffiByteArray;
+        };
+        FfiConverterTypeSparkConfig: {
+            read(from: RustBuffer): SparkConfig;
+            write(value: SparkConfig, into: RustBuffer): void;
+            allocationSize(value: SparkConfig): number;
+            lift(value: UniffiByteArray): SparkConfig;
+            lower(value: SparkConfig): UniffiByteArray;
         };
         FfiConverterTypeSparkHtlcDetails: {
             read(from: RustBuffer): SparkHtlcDetails;
@@ -16427,12 +17309,33 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SparkInvoicePaymentDetails;
             lower(value: SparkInvoicePaymentDetails): UniffiByteArray;
         };
+        FfiConverterTypeSparkSigningOperator: {
+            read(from: RustBuffer): SparkSigningOperator;
+            write(value: SparkSigningOperator, into: RustBuffer): void;
+            allocationSize(value: SparkSigningOperator): number;
+            lift(value: UniffiByteArray): SparkSigningOperator;
+            lower(value: SparkSigningOperator): UniffiByteArray;
+        };
+        FfiConverterTypeSparkSspConfig: {
+            read(from: RustBuffer): SparkSspConfig;
+            write(value: SparkSspConfig, into: RustBuffer): void;
+            allocationSize(value: SparkSspConfig): number;
+            lift(value: UniffiByteArray): SparkSspConfig;
+            lower(value: SparkSspConfig): UniffiByteArray;
+        };
         FfiConverterTypeSparkStatus: {
             read(from: RustBuffer): SparkStatus;
             write(value: SparkStatus, into: RustBuffer): void;
             allocationSize(value: SparkStatus): number;
             lift(value: UniffiByteArray): SparkStatus;
             lower(value: SparkStatus): UniffiByteArray;
+        };
+        FfiConverterTypeStableBalanceActiveLabel: {
+            read(from: RustBuffer): StableBalanceActiveLabel;
+            write(value: StableBalanceActiveLabel, into: RustBuffer): void;
+            allocationSize(value: StableBalanceActiveLabel): number;
+            lift(value: UniffiByteArray): StableBalanceActiveLabel;
+            lower(value: StableBalanceActiveLabel): UniffiByteArray;
         };
         FfiConverterTypeStableBalanceConfig: {
             read(from: RustBuffer): StableBalanceConfig;
@@ -16441,7 +17344,21 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): StableBalanceConfig;
             lower(value: StableBalanceConfig): UniffiByteArray;
         };
+        FfiConverterTypeStableBalanceToken: {
+            read(from: RustBuffer): StableBalanceToken;
+            write(value: StableBalanceToken, into: RustBuffer): void;
+            allocationSize(value: StableBalanceToken): number;
+            lift(value: UniffiByteArray): StableBalanceToken;
+            lower(value: StableBalanceToken): UniffiByteArray;
+        };
         FfiConverterTypeStorage: FfiConverterObjectWithCallbacks<Storage>;
+        FfiConverterTypeStorageError: {
+            read(from: RustBuffer): StorageError;
+            write(value: StorageError, into: RustBuffer): void;
+            allocationSize(value: StorageError): number;
+            lift(value: UniffiByteArray): StorageError;
+            lower(value: StorageError): UniffiByteArray;
+        };
         FfiConverterTypeStorageListPaymentsRequest: {
             read(from: RustBuffer): StorageListPaymentsRequest;
             write(value: StorageListPaymentsRequest, into: RustBuffer): void;
@@ -16534,6 +17451,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): UnfreezeIssuerTokenResponse;
             lower(value: UnfreezeIssuerTokenResponse): UniffiByteArray;
         };
+        FfiConverterTypeUnregisterWebhookRequest: {
+            read(from: RustBuffer): UnregisterWebhookRequest;
+            write(value: UnregisterWebhookRequest, into: RustBuffer): void;
+            allocationSize(value: UnregisterWebhookRequest): number;
+            lift(value: UniffiByteArray): UnregisterWebhookRequest;
+            lower(value: UnregisterWebhookRequest): UniffiByteArray;
+        };
         FfiConverterTypeUnversionedRecordChange: {
             read(from: RustBuffer): UnversionedRecordChange;
             write(value: UnversionedRecordChange, into: RustBuffer): void;
@@ -16589,6 +17513,20 @@ declare const _default: Readonly<{
             allocationSize(value: Wallet): number;
             lift(value: UniffiByteArray): Wallet;
             lower(value: Wallet): UniffiByteArray;
+        };
+        FfiConverterTypeWebhook: {
+            read(from: RustBuffer): Webhook;
+            write(value: Webhook, into: RustBuffer): void;
+            allocationSize(value: Webhook): number;
+            lift(value: UniffiByteArray): Webhook;
+            lower(value: Webhook): UniffiByteArray;
+        };
+        FfiConverterTypeWebhookEventType: {
+            read(from: RustBuffer): WebhookEventType;
+            write(value: WebhookEventType, into: RustBuffer): void;
+            allocationSize(value: WebhookEventType): number;
+            lift(value: UniffiByteArray): WebhookEventType;
+            lower(value: WebhookEventType): UniffiByteArray;
         };
         FfiConverterTypeu128: {
             lift(value: Uint8Array<ArrayBufferLike>): bigint;
