@@ -5311,12 +5311,12 @@ export declare const BuyBitcoinRequest: Readonly<{
     CashApp: {
         new (inner: {
             /**
-             * Amount in satoshis for the Lightning invoice.
-             */ amountSats: /*u64*/ bigint | undefined;
+             * Amount in satoshis for the Lightning invoice. Must be non-zero.
+             */ amountSats: bigint;
         }): {
             readonly tag: BuyBitcoinRequest_Tags.CashApp;
             readonly inner: Readonly<{
-                amountSats: /*u64*/ bigint | undefined;
+                amountSats: bigint;
             }>;
             /**
              * @private
@@ -5326,12 +5326,12 @@ export declare const BuyBitcoinRequest: Readonly<{
         };
         "new"(inner: {
             /**
-             * Amount in satoshis for the Lightning invoice.
-             */ amountSats: /*u64*/ bigint | undefined;
+             * Amount in satoshis for the Lightning invoice. Must be non-zero.
+             */ amountSats: bigint;
         }): {
             readonly tag: BuyBitcoinRequest_Tags.CashApp;
             readonly inner: Readonly<{
-                amountSats: /*u64*/ bigint | undefined;
+                amountSats: bigint;
             }>;
             /**
              * @private
@@ -5342,7 +5342,7 @@ export declare const BuyBitcoinRequest: Readonly<{
         instanceOf(obj: any): obj is {
             readonly tag: BuyBitcoinRequest_Tags.CashApp;
             readonly inner: Readonly<{
-                amountSats: /*u64*/ bigint | undefined;
+                amountSats: bigint;
             }>;
             /**
              * @private

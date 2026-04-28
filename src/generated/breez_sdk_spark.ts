@@ -12373,13 +12373,18 @@ export const BuyBitcoinRequest = (() => {
 
   type CashApp__interface = {
     tag: BuyBitcoinRequest_Tags.CashApp;
-    inner: Readonly<{ amountSats: /*u64*/ bigint | undefined }>;
+    inner: Readonly<{ amountSats: /*u64*/ bigint }>;
   };
 
   /**
    * `CashApp`: Pay via the Lightning Network.
-   * Generates a bolt11 invoice and returns a `cash.app` deep link.
-   * Only available on mainnet.
+   * Generates a bolt11 invoice for the given amount and returns a
+   * `cash.app` deep link. Only available on mainnet.
+   *
+   * The amount is required. With an amountless invoice, Cash App only
+   * lets the payer fund from their existing Cash App BTC balance. With
+   * a fixed-amount invoice, Cash App opens up funding via fiat balance
+   * and debit card.
    */
   class CashApp_ extends UniffiEnum implements CashApp__interface {
     /**
@@ -12388,11 +12393,11 @@ export const BuyBitcoinRequest = (() => {
      */
     readonly [uniffiTypeNameSymbol] = 'BuyBitcoinRequest';
     readonly tag = BuyBitcoinRequest_Tags.CashApp;
-    readonly inner: Readonly<{ amountSats: /*u64*/ bigint | undefined }>;
+    readonly inner: Readonly<{ amountSats: /*u64*/ bigint }>;
     constructor(inner: {
       /**
-       * Amount in satoshis for the Lightning invoice.
-       */ amountSats: /*u64*/ bigint | undefined;
+       * Amount in satoshis for the Lightning invoice. Must be non-zero.
+       */ amountSats: /*u64*/ bigint;
     }) {
       super('BuyBitcoinRequest', 'CashApp');
       this.inner = Object.freeze(inner);
@@ -12400,8 +12405,8 @@ export const BuyBitcoinRequest = (() => {
 
     static new(inner: {
       /**
-       * Amount in satoshis for the Lightning invoice.
-       */ amountSats: /*u64*/ bigint | undefined;
+       * Amount in satoshis for the Lightning invoice. Must be non-zero.
+       */ amountSats: /*u64*/ bigint;
     }): CashApp_ {
       return new CashApp_(inner);
     }
@@ -12447,7 +12452,7 @@ const FfiConverterTypeBuyBitcoinRequest = (() => {
           });
         case 2:
           return new BuyBitcoinRequest.CashApp({
-            amountSats: FfiConverterOptionalUInt64.read(from),
+            amountSats: FfiConverterUInt64.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -12465,7 +12470,7 @@ const FfiConverterTypeBuyBitcoinRequest = (() => {
         case BuyBitcoinRequest_Tags.CashApp: {
           ordinalConverter.write(2, into);
           const inner = value.inner;
-          FfiConverterOptionalUInt64.write(inner.amountSats, into);
+          FfiConverterUInt64.write(inner.amountSats, into);
           return;
         }
         default:
@@ -12487,7 +12492,7 @@ const FfiConverterTypeBuyBitcoinRequest = (() => {
         case BuyBitcoinRequest_Tags.CashApp: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
-          size += FfiConverterOptionalUInt64.allocationSize(inner.amountSats);
+          size += FfiConverterUInt64.allocationSize(inner.amountSats);
           return size;
         }
         default:
