@@ -1,4 +1,4 @@
-import { type UniffiByteArray, type UniffiRustArcPtr, type UnsafeMutableRawPointer, FfiConverterObject, FfiConverterObjectWithCallbacks, RustBuffer, UniffiAbstractObject, destructorGuardSymbol, pointerLiteralSymbol, uniffiTypeNameSymbol } from 'uniffi-bindgen-react-native';
+import { type FfiConverter, type UniffiByteArray, type UniffiRustArcPtr, type UnsafeMutableRawPointer, FfiConverterObject, FfiConverterObjectWithCallbacks, RustBuffer, UniffiAbstractObject, destructorGuardSymbol, pointerLiteralSymbol, uniffiTypeNameSymbol } from 'uniffi-bindgen-react-native';
 /**
  * Connects to the Spark network using the provided configuration and mnemonic.
  *
@@ -59,6 +59,36 @@ export declare function getSparkStatus(asyncOpts_?: {
     signal: AbortSignal;
 }): Promise<SparkStatus>;
 export declare function initLogging(logDir: string | undefined, appLogger: Logger | undefined, logFilter: string | undefined): void;
+/**
+ * Creates a new shareable [`ConnectionManager`].
+ *
+ * `connections_per_operator` controls per-operator connection pooling:
+ * `None` keeps a single connection per operator (suitable for almost every
+ * deployment); `Some(n)` opens `n` connections per operator and balances
+ * requests across them.
+ */
+export declare function newConnectionManager(connectionsPerOperator: /*u32*/ number | undefined): ConnectionManagerInterface;
+/**
+ * Constructs a shareable REST-based [`BitcoinChainService`].
+ *
+ * Pass the returned `Arc` to multiple [`SdkBuilder`](crate::SdkBuilder)s via
+ * [`SdkBuilder::with_chain_service`](crate::SdkBuilder::with_chain_service)
+ * to reuse a single underlying HTTP client (and its connection pool) across
+ * SDK instances. All SDKs sharing the service must use the same `network`.
+ *
+ * For one-off, non-shared use, prefer
+ * [`SdkBuilder::with_rest_chain_service`](crate::SdkBuilder::with_rest_chain_service).
+ */
+export declare function newRestChainService(url: string, network: Network, apiType: ChainApiType, credentials: Credentials | undefined): BitcoinChainService;
+/**
+ * Construct a new shared SSP connection manager.
+ *
+ * Pass the returned `Arc<SspConnectionManager>` to
+ * [`SdkBuilder::with_ssp_connection_manager`](crate::SdkBuilder::with_ssp_connection_manager)
+ * when building each SDK instance that should share the underlying HTTP
+ * connection pool.
+ */
+export declare function newSspConnectionManager(userAgent: string | undefined): SspConnectionManagerInterface;
 /**
  * Trait for event listeners
  */
@@ -3907,6 +3937,32 @@ export declare const SendPaymentResponse: Readonly<{
      */
     defaults: () => Partial<SendPaymentResponse>;
 }>;
+/**
+ * Cached authentication session for a single backend service identity.
+ */
+export type Session = {
+    token: string;
+    expiration: bigint;
+};
+/**
+ * Generated factory for {@link Session} record objects.
+ */
+export declare const Session: Readonly<{
+    /**
+     * Create a frozen instance of {@link Session}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<Session> & Required<Omit<Session, never>>) => Session;
+    /**
+     * Create a frozen instance of {@link Session}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<Session> & Required<Omit<Session, never>>) => Session;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<Session>;
+}>;
 export type SetLnurlMetadataItem = {
     paymentHash: string;
     senderComment: string | undefined;
@@ -4941,6 +4997,11 @@ export declare const Webhook: Readonly<{
      */
     defaults: () => Partial<Webhook>;
 }>;
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+export type PublicKey = string;
 /**
  * Typealias from the type name used in the UDL file to the custom type.  This
  * is needed because the UDL type name is used in function/method signatures.
@@ -11772,6 +11833,139 @@ export declare enum ServiceStatus {
      */
     Major = 4
 }
+export declare enum SessionManagerError_Tags {
+    NotFound = "NotFound",
+    Generic = "Generic"
+}
+export declare const SessionManagerError: Readonly<{
+    instanceOf: (obj: any) => obj is SessionManagerError;
+    NotFound: {
+        new (): {
+            readonly tag: SessionManagerError_Tags.NotFound;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(): {
+            readonly tag: SessionManagerError_Tags.NotFound;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SessionManagerError_Tags.NotFound;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SessionManagerError_Tags.NotFound;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    Generic: {
+        new (v0: string): {
+            readonly tag: SessionManagerError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: SessionManagerError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SessionManagerError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SessionManagerError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SessionManagerError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+}>;
+export type SessionManagerError = InstanceType<(typeof SessionManagerError)[keyof Omit<typeof SessionManagerError, 'instanceOf'>]>;
 export declare enum SignerError_Tags {
     KeyDerivation = "KeyDerivation",
     Signing = "Signing",
@@ -14190,6 +14384,45 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     static instanceOf(obj: any): obj is BreezSdk;
 }
 /**
+ * A shareable manager for gRPC connections to the Spark operators.
+ *
+ * Construct one via [`new_connection_manager`] and pass the same `Arc` to
+ * multiple [`SdkBuilder`](crate::SdkBuilder)s via
+ * [`SdkBuilder::with_connection_manager`](crate::SdkBuilder::with_connection_manager).
+ * Connections close when the last `Arc<ConnectionManager>` is dropped;
+ * [`BreezSdk::disconnect`](crate::BreezSdk::disconnect) does not affect them.
+ *
+ * All SDK instances sharing a `ConnectionManager` must be configured for the
+ * same network and operator pool. The TLS settings and user agent of the
+ * first SDK to connect to a given operator are reused for everyone afterwards.
+ */
+export interface ConnectionManagerInterface {
+}
+/**
+ * A shareable manager for gRPC connections to the Spark operators.
+ *
+ * Construct one via [`new_connection_manager`] and pass the same `Arc` to
+ * multiple [`SdkBuilder`](crate::SdkBuilder)s via
+ * [`SdkBuilder::with_connection_manager`](crate::SdkBuilder::with_connection_manager).
+ * Connections close when the last `Arc<ConnectionManager>` is dropped;
+ * [`BreezSdk::disconnect`](crate::BreezSdk::disconnect) does not affect them.
+ *
+ * All SDK instances sharing a `ConnectionManager` must be configured for the
+ * same network and operator pool. The TLS settings and user agent of the
+ * first SDK to connect to a given operator are reused for everyone afterwards.
+ */
+export declare class ConnectionManager extends UniffiAbstractObject implements ConnectionManagerInterface {
+    readonly [uniffiTypeNameSymbol] = "ConnectionManager";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is ConnectionManager;
+}
+/**
  * External signer trait that can be implemented by users and passed to the SDK.
  *
  * This trait mirrors the `BreezSigner` trait but uses FFI-compatible types (bytes, strings)
@@ -15187,6 +15420,14 @@ export interface SdkBuilderInterface {
         signal: AbortSignal;
     }): Promise<void>;
     /**
+     * Sets a shared connection manager to be reused across SDK instances.
+     * Arguments:
+     * - `connection_manager`: The shared connection manager.
+     */
+    withConnectionManager(connectionManager: ConnectionManagerInterface, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
      * Sets the root storage directory to initialize the default storage with.
      * This initializes both storage and real-time sync storage with the
      * default implementations.
@@ -15231,6 +15472,24 @@ export interface SdkBuilderInterface {
      * - `credentials`: Optional credentials for basic authentication.
      */
     withRestChainService(url: string, apiType: ChainApiType, credentials: Credentials | undefined, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Sets a custom session manager used to persist authentication sessions.
+     *
+     * Provide a shared, persistent implementation (e.g. backed by `PostgreSQL`
+     * or Redis) to let multiple SDK instances share authentication state and
+     * bootstrap quickly. If not set, an in-memory session manager is used.
+     */
+    withSessionManager(sessionManager: SessionManager, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Sets a shared SSP connection manager to be reused across SDK instances.
+     * Arguments:
+     * - `manager`: The shared SSP connection manager.
+     */
+    withSspConnectionManager(manager: SspConnectionManagerInterface, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -15271,6 +15530,14 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
         signal: AbortSignal;
     }): Promise<void>;
     /**
+     * Sets a shared connection manager to be reused across SDK instances.
+     * Arguments:
+     * - `connection_manager`: The shared connection manager.
+     */
+    withConnectionManager(connectionManager: ConnectionManagerInterface, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
      * Sets the root storage directory to initialize the default storage with.
      * This initializes both storage and real-time sync storage with the
      * default implementations.
@@ -15318,6 +15585,24 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
         signal: AbortSignal;
     }): Promise<void>;
     /**
+     * Sets a custom session manager used to persist authentication sessions.
+     *
+     * Provide a shared, persistent implementation (e.g. backed by `PostgreSQL`
+     * or Redis) to let multiple SDK instances share authentication state and
+     * bootstrap quickly. If not set, an in-memory session manager is used.
+     */
+    withSessionManager(sessionManager: SessionManager, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Sets a shared SSP connection manager to be reused across SDK instances.
+     * Arguments:
+     * - `manager`: The shared SSP connection manager.
+     */
+    withSspConnectionManager(manager: SspConnectionManagerInterface, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
      * Sets the storage implementation to be used by the SDK.
      * Arguments:
      * - `storage`: The storage implementation to be used.
@@ -15330,6 +15615,90 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
      */
     uniffiDestroy(): void;
     static instanceOf(obj: any): obj is SdkBuilder;
+}
+/**
+ * Persistent storage for authentication sessions, keyed by the service's
+ * identity public key. Implementations should be thread-safe and may be
+ * backed by an in-memory map (default) or a shared database for cross-pod
+ * auth sharing.
+ */
+export interface SessionManager {
+    getSession(serviceIdentityKey: PublicKey, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Session>;
+    setSession(serviceIdentityKey: PublicKey, session: Session, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+}
+/**
+ * Persistent storage for authentication sessions, keyed by the service's
+ * identity public key. Implementations should be thread-safe and may be
+ * backed by an in-memory map (default) or a shared database for cross-pod
+ * auth sharing.
+ */
+export declare class SessionManagerImpl extends UniffiAbstractObject implements SessionManager {
+    readonly [uniffiTypeNameSymbol] = "SessionManagerImpl";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    getSession(serviceIdentityKey: PublicKey, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Session>;
+    setSession(serviceIdentityKey: PublicKey, session: Session, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is SessionManagerImpl;
+}
+/**
+ * A shared HTTP transport for SSP GraphQL traffic.
+ *
+ * All SDK instances that are built with the same `SspConnectionManager` send
+ * SSP requests over the same pooled `reqwest::Client`. This means each
+ * process opens at most one TCP+TLS+HTTP/2 connection to the SSP regardless
+ * of how many wallets are loaded — useful for multi-tenant servers running
+ * many SDK instances.
+ *
+ * # Caveats
+ *
+ * - The user-agent of the first SDK to construct this manager is reused for
+ * all subsequent instances. This is rarely a problem since SDK instances
+ * in one process typically share a build version.
+ * - Connections close when the last `Arc<SspConnectionManager>` is dropped.
+ * `BreezSdk::disconnect` does not close them.
+ */
+export interface SspConnectionManagerInterface {
+}
+/**
+ * A shared HTTP transport for SSP GraphQL traffic.
+ *
+ * All SDK instances that are built with the same `SspConnectionManager` send
+ * SSP requests over the same pooled `reqwest::Client`. This means each
+ * process opens at most one TCP+TLS+HTTP/2 connection to the SSP regardless
+ * of how many wallets are loaded — useful for multi-tenant servers running
+ * many SDK instances.
+ *
+ * # Caveats
+ *
+ * - The user-agent of the first SDK to construct this manager is reused for
+ * all subsequent instances. This is rarely a problem since SDK instances
+ * in one process typically share a build version.
+ * - Connections close when the last `Arc<SspConnectionManager>` is dropped.
+ * `BreezSdk::disconnect` does not close them.
+ */
+export declare class SspConnectionManager extends UniffiAbstractObject implements SspConnectionManagerInterface {
+    readonly [uniffiTypeNameSymbol] = "SspConnectionManager";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is SspConnectionManager;
 }
 /**
  * Trait for persistent storage
@@ -16287,6 +16656,7 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ConnectWithSignerRequest;
             lower(value: ConnectWithSignerRequest): UniffiByteArray;
         };
+        FfiConverterTypeConnectionManager: FfiConverterObject<ConnectionManagerInterface>;
         FfiConverterTypeContact: {
             read(from: RustBuffer): Contact;
             write(value: Contact, into: RustBuffer): void;
@@ -17020,6 +17390,7 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ProvisionalPaymentDetails;
             lower(value: ProvisionalPaymentDetails): UniffiByteArray;
         };
+        FfiConverterTypePublicKey: FfiConverter<UniffiByteArray, string>;
         FfiConverterTypePublicKeyBytes: {
             read(from: RustBuffer): PublicKeyBytes;
             write(value: PublicKeyBytes, into: RustBuffer): void;
@@ -17225,6 +17596,21 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ServiceStatus;
             lower(value: ServiceStatus): UniffiByteArray;
         };
+        FfiConverterTypeSession: {
+            read(from: RustBuffer): Session;
+            write(value: Session, into: RustBuffer): void;
+            allocationSize(value: Session): number;
+            lift(value: UniffiByteArray): Session;
+            lower(value: Session): UniffiByteArray;
+        };
+        FfiConverterTypeSessionManager: FfiConverterObjectWithCallbacks<SessionManager>;
+        FfiConverterTypeSessionManagerError: {
+            read(from: RustBuffer): SessionManagerError;
+            write(value: SessionManagerError, into: RustBuffer): void;
+            allocationSize(value: SessionManagerError): number;
+            lift(value: UniffiByteArray): SessionManagerError;
+            lower(value: SessionManagerError): UniffiByteArray;
+        };
         FfiConverterTypeSetLnurlMetadataItem: {
             read(from: RustBuffer): SetLnurlMetadataItem;
             write(value: SetLnurlMetadataItem, into: RustBuffer): void;
@@ -17330,6 +17716,7 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SparkStatus;
             lower(value: SparkStatus): UniffiByteArray;
         };
+        FfiConverterTypeSspConnectionManager: FfiConverterObject<SspConnectionManagerInterface>;
         FfiConverterTypeStableBalanceActiveLabel: {
             read(from: RustBuffer): StableBalanceActiveLabel;
             write(value: StableBalanceActiveLabel, into: RustBuffer): void;

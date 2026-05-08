@@ -227,6 +227,14 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_clone_connectionmanager(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_free_connectionmanager(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): void;
   ubrn_uniffi_breez_sdk_spark_fn_clone_externalsigner(
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
@@ -449,6 +457,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     chainService: bigint
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_connection_manager(
+    ptr: bigint,
+    connectionManager: bigint
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_default_storage(
     ptr: bigint,
     storageDir: Uint8Array
@@ -475,10 +487,46 @@ interface NativeModuleInterface {
     apiType: Uint8Array,
     credentials: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_session_manager(
+    ptr: bigint,
+    sessionManager: bigint
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_ssp_connection_manager(
+    ptr: bigint,
+    manager: bigint
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_storage(
     ptr: bigint,
     storage: bigint
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_clone_sessionmanager(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_free_sessionmanager(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionmanager(
+    vtable: UniffiVTableCallbackInterfaceSessionManager
+  ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_method_sessionmanager_get_session(
+    ptr: bigint,
+    serviceIdentityKey: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_sessionmanager_set_session(
+    ptr: bigint,
+    serviceIdentityKey: Uint8Array,
+    session: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_clone_sspconnectionmanager(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_free_sspconnectionmanager(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): void;
   ubrn_uniffi_breez_sdk_spark_fn_clone_storage(
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
@@ -666,6 +714,21 @@ interface NativeModuleInterface {
     logFilter: Uint8Array,
     uniffi_out_err: UniffiRustCallStatus
   ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_func_new_connection_manager(
+    connectionsPerOperator: Uint8Array,
+    uniffi_out_err: UniffiRustCallStatus
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
+    url: Uint8Array,
+    network: Uint8Array,
+    apiType: Uint8Array,
+    credentials: Uint8Array,
+    uniffi_out_err: UniffiRustCallStatus
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_func_new_ssp_connection_manager(
+    userAgent: Uint8Array,
+    uniffi_out_err: UniffiRustCallStatus
+  ): bigint;
   ubrn_ffi_breez_sdk_spark_rust_future_poll_u8(
     handle: bigint,
     callback: UniffiRustFutureContinuationCallback,
@@ -815,6 +878,9 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_func_default_external_signer(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_get_spark_status(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_init_logging(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_func_new_connection_manager(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_func_new_rest_chain_service(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_func_new_ssp_connection_manager(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_utxos(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_status(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_hex(): number;
@@ -898,13 +964,18 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_restclient_delete_request(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_build(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_chain_service(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_connection_manager(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_default_storage(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_fiat_service(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_lnurl_client(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_payment_observer(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_session_manager(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_ssp_connection_manager(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_sessionmanager_get_session(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_sessionmanager_set_session(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_cached_item(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_cached_item(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_set_cached_item(): number;
@@ -952,6 +1023,10 @@ interface NativeModuleInterface {
     pointer: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): UniffiRustArcPtr;
+  ubrn_uniffi_internal_fn_method_connectionmanager_ffi__bless_pointer(
+    pointer: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): UniffiRustArcPtr;
   ubrn_uniffi_internal_fn_method_externalsigner_ffi__bless_pointer(
     pointer: bigint,
     uniffi_out_err: UniffiRustCallStatus
@@ -977,6 +1052,14 @@ interface NativeModuleInterface {
     uniffi_out_err: UniffiRustCallStatus
   ): UniffiRustArcPtr;
   ubrn_uniffi_internal_fn_method_sdkbuilder_ffi__bless_pointer(
+    pointer: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): UniffiRustArcPtr;
+  ubrn_uniffi_internal_fn_method_sessionmanager_ffi__bless_pointer(
+    pointer: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): UniffiRustArcPtr;
+  ubrn_uniffi_internal_fn_method_sspconnectionmanager_ffi__bless_pointer(
     pointer: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): UniffiRustArcPtr;
@@ -1327,6 +1410,19 @@ type UniffiCallbackInterfaceRestClientMethod2 = (
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
+type UniffiCallbackInterfaceSessionManagerMethod0 = (
+  uniffiHandle: bigint,
+  serviceIdentityKey: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceSessionManagerMethod1 = (
+  uniffiHandle: bigint,
+  serviceIdentityKey: Uint8Array,
+  session: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod0 = (
   uniffiHandle: bigint,
   key: Uint8Array,
@@ -1552,6 +1648,11 @@ export type UniffiVTableCallbackInterfaceRestClient = {
   getRequest: UniffiCallbackInterfaceRestClientMethod0;
   postRequest: UniffiCallbackInterfaceRestClientMethod1;
   deleteRequest: UniffiCallbackInterfaceRestClientMethod2;
+  uniffiFree: UniffiCallbackInterfaceFree;
+};
+export type UniffiVTableCallbackInterfaceSessionManager = {
+  getSession: UniffiCallbackInterfaceSessionManagerMethod0;
+  setSession: UniffiCallbackInterfaceSessionManagerMethod1;
   uniffiFree: UniffiCallbackInterfaceFree;
 };
 export type UniffiVTableCallbackInterfaceStorage = {

@@ -37,6 +37,7 @@ import nativeModule, {
   type UniffiVTableCallbackInterfacePasskeyPrfProvider,
   type UniffiVTableCallbackInterfacePaymentObserver,
   type UniffiVTableCallbackInterfaceRestClient,
+  type UniffiVTableCallbackInterfaceSessionManager,
   type UniffiVTableCallbackInterfaceStorage,
 } from './breez_sdk_spark-ffi';
 import {
@@ -303,6 +304,84 @@ export function initLogging(
       );
     },
     /*liftString:*/ FfiConverterString.lift
+  );
+}
+/**
+ * Creates a new shareable [`ConnectionManager`].
+ *
+ * `connections_per_operator` controls per-operator connection pooling:
+ * `None` keeps a single connection per operator (suitable for almost every
+ * deployment); `Some(n)` opens `n` connections per operator and balances
+ * requests across them.
+ */
+export function newConnectionManager(
+  connectionsPerOperator: /*u32*/ number | undefined
+): ConnectionManagerInterface {
+  return FfiConverterTypeConnectionManager.lift(
+    uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_new_connection_manager(
+          FfiConverterOptionalUInt32.lower(connectionsPerOperator),
+          callStatus
+        );
+      },
+      /*liftString:*/ FfiConverterString.lift
+    )
+  );
+}
+/**
+ * Constructs a shareable REST-based [`BitcoinChainService`].
+ *
+ * Pass the returned `Arc` to multiple [`SdkBuilder`](crate::SdkBuilder)s via
+ * [`SdkBuilder::with_chain_service`](crate::SdkBuilder::with_chain_service)
+ * to reuse a single underlying HTTP client (and its connection pool) across
+ * SDK instances. All SDKs sharing the service must use the same `network`.
+ *
+ * For one-off, non-shared use, prefer
+ * [`SdkBuilder::with_rest_chain_service`](crate::SdkBuilder::with_rest_chain_service).
+ */
+export function newRestChainService(
+  url: string,
+  network: Network,
+  apiType: ChainApiType,
+  credentials: Credentials | undefined
+): BitcoinChainService {
+  return FfiConverterTypeBitcoinChainService.lift(
+    uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
+          FfiConverterString.lower(url),
+          FfiConverterTypeNetwork.lower(network),
+          FfiConverterTypeChainApiType.lower(apiType),
+          FfiConverterOptionalTypeCredentials.lower(credentials),
+          callStatus
+        );
+      },
+      /*liftString:*/ FfiConverterString.lift
+    )
+  );
+}
+/**
+ * Construct a new shared SSP connection manager.
+ *
+ * Pass the returned `Arc<SspConnectionManager>` to
+ * [`SdkBuilder::with_ssp_connection_manager`](crate::SdkBuilder::with_ssp_connection_manager)
+ * when building each SDK instance that should share the underlying HTTP
+ * connection pool.
+ */
+export function newSspConnectionManager(
+  userAgent: string | undefined
+): SspConnectionManagerInterface {
+  return FfiConverterTypeSspConnectionManager.lift(
+    uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_new_ssp_connection_manager(
+          FfiConverterOptionalString.lower(userAgent),
+          callStatus
+        );
+      },
+      /*liftString:*/ FfiConverterString.lift
+    )
   );
 }
 
@@ -9358,6 +9437,65 @@ const FfiConverterTypeSendPaymentResponse = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * Cached authentication session for a single backend service identity.
+ */
+export type Session = {
+  token: string;
+  expiration: /*u64*/ bigint;
+};
+
+/**
+ * Generated factory for {@link Session} record objects.
+ */
+export const Session = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<Session, ReturnType<typeof defaults>>(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link Session}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link Session}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<Session>,
+  });
+})();
+
+const FfiConverterTypeSession = (() => {
+  type TypeName = Session;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        token: FfiConverterString.read(from),
+        expiration: FfiConverterUInt64.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.token, into);
+      FfiConverterUInt64.write(value.expiration, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.token) +
+        FfiConverterUInt64.allocationSize(value.expiration)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type SetLnurlMetadataItem = {
   paymentHash: string;
   senderComment: string | undefined;
@@ -11727,6 +11865,14 @@ const stringConverter = {
     ),
 };
 const FfiConverterString = uniffiCreateFfiConverterString(stringConverter);
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ */
+export type PublicKey = string;
+// FfiConverter for PublicKey, a type alias for string.
+const FfiConverterTypePublicKey = FfiConverterString;
 
 /**
  * Typealias from the type name used in the UDL file to the custom type.  This
@@ -20528,6 +20674,146 @@ const FfiConverterTypeServiceStatus = (() => {
   return new FFIConverter();
 })();
 
+// Error type: SessionManagerError
+
+// Enum: SessionManagerError
+export enum SessionManagerError_Tags {
+  NotFound = 'NotFound',
+  Generic = 'Generic',
+}
+export const SessionManagerError = (() => {
+  type NotFound__interface = {
+    tag: SessionManagerError_Tags.NotFound;
+  };
+
+  class NotFound_ extends UniffiError implements NotFound__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SessionManagerError';
+    readonly tag = SessionManagerError_Tags.NotFound;
+    constructor() {
+      super('SessionManagerError', 'NotFound');
+    }
+
+    static new(): NotFound_ {
+      return new NotFound_();
+    }
+
+    static instanceOf(obj: any): obj is NotFound_ {
+      return obj.tag === SessionManagerError_Tags.NotFound;
+    }
+
+    static hasInner(obj: any): obj is NotFound_ {
+      return false;
+    }
+  }
+
+  type Generic__interface = {
+    tag: SessionManagerError_Tags.Generic;
+    inner: Readonly<[string]>;
+  };
+
+  class Generic_ extends UniffiError implements Generic__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SessionManagerError';
+    readonly tag = SessionManagerError_Tags.Generic;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('SessionManagerError', 'Generic');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): Generic_ {
+      return new Generic_(v0);
+    }
+
+    static instanceOf(obj: any): obj is Generic_ {
+      return obj.tag === SessionManagerError_Tags.Generic;
+    }
+
+    static hasInner(obj: any): obj is Generic_ {
+      return Generic_.instanceOf(obj);
+    }
+
+    static getInner(obj: Generic_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  function instanceOf(obj: any): obj is SessionManagerError {
+    return obj[uniffiTypeNameSymbol] === 'SessionManagerError';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    NotFound: NotFound_,
+    Generic: Generic_,
+  });
+})();
+
+export type SessionManagerError = InstanceType<
+  (typeof SessionManagerError)[keyof Omit<
+    typeof SessionManagerError,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum SessionManagerError
+const FfiConverterTypeSessionManagerError = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = SessionManagerError;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new SessionManagerError.NotFound();
+        case 2:
+          return new SessionManagerError.Generic(FfiConverterString.read(from));
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case SessionManagerError_Tags.NotFound: {
+          ordinalConverter.write(1, into);
+          return;
+        }
+        case SessionManagerError_Tags.Generic: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        default:
+          // Throwing from here means that SessionManagerError_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case SessionManagerError_Tags.NotFound: {
+          return ordinalConverter.allocationSize(1);
+        }
+        case SessionManagerError_Tags.Generic: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
 // Error type: SignerError
 
 // Enum: SignerError
@@ -25484,6 +25770,136 @@ const FfiConverterTypeBreezSdk = new FfiConverterObject(
 );
 
 /**
+ * A shareable manager for gRPC connections to the Spark operators.
+ *
+ * Construct one via [`new_connection_manager`] and pass the same `Arc` to
+ * multiple [`SdkBuilder`](crate::SdkBuilder)s via
+ * [`SdkBuilder::with_connection_manager`](crate::SdkBuilder::with_connection_manager).
+ * Connections close when the last `Arc<ConnectionManager>` is dropped;
+ * [`BreezSdk::disconnect`](crate::BreezSdk::disconnect) does not affect them.
+ *
+ * All SDK instances sharing a `ConnectionManager` must be configured for the
+ * same network and operator pool. The TLS settings and user agent of the
+ * first SDK to connect to a given operator are reused for everyone afterwards.
+ */
+export interface ConnectionManagerInterface {}
+
+/**
+ * A shareable manager for gRPC connections to the Spark operators.
+ *
+ * Construct one via [`new_connection_manager`] and pass the same `Arc` to
+ * multiple [`SdkBuilder`](crate::SdkBuilder)s via
+ * [`SdkBuilder::with_connection_manager`](crate::SdkBuilder::with_connection_manager).
+ * Connections close when the last `Arc<ConnectionManager>` is dropped;
+ * [`BreezSdk::disconnect`](crate::BreezSdk::disconnect) does not affect them.
+ *
+ * All SDK instances sharing a `ConnectionManager` must be configured for the
+ * same network and operator pool. The TLS settings and user agent of the
+ * first SDK to connect to a given operator are reused for everyone afterwards.
+ */
+export class ConnectionManager
+  extends UniffiAbstractObject
+  implements ConnectionManagerInterface
+{
+  readonly [uniffiTypeNameSymbol] = 'ConnectionManager';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypeConnectionManagerObjectFactory.bless(pointer);
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer = uniffiTypeConnectionManagerObjectFactory.pointer(this);
+      uniffiTypeConnectionManagerObjectFactory.freePointer(pointer);
+      uniffiTypeConnectionManagerObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is ConnectionManager {
+    return uniffiTypeConnectionManagerObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypeConnectionManagerObjectFactory: UniffiObjectFactory<ConnectionManagerInterface> =
+  (() => {
+    return {
+      create(pointer: UnsafeMutableRawPointer): ConnectionManagerInterface {
+        const instance = Object.create(ConnectionManager.prototype);
+        instance[pointerLiteralSymbol] = pointer;
+        instance[destructorGuardSymbol] = this.bless(pointer);
+        instance[uniffiTypeNameSymbol] = 'ConnectionManager';
+        return instance;
+      },
+
+      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+        return uniffiCaller.rustCall(
+          /*caller:*/ (status) =>
+            nativeModule().ubrn_uniffi_internal_fn_method_connectionmanager_ffi__bless_pointer(
+              p,
+              status
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      unbless(ptr: UniffiRustArcPtr) {
+        ptr.markDestroyed();
+      },
+
+      pointer(obj: ConnectionManagerInterface): UnsafeMutableRawPointer {
+        if ((obj as any)[destructorGuardSymbol] === undefined) {
+          throw new UniffiInternalError.UnexpectedNullPointer();
+        }
+        return (obj as any)[pointerLiteralSymbol];
+      },
+
+      clonePointer(obj: ConnectionManagerInterface): UnsafeMutableRawPointer {
+        const pointer = this.pointer(obj);
+        return uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_connectionmanager(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      freePointer(pointer: UnsafeMutableRawPointer): void {
+        uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_connectionmanager(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      isConcreteType(obj: any): obj is ConnectionManagerInterface {
+        return (
+          obj[destructorGuardSymbol] &&
+          obj[uniffiTypeNameSymbol] === 'ConnectionManager'
+        );
+      },
+    };
+  })();
+// FfiConverter for ConnectionManagerInterface
+const FfiConverterTypeConnectionManager = new FfiConverterObject(
+  uniffiTypeConnectionManagerObjectFactory
+);
+
+/**
  * External signer trait that can be implemented by users and passed to the SDK.
  *
  * This trait mirrors the `BreezSigner` trait but uses FFI-compatible types (bytes, strings)
@@ -29670,6 +30086,15 @@ export interface SdkBuilderInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void>;
   /**
+   * Sets a shared connection manager to be reused across SDK instances.
+   * Arguments:
+   * - `connection_manager`: The shared connection manager.
+   */
+  withConnectionManager(
+    connectionManager: ConnectionManagerInterface,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void>;
+  /**
    * Sets the root storage directory to initialize the default storage with.
    * This initializes both storage and real-time sync storage with the
    * default implementations.
@@ -29722,6 +30147,26 @@ export interface SdkBuilderInterface {
     url: string,
     apiType: ChainApiType,
     credentials: Credentials | undefined,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void>;
+  /**
+   * Sets a custom session manager used to persist authentication sessions.
+   *
+   * Provide a shared, persistent implementation (e.g. backed by `PostgreSQL`
+   * or Redis) to let multiple SDK instances share authentication state and
+   * bootstrap quickly. If not set, an in-memory session manager is used.
+   */
+  withSessionManager(
+    sessionManager: SessionManager,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void>;
+  /**
+   * Sets a shared SSP connection manager to be reused across SDK instances.
+   * Arguments:
+   * - `manager`: The shared SSP connection manager.
+   */
+  withSspConnectionManager(
+    manager: SspConnectionManagerInterface,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void>;
   /**
@@ -29825,6 +30270,45 @@ export class SdkBuilder
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_chain_service(
             uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
             FfiConverterTypeBitcoinChainService.lower(chainService)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Sets a shared connection manager to be reused across SDK instances.
+   * Arguments:
+   * - `connection_manager`: The shared connection manager.
+   */
+  public async withConnectionManager(
+    connectionManager: ConnectionManagerInterface,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_connection_manager(
+            uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
+            FfiConverterTypeConnectionManager.lower(connectionManager)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -30085,6 +30569,86 @@ export class SdkBuilder
   }
 
   /**
+   * Sets a custom session manager used to persist authentication sessions.
+   *
+   * Provide a shared, persistent implementation (e.g. backed by `PostgreSQL`
+   * or Redis) to let multiple SDK instances share authentication state and
+   * bootstrap quickly. If not set, an in-memory session manager is used.
+   */
+  public async withSessionManager(
+    sessionManager: SessionManager,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_session_manager(
+            uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
+            FfiConverterTypeSessionManager.lower(sessionManager)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Sets a shared SSP connection manager to be reused across SDK instances.
+   * Arguments:
+   * - `manager`: The shared SSP connection manager.
+   */
+  public async withSspConnectionManager(
+    manager: SspConnectionManagerInterface,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_ssp_connection_manager(
+            uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
+            FfiConverterTypeSspConnectionManager.lower(manager)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
    * Sets the storage implementation to be used by the SDK.
    * Arguments:
    * - `storage`: The storage implementation to be used.
@@ -30208,6 +30772,464 @@ const uniffiTypeSdkBuilderObjectFactory: UniffiObjectFactory<SdkBuilderInterface
 // FfiConverter for SdkBuilderInterface
 const FfiConverterTypeSdkBuilder = new FfiConverterObject(
   uniffiTypeSdkBuilderObjectFactory
+);
+
+/**
+ * Persistent storage for authentication sessions, keyed by the service's
+ * identity public key. Implementations should be thread-safe and may be
+ * backed by an in-memory map (default) or a shared database for cross-pod
+ * auth sharing.
+ */
+export interface SessionManager {
+  getSession(
+    serviceIdentityKey: PublicKey,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<Session>;
+  setSession(
+    serviceIdentityKey: PublicKey,
+    session: Session,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<void>;
+}
+
+/**
+ * Persistent storage for authentication sessions, keyed by the service's
+ * identity public key. Implementations should be thread-safe and may be
+ * backed by an in-memory map (default) or a shared database for cross-pod
+ * auth sharing.
+ */
+export class SessionManagerImpl
+  extends UniffiAbstractObject
+  implements SessionManager
+{
+  readonly [uniffiTypeNameSymbol] = 'SessionManagerImpl';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypeSessionManagerImplObjectFactory.bless(pointer);
+  }
+
+  public async getSession(
+    serviceIdentityKey: PublicKey,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<Session> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sessionmanager_get_session(
+            uniffiTypeSessionManagerImplObjectFactory.clonePointer(this),
+            FfiConverterTypePublicKey.lower(serviceIdentityKey)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeSession.lift.bind(
+          FfiConverterTypeSession
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSessionManagerError.lift.bind(
+          FfiConverterTypeSessionManagerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async setSession(
+    serviceIdentityKey: PublicKey,
+    session: Session,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sessionmanager_set_session(
+            uniffiTypeSessionManagerImplObjectFactory.clonePointer(this),
+            FfiConverterTypePublicKey.lower(serviceIdentityKey),
+            FfiConverterTypeSession.lower(session)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSessionManagerError.lift.bind(
+          FfiConverterTypeSessionManagerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer = uniffiTypeSessionManagerImplObjectFactory.pointer(this);
+      uniffiTypeSessionManagerImplObjectFactory.freePointer(pointer);
+      uniffiTypeSessionManagerImplObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is SessionManagerImpl {
+    return uniffiTypeSessionManagerImplObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypeSessionManagerImplObjectFactory: UniffiObjectFactory<SessionManager> =
+  (() => {
+    return {
+      create(pointer: UnsafeMutableRawPointer): SessionManager {
+        const instance = Object.create(SessionManagerImpl.prototype);
+        instance[pointerLiteralSymbol] = pointer;
+        instance[destructorGuardSymbol] = this.bless(pointer);
+        instance[uniffiTypeNameSymbol] = 'SessionManagerImpl';
+        return instance;
+      },
+
+      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+        return uniffiCaller.rustCall(
+          /*caller:*/ (status) =>
+            nativeModule().ubrn_uniffi_internal_fn_method_sessionmanager_ffi__bless_pointer(
+              p,
+              status
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      unbless(ptr: UniffiRustArcPtr) {
+        ptr.markDestroyed();
+      },
+
+      pointer(obj: SessionManager): UnsafeMutableRawPointer {
+        if ((obj as any)[destructorGuardSymbol] === undefined) {
+          throw new UniffiInternalError.UnexpectedNullPointer();
+        }
+        return (obj as any)[pointerLiteralSymbol];
+      },
+
+      clonePointer(obj: SessionManager): UnsafeMutableRawPointer {
+        const pointer = this.pointer(obj);
+        return uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_sessionmanager(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      freePointer(pointer: UnsafeMutableRawPointer): void {
+        uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_sessionmanager(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      isConcreteType(obj: any): obj is SessionManager {
+        return (
+          obj[destructorGuardSymbol] &&
+          obj[uniffiTypeNameSymbol] === 'SessionManagerImpl'
+        );
+      },
+    };
+  })();
+// FfiConverter for SessionManager
+const FfiConverterTypeSessionManager = new FfiConverterObjectWithCallbacks(
+  uniffiTypeSessionManagerImplObjectFactory
+);
+
+// Add a vtavble for the callbacks that go in SessionManager.
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+const uniffiCallbackInterfaceSessionManager: {
+  vtable: UniffiVTableCallbackInterfaceSessionManager;
+  register: () => void;
+} = {
+  // Create the VTable using a series of closures.
+  // ts automatically converts these into C callback functions.
+  vtable: {
+    getSession: (
+      uniffiHandle: bigint,
+      serviceIdentityKey: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<Session> => {
+        const jsCallback = FfiConverterTypeSessionManager.lift(uniffiHandle);
+        return await jsCallback.getSession(
+          FfiConverterTypePublicKey.lift(serviceIdentityKey),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: Session) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypeSession.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SessionManagerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSessionManagerError.lower.bind(
+          FfiConverterTypeSessionManagerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    setSession: (
+      uniffiHandle: bigint,
+      serviceIdentityKey: Uint8Array,
+      session: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<void> => {
+        const jsCallback = FfiConverterTypeSessionManager.lift(uniffiHandle);
+        return await jsCallback.setSession(
+          FfiConverterTypePublicKey.lift(serviceIdentityKey),
+          FfiConverterTypeSession.lift(session),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: void) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SessionManagerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSessionManagerError.lower.bind(
+          FfiConverterTypeSessionManagerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    uniffiFree: (uniffiHandle: UniffiHandle): void => {
+      // SessionManager: this will throw a stale handle error if the handle isn't found.
+      FfiConverterTypeSessionManager.drop(uniffiHandle);
+    },
+  },
+  register: () => {
+    nativeModule().ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionmanager(
+      uniffiCallbackInterfaceSessionManager.vtable
+    );
+  },
+};
+
+/**
+ * A shared HTTP transport for SSP GraphQL traffic.
+ *
+ * All SDK instances that are built with the same `SspConnectionManager` send
+ * SSP requests over the same pooled `reqwest::Client`. This means each
+ * process opens at most one TCP+TLS+HTTP/2 connection to the SSP regardless
+ * of how many wallets are loaded — useful for multi-tenant servers running
+ * many SDK instances.
+ *
+ * # Caveats
+ *
+ * - The user-agent of the first SDK to construct this manager is reused for
+ * all subsequent instances. This is rarely a problem since SDK instances
+ * in one process typically share a build version.
+ * - Connections close when the last `Arc<SspConnectionManager>` is dropped.
+ * `BreezSdk::disconnect` does not close them.
+ */
+export interface SspConnectionManagerInterface {}
+
+/**
+ * A shared HTTP transport for SSP GraphQL traffic.
+ *
+ * All SDK instances that are built with the same `SspConnectionManager` send
+ * SSP requests over the same pooled `reqwest::Client`. This means each
+ * process opens at most one TCP+TLS+HTTP/2 connection to the SSP regardless
+ * of how many wallets are loaded — useful for multi-tenant servers running
+ * many SDK instances.
+ *
+ * # Caveats
+ *
+ * - The user-agent of the first SDK to construct this manager is reused for
+ * all subsequent instances. This is rarely a problem since SDK instances
+ * in one process typically share a build version.
+ * - Connections close when the last `Arc<SspConnectionManager>` is dropped.
+ * `BreezSdk::disconnect` does not close them.
+ */
+export class SspConnectionManager
+  extends UniffiAbstractObject
+  implements SspConnectionManagerInterface
+{
+  readonly [uniffiTypeNameSymbol] = 'SspConnectionManager';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypeSspConnectionManagerObjectFactory.bless(pointer);
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer = uniffiTypeSspConnectionManagerObjectFactory.pointer(this);
+      uniffiTypeSspConnectionManagerObjectFactory.freePointer(pointer);
+      uniffiTypeSspConnectionManagerObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is SspConnectionManager {
+    return uniffiTypeSspConnectionManagerObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypeSspConnectionManagerObjectFactory: UniffiObjectFactory<SspConnectionManagerInterface> =
+  (() => {
+    return {
+      create(pointer: UnsafeMutableRawPointer): SspConnectionManagerInterface {
+        const instance = Object.create(SspConnectionManager.prototype);
+        instance[pointerLiteralSymbol] = pointer;
+        instance[destructorGuardSymbol] = this.bless(pointer);
+        instance[uniffiTypeNameSymbol] = 'SspConnectionManager';
+        return instance;
+      },
+
+      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+        return uniffiCaller.rustCall(
+          /*caller:*/ (status) =>
+            nativeModule().ubrn_uniffi_internal_fn_method_sspconnectionmanager_ffi__bless_pointer(
+              p,
+              status
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      unbless(ptr: UniffiRustArcPtr) {
+        ptr.markDestroyed();
+      },
+
+      pointer(obj: SspConnectionManagerInterface): UnsafeMutableRawPointer {
+        if ((obj as any)[destructorGuardSymbol] === undefined) {
+          throw new UniffiInternalError.UnexpectedNullPointer();
+        }
+        return (obj as any)[pointerLiteralSymbol];
+      },
+
+      clonePointer(
+        obj: SspConnectionManagerInterface
+      ): UnsafeMutableRawPointer {
+        const pointer = this.pointer(obj);
+        return uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_sspconnectionmanager(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      freePointer(pointer: UnsafeMutableRawPointer): void {
+        uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_sspconnectionmanager(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      isConcreteType(obj: any): obj is SspConnectionManagerInterface {
+        return (
+          obj[destructorGuardSymbol] &&
+          obj[uniffiTypeNameSymbol] === 'SspConnectionManager'
+        );
+      },
+    };
+  })();
+// FfiConverter for SspConnectionManagerInterface
+const FfiConverterTypeSspConnectionManager = new FfiConverterObject(
+  uniffiTypeSspConnectionManagerObjectFactory
 );
 
 /**
@@ -34066,6 +35088,30 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_new_connection_manager() !==
+    25164
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_new_connection_manager'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_new_rest_chain_service() !==
+    62980
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_new_rest_chain_service'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_new_ssp_connection_manager() !==
+    15222
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_new_ssp_connection_manager'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_utxos() !==
     20959
   ) {
@@ -34730,6 +35776,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_connection_manager() !==
+    51797
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_connection_manager'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_default_storage() !==
     14543
   ) {
@@ -34778,11 +35832,43 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_session_manager() !==
+    64189
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_session_manager'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_ssp_connection_manager() !==
+    65505
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_ssp_connection_manager'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage() !==
     59400
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sessionmanager_get_session() !==
+    64481
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_sessionmanager_get_session'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sessionmanager_set_session() !==
+    55262
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_sessionmanager_set_session'
     );
   }
   if (
@@ -35098,6 +36184,7 @@ function uniffiEnsureInitialized() {
   uniffiCallbackInterfacePasskeyPrfProvider.register();
   uniffiCallbackInterfacePaymentObserver.register();
   uniffiCallbackInterfaceRestClient.register();
+  uniffiCallbackInterfaceSessionManager.register();
   uniffiCallbackInterfaceStorage.register();
 }
 
@@ -35142,6 +36229,7 @@ export default Object.freeze({
     FfiConverterTypeConfig,
     FfiConverterTypeConnectRequest,
     FfiConverterTypeConnectWithSignerRequest,
+    FfiConverterTypeConnectionManager,
     FfiConverterTypeContact,
     FfiConverterTypeConversionDetails,
     FfiConverterTypeConversionEstimate,
@@ -35251,6 +36339,7 @@ export default Object.freeze({
     FfiConverterTypePrepareSendPaymentResponse,
     FfiConverterTypeProvisionalPayment,
     FfiConverterTypeProvisionalPaymentDetails,
+    FfiConverterTypePublicKey,
     FfiConverterTypePublicKeyBytes,
     FfiConverterTypeRate,
     FfiConverterTypeReceivePaymentMethod,
@@ -35282,6 +36371,9 @@ export default Object.freeze({
     FfiConverterTypeSendPaymentResponse,
     FfiConverterTypeServiceConnectivityError,
     FfiConverterTypeServiceStatus,
+    FfiConverterTypeSession,
+    FfiConverterTypeSessionManager,
+    FfiConverterTypeSessionManagerError,
     FfiConverterTypeSetLnurlMetadataItem,
     FfiConverterTypeSignMessageRequest,
     FfiConverterTypeSignMessageResponse,
@@ -35297,6 +36389,7 @@ export default Object.freeze({
     FfiConverterTypeSparkSigningOperator,
     FfiConverterTypeSparkSspConfig,
     FfiConverterTypeSparkStatus,
+    FfiConverterTypeSspConnectionManager,
     FfiConverterTypeStableBalanceActiveLabel,
     FfiConverterTypeStableBalanceConfig,
     FfiConverterTypeStableBalanceToken,
