@@ -340,26 +340,45 @@ export function newConnectionManager(
  * For one-off, non-shared use, prefer
  * [`SdkBuilder::with_rest_chain_service`](crate::SdkBuilder::with_rest_chain_service).
  */
-export function newRestChainService(
+export async function newRestChainService(
   url: string,
   network: Network,
   apiType: ChainApiType,
-  credentials: Credentials | undefined
-): BitcoinChainService {
-  return FfiConverterTypeBitcoinChainService.lift(
-    uniffiCaller.rustCall(
-      /*caller:*/ (callStatus) => {
+  credentials: Credentials | undefined,
+  asyncOpts_?: { signal: AbortSignal }
+): Promise<BitcoinChainService> {
+  const __stack = uniffiIsDebug ? new Error().stack : undefined;
+  try {
+    return await uniffiRustCallAsync(
+      /*rustCaller:*/ uniffiCaller,
+      /*rustFutureFunc:*/ () => {
         return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
           FfiConverterString.lower(url),
           FfiConverterTypeNetwork.lower(network),
           FfiConverterTypeChainApiType.lower(apiType),
-          FfiConverterOptionalTypeCredentials.lower(credentials),
-          callStatus
+          FfiConverterOptionalTypeCredentials.lower(credentials)
         );
       },
-      /*liftString:*/ FfiConverterString.lift
-    )
-  );
+      /*pollFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_poll_pointer,
+      /*cancelFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_cancel_pointer,
+      /*completeFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_complete_pointer,
+      /*freeFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_free_pointer,
+      /*liftFunc:*/ FfiConverterTypeBitcoinChainService.lift.bind(
+        FfiConverterTypeBitcoinChainService
+      ),
+      /*liftString:*/ FfiConverterString.lift,
+      /*asyncOpts:*/ asyncOpts_
+    );
+  } catch (__error: any) {
+    if (uniffiIsDebug && __error instanceof Error) {
+      __error.stack = __stack;
+    }
+    throw __error;
+  }
 }
 /**
  * Construct a new shared SSP connection manager.
@@ -35097,7 +35116,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_new_rest_chain_service() !==
-    62980
+    23177
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_func_new_rest_chain_service'

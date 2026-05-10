@@ -722,8 +722,7 @@ interface NativeModuleInterface {
     url: Uint8Array,
     network: Uint8Array,
     apiType: Uint8Array,
-    credentials: Uint8Array,
-    uniffi_out_err: UniffiRustCallStatus
+    credentials: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_func_new_ssp_connection_manager(
     userAgent: Uint8Array,

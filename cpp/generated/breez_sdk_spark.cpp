@@ -908,9 +908,9 @@ void uniffi_breez_sdk_spark_fn_func_init_logging(
     RustCallStatus *uniffi_out_err);
 void *uniffi_breez_sdk_spark_fn_func_new_connection_manager(
     RustBuffer connections_per_operator, RustCallStatus *uniffi_out_err);
-void *uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
+/*handle*/ uint64_t uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
     RustBuffer url, RustBuffer network, RustBuffer api_type,
-    RustBuffer credentials, RustCallStatus *uniffi_out_err);
+    RustBuffer credentials);
 void *uniffi_breez_sdk_spark_fn_func_new_ssp_connection_manager(
     RustBuffer user_agent, RustCallStatus *uniffi_out_err);
 RustBuffer ffi_breez_sdk_spark_rustbuffer_alloc(uint64_t size,
@@ -20866,8 +20866,6 @@ jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
   auto value = uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[0]),
@@ -20876,12 +20874,10 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[2]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[3]),
-      &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
+                                                            args[3]));
 
-  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
 }
 jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_func_new_ssp_connection_manager(

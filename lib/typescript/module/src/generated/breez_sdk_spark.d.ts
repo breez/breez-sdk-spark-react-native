@@ -79,7 +79,9 @@ export declare function newConnectionManager(connectionsPerOperator: /*u32*/ num
  * For one-off, non-shared use, prefer
  * [`SdkBuilder::with_rest_chain_service`](crate::SdkBuilder::with_rest_chain_service).
  */
-export declare function newRestChainService(url: string, network: Network, apiType: ChainApiType, credentials: Credentials | undefined): BitcoinChainService;
+export declare function newRestChainService(url: string, network: Network, apiType: ChainApiType, credentials: Credentials | undefined, asyncOpts_?: {
+    signal: AbortSignal;
+}): Promise<BitcoinChainService>;
 /**
  * Construct a new shared SSP connection manager.
  *

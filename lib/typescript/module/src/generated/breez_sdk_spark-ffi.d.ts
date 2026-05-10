@@ -179,7 +179,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_func_get_spark_status(): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_init_logging(logDir: Uint8Array, appLogger: Uint8Array, logFilter: Uint8Array, uniffi_out_err: UniffiRustCallStatus): void;
     ubrn_uniffi_breez_sdk_spark_fn_func_new_connection_manager(connectionsPerOperator: Uint8Array, uniffi_out_err: UniffiRustCallStatus): bigint;
-    ubrn_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(url: Uint8Array, network: Uint8Array, apiType: Uint8Array, credentials: Uint8Array, uniffi_out_err: UniffiRustCallStatus): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(url: Uint8Array, network: Uint8Array, apiType: Uint8Array, credentials: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_new_ssp_connection_manager(userAgent: Uint8Array, uniffi_out_err: UniffiRustCallStatus): bigint;
     ubrn_ffi_breez_sdk_spark_rust_future_poll_u8(handle: bigint, callback: UniffiRustFutureContinuationCallback, callbackData: bigint): void;
     ubrn_ffi_breez_sdk_spark_rust_future_cancel_u8(handle: bigint): void;
