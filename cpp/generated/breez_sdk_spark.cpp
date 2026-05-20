@@ -569,6 +569,8 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_recommended_fees(void *ptr);
 uniffi_breez_sdk_spark_fn_method_breezsdk_refund_deposit(void *ptr,
                                                          RustBuffer request);
 /*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_refund_pending_conversions(void *ptr);
+/*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_register_lightning_address(
     void *ptr, RustBuffer request);
 /*handle*/ uint64_t
@@ -597,10 +599,6 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_update_contact(void *ptr,
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_update_user_settings(
     void *ptr, RustBuffer request);
-void *uniffi_breez_sdk_spark_fn_clone_connectionmanager(
-    void *ptr, RustCallStatus *uniffi_out_err);
-void uniffi_breez_sdk_spark_fn_free_connectionmanager(
-    void *ptr, RustCallStatus *uniffi_out_err);
 void *
 uniffi_breez_sdk_spark_fn_clone_externalsigner(void *ptr,
                                                RustCallStatus *uniffi_out_err);
@@ -740,9 +738,6 @@ uniffi_breez_sdk_spark_fn_method_sdkbuilder_build(void *ptr);
 uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_chain_service(
     void *ptr, void *chain_service);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_connection_manager(
-    void *ptr, void *connection_manager);
-/*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_default_storage(
     void *ptr, RustBuffer storage_dir);
 /*handle*/ uint64_t
@@ -761,14 +756,16 @@ uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_payment_observer(
 uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_rest_chain_service(
     void *ptr, RustBuffer url, RustBuffer api_type, RustBuffer credentials);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_session_manager(
-    void *ptr, void *session_manager);
-/*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_ssp_connection_manager(
-    void *ptr, void *manager);
+uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_shared_context(void *ptr,
+                                                                void *context);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_storage(void *ptr,
                                                          void *storage);
+void *
+uniffi_breez_sdk_spark_fn_clone_sdkcontext(void *ptr,
+                                           RustCallStatus *uniffi_out_err);
+void uniffi_breez_sdk_spark_fn_free_sdkcontext(void *ptr,
+                                               RustCallStatus *uniffi_out_err);
 void *
 uniffi_breez_sdk_spark_fn_clone_sessionmanager(void *ptr,
                                                RustCallStatus *uniffi_out_err);
@@ -780,10 +777,6 @@ void uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionmanager(
     void *ptr, RustBuffer service_identity_key);
 /*handle*/ uint64_t uniffi_breez_sdk_spark_fn_method_sessionmanager_set_session(
     void *ptr, RustBuffer service_identity_key, RustBuffer session);
-void *uniffi_breez_sdk_spark_fn_clone_sspconnectionmanager(
-    void *ptr, RustCallStatus *uniffi_out_err);
-void uniffi_breez_sdk_spark_fn_free_sspconnectionmanager(
-    void *ptr, RustCallStatus *uniffi_out_err);
 void *uniffi_breez_sdk_spark_fn_clone_storage(void *ptr,
                                               RustCallStatus *uniffi_out_err);
 void uniffi_breez_sdk_spark_fn_free_storage(void *ptr,
@@ -902,17 +895,17 @@ uniffi_breez_sdk_spark_fn_func_default_config(RustBuffer network,
 void *uniffi_breez_sdk_spark_fn_func_default_external_signer(
     RustBuffer mnemonic, RustBuffer passphrase, RustBuffer network,
     RustBuffer key_set_config, RustCallStatus *uniffi_out_err);
+RustBuffer uniffi_breez_sdk_spark_fn_func_default_server_config(
+    RustBuffer network, RustCallStatus *uniffi_out_err);
 /*handle*/ uint64_t uniffi_breez_sdk_spark_fn_func_get_spark_status();
 void uniffi_breez_sdk_spark_fn_func_init_logging(
     RustBuffer log_dir, RustBuffer app_logger, RustBuffer log_filter,
     RustCallStatus *uniffi_out_err);
-void *uniffi_breez_sdk_spark_fn_func_new_connection_manager(
-    RustBuffer connections_per_operator, RustCallStatus *uniffi_out_err);
 /*handle*/ uint64_t uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
     RustBuffer url, RustBuffer network, RustBuffer api_type,
     RustBuffer credentials);
-void *uniffi_breez_sdk_spark_fn_func_new_ssp_connection_manager(
-    RustBuffer user_agent, RustCallStatus *uniffi_out_err);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_func_new_shared_sdk_context(RustBuffer config);
 RustBuffer ffi_breez_sdk_spark_rustbuffer_alloc(uint64_t size,
                                                 RustCallStatus *uniffi_out_err);
 RustBuffer
@@ -1044,11 +1037,11 @@ uint16_t uniffi_breez_sdk_spark_checksum_func_connect();
 uint16_t uniffi_breez_sdk_spark_checksum_func_connect_with_signer();
 uint16_t uniffi_breez_sdk_spark_checksum_func_default_config();
 uint16_t uniffi_breez_sdk_spark_checksum_func_default_external_signer();
+uint16_t uniffi_breez_sdk_spark_checksum_func_default_server_config();
 uint16_t uniffi_breez_sdk_spark_checksum_func_get_spark_status();
 uint16_t uniffi_breez_sdk_spark_checksum_func_init_logging();
-uint16_t uniffi_breez_sdk_spark_checksum_func_new_connection_manager();
 uint16_t uniffi_breez_sdk_spark_checksum_func_new_rest_chain_service();
-uint16_t uniffi_breez_sdk_spark_checksum_func_new_ssp_connection_manager();
+uint16_t uniffi_breez_sdk_spark_checksum_func_new_shared_sdk_context();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_utxos();
 uint16_t
@@ -1100,6 +1093,8 @@ uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_payment();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_receive_payment();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_recommended_fees();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_deposit();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_pending_conversions();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_register_lightning_address();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_register_webhook();
@@ -1166,8 +1161,6 @@ uint16_t uniffi_breez_sdk_spark_checksum_method_restclient_delete_request();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_build();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_chain_service();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_connection_manager();
-uint16_t
 uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_default_storage();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_fiat_service();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set();
@@ -1177,9 +1170,7 @@ uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_payment_observer();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_session_manager();
-uint16_t
-uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_ssp_connection_manager();
+uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_shared_context();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sessionmanager_get_session();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sessionmanager_set_session();
@@ -14085,6 +14076,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_refund_deposit(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_refund_pending_"
+        "conversions"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "breezsdk_refund_pending_conversions"),
+      1,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_refund_pending_conversions(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_register_lightning_"
         "address"] = jsi::Function::createFromHostFunction(
       rt,
@@ -14207,28 +14210,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             return this
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_update_user_settings(
                     rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_clone_connectionmanager"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_connectionmanager"),
-          1,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this->cpp_uniffi_breez_sdk_spark_fn_clone_connectionmanager(
-                rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_free_connectionmanager"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_connectionmanager"),
-          1,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this->cpp_uniffi_breez_sdk_spark_fn_free_connectionmanager(
-                rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_fn_clone_externalsigner"] =
       jsi::Function::createFromHostFunction(
@@ -14881,18 +14862,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_chain_service(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_connection_"
-        "manager"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "sdkbuilder_with_connection_manager"),
-      2,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_connection_manager(
-                rt, thisVal, args, count);
-      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_default_"
         "storage"] = jsi::Function::createFromHostFunction(
       rt,
@@ -14966,28 +14935,16 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_rest_chain_service(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_session_"
-        "manager"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_shared_"
+        "context"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "sdkbuilder_with_session_manager"),
+                                    "sdkbuilder_with_shared_context"),
       2,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_session_manager(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_ssp_connection_"
-        "manager"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "sdkbuilder_with_ssp_connection_manager"),
-      2,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_ssp_connection_manager(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_shared_context(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_storage"] =
@@ -15002,6 +14959,28 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             return this
                 ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_storage(
                     rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_clone_sdkcontext"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_sdkcontext"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_clone_sdkcontext(
+                rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_free_sdkcontext"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_sdkcontext"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_free_sdkcontext(
+                rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_fn_clone_sessionmanager"] =
       jsi::Function::createFromHostFunction(
@@ -15059,30 +15038,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
                 ->cpp_uniffi_breez_sdk_spark_fn_method_sessionmanager_set_session(
-                    rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_clone_sspconnectionmanager"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_sspconnectionmanager"),
-          1,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_fn_clone_sspconnectionmanager(
-                    rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_free_sspconnectionmanager"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_sspconnectionmanager"),
-          1,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_fn_free_sspconnectionmanager(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_fn_clone_storage"] =
@@ -15630,6 +15585,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_func_default_external_signer(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_func_default_server_config"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_func_default_server_config"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_func_default_server_config(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_fn_func_get_spark_status"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -15652,18 +15619,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             return this->cpp_uniffi_breez_sdk_spark_fn_func_init_logging(
                 rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_func_new_connection_manager"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_func_new_connection_manager"),
-          1,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_fn_func_new_connection_manager(
-                    rt, thisVal, args, count);
-          });
   props["ubrn_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -15676,17 +15631,16 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_func_new_ssp_connection_manager"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_func_new_shared_sdk_context"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(
-              rt,
-              "ubrn_uniffi_breez_sdk_spark_fn_func_new_ssp_connection_manager"),
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_func_new_shared_sdk_context"),
           1,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_fn_func_new_ssp_connection_manager(
+                ->cpp_uniffi_breez_sdk_spark_fn_func_new_shared_sdk_context(
                     rt, thisVal, args, count);
           });
   props["ubrn_ffi_breez_sdk_spark_rust_future_poll_u8"] =
@@ -16310,6 +16264,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_func_default_external_signer(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_func_default_server_config"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                        "func_default_server_config"),
+          0,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_checksum_func_default_server_config(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_checksum_func_get_spark_status"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -16333,18 +16299,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             return this->cpp_uniffi_breez_sdk_spark_checksum_func_init_logging(
                 rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_func_new_connection_manager"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                        "func_new_connection_manager"),
-          0,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_checksum_func_new_connection_manager(
-                    rt, thisVal, args, count);
-          });
   props["ubrn_uniffi_breez_sdk_spark_checksum_func_new_rest_chain_service"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -16357,18 +16311,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_func_new_rest_chain_service(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_func_new_ssp_connection_"
-        "manager"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_func_"
-                                    "new_ssp_connection_manager"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_func_new_ssp_connection_manager(
-                rt, thisVal, args, count);
-      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_func_new_shared_sdk_context"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                        "func_new_shared_sdk_context"),
+          0,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_checksum_func_new_shared_sdk_context(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_"
         "address_utxos"] = jsi::Function::createFromHostFunction(
       rt,
@@ -16846,6 +16800,19 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_deposit(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_pending_"
+        "conversions"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "breezsdk_refund_pending_conversions"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_pending_conversions(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_register_"
         "lightning_address"] = jsi::Function::createFromHostFunction(
       rt,
@@ -17390,19 +17357,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_chain_service(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_"
-        "connection_manager"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "sdkbuilder_with_connection_manager"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_connection_manager(
-                rt, thisVal, args, count);
-      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_default_"
         "storage"] = jsi::Function::createFromHostFunction(
       rt,
@@ -17476,29 +17430,16 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_session_"
-        "manager"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_shared_"
+        "context"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_sdkbuilder_with_session_manager"),
+                                    "method_sdkbuilder_with_shared_context"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_session_manager(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_ssp_"
-        "connection_manager"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "sdkbuilder_with_ssp_connection_manager"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_ssp_connection_manager(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_shared_context(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage"] =
@@ -18034,18 +17975,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_internal_fn_method_breezsdk_ffi__bless_pointer(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_internal_fn_method_connectionmanager_ffi__bless_pointer"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_internal_fn_method_"
-                                        "connectionmanager_ffi__bless_pointer"),
-          1,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_internal_fn_method_connectionmanager_ffi__bless_pointer(
-                    rt, thisVal, args, count);
-          });
   props["ubrn_uniffi_internal_fn_method_externalsigner_ffi__bless_pointer"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -18133,6 +18062,19 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_internal_fn_method_sdkbuilder_ffi__bless_pointer(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_internal_fn_method_sdkcontext_ffi__bless_pointer"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_internal_fn_method_sdkcontext_ffi__bless_pointer"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_internal_fn_method_sdkcontext_ffi__bless_pointer(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_internal_fn_method_sessionmanager_ffi__bless_pointer"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -18145,18 +18087,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_internal_fn_method_sessionmanager_ffi__bless_pointer(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_internal_fn_method_sspconnectionmanager_ffi__bless_"
-        "pointer"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_internal_fn_method_"
-                                    "sspconnectionmanager_ffi__bless_pointer"),
-      1,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_internal_fn_method_sspconnectionmanager_ffi__bless_pointer(
-                rt, thisVal, args, count);
-      });
   props["ubrn_uniffi_internal_fn_method_storage_ffi__bless_pointer"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -18459,22 +18389,6 @@ NativeBreezSdkSpark::cpp_uniffi_internal_fn_method_breezsdk_ffi__bless_pointer(
   return jsi::Value(rt, obj);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_internal_fn_method_connectionmanager_ffi__bless_pointer(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto pointer =
-      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[0]);
-  auto static destructor = [](uint64_t p) {
-    auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
-    RustCallStatus status = {0};
-    uniffi_breez_sdk_spark_fn_free_connectionmanager(pointer, &status);
-  };
-  auto ptrObj =
-      std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
-  auto obj = jsi::Object::createFromHostObject(rt, ptrObj);
-  return jsi::Value(rt, obj);
-}
-jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_internal_fn_method_externalsigner_ffi__bless_pointer(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -18587,6 +18501,22 @@ jsi::Value NativeBreezSdkSpark::
   return jsi::Value(rt, obj);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_internal_fn_method_sdkcontext_ffi__bless_pointer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto pointer =
+      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[0]);
+  auto static destructor = [](uint64_t p) {
+    auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
+    RustCallStatus status = {0};
+    uniffi_breez_sdk_spark_fn_free_sdkcontext(pointer, &status);
+  };
+  auto ptrObj =
+      std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
+  auto obj = jsi::Object::createFromHostObject(rt, ptrObj);
+  return jsi::Value(rt, obj);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_internal_fn_method_sessionmanager_ffi__bless_pointer(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -18596,22 +18526,6 @@ jsi::Value NativeBreezSdkSpark::
     auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
     RustCallStatus status = {0};
     uniffi_breez_sdk_spark_fn_free_sessionmanager(pointer, &status);
-  };
-  auto ptrObj =
-      std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
-  auto obj = jsi::Object::createFromHostObject(rt, ptrObj);
-  return jsi::Value(rt, obj);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_internal_fn_method_sspconnectionmanager_ffi__bless_pointer(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto pointer =
-      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[0]);
-  auto static destructor = [](uint64_t p) {
-    auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
-    RustCallStatus status = {0};
-    uniffi_breez_sdk_spark_fn_free_sspconnectionmanager(pointer, &status);
   };
   auto ptrObj =
       std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
@@ -19180,6 +19094,17 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_refund_pending_conversions(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_breezsdk_refund_pending_conversions(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_register_lightning_address(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -19298,32 +19223,6 @@ jsi::Value NativeBreezSdkSpark::
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
-}
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_connectionmanager(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  auto value = uniffi_breez_sdk_spark_fn_clone_connectionmanager(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
-
-  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
-}
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_connectionmanager(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  uniffi_breez_sdk_spark_fn_free_connectionmanager(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
-
-  return jsi::Value::undefined();
 }
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_externalsigner(
@@ -20043,18 +19942,6 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_connection_manager(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_connection_manager(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[1]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_default_storage(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -20130,24 +20017,12 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_session_manager(
+    cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_shared_context(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_session_manager(
+  auto value = uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_shared_context(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[1]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_ssp_connection_manager(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_ssp_connection_manager(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[1]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
@@ -20162,6 +20037,30 @@ jsi::Value NativeBreezSdkSpark::
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
+}
+jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_sdkcontext(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_spark_fn_clone_sdkcontext(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_sdkcontext(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  uniffi_breez_sdk_spark_fn_free_sdkcontext(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return jsi::Value::undefined();
 }
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_sessionmanager(
@@ -20229,32 +20128,6 @@ jsi::Value NativeBreezSdkSpark::
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
-}
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_sspconnectionmanager(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  auto value = uniffi_breez_sdk_spark_fn_clone_sspconnectionmanager(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
-
-  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
-}
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_sspconnectionmanager(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  uniffi_breez_sdk_spark_fn_free_sspconnectionmanager(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
-
-  return jsi::Value::undefined();
 }
 jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_storage(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -20821,6 +20694,22 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_default_external_signer(
   return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
 }
 jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_default_server_config(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_spark_fn_func_default_server_config(
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[0]),
+      &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(rt, callInvoker,
+                                                             value);
+}
+jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_get_spark_status(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
@@ -20848,21 +20737,6 @@ jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_init_logging(
   return jsi::Value::undefined();
 }
 jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_new_connection_manager(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  auto value = uniffi_breez_sdk_spark_fn_func_new_connection_manager(
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[0]),
-      &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
-
-  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
-}
-jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
@@ -20879,20 +20753,16 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_func_new_ssp_connection_manager(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  auto value = uniffi_breez_sdk_spark_fn_func_new_ssp_connection_manager(
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_new_shared_sdk_context(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_func_new_shared_sdk_context(
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[0]),
-      &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
+                                                            args[0]));
 
-  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
 }
 jsi::Value NativeBreezSdkSpark::cpp_ffi_breez_sdk_spark_rust_future_poll_u8(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -21542,6 +21412,14 @@ jsi::Value NativeBreezSdkSpark::
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_func_default_server_config(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_checksum_func_default_server_config();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_checksum_func_get_spark_status(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -21559,14 +21437,6 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_checksum_func_init_logging(
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_func_new_connection_manager(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_checksum_func_new_connection_manager();
-
-  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
-}
-jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_checksum_func_new_rest_chain_service(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -21575,11 +21445,10 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_func_new_ssp_connection_manager(
+    cpp_uniffi_breez_sdk_spark_checksum_func_new_shared_sdk_context(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_checksum_func_new_ssp_connection_manager();
+  auto value = uniffi_breez_sdk_spark_checksum_func_new_shared_sdk_context();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -21915,6 +21784,15 @@ jsi::Value NativeBreezSdkSpark::
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value = uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_deposit();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_pending_conversions(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_pending_conversions();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -22304,15 +22182,6 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_connection_manager(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_connection_manager();
-
-  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
-}
-jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_default_storage(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -22366,20 +22235,11 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_session_manager(
+    cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_shared_context(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_session_manager();
-
-  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_ssp_connection_manager(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_ssp_connection_manager();
+      uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_shared_context();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }

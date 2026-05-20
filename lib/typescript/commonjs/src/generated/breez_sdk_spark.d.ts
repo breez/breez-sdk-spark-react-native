@@ -50,6 +50,42 @@ export declare function defaultConfig(network: Network): Config;
  */
 export declare function defaultExternalSigner(mnemonic: string, passphrase: string | undefined, network: Network, keySetConfig: KeySetConfig | undefined): ExternalSigner;
 /**
+ * Builds a [`Config`] suitable for multi-tenant server-mode deployments.
+ *
+ * This preset returns the same configuration as [`default_config`] with
+ * [`background_tasks_enabled`](Config::background_tasks_enabled) set to
+ * `false`. In server mode, the SDK is treated as a library: the host
+ * orchestrates sync, claiming, and event delivery (typically via webhooks)
+ * explicitly, so an ephemeral SDK instance stays cheap and predictable.
+ *
+ * Config fields whose background services are gated off are reset to their
+ * inactive shape: `real_time_sync_server_url` is set to `None`, and both
+ * `leaf_optimization_config.auto_enabled` and
+ * `token_optimization_config.auto_enabled` are set to `false`. The SDK
+ * rejects builds where `background_tasks_enabled` is `false` and any of
+ * those fields is left in its active shape, so flip the flag via this
+ * helper rather than by hand.
+ *
+ * Explicit operations (`sync_wallet`, `claim_deposit`,
+ * `list_unclaimed_deposits`, `refund_deposit`,
+ * `refund_pending_conversions`, etc.) continue to work and are the intended
+ * entry points in this mode.
+ *
+ * Stable Balance is not supported in this mode because its conversion worker
+ * is a background service.
+ *
+ * One-time setup that the SDK normally applies automatically — notably
+ * `private_enabled_default` — is NOT applied in this mode. Drive setup
+ * explicitly via `update_user_settings` (and any other relevant APIs) so
+ * ephemeral per-request SDK instances incur no implicit setup overhead.
+ *
+ * `get_info` reads balance directly from the spark wallet in this mode
+ * rather than from the background-maintained storage cache, so balance
+ * reflects the latest local sync and `ensure_synced=true` is rejected with
+ * an invalid-input error
+ */
+export declare function defaultServerConfig(network: Network): Config;
+/**
  * Fetches the current status of Spark network services relevant to the SDK.
  *
  * This function queries the Spark status API and returns the worst status
@@ -59,15 +95,6 @@ export declare function getSparkStatus(asyncOpts_?: {
     signal: AbortSignal;
 }): Promise<SparkStatus>;
 export declare function initLogging(logDir: string | undefined, appLogger: Logger | undefined, logFilter: string | undefined): void;
-/**
- * Creates a new shareable [`ConnectionManager`].
- *
- * `connections_per_operator` controls per-operator connection pooling:
- * `None` keeps a single connection per operator (suitable for almost every
- * deployment); `Some(n)` opens `n` connections per operator and balances
- * requests across them.
- */
-export declare function newConnectionManager(connectionsPerOperator: /*u32*/ number | undefined): ConnectionManagerInterface;
 /**
  * Constructs a shareable REST-based [`BitcoinChainService`].
  *
@@ -83,14 +110,16 @@ export declare function newRestChainService(url: string, network: Network, apiTy
     signal: AbortSignal;
 }): Promise<BitcoinChainService>;
 /**
- * Construct a new shared SSP connection manager.
+ * Constructs an [`SdkContext`] from a `SdkContextConfig`.
  *
- * Pass the returned `Arc<SspConnectionManager>` to
- * [`SdkBuilder::with_ssp_connection_manager`](crate::SdkBuilder::with_ssp_connection_manager)
- * when building each SDK instance that should share the underlying HTTP
- * connection pool.
+ * The returned `Arc` is cheap to clone and can back many SDK instances.
+ * `SdkContextConfig::new(network)` yields an in-memory, single-tenant setup;
+ * supply a DB config to back the SDKs with a shared `PostgreSQL` or `MySQL`
+ * pool.
  */
-export declare function newSspConnectionManager(userAgent: string | undefined): SspConnectionManagerInterface;
+export declare function newSharedSdkContext(config: SdkContextConfig, asyncOpts_?: {
+    signal: AbortSignal;
+}): Promise<SdkContextInterface>;
 /**
  * Trait for event listeners
  */
@@ -794,8 +823,15 @@ export type Config = {
     /**
      * Whether the Spark private mode is enabled by default.
      *
-     * If set to true, the Spark private mode will be enabled on the first initialization of the SDK.
-     * If set to false, no changes will be made to the Spark private mode.
+     * If set to true, the Spark private mode will be enabled on the first
+     * initialization of the SDK. If set to false, no changes will be made
+     * to the Spark private mode.
+     *
+     * This default is only auto-applied when `background_tasks_enabled` is
+     * `true`. When `background_tasks_enabled` is `false`, the SDK does not
+     * touch the Spark private mode on startup; call `update_user_settings`
+     * with `spark_private_mode_enabled` set as needed on a one-time setup
+     * pass.
      */
     privateEnabledDefault: boolean;
     /**
@@ -805,7 +841,16 @@ export type Config = {
      * Fewer, bigger leaves allow for more funds to be exited unilaterally.
      * More leaves allow payments to be made without needing a swap, reducing payment latency.
      */
-    optimizationConfig: OptimizationConfig;
+    leafOptimizationConfig: LeafOptimizationConfig;
+    /**
+     * Configuration for token-output optimization.
+     *
+     * Token-output optimization controls automatic consolidation of a token's
+     * available outputs. Keeping the output set small reduces transaction size,
+     * while keeping enough distinct outputs preserves concurrency for parallel
+     * sends.
+     */
+    tokenOptimizationConfig: TokenOptimizationConfig;
     /**
      * Configuration for automatic conversion of Bitcoin to stable tokens.
      *
@@ -827,6 +872,33 @@ export type Config = {
      * deployments (e.g. dev/staging environments).
      */
     sparkConfig: SparkConfig | undefined;
+    /**
+     * Master switch for per-instance background services.
+     *
+     * When `true` (default), the SDK runs its standard background work:
+     * periodic sync, lightning-address recovery, private-mode initialization,
+     * the leaf and token-output optimizers, the Spark server-event
+     * subscription, and the real-time sync client (when
+     * `real_time_sync_server_url` is set).
+     *
+     * When `false`, **no background service is started**, regardless of any
+     * other setting on this config. This is intended for multi-tenant server
+     * deployments where the host application orchestrates sync and claims
+     * explicitly and receives events via webhooks. Use
+     * `default_server_config` to get this preset.
+     *
+     * Explicit operations (`sync_wallet`, `claim_deposit`,
+     * `list_unclaimed_deposits`, `refund_deposit`,
+     * `refund_pending_conversions`, leaf/token optimization, etc.) work
+     * regardless of this flag.
+     *
+     * When `false`, the SDK rejects builds where fields whose backing
+     * service is gated off are still in their active shape:
+     * `stable_balance_config` must be `None`, `real_time_sync_server_url`
+     * must be `None`, and `optimization_config.auto_enabled` must be `false`.
+     * `default_server_config` already sets these compatible values.
+     */
+    backgroundTasksEnabled: boolean;
 };
 /**
  * Generated factory for {@link Config} record objects.
@@ -1880,6 +1952,14 @@ export declare const FreezeIssuerTokenResponse: Readonly<{
  * Request to get the balance of the wallet
  */
 export type GetInfoRequest = {
+    /**
+     * When `Some(true)`, and `background_tasks_enabled` is `true`, the call
+     * waits for the initial Full sync to complete before returning.
+     *
+     * When `background_tasks_enabled` is `false`, setting this to `Some(true)`
+     * is rejected with an invalid-input error. There is no background sync to
+     * wait on; call `sync_wallet` explicitly first if you need fresh state.
+     */
     ensureSynced: boolean | undefined;
 };
 /**
@@ -2185,6 +2265,53 @@ export declare const KeySetConfig: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<KeySetConfig>;
+}>;
+/**
+ * Configuration for leaf optimization.
+ */
+export type LeafOptimizationConfig = {
+    /**
+     * Whether automatic leaf optimization is enabled.
+     *
+     * If set to true, the SDK will automatically optimize the leaf set when it changes.
+     * Otherwise, the manual optimization API must be used to optimize the leaf set.
+     *
+     * Default value is true.
+     */
+    autoEnabled: boolean;
+    /**
+     * The desired multiplicity for the leaf set.
+     *
+     * Setting this to 0 will optimize for maximizing unilateral exit.
+     * Higher values will optimize for minimizing transfer swaps, with higher values
+     * being more aggressive and allowing better TPS rates.
+     *
+     * For end-user wallets, values of 1-5 are recommended. Values above 5 are
+     * intended for high-throughput server environments and are not recommended
+     * for end-user wallets due to significantly higher unilateral exit costs.
+     *
+     * Default value is 1.
+     */
+    multiplicity: number;
+};
+/**
+ * Generated factory for {@link LeafOptimizationConfig} record objects.
+ */
+export declare const LeafOptimizationConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link LeafOptimizationConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<LeafOptimizationConfig> & Required<Omit<LeafOptimizationConfig, never>>) => LeafOptimizationConfig;
+    /**
+     * Create a frozen instance of {@link LeafOptimizationConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<LeafOptimizationConfig> & Required<Omit<LeafOptimizationConfig, never>>) => LeafOptimizationConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<LeafOptimizationConfig>;
 }>;
 export type LightningAddressDetails = {
     address: string;
@@ -2998,50 +3125,6 @@ export declare const NostrRelayConfig: Readonly<{
      */
     defaults: () => Partial<NostrRelayConfig>;
 }>;
-export type OptimizationConfig = {
-    /**
-     * Whether automatic leaf optimization is enabled.
-     *
-     * If set to true, the SDK will automatically optimize the leaf set when it changes.
-     * Otherwise, the manual optimization API must be used to optimize the leaf set.
-     *
-     * Default value is true.
-     */
-    autoEnabled: boolean;
-    /**
-     * The desired multiplicity for the leaf set.
-     *
-     * Setting this to 0 will optimize for maximizing unilateral exit.
-     * Higher values will optimize for minimizing transfer swaps, with higher values
-     * being more aggressive and allowing better TPS rates.
-     *
-     * For end-user wallets, values of 1-5 are recommended. Values above 5 are
-     * intended for high-throughput server environments and are not recommended
-     * for end-user wallets due to significantly higher unilateral exit costs.
-     *
-     * Default value is 1.
-     */
-    multiplicity: number;
-};
-/**
- * Generated factory for {@link OptimizationConfig} record objects.
- */
-export declare const OptimizationConfig: Readonly<{
-    /**
-     * Create a frozen instance of {@link OptimizationConfig}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create: (partial: Partial<OptimizationConfig> & Required<Omit<OptimizationConfig, never>>) => OptimizationConfig;
-    /**
-     * Create a frozen instance of {@link OptimizationConfig}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: (partial: Partial<OptimizationConfig> & Required<Omit<OptimizationConfig, never>>) => OptimizationConfig;
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Partial<OptimizationConfig>;
-}>;
 export type OptimizationProgress = {
     isRunning: boolean;
     currentRound: number;
@@ -3812,6 +3895,50 @@ export declare const SchnorrSignatureBytes: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<SchnorrSignatureBytes>;
+}>;
+/**
+ * Settings for [`new_shared_sdk_context`]. All fields are optional; the defaults
+ * match the single-SDK happy path.
+ */
+export type SdkContextConfig = {
+    /**
+     * Network the shared resources target. Defaults to [`Network::Mainnet`].
+     * Used to gate the partner JWT header provider — only constructed on
+     * Mainnet, since Regtest has no JWT-issuing Breez endpoint.
+     */
+    network: Network;
+    /**
+     * Breez API key. When set together with `network == Mainnet`, the
+     * context constructs a shared partner JWT header provider that all
+     * SDKs built from this context will attach to their SO requests.
+     */
+    apiKey: string | undefined;
+    /**
+     * Number of gRPC connections per Spark operator. `None` (or `Some(1)`)
+     * keeps a single connection per operator (the right choice for most
+     * deployments); `Some(n)` opens `n` channels per operator and balances
+     * requests across them.
+     */
+    connectionsPerOperator: /*u32*/ number | undefined;
+};
+/**
+ * Generated factory for {@link SdkContextConfig} record objects.
+ */
+export declare const SdkContextConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link SdkContextConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SdkContextConfig> & Required<Omit<SdkContextConfig, "apiKey" | "connectionsPerOperator">>) => SdkContextConfig;
+    /**
+     * Create a frozen instance of {@link SdkContextConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SdkContextConfig> & Required<Omit<SdkContextConfig, "apiKey" | "connectionsPerOperator">>) => SdkContextConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SdkContextConfig>;
 }>;
 /**
  * FFI-safe representation of a private key (32 bytes)
@@ -4665,6 +4792,66 @@ export declare const TokenMetadata: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<TokenMetadata>;
+}>;
+/**
+ * Configuration for token-output optimization.
+ */
+export type TokenOptimizationConfig = {
+    /**
+     * Whether automatic token-output consolidation is enabled.
+     *
+     * If set to true, the SDK will periodically consolidate a token's outputs
+     * once their count exceeds [`Self::min_outputs_threshold`]. Otherwise, no
+     * automatic consolidation is performed.
+     *
+     * Default value is true.
+     */
+    autoEnabled: boolean;
+    /**
+     * Number of token outputs to produce when token-output auto-consolidation
+     * fires.
+     *
+     * Instead of collapsing a token's outputs into a single output (which
+     * serializes subsequent payments), the SDK splits the consolidated balance
+     * across this many outputs of roughly equal value. Higher values preserve
+     * concurrency for parallel sends at the cost of a slightly larger output
+     * set.
+     *
+     * Must be >= 1 and strictly less than [`Self::min_outputs_threshold`].
+     *
+     * Default value is 5.
+     */
+    targetOutputCount: number;
+    /**
+     * Output count that triggers per-token auto-consolidation.
+     *
+     * Auto-consolidation triggers for a token when its available output count
+     * strictly exceeds this threshold.
+     *
+     * Must be greater than 1.
+     *
+     * Default value is 50.
+     */
+    minOutputsThreshold: number;
+};
+/**
+ * Generated factory for {@link TokenOptimizationConfig} record objects.
+ */
+export declare const TokenOptimizationConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link TokenOptimizationConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<TokenOptimizationConfig> & Required<Omit<TokenOptimizationConfig, never>>) => TokenOptimizationConfig;
+    /**
+     * Create a frozen instance of {@link TokenOptimizationConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<TokenOptimizationConfig> & Required<Omit<TokenOptimizationConfig, never>>) => TokenOptimizationConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<TokenOptimizationConfig>;
 }>;
 export type TxStatus = {
     confirmed: boolean;
@@ -13911,6 +14098,20 @@ export interface BreezSdkInterface {
     refundDeposit(request: RefundDepositRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<RefundDepositResponse>;
+    /**
+     * Runs one pass of the pending-conversion refunder.
+     *
+     * Iterates over payments whose conversions failed and have a refund
+     * pending, then attempts to refund each one. This is the same logic the
+     * SDK runs internally on a periodic schedule when
+     * `background_tasks_enabled` is `true`. When background tasks are
+     * disabled the periodic refunder does not run, and this method is the
+     * explicit entry point for driving the pass; when background tasks are
+     * enabled, it can be called to force an immediate refund pass.
+     */
+    refundPendingConversions(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     registerLightningAddress(request: RegisterLightningAddressRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LightningAddressInfo>;
@@ -14282,6 +14483,20 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     refundDeposit(request: RefundDepositRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<RefundDepositResponse>;
+    /**
+     * Runs one pass of the pending-conversion refunder.
+     *
+     * Iterates over payments whose conversions failed and have a refund
+     * pending, then attempts to refund each one. This is the same logic the
+     * SDK runs internally on a periodic schedule when
+     * `background_tasks_enabled` is `true`. When background tasks are
+     * disabled the periodic refunder does not run, and this method is the
+     * explicit entry point for driving the pass; when background tasks are
+     * enabled, it can be called to force an immediate refund pass.
+     */
+    refundPendingConversions(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     registerLightningAddress(request: RegisterLightningAddressRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LightningAddressInfo>;
@@ -14384,45 +14599,6 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
      */
     uniffiDestroy(): void;
     static instanceOf(obj: any): obj is BreezSdk;
-}
-/**
- * A shareable manager for gRPC connections to the Spark operators.
- *
- * Construct one via [`new_connection_manager`] and pass the same `Arc` to
- * multiple [`SdkBuilder`](crate::SdkBuilder)s via
- * [`SdkBuilder::with_connection_manager`](crate::SdkBuilder::with_connection_manager).
- * Connections close when the last `Arc<ConnectionManager>` is dropped;
- * [`BreezSdk::disconnect`](crate::BreezSdk::disconnect) does not affect them.
- *
- * All SDK instances sharing a `ConnectionManager` must be configured for the
- * same network and operator pool. The TLS settings and user agent of the
- * first SDK to connect to a given operator are reused for everyone afterwards.
- */
-export interface ConnectionManagerInterface {
-}
-/**
- * A shareable manager for gRPC connections to the Spark operators.
- *
- * Construct one via [`new_connection_manager`] and pass the same `Arc` to
- * multiple [`SdkBuilder`](crate::SdkBuilder)s via
- * [`SdkBuilder::with_connection_manager`](crate::SdkBuilder::with_connection_manager).
- * Connections close when the last `Arc<ConnectionManager>` is dropped;
- * [`BreezSdk::disconnect`](crate::BreezSdk::disconnect) does not affect them.
- *
- * All SDK instances sharing a `ConnectionManager` must be configured for the
- * same network and operator pool. The TLS settings and user agent of the
- * first SDK to connect to a given operator are reused for everyone afterwards.
- */
-export declare class ConnectionManager extends UniffiAbstractObject implements ConnectionManagerInterface {
-    readonly [uniffiTypeNameSymbol] = "ConnectionManager";
-    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
-    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
-    private constructor();
-    /**
-     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
-     */
-    uniffiDestroy(): void;
-    static instanceOf(obj: any): obj is ConnectionManager;
 }
 /**
  * External signer trait that can be implemented by users and passed to the SDK.
@@ -15422,14 +15598,6 @@ export interface SdkBuilderInterface {
         signal: AbortSignal;
     }): Promise<void>;
     /**
-     * Sets a shared connection manager to be reused across SDK instances.
-     * Arguments:
-     * - `connection_manager`: The shared connection manager.
-     */
-    withConnectionManager(connectionManager: ConnectionManagerInterface, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
      * Sets the root storage directory to initialize the default storage with.
      * This initializes both storage and real-time sync storage with the
      * default implementations.
@@ -15477,21 +15645,14 @@ export interface SdkBuilderInterface {
         signal: AbortSignal;
     }): Promise<void>;
     /**
-     * Sets a custom session manager used to persist authentication sessions.
+     * Threads a shared [`SdkContext`](crate::SdkContext) into the builder.
      *
-     * Provide a shared, persistent implementation (e.g. backed by `PostgreSQL`
-     * or Redis) to let multiple SDK instances share authentication state and
-     * bootstrap quickly. If not set, an in-memory session manager is used.
+     * Construct the context once via
+     * [`new_shared_sdk_context`](crate::new_shared_sdk_context) and pass the
+     * same `Arc` to every `SdkBuilder` whose SDKs should share its resources
+     * (operator gRPC channels, SSP HTTP client, database pool).
      */
-    withSessionManager(sessionManager: SessionManager, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
-     * Sets a shared SSP connection manager to be reused across SDK instances.
-     * Arguments:
-     * - `manager`: The shared SSP connection manager.
-     */
-    withSspConnectionManager(manager: SspConnectionManagerInterface, asyncOpts_?: {
+    withSharedContext(context: SdkContextInterface, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -15532,14 +15693,6 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
         signal: AbortSignal;
     }): Promise<void>;
     /**
-     * Sets a shared connection manager to be reused across SDK instances.
-     * Arguments:
-     * - `connection_manager`: The shared connection manager.
-     */
-    withConnectionManager(connectionManager: ConnectionManagerInterface, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
      * Sets the root storage directory to initialize the default storage with.
      * This initializes both storage and real-time sync storage with the
      * default implementations.
@@ -15587,21 +15740,14 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
         signal: AbortSignal;
     }): Promise<void>;
     /**
-     * Sets a custom session manager used to persist authentication sessions.
+     * Threads a shared [`SdkContext`](crate::SdkContext) into the builder.
      *
-     * Provide a shared, persistent implementation (e.g. backed by `PostgreSQL`
-     * or Redis) to let multiple SDK instances share authentication state and
-     * bootstrap quickly. If not set, an in-memory session manager is used.
+     * Construct the context once via
+     * [`new_shared_sdk_context`](crate::new_shared_sdk_context) and pass the
+     * same `Arc` to every `SdkBuilder` whose SDKs should share its resources
+     * (operator gRPC channels, SSP HTTP client, database pool).
      */
-    withSessionManager(sessionManager: SessionManager, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
-     * Sets a shared SSP connection manager to be reused across SDK instances.
-     * Arguments:
-     * - `manager`: The shared SSP connection manager.
-     */
-    withSspConnectionManager(manager: SspConnectionManagerInterface, asyncOpts_?: {
+    withSharedContext(context: SdkContextInterface, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -15617,6 +15763,49 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
      */
     uniffiDestroy(): void;
     static instanceOf(obj: any): obj is SdkBuilder;
+}
+/**
+ * Process-shared resources that can back many `BreezSdk` instances.
+ *
+ * Construct one with [`new_shared_sdk_context`] and pass the same `Arc` to every
+ * [`SdkBuilder`](crate::SdkBuilder) whose SDKs should share those resources
+ * (a single HTTP client across SSP / chain / LNURL / JWT / etc., a gRPC
+ * channel pool to the Spark operators, the Breez backend gRPC client, a
+ * database connection pool, …). Useful for multi-tenant servers that load
+ * many wallets in one process.
+ *
+ * The struct is intentionally opaque — all fields are crate-private. There
+ * is no way to inject pre-built sub-components: the factory builds them
+ * from settings so callers don't need to know about session managers,
+ * connection-manager wiring, or pool plumbing.
+ */
+export interface SdkContextInterface {
+}
+/**
+ * Process-shared resources that can back many `BreezSdk` instances.
+ *
+ * Construct one with [`new_shared_sdk_context`] and pass the same `Arc` to every
+ * [`SdkBuilder`](crate::SdkBuilder) whose SDKs should share those resources
+ * (a single HTTP client across SSP / chain / LNURL / JWT / etc., a gRPC
+ * channel pool to the Spark operators, the Breez backend gRPC client, a
+ * database connection pool, …). Useful for multi-tenant servers that load
+ * many wallets in one process.
+ *
+ * The struct is intentionally opaque — all fields are crate-private. There
+ * is no way to inject pre-built sub-components: the factory builds them
+ * from settings so callers don't need to know about session managers,
+ * connection-manager wiring, or pool plumbing.
+ */
+export declare class SdkContext extends UniffiAbstractObject implements SdkContextInterface {
+    readonly [uniffiTypeNameSymbol] = "SdkContext";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is SdkContext;
 }
 /**
  * Persistent storage for authentication sessions, keyed by the service's
@@ -15654,53 +15843,6 @@ export declare class SessionManagerImpl extends UniffiAbstractObject implements 
      */
     uniffiDestroy(): void;
     static instanceOf(obj: any): obj is SessionManagerImpl;
-}
-/**
- * A shared HTTP transport for SSP GraphQL traffic.
- *
- * All SDK instances that are built with the same `SspConnectionManager` send
- * SSP requests over the same pooled `reqwest::Client`. This means each
- * process opens at most one TCP+TLS+HTTP/2 connection to the SSP regardless
- * of how many wallets are loaded — useful for multi-tenant servers running
- * many SDK instances.
- *
- * # Caveats
- *
- * - The user-agent of the first SDK to construct this manager is reused for
- * all subsequent instances. This is rarely a problem since SDK instances
- * in one process typically share a build version.
- * - Connections close when the last `Arc<SspConnectionManager>` is dropped.
- * `BreezSdk::disconnect` does not close them.
- */
-export interface SspConnectionManagerInterface {
-}
-/**
- * A shared HTTP transport for SSP GraphQL traffic.
- *
- * All SDK instances that are built with the same `SspConnectionManager` send
- * SSP requests over the same pooled `reqwest::Client`. This means each
- * process opens at most one TCP+TLS+HTTP/2 connection to the SSP regardless
- * of how many wallets are loaded — useful for multi-tenant servers running
- * many SDK instances.
- *
- * # Caveats
- *
- * - The user-agent of the first SDK to construct this manager is reused for
- * all subsequent instances. This is rarely a problem since SDK instances
- * in one process typically share a build version.
- * - Connections close when the last `Arc<SspConnectionManager>` is dropped.
- * `BreezSdk::disconnect` does not close them.
- */
-export declare class SspConnectionManager extends UniffiAbstractObject implements SspConnectionManagerInterface {
-    readonly [uniffiTypeNameSymbol] = "SspConnectionManager";
-    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
-    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
-    private constructor();
-    /**
-     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
-     */
-    uniffiDestroy(): void;
-    static instanceOf(obj: any): obj is SspConnectionManager;
 }
 /**
  * Trait for persistent storage
@@ -16658,7 +16800,6 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ConnectWithSignerRequest;
             lower(value: ConnectWithSignerRequest): UniffiByteArray;
         };
-        FfiConverterTypeConnectionManager: FfiConverterObject<ConnectionManagerInterface>;
         FfiConverterTypeContact: {
             read(from: RustBuffer): Contact;
             write(value: Contact, into: RustBuffer): void;
@@ -17018,6 +17159,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): KeySetType;
             lower(value: KeySetType): UniffiByteArray;
         };
+        FfiConverterTypeLeafOptimizationConfig: {
+            read(from: RustBuffer): LeafOptimizationConfig;
+            write(value: LeafOptimizationConfig, into: RustBuffer): void;
+            allocationSize(value: LeafOptimizationConfig): number;
+            lift(value: UniffiByteArray): LeafOptimizationConfig;
+            lower(value: LeafOptimizationConfig): UniffiByteArray;
+        };
         FfiConverterTypeLightningAddressDetails: {
             read(from: RustBuffer): LightningAddressDetails;
             write(value: LightningAddressDetails, into: RustBuffer): void;
@@ -17241,13 +17389,6 @@ declare const _default: Readonly<{
             allocationSize(value: OnchainConfirmationSpeed): number;
             lift(value: UniffiByteArray): OnchainConfirmationSpeed;
             lower(value: OnchainConfirmationSpeed): UniffiByteArray;
-        };
-        FfiConverterTypeOptimizationConfig: {
-            read(from: RustBuffer): OptimizationConfig;
-            write(value: OptimizationConfig, into: RustBuffer): void;
-            allocationSize(value: OptimizationConfig): number;
-            lift(value: UniffiByteArray): OptimizationConfig;
-            lower(value: OptimizationConfig): UniffiByteArray;
         };
         FfiConverterTypeOptimizationEvent: {
             read(from: RustBuffer): OptimizationEvent;
@@ -17514,6 +17655,14 @@ declare const _default: Readonly<{
             lower(value: SchnorrSignatureBytes): UniffiByteArray;
         };
         FfiConverterTypeSdkBuilder: FfiConverterObject<SdkBuilderInterface>;
+        FfiConverterTypeSdkContext: FfiConverterObject<SdkContextInterface>;
+        FfiConverterTypeSdkContextConfig: {
+            read(from: RustBuffer): SdkContextConfig;
+            write(value: SdkContextConfig, into: RustBuffer): void;
+            allocationSize(value: SdkContextConfig): number;
+            lift(value: UniffiByteArray): SdkContextConfig;
+            lower(value: SdkContextConfig): UniffiByteArray;
+        };
         FfiConverterTypeSdkError: {
             read(from: RustBuffer): SdkError;
             write(value: SdkError, into: RustBuffer): void;
@@ -17718,7 +17867,6 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SparkStatus;
             lower(value: SparkStatus): UniffiByteArray;
         };
-        FfiConverterTypeSspConnectionManager: FfiConverterObject<SspConnectionManagerInterface>;
         FfiConverterTypeStableBalanceActiveLabel: {
             read(from: RustBuffer): StableBalanceActiveLabel;
             write(value: StableBalanceActiveLabel, into: RustBuffer): void;
@@ -17811,6 +17959,13 @@ declare const _default: Readonly<{
             allocationSize(value: TokenMetadata): number;
             lift(value: UniffiByteArray): TokenMetadata;
             lower(value: TokenMetadata): UniffiByteArray;
+        };
+        FfiConverterTypeTokenOptimizationConfig: {
+            read(from: RustBuffer): TokenOptimizationConfig;
+            write(value: TokenOptimizationConfig, into: RustBuffer): void;
+            allocationSize(value: TokenOptimizationConfig): number;
+            lift(value: UniffiByteArray): TokenOptimizationConfig;
+            lower(value: TokenOptimizationConfig): UniffiByteArray;
         };
         FfiConverterTypeTokenTransactionType: {
             read(from: RustBuffer): TokenTransactionType;
