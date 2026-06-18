@@ -127,84 +127,91 @@ typedef void (*UniffiCallbackInterfaceBitcoinChainServiceMethod4)(
     uint64_t uniffi_handle,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod0)(
-    uint64_t uniffi_handle, RustBuffer *uniffi_out_return,
-    RustCallStatus *rust_call_status);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod1)(
+typedef void (*UniffiCallbackInterfaceExternalBreezSignerMethod0)(
     uint64_t uniffi_handle, RustBuffer path,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod2)(
+typedef void (*UniffiCallbackInterfaceExternalBreezSignerMethod1)(
     uint64_t uniffi_handle, RustBuffer message, RustBuffer path,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod3)(
+typedef void (*UniffiCallbackInterfaceExternalBreezSignerMethod2)(
     uint64_t uniffi_handle, RustBuffer message, RustBuffer path,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod4)(
+typedef void (*UniffiCallbackInterfaceExternalBreezSignerMethod3)(
     uint64_t uniffi_handle, RustBuffer message, RustBuffer path,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod5)(
+typedef void (*UniffiCallbackInterfaceExternalBreezSignerMethod4)(
     uint64_t uniffi_handle, RustBuffer message, RustBuffer path,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod6)(
+typedef void (*UniffiCallbackInterfaceExternalBreezSignerMethod5)(
     uint64_t uniffi_handle, RustBuffer hash, RustBuffer path,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod7)(
+typedef void (*UniffiCallbackInterfaceExternalBreezSignerMethod6)(
     uint64_t uniffi_handle, RustBuffer message, RustBuffer path,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod8)(
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod0)(
     uint64_t uniffi_handle,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod9)(
-    uint64_t uniffi_handle, RustBuffer id,
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod1)(
+    uint64_t uniffi_handle, RustBuffer leaf_id,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod10)(
-    uint64_t uniffi_handle,
-    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
-    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod11)(
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod2)(
     uint64_t uniffi_handle, uint32_t index,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod12)(
-    uint64_t uniffi_handle, uint32_t index,
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod3)(
+    uint64_t uniffi_handle, RustBuffer challenge,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod13)(
-    uint64_t uniffi_handle, uint32_t index,
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod4)(
+    uint64_t uniffi_handle, RustBuffer message,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod14)(
-    uint64_t uniffi_handle, RustBuffer signing_key, RustBuffer new_signing_key,
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod5)(
+    uint64_t uniffi_handle, RustBuffer jobs,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod15)(
-    uint64_t uniffi_handle, RustBuffer secret, uint32_t threshold,
-    uint32_t num_shares,
-    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
-    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod16)(
-    uint64_t uniffi_handle, RustBuffer encrypted_secret,
-    RustBuffer receiver_public_key,
-    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
-    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod17)(
-    uint64_t uniffi_handle, RustBuffer secret,
-    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
-    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod18)(
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod6)(
     uint64_t uniffi_handle, RustBuffer request,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceExternalSignerMethod19)(
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod7)(
+    uint64_t uniffi_handle, RustBuffer request,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod8)(
+    uint64_t uniffi_handle, RustBuffer request,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod9)(
+    uint64_t uniffi_handle, RustBuffer request,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod10)(
+    uint64_t uniffi_handle, RustBuffer request,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod11)(
+    uint64_t uniffi_handle, RustBuffer request,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod12)(
+    uint64_t uniffi_handle, RustBuffer request,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod13)(
+    uint64_t uniffi_handle, RustBuffer request,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfaceExternalSparkSignerMethod14)(
     uint64_t uniffi_handle, RustBuffer request,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
@@ -216,17 +223,29 @@ typedef void (*UniffiCallbackInterfaceFiatServiceMethod1)(
     uint64_t uniffi_handle,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfacePasskeyPrfProviderMethod0)(
-    uint64_t uniffi_handle, RustBuffer salt,
-    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
-    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfacePasskeyPrfProviderMethod1)(
-    uint64_t uniffi_handle,
-    UniffiForeignFutureCompleteI8 uniffi_future_callback,
-    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef void (*UniffiCallbackInterfacePaymentObserverMethod0)(
     uint64_t uniffi_handle, RustBuffer payments,
     UniffiForeignFutureCompleteVoid uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfacePaymentObserverMethod1)(
+    uint64_t uniffi_handle, RustBuffer updates,
+    UniffiForeignFutureCompleteVoid uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfacePrfProviderMethod0)(
+    uint64_t uniffi_handle, RustBuffer request,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfacePrfProviderMethod1)(
+    uint64_t uniffi_handle,
+    UniffiForeignFutureCompleteI8 uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfacePrfProviderMethod2)(
+    uint64_t uniffi_handle, RustBuffer exclude_credentials,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfacePrfProviderMethod3)(
+    uint64_t uniffi_handle,
+    UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef void (*UniffiCallbackInterfaceRestClientMethod0)(
     uint64_t uniffi_handle, RustBuffer url, RustBuffer headers,
@@ -240,11 +259,11 @@ typedef void (*UniffiCallbackInterfaceRestClientMethod2)(
     uint64_t uniffi_handle, RustBuffer url, RustBuffer headers, RustBuffer body,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceSessionManagerMethod0)(
+typedef void (*UniffiCallbackInterfaceSessionStoreMethod0)(
     uint64_t uniffi_handle, RustBuffer service_identity_key,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceSessionManagerMethod1)(
+typedef void (*UniffiCallbackInterfaceSessionStoreMethod1)(
     uint64_t uniffi_handle, RustBuffer service_identity_key, RustBuffer session,
     UniffiForeignFutureCompleteVoid uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
@@ -266,7 +285,7 @@ typedef void (*UniffiCallbackInterfaceStorageMethod3)(
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef void (*UniffiCallbackInterfaceStorageMethod4)(
     uint64_t uniffi_handle, RustBuffer payment,
-    UniffiForeignFutureCompleteVoid uniffi_future_callback,
+    UniffiForeignFutureCompleteI8 uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef void (*UniffiCallbackInterfaceStorageMethod5)(
     uint64_t uniffi_handle, RustBuffer payment_id, RustBuffer metadata,
@@ -357,6 +376,10 @@ typedef void (*UniffiCallbackInterfaceStorageMethod26)(
     uint64_t uniffi_handle, RustBuffer record,
     UniffiForeignFutureCompleteVoid uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfaceStorageBackendMethod0)(
+    uint64_t uniffi_handle, RustBuffer network, RustBuffer identity,
+    UniffiForeignFutureCompletePointer uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef struct UniffiVTableCallbackInterfaceEventListener {
   UniffiCallbackInterfaceEventListenerMethod0 on_event;
   UniffiCallbackInterfaceFree uniffi_free;
@@ -373,61 +396,72 @@ typedef struct UniffiVTableCallbackInterfaceBitcoinChainService {
   UniffiCallbackInterfaceBitcoinChainServiceMethod4 recommended_fees;
   UniffiCallbackInterfaceFree uniffi_free;
 } UniffiVTableCallbackInterfaceBitcoinChainService;
-typedef struct UniffiVTableCallbackInterfaceExternalSigner {
-  UniffiCallbackInterfaceExternalSignerMethod0 identity_public_key;
-  UniffiCallbackInterfaceExternalSignerMethod1 derive_public_key;
-  UniffiCallbackInterfaceExternalSignerMethod2 sign_ecdsa;
-  UniffiCallbackInterfaceExternalSignerMethod3 sign_ecdsa_recoverable;
-  UniffiCallbackInterfaceExternalSignerMethod4 encrypt_ecies;
-  UniffiCallbackInterfaceExternalSignerMethod5 decrypt_ecies;
-  UniffiCallbackInterfaceExternalSignerMethod6 sign_hash_schnorr;
-  UniffiCallbackInterfaceExternalSignerMethod7 hmac_sha256;
-  UniffiCallbackInterfaceExternalSignerMethod8
-      generate_random_signing_commitment;
-  UniffiCallbackInterfaceExternalSignerMethod9 get_public_key_for_node;
-  UniffiCallbackInterfaceExternalSignerMethod10 generate_random_secret;
-  UniffiCallbackInterfaceExternalSignerMethod11 static_deposit_secret_encrypted;
-  UniffiCallbackInterfaceExternalSignerMethod12 static_deposit_secret;
-  UniffiCallbackInterfaceExternalSignerMethod13 static_deposit_signing_key;
-  UniffiCallbackInterfaceExternalSignerMethod14 subtract_secrets;
-  UniffiCallbackInterfaceExternalSignerMethod15 split_secret_with_proofs;
-  UniffiCallbackInterfaceExternalSignerMethod16 encrypt_secret_for_receiver;
-  UniffiCallbackInterfaceExternalSignerMethod17 public_key_from_secret;
-  UniffiCallbackInterfaceExternalSignerMethod18 sign_frost;
-  UniffiCallbackInterfaceExternalSignerMethod19 aggregate_frost;
+typedef struct UniffiVTableCallbackInterfaceExternalBreezSigner {
+  UniffiCallbackInterfaceExternalBreezSignerMethod0 derive_public_key;
+  UniffiCallbackInterfaceExternalBreezSignerMethod1 sign_ecdsa;
+  UniffiCallbackInterfaceExternalBreezSignerMethod2 sign_ecdsa_recoverable;
+  UniffiCallbackInterfaceExternalBreezSignerMethod3 encrypt_ecies;
+  UniffiCallbackInterfaceExternalBreezSignerMethod4 decrypt_ecies;
+  UniffiCallbackInterfaceExternalBreezSignerMethod5 sign_hash_schnorr;
+  UniffiCallbackInterfaceExternalBreezSignerMethod6 hmac_sha256;
   UniffiCallbackInterfaceFree uniffi_free;
-} UniffiVTableCallbackInterfaceExternalSigner;
+} UniffiVTableCallbackInterfaceExternalBreezSigner;
+typedef struct UniffiVTableCallbackInterfaceExternalSparkSigner {
+  UniffiCallbackInterfaceExternalSparkSignerMethod0 get_identity_public_key;
+  UniffiCallbackInterfaceExternalSparkSignerMethod1 get_public_key_for_leaf;
+  UniffiCallbackInterfaceExternalSparkSignerMethod2
+      get_static_deposit_public_key;
+  UniffiCallbackInterfaceExternalSparkSignerMethod3
+      sign_authentication_challenge;
+  UniffiCallbackInterfaceExternalSparkSignerMethod4 sign_message;
+  UniffiCallbackInterfaceExternalSparkSignerMethod5 sign_frost;
+  UniffiCallbackInterfaceExternalSparkSignerMethod6 prepare_transfer;
+  UniffiCallbackInterfaceExternalSparkSignerMethod7 prepare_claim;
+  UniffiCallbackInterfaceExternalSparkSignerMethod8 prepare_lightning_receive;
+  UniffiCallbackInterfaceExternalSparkSignerMethod9 prepare_static_deposit;
+  UniffiCallbackInterfaceExternalSparkSignerMethod10
+      start_static_deposit_refund;
+  UniffiCallbackInterfaceExternalSparkSignerMethod11 sign_static_deposit_refund;
+  UniffiCallbackInterfaceExternalSparkSignerMethod12 sign_spark_invoice;
+  UniffiCallbackInterfaceExternalSparkSignerMethod13 prepare_token_transaction;
+  UniffiCallbackInterfaceExternalSparkSignerMethod14
+      prepare_static_deposit_claim;
+  UniffiCallbackInterfaceFree uniffi_free;
+} UniffiVTableCallbackInterfaceExternalSparkSigner;
 typedef struct UniffiVTableCallbackInterfaceFiatService {
   UniffiCallbackInterfaceFiatServiceMethod0 fetch_fiat_currencies;
   UniffiCallbackInterfaceFiatServiceMethod1 fetch_fiat_rates;
   UniffiCallbackInterfaceFree uniffi_free;
 } UniffiVTableCallbackInterfaceFiatService;
-typedef struct UniffiVTableCallbackInterfacePasskeyPrfProvider {
-  UniffiCallbackInterfacePasskeyPrfProviderMethod0 derive_prf_seed;
-  UniffiCallbackInterfacePasskeyPrfProviderMethod1 is_prf_available;
-  UniffiCallbackInterfaceFree uniffi_free;
-} UniffiVTableCallbackInterfacePasskeyPrfProvider;
 typedef struct UniffiVTableCallbackInterfacePaymentObserver {
   UniffiCallbackInterfacePaymentObserverMethod0 before_send;
+  UniffiCallbackInterfacePaymentObserverMethod1 after_send;
   UniffiCallbackInterfaceFree uniffi_free;
 } UniffiVTableCallbackInterfacePaymentObserver;
+typedef struct UniffiVTableCallbackInterfacePrfProvider {
+  UniffiCallbackInterfacePrfProviderMethod0 derive_seeds;
+  UniffiCallbackInterfacePrfProviderMethod1 is_supported;
+  UniffiCallbackInterfacePrfProviderMethod2 create_passkey;
+  UniffiCallbackInterfacePrfProviderMethod3 check_domain_association;
+  UniffiCallbackInterfaceFree uniffi_free;
+} UniffiVTableCallbackInterfacePrfProvider;
 typedef struct UniffiVTableCallbackInterfaceRestClient {
   UniffiCallbackInterfaceRestClientMethod0 get_request;
   UniffiCallbackInterfaceRestClientMethod1 post_request;
   UniffiCallbackInterfaceRestClientMethod2 delete_request;
   UniffiCallbackInterfaceFree uniffi_free;
 } UniffiVTableCallbackInterfaceRestClient;
-typedef struct UniffiVTableCallbackInterfaceSessionManager {
-  UniffiCallbackInterfaceSessionManagerMethod0 get_session;
-  UniffiCallbackInterfaceSessionManagerMethod1 set_session;
+typedef struct UniffiVTableCallbackInterfaceSessionStore {
+  UniffiCallbackInterfaceSessionStoreMethod0 get_session;
+  UniffiCallbackInterfaceSessionStoreMethod1 set_session;
   UniffiCallbackInterfaceFree uniffi_free;
-} UniffiVTableCallbackInterfaceSessionManager;
+} UniffiVTableCallbackInterfaceSessionStore;
 typedef struct UniffiVTableCallbackInterfaceStorage {
   UniffiCallbackInterfaceStorageMethod0 delete_cached_item;
   UniffiCallbackInterfaceStorageMethod1 get_cached_item;
   UniffiCallbackInterfaceStorageMethod2 set_cached_item;
   UniffiCallbackInterfaceStorageMethod3 list_payments;
-  UniffiCallbackInterfaceStorageMethod4 insert_payment;
+  UniffiCallbackInterfaceStorageMethod4 apply_payment_update;
   UniffiCallbackInterfaceStorageMethod5 insert_payment_metadata;
   UniffiCallbackInterfaceStorageMethod6 get_payment_by_id;
   UniffiCallbackInterfaceStorageMethod7 get_payment_by_invoice;
@@ -452,6 +486,10 @@ typedef struct UniffiVTableCallbackInterfaceStorage {
   UniffiCallbackInterfaceStorageMethod26 update_record_from_incoming;
   UniffiCallbackInterfaceFree uniffi_free;
 } UniffiVTableCallbackInterfaceStorage;
+typedef struct UniffiVTableCallbackInterfaceStorageBackend {
+  UniffiCallbackInterfaceStorageBackendMethod0 create_stores;
+  UniffiCallbackInterfaceFree uniffi_free;
+} UniffiVTableCallbackInterfaceStorageBackend;
 void *uniffi_breez_sdk_spark_fn_clone_bitcoinchainservice(
     void *ptr, RustCallStatus *uniffi_out_err);
 void uniffi_breez_sdk_spark_fn_free_bitcoinchainservice(
@@ -484,10 +522,11 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_add_contact(void *ptr,
 uniffi_breez_sdk_spark_fn_method_breezsdk_add_event_listener(void *ptr,
                                                              uint64_t listener);
 /*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_authorize_lightning_address_transfer(
+    void *ptr, RustBuffer request);
+/*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_buy_bitcoin(void *ptr,
                                                       RustBuffer request);
-/*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_breezsdk_cancel_leaf_optimization(void *ptr);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_check_lightning_address_available(
     void *ptr, RustBuffer req);
@@ -499,6 +538,9 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_claim_deposit(void *ptr,
                                                         RustBuffer request);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_claim_htlc_payment(
+    void *ptr, RustBuffer request);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_claim_lightning_address_transfer(
     void *ptr, RustBuffer request);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_delete_contact(void *ptr,
@@ -513,9 +555,6 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_conversion_limits(
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_get_info(void *ptr,
                                                    RustBuffer request);
-RustBuffer
-uniffi_breez_sdk_spark_fn_method_breezsdk_get_leaf_optimization_progress(
-    void *ptr, RustCallStatus *uniffi_out_err);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_get_lightning_address(void *ptr);
 /*handle*/ uint64_t
@@ -553,6 +592,9 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_lnurl_pay(void *ptr,
 uniffi_breez_sdk_spark_fn_method_breezsdk_lnurl_withdraw(void *ptr,
                                                          RustBuffer request);
 /*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_optimize_leaves(void *ptr,
+                                                          RustBuffer request);
+/*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_parse(void *ptr, RustBuffer input);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_lnurl_pay(void *ptr,
@@ -586,8 +628,6 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment(void *ptr,
 uniffi_breez_sdk_spark_fn_method_breezsdk_sign_message(void *ptr,
                                                        RustBuffer request);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_optimization(void *ptr);
-/*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(void *ptr,
                                                       RustBuffer request);
 /*handle*/ uint64_t
@@ -599,69 +639,83 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_update_contact(void *ptr,
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_update_user_settings(
     void *ptr, RustBuffer request);
-void *
-uniffi_breez_sdk_spark_fn_clone_externalsigner(void *ptr,
-                                               RustCallStatus *uniffi_out_err);
-void uniffi_breez_sdk_spark_fn_free_externalsigner(
+void *uniffi_breez_sdk_spark_fn_clone_externalbreezsigner(
     void *ptr, RustCallStatus *uniffi_out_err);
-void uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsigner(
-    UniffiVTableCallbackInterfaceExternalSigner *vtable);
-RustBuffer uniffi_breez_sdk_spark_fn_method_externalsigner_identity_public_key(
+void uniffi_breez_sdk_spark_fn_free_externalbreezsigner(
     void *ptr, RustCallStatus *uniffi_out_err);
+void uniffi_breez_sdk_spark_fn_init_callback_vtable_externalbreezsigner(
+    UniffiVTableCallbackInterfaceExternalBreezSigner *vtable);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_derive_public_key(
+uniffi_breez_sdk_spark_fn_method_externalbreezsigner_derive_public_key(
     void *ptr, RustBuffer path);
-/*handle*/ uint64_t uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa(
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_ecdsa(
     void *ptr, RustBuffer message, RustBuffer path);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa_recoverable(
+uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_ecdsa_recoverable(
     void *ptr, RustBuffer message, RustBuffer path);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_ecies(
+uniffi_breez_sdk_spark_fn_method_externalbreezsigner_encrypt_ecies(
     void *ptr, RustBuffer message, RustBuffer path);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_decrypt_ecies(
+uniffi_breez_sdk_spark_fn_method_externalbreezsigner_decrypt_ecies(
     void *ptr, RustBuffer message, RustBuffer path);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_sign_hash_schnorr(
+uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_hash_schnorr(
     void *ptr, RustBuffer hash, RustBuffer path);
-/*handle*/ uint64_t uniffi_breez_sdk_spark_fn_method_externalsigner_hmac_sha256(
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_externalbreezsigner_hmac_sha256(
     void *ptr, RustBuffer message, RustBuffer path);
+void *uniffi_breez_sdk_spark_fn_clone_externalsparksigner(
+    void *ptr, RustCallStatus *uniffi_out_err);
+void uniffi_breez_sdk_spark_fn_free_externalsparksigner(
+    void *ptr, RustCallStatus *uniffi_out_err);
+void uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsparksigner(
+    UniffiVTableCallbackInterfaceExternalSparkSigner *vtable);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_signing_commitment(
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_identity_public_key(
     void *ptr);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_get_public_key_for_node(
-    void *ptr, RustBuffer id);
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_public_key_for_leaf(
+    void *ptr, RustBuffer leaf_id);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_secret(
-    void *ptr);
-/*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_encrypted(
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_static_deposit_public_key(
     void *ptr, uint32_t index);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret(
-    void *ptr, uint32_t index);
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_authentication_challenge(
+    void *ptr, RustBuffer challenge);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_signing_key(
-    void *ptr, uint32_t index);
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_message(
+    void *ptr, RustBuffer message);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secrets(
-    void *ptr, RustBuffer signing_key, RustBuffer new_signing_key);
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_frost(
+    void *ptr, RustBuffer jobs);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_split_secret_with_proofs(
-    void *ptr, RustBuffer secret, uint32_t threshold, uint32_t num_shares);
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_transfer(
+    void *ptr, RustBuffer request);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_for_receiver(
-    void *ptr, RustBuffer encrypted_secret, RustBuffer receiver_public_key);
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_claim(
+    void *ptr, RustBuffer request);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret(
-    void *ptr, RustBuffer secret);
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_lightning_receive(
+    void *ptr, RustBuffer request);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_sign_frost(void *ptr,
-                                                           RustBuffer request);
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_static_deposit(
+    void *ptr, RustBuffer request);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_externalsigner_aggregate_frost(
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_start_static_deposit_refund(
+    void *ptr, RustBuffer request);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_static_deposit_refund(
+    void *ptr, RustBuffer request);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_spark_invoice(
+    void *ptr, RustBuffer request);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_token_transaction(
+    void *ptr, RustBuffer request);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_static_deposit_claim(
     void *ptr, RustBuffer request);
 void *
 uniffi_breez_sdk_spark_fn_clone_fiatservice(void *ptr,
@@ -674,34 +728,37 @@ void uniffi_breez_sdk_spark_fn_init_callback_vtable_fiatservice(
 uniffi_breez_sdk_spark_fn_method_fiatservice_fetch_fiat_currencies(void *ptr);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_fiatservice_fetch_fiat_rates(void *ptr);
-void *uniffi_breez_sdk_spark_fn_clone_passkey(void *ptr,
+void *
+uniffi_breez_sdk_spark_fn_clone_passkeyclient(void *ptr,
                                               RustCallStatus *uniffi_out_err);
-void uniffi_breez_sdk_spark_fn_free_passkey(void *ptr,
-                                            RustCallStatus *uniffi_out_err);
-void *uniffi_breez_sdk_spark_fn_constructor_passkey_new(
-    void *prf_provider, RustBuffer relay_config,
+void uniffi_breez_sdk_spark_fn_free_passkeyclient(
+    void *ptr, RustCallStatus *uniffi_out_err);
+void *uniffi_breez_sdk_spark_fn_constructor_passkeyclient_new(
+    void *prf_provider, RustBuffer breez_api_key, RustBuffer config,
     RustCallStatus *uniffi_out_err);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_passkey_get_wallet(void *ptr,
-                                                    RustBuffer label);
+uniffi_breez_sdk_spark_fn_method_passkeyclient_check_availability(void *ptr);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_passkey_is_available(void *ptr);
+uniffi_breez_sdk_spark_fn_method_passkeyclient_connect_with_passkey(
+    void *ptr, RustBuffer request);
+void *uniffi_breez_sdk_spark_fn_method_passkeyclient_labels(
+    void *ptr, RustCallStatus *uniffi_out_err);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_passkey_list_labels(void *ptr);
+uniffi_breez_sdk_spark_fn_method_passkeyclient_register(void *ptr,
+                                                        RustBuffer request);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_passkey_store_label(void *ptr,
+uniffi_breez_sdk_spark_fn_method_passkeyclient_sign_in(void *ptr,
+                                                       RustBuffer request);
+void *
+uniffi_breez_sdk_spark_fn_clone_passkeylabels(void *ptr,
+                                              RustCallStatus *uniffi_out_err);
+void uniffi_breez_sdk_spark_fn_free_passkeylabels(
+    void *ptr, RustCallStatus *uniffi_out_err);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_passkeylabels_list(void *ptr);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_passkeylabels_store(void *ptr,
                                                      RustBuffer label);
-void *uniffi_breez_sdk_spark_fn_clone_passkeyprfprovider(
-    void *ptr, RustCallStatus *uniffi_out_err);
-void uniffi_breez_sdk_spark_fn_free_passkeyprfprovider(
-    void *ptr, RustCallStatus *uniffi_out_err);
-void uniffi_breez_sdk_spark_fn_init_callback_vtable_passkeyprfprovider(
-    UniffiVTableCallbackInterfacePasskeyPrfProvider *vtable);
-/*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_passkeyprfprovider_derive_prf_seed(
-    void *ptr, RustBuffer salt);
-/*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_passkeyprfprovider_is_prf_available(void *ptr);
 void *
 uniffi_breez_sdk_spark_fn_clone_paymentobserver(void *ptr,
                                                 RustCallStatus *uniffi_out_err);
@@ -712,6 +769,31 @@ void uniffi_breez_sdk_spark_fn_init_callback_vtable_paymentobserver(
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_paymentobserver_before_send(
     void *ptr, RustBuffer payments);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_paymentobserver_after_send(void *ptr,
+                                                            RustBuffer updates);
+void *
+uniffi_breez_sdk_spark_fn_clone_prfprovider(void *ptr,
+                                            RustCallStatus *uniffi_out_err);
+void uniffi_breez_sdk_spark_fn_free_prfprovider(void *ptr,
+                                                RustCallStatus *uniffi_out_err);
+void uniffi_breez_sdk_spark_fn_init_callback_vtable_prfprovider(
+    UniffiVTableCallbackInterfacePrfProvider *vtable);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_prfprovider_derive_seeds(void *ptr,
+                                                          RustBuffer request);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_prfprovider_is_supported(void *ptr);
+/*handle*/ uint64_t uniffi_breez_sdk_spark_fn_method_prfprovider_create_passkey(
+    void *ptr, RustBuffer exclude_credentials);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_prfprovider_check_domain_association(
+    void *ptr);
+void *
+uniffi_breez_sdk_spark_fn_clone_resolvedstores(void *ptr,
+                                               RustCallStatus *uniffi_out_err);
+void uniffi_breez_sdk_spark_fn_free_resolvedstores(
+    void *ptr, RustCallStatus *uniffi_out_err);
 void *
 uniffi_breez_sdk_spark_fn_clone_restclient(void *ptr,
                                            RustCallStatus *uniffi_out_err);
@@ -732,8 +814,14 @@ void uniffi_breez_sdk_spark_fn_free_sdkbuilder(void *ptr,
                                                RustCallStatus *uniffi_out_err);
 void *uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new(
     RustBuffer config, RustBuffer seed, RustCallStatus *uniffi_out_err);
+void *uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new_with_signer(
+    RustBuffer config, void *breez_signer, void *spark_signer,
+    RustCallStatus *uniffi_out_err);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_sdkbuilder_build(void *ptr);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_account_number(
+    void *ptr, uint32_t account_number);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_chain_service(
     void *ptr, void *chain_service);
@@ -743,9 +831,6 @@ uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_default_storage(
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_fiat_service(
     void *ptr, void *fiat_service);
-/*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(void *ptr,
-                                                         RustBuffer config);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_lnurl_client(
     void *ptr, void *lnurl_client);
@@ -761,21 +846,24 @@ uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_shared_context(void *ptr,
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_storage(void *ptr,
                                                          void *storage);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_storage_backend(void *ptr,
+                                                                 void *storage);
 void *
 uniffi_breez_sdk_spark_fn_clone_sdkcontext(void *ptr,
                                            RustCallStatus *uniffi_out_err);
 void uniffi_breez_sdk_spark_fn_free_sdkcontext(void *ptr,
                                                RustCallStatus *uniffi_out_err);
 void *
-uniffi_breez_sdk_spark_fn_clone_sessionmanager(void *ptr,
-                                               RustCallStatus *uniffi_out_err);
-void uniffi_breez_sdk_spark_fn_free_sessionmanager(
+uniffi_breez_sdk_spark_fn_clone_sessionstore(void *ptr,
+                                             RustCallStatus *uniffi_out_err);
+void uniffi_breez_sdk_spark_fn_free_sessionstore(
     void *ptr, RustCallStatus *uniffi_out_err);
-void uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionmanager(
-    UniffiVTableCallbackInterfaceSessionManager *vtable);
-/*handle*/ uint64_t uniffi_breez_sdk_spark_fn_method_sessionmanager_get_session(
+void uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionstore(
+    UniffiVTableCallbackInterfaceSessionStore *vtable);
+/*handle*/ uint64_t uniffi_breez_sdk_spark_fn_method_sessionstore_get_session(
     void *ptr, RustBuffer service_identity_key);
-/*handle*/ uint64_t uniffi_breez_sdk_spark_fn_method_sessionmanager_set_session(
+/*handle*/ uint64_t uniffi_breez_sdk_spark_fn_method_sessionstore_set_session(
     void *ptr, RustBuffer service_identity_key, RustBuffer session);
 void *uniffi_breez_sdk_spark_fn_clone_storage(void *ptr,
                                               RustCallStatus *uniffi_out_err);
@@ -795,8 +883,8 @@ uniffi_breez_sdk_spark_fn_method_storage_get_cached_item(void *ptr,
 uniffi_breez_sdk_spark_fn_method_storage_list_payments(void *ptr,
                                                        RustBuffer request);
 /*handle*/ uint64_t
-uniffi_breez_sdk_spark_fn_method_storage_insert_payment(void *ptr,
-                                                        RustBuffer payment);
+uniffi_breez_sdk_spark_fn_method_storage_apply_payment_update(
+    void *ptr, RustBuffer payment);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_storage_insert_payment_metadata(
     void *ptr, RustBuffer payment_id, RustBuffer metadata);
@@ -857,6 +945,14 @@ uniffi_breez_sdk_spark_fn_method_storage_get_latest_outgoing_change(void *ptr);
 uniffi_breez_sdk_spark_fn_method_storage_update_record_from_incoming(
     void *ptr, RustBuffer record);
 void *
+uniffi_breez_sdk_spark_fn_clone_storagebackend(void *ptr,
+                                               RustCallStatus *uniffi_out_err);
+void uniffi_breez_sdk_spark_fn_free_storagebackend(
+    void *ptr, RustCallStatus *uniffi_out_err);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_storagebackend_create_stores(
+    void *ptr, RustBuffer network, RustBuffer identity);
+void *
 uniffi_breez_sdk_spark_fn_clone_tokenissuer(void *ptr,
                                             RustCallStatus *uniffi_out_err);
 void uniffi_breez_sdk_spark_fn_free_tokenissuer(void *ptr,
@@ -889,14 +985,22 @@ void uniffi_breez_sdk_spark_fn_init_callback_vtable_logger(
 /*handle*/ uint64_t uniffi_breez_sdk_spark_fn_func_connect(RustBuffer request);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_func_connect_with_signer(RustBuffer request);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_func_create_turnkey_signer(RustBuffer config);
+void *
+uniffi_breez_sdk_spark_fn_func_custom_storage(void *storage,
+                                              RustCallStatus *uniffi_out_err);
 RustBuffer
 uniffi_breez_sdk_spark_fn_func_default_config(RustBuffer network,
                                               RustCallStatus *uniffi_out_err);
-void *uniffi_breez_sdk_spark_fn_func_default_external_signer(
+RustBuffer uniffi_breez_sdk_spark_fn_func_default_external_signers(
     RustBuffer mnemonic, RustBuffer passphrase, RustBuffer network,
-    RustBuffer key_set_config, RustCallStatus *uniffi_out_err);
+    RustBuffer account_number, RustCallStatus *uniffi_out_err);
 RustBuffer uniffi_breez_sdk_spark_fn_func_default_server_config(
     RustBuffer network, RustCallStatus *uniffi_out_err);
+void *
+uniffi_breez_sdk_spark_fn_func_default_storage(RustBuffer storage_dir,
+                                               RustCallStatus *uniffi_out_err);
 /*handle*/ uint64_t uniffi_breez_sdk_spark_fn_func_get_spark_status();
 void uniffi_breez_sdk_spark_fn_func_init_logging(
     RustBuffer log_dir, RustBuffer app_logger, RustBuffer log_filter,
@@ -1035,9 +1139,12 @@ void ffi_breez_sdk_spark_rust_future_complete_void(
     /*handle*/ uint64_t handle, RustCallStatus *uniffi_out_err);
 uint16_t uniffi_breez_sdk_spark_checksum_func_connect();
 uint16_t uniffi_breez_sdk_spark_checksum_func_connect_with_signer();
+uint16_t uniffi_breez_sdk_spark_checksum_func_create_turnkey_signer();
+uint16_t uniffi_breez_sdk_spark_checksum_func_custom_storage();
 uint16_t uniffi_breez_sdk_spark_checksum_func_default_config();
-uint16_t uniffi_breez_sdk_spark_checksum_func_default_external_signer();
+uint16_t uniffi_breez_sdk_spark_checksum_func_default_external_signers();
 uint16_t uniffi_breez_sdk_spark_checksum_func_default_server_config();
+uint16_t uniffi_breez_sdk_spark_checksum_func_default_storage();
 uint16_t uniffi_breez_sdk_spark_checksum_func_get_spark_status();
 uint16_t uniffi_breez_sdk_spark_checksum_func_init_logging();
 uint16_t uniffi_breez_sdk_spark_checksum_func_new_rest_chain_service();
@@ -1054,14 +1161,16 @@ uint16_t
 uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_recommended_fees();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_add_contact();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener();
-uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_optimization();
+uniffi_breez_sdk_spark_checksum_method_breezsdk_authorize_lightning_address_transfer();
+uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_check_lightning_address_available();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_check_message();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_deposit();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_htlc_payment();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_lightning_address_transfer();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_contact();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_lightning_address();
@@ -1069,8 +1178,6 @@ uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info();
-uint16_t
-uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_get_lightning_address();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_get_payment();
@@ -1087,6 +1194,7 @@ uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_list_webhooks();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_auth();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_pay();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_withdraw();
+uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_optimize_leaves();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_parse();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_lnurl_pay();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_payment();
@@ -1102,68 +1210,83 @@ uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message();
-uint16_t
-uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_unregister_webhook();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_update_contact();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_update_user_settings();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_identity_public_key();
+uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_derive_public_key();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_derive_public_key();
-uint16_t uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa();
+uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_ecdsa();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa_recoverable();
-uint16_t uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_ecies();
-uint16_t uniffi_breez_sdk_spark_checksum_method_externalsigner_decrypt_ecies();
+uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_ecdsa_recoverable();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_hash_schnorr();
-uint16_t uniffi_breez_sdk_spark_checksum_method_externalsigner_hmac_sha256();
+uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_encrypt_ecies();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_signing_commitment();
+uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_decrypt_ecies();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node();
+uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_hash_schnorr();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_secret();
+uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_hmac_sha256();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_encrypted();
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_identity_public_key();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret();
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_public_key_for_leaf();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_signing_key();
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_static_deposit_public_key();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secrets();
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_authentication_challenge();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret_with_proofs();
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_message();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_for_receiver();
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_frost();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret();
-uint16_t uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost();
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_transfer();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost();
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_claim();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_lightning_receive();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_static_deposit_refund();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_static_deposit_refund();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_spark_invoice();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_token_transaction();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit_claim();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_fiatservice_fetch_fiat_currencies();
 uint16_t uniffi_breez_sdk_spark_checksum_method_fiatservice_fetch_fiat_rates();
-uint16_t uniffi_breez_sdk_spark_checksum_method_passkey_get_wallet();
-uint16_t uniffi_breez_sdk_spark_checksum_method_passkey_is_available();
-uint16_t uniffi_breez_sdk_spark_checksum_method_passkey_list_labels();
-uint16_t uniffi_breez_sdk_spark_checksum_method_passkey_store_label();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_derive_prf_seed();
+uniffi_breez_sdk_spark_checksum_method_passkeyclient_check_availability();
 uint16_t
-uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_is_prf_available();
+uniffi_breez_sdk_spark_checksum_method_passkeyclient_connect_with_passkey();
+uint16_t uniffi_breez_sdk_spark_checksum_method_passkeyclient_labels();
+uint16_t uniffi_breez_sdk_spark_checksum_method_passkeyclient_register();
+uint16_t uniffi_breez_sdk_spark_checksum_method_passkeyclient_sign_in();
+uint16_t uniffi_breez_sdk_spark_checksum_method_passkeylabels_list();
+uint16_t uniffi_breez_sdk_spark_checksum_method_passkeylabels_store();
 uint16_t uniffi_breez_sdk_spark_checksum_method_paymentobserver_before_send();
+uint16_t uniffi_breez_sdk_spark_checksum_method_paymentobserver_after_send();
+uint16_t uniffi_breez_sdk_spark_checksum_method_prfprovider_derive_seeds();
+uint16_t uniffi_breez_sdk_spark_checksum_method_prfprovider_is_supported();
+uint16_t uniffi_breez_sdk_spark_checksum_method_prfprovider_create_passkey();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_prfprovider_check_domain_association();
 uint16_t uniffi_breez_sdk_spark_checksum_method_restclient_get_request();
 uint16_t uniffi_breez_sdk_spark_checksum_method_restclient_post_request();
 uint16_t uniffi_breez_sdk_spark_checksum_method_restclient_delete_request();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_build();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_account_number();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_chain_service();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_default_storage();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_fiat_service();
-uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_lnurl_client();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_payment_observer();
@@ -1172,13 +1295,15 @@ uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_shared_context();
 uint16_t uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage();
-uint16_t uniffi_breez_sdk_spark_checksum_method_sessionmanager_get_session();
-uint16_t uniffi_breez_sdk_spark_checksum_method_sessionmanager_set_session();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage_backend();
+uint16_t uniffi_breez_sdk_spark_checksum_method_sessionstore_get_session();
+uint16_t uniffi_breez_sdk_spark_checksum_method_sessionstore_set_session();
 uint16_t uniffi_breez_sdk_spark_checksum_method_storage_delete_cached_item();
 uint16_t uniffi_breez_sdk_spark_checksum_method_storage_get_cached_item();
 uint16_t uniffi_breez_sdk_spark_checksum_method_storage_set_cached_item();
 uint16_t uniffi_breez_sdk_spark_checksum_method_storage_list_payments();
-uint16_t uniffi_breez_sdk_spark_checksum_method_storage_insert_payment();
+uint16_t uniffi_breez_sdk_spark_checksum_method_storage_apply_payment_update();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_storage_insert_payment_metadata();
 uint16_t uniffi_breez_sdk_spark_checksum_method_storage_get_payment_by_id();
@@ -1210,6 +1335,7 @@ uint16_t
 uniffi_breez_sdk_spark_checksum_method_storage_get_latest_outgoing_change();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_storage_update_record_from_incoming();
+uint16_t uniffi_breez_sdk_spark_checksum_method_storagebackend_create_stores();
 uint16_t uniffi_breez_sdk_spark_checksum_method_tokenissuer_burn_issuer_token();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_tokenissuer_create_issuer_token();
@@ -1222,8 +1348,10 @@ uniffi_breez_sdk_spark_checksum_method_tokenissuer_get_issuer_token_metadata();
 uint16_t uniffi_breez_sdk_spark_checksum_method_tokenissuer_mint_issuer_token();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_tokenissuer_unfreeze_issuer_token();
-uint16_t uniffi_breez_sdk_spark_checksum_constructor_passkey_new();
+uint16_t uniffi_breez_sdk_spark_checksum_constructor_passkeyclient_new();
 uint16_t uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new();
+uint16_t
+uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new_with_signer();
 uint16_t uniffi_breez_sdk_spark_checksum_method_eventlistener_on_event();
 uint16_t uniffi_breez_sdk_spark_checksum_method_logger_log();
 uint32_t ffi_breez_sdk_spark_uniffi_contract_version();
@@ -2032,7 +2160,7 @@ static void cleanup() {
   // uniffi::breez_sdk_spark::st::vtablecallbackinterfacebitcoinchainservice::vtablecallbackinterfacebitcoinchainservice::free
 
 // Callback function:
-// uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalsigner::vtablecallbackinterfaceexternalsigner::free::UniffiCallbackInterfaceFree
+// uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalbreezsigner::vtablecallbackinterfaceexternalbreezsigner::free::UniffiCallbackInterfaceFree
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -2045,8 +2173,9 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalsigner::
-    vtablecallbackinterfaceexternalsigner::free {
+namespace uniffi::breez_sdk_spark::st::
+    vtablecallbackinterfaceexternalbreezsigner::
+        vtablecallbackinterfaceexternalbreezsigner::free {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -2100,7 +2229,7 @@ static void callback(uint64_t rs_handle) {
 }
 
 static UniffiCallbackInterfaceFree
-makeCallbackFunction( // uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalsigner::vtablecallbackinterfaceexternalsigner::free
+makeCallbackFunction( // uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalbreezsigner::vtablecallbackinterfaceexternalbreezsigner::free
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -2141,7 +2270,120 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalsigner::vtablecallbackinterfaceexternalsigner::free
+  // uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalbreezsigner::vtablecallbackinterfaceexternalbreezsigner::free
+
+// Callback function:
+// uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalsparksigner::vtablecallbackinterfaceexternalsparksigner::free::UniffiCallbackInterfaceFree
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::st::
+    vtablecallbackinterfaceexternalsparksigner::
+        vtablecallbackinterfaceexternalsparksigner::free {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t)> rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_handle) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_handle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_handle);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_handle);
+
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback UniffiCallbackInterfaceFree: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void callback(uint64_t rs_handle) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_handle);
+}
+
+static UniffiCallbackInterfaceFree
+makeCallbackFunction( // uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalsparksigner::vtablecallbackinterfaceexternalsparksigner::free
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](uint64_t rs_handle) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_handle](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_handle);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+
+    callInvoker->invokeNonBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalsparksigner::vtablecallbackinterfaceexternalsparksigner::free
 
 // Callback function:
 // uniffi::breez_sdk_spark::st::vtablecallbackinterfacefiatservice::vtablecallbackinterfacefiatservice::free::UniffiCallbackInterfaceFree
@@ -2256,119 +2498,6 @@ static void cleanup() {
   // uniffi::breez_sdk_spark::st::vtablecallbackinterfacefiatservice::vtablecallbackinterfacefiatservice::free
 
 // Callback function:
-// uniffi::breez_sdk_spark::st::vtablecallbackinterfacepasskeyprfprovider::vtablecallbackinterfacepasskeyprfprovider::free::UniffiCallbackInterfaceFree
-//
-// We have the following constraints:
-// - we need to pass a function pointer to Rust.
-// - we need a jsi::Runtime and jsi::Function to call into JS.
-// - function pointers can't store state, so we can't use a lamda.
-//
-// For this, we store a lambda as a global, as `rsLambda`. The `callback`
-// function calls the lambda, which itself calls the `body` which then calls
-// into JS.
-//
-// We then give the `callback` function pointer to Rust which will call the
-// lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::st::
-    vtablecallbackinterfacepasskeyprfprovider::
-        vtablecallbackinterfacepasskeyprfprovider::free {
-using namespace facebook;
-
-// We need to store a lambda in a global so we can call it from
-// a function pointer. The function pointer is passed to Rust.
-static std::function<void(uint64_t)> rsLambda = nullptr;
-
-// This is the main body of the callback. It's called from the lambda,
-// which itself is called from the callback function which is passed to Rust.
-static void body(jsi::Runtime &rt,
-                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-                 std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_handle) {
-
-  // Convert the arguments from Rust, into jsi::Values.
-  // We'll use the Bridging class to do this…
-  auto js_handle =
-      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_handle);
-
-  // Now we are ready to call the callback.
-  // We are already on the JS thread, because this `body` function was
-  // invoked from the CallInvoker.
-  try {
-    // Getting the callback function
-    auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult = cb.call(rt, js_handle);
-
-  } catch (const jsi::JSError &error) {
-    std::cout << "Error in callback UniffiCallbackInterfaceFree: "
-              << error.what() << std::endl;
-    throw error;
-  }
-}
-
-static void callback(uint64_t rs_handle) {
-  // If the runtime has shutdown, then there is no point in trying to
-  // call into Javascript. BUT how do we tell if the runtime has shutdown?
-  //
-  // Answer: the module destructor calls into callback `cleanup` method,
-  // which nulls out the rsLamda.
-  //
-  // If rsLamda is null, then there is no runtime to call into.
-  if (rsLambda == nullptr) {
-    // This only occurs when destructors are calling into Rust free/drop,
-    // which causes the JS callback to be dropped.
-    return;
-  }
-
-  // The runtime, the actual callback jsi::funtion, and the callInvoker
-  // are all in the lambda.
-  rsLambda(rs_handle);
-}
-
-static UniffiCallbackInterfaceFree
-makeCallbackFunction( // uniffi::breez_sdk_spark::st::vtablecallbackinterfacepasskeyprfprovider::vtablecallbackinterfacepasskeyprfprovider::free
-    jsi::Runtime &rt,
-    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-    const jsi::Value &value) {
-  if (rsLambda != nullptr) {
-    // `makeCallbackFunction` is called in two circumstances:
-    //
-    // 1. at startup, when initializing callback interface vtables.
-    // 2. when polling futures. This happens at least once per future that is
-    //    exposed to Javascript. We know that this is always the same function,
-    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
-    //
-    // We can therefore return the callback function without making anything
-    // new if we've been initialized already.
-    return callback;
-  }
-  auto callbackFunction = value.asObject(rt).asFunction(rt);
-  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
-  rsLambda = [&rt, callInvoker, callbackValue](uint64_t rs_handle) {
-    // We immediately make a lambda which will do the work of transforming the
-    // arguments into JSI values and calling the callback.
-    uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_handle](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_handle);
-        };
-    // We'll then call that lambda from the callInvoker which will
-    // look after calling it on the correct thread.
-
-    callInvoker->invokeNonBlocking(rt, jsLambda);
-  };
-  return callback;
-}
-
-// This method is called from the destructor of NativeBreezSdkSpark, which only
-// happens when the jsi::Runtime is being destroyed.
-static void cleanup() {
-  // The lambda holds a reference to the the Runtime, so when this is nulled
-  // out, then the pointer will no longer be left dangling.
-  rsLambda = nullptr;
-}
-} // namespace
-  // uniffi::breez_sdk_spark::st::vtablecallbackinterfacepasskeyprfprovider::vtablecallbackinterfacepasskeyprfprovider::free
-
-// Callback function:
 // uniffi::breez_sdk_spark::st::vtablecallbackinterfacepaymentobserver::vtablecallbackinterfacepaymentobserver::free::UniffiCallbackInterfaceFree
 //
 // We have the following constraints:
@@ -2479,6 +2608,118 @@ static void cleanup() {
 }
 } // namespace
   // uniffi::breez_sdk_spark::st::vtablecallbackinterfacepaymentobserver::vtablecallbackinterfacepaymentobserver::free
+
+// Callback function:
+// uniffi::breez_sdk_spark::st::vtablecallbackinterfaceprfprovider::vtablecallbackinterfaceprfprovider::free::UniffiCallbackInterfaceFree
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::st::vtablecallbackinterfaceprfprovider::
+    vtablecallbackinterfaceprfprovider::free {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t)> rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_handle) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_handle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_handle);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_handle);
+
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback UniffiCallbackInterfaceFree: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void callback(uint64_t rs_handle) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_handle);
+}
+
+static UniffiCallbackInterfaceFree
+makeCallbackFunction( // uniffi::breez_sdk_spark::st::vtablecallbackinterfaceprfprovider::vtablecallbackinterfaceprfprovider::free
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](uint64_t rs_handle) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_handle](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_handle);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+
+    callInvoker->invokeNonBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::st::vtablecallbackinterfaceprfprovider::vtablecallbackinterfaceprfprovider::free
 
 // Callback function:
 // uniffi::breez_sdk_spark::st::vtablecallbackinterfacerestclient::vtablecallbackinterfacerestclient::free::UniffiCallbackInterfaceFree
@@ -2593,7 +2834,7 @@ static void cleanup() {
   // uniffi::breez_sdk_spark::st::vtablecallbackinterfacerestclient::vtablecallbackinterfacerestclient::free
 
 // Callback function:
-// uniffi::breez_sdk_spark::st::vtablecallbackinterfacesessionmanager::vtablecallbackinterfacesessionmanager::free::UniffiCallbackInterfaceFree
+// uniffi::breez_sdk_spark::st::vtablecallbackinterfacesessionstore::vtablecallbackinterfacesessionstore::free::UniffiCallbackInterfaceFree
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -2606,8 +2847,8 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::st::vtablecallbackinterfacesessionmanager::
-    vtablecallbackinterfacesessionmanager::free {
+namespace uniffi::breez_sdk_spark::st::vtablecallbackinterfacesessionstore::
+    vtablecallbackinterfacesessionstore::free {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -2661,7 +2902,7 @@ static void callback(uint64_t rs_handle) {
 }
 
 static UniffiCallbackInterfaceFree
-makeCallbackFunction( // uniffi::breez_sdk_spark::st::vtablecallbackinterfacesessionmanager::vtablecallbackinterfacesessionmanager::free
+makeCallbackFunction( // uniffi::breez_sdk_spark::st::vtablecallbackinterfacesessionstore::vtablecallbackinterfacesessionstore::free
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -2702,7 +2943,7 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::st::vtablecallbackinterfacesessionmanager::vtablecallbackinterfacesessionmanager::free
+  // uniffi::breez_sdk_spark::st::vtablecallbackinterfacesessionstore::vtablecallbackinterfacesessionstore::free
 
 // Callback function:
 // uniffi::breez_sdk_spark::st::vtablecallbackinterfacestorage::vtablecallbackinterfacestorage::free::UniffiCallbackInterfaceFree
@@ -2815,6 +3056,118 @@ static void cleanup() {
 }
 } // namespace
   // uniffi::breez_sdk_spark::st::vtablecallbackinterfacestorage::vtablecallbackinterfacestorage::free
+
+// Callback function:
+// uniffi::breez_sdk_spark::st::vtablecallbackinterfacestoragebackend::vtablecallbackinterfacestoragebackend::free::UniffiCallbackInterfaceFree
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::st::vtablecallbackinterfacestoragebackend::
+    vtablecallbackinterfacestoragebackend::free {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t)> rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_handle) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_handle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_handle);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_handle);
+
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback UniffiCallbackInterfaceFree: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void callback(uint64_t rs_handle) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_handle);
+}
+
+static UniffiCallbackInterfaceFree
+makeCallbackFunction( // uniffi::breez_sdk_spark::st::vtablecallbackinterfacestoragebackend::vtablecallbackinterfacestoragebackend::free
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](uint64_t rs_handle) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_handle](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_handle);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+
+    callInvoker->invokeNonBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::st::vtablecallbackinterfacestoragebackend::vtablecallbackinterfacestoragebackend::free
 namespace uniffi::breez_sdk_spark {
 using namespace facebook;
 using CallInvoker = uniffi_runtime::UniffiCallInvoker;
@@ -4724,10 +5077,10 @@ static void cleanup() {
 } // namespace
   // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod4
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod0
+  // CallbackInterfaceExternalBreezSignerMethod0
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod0::UniffiCallbackInterfaceExternalSignerMethod0
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod0::UniffiCallbackInterfaceExternalBreezSignerMethod0
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -4740,143 +5093,8 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod0 {
-using namespace facebook;
-
-// We need to store a lambda in a global so we can call it from
-// a function pointer. The function pointer is passed to Rust.
-static std::function<void(uint64_t, RustBuffer *, RustCallStatus *)> rsLambda =
-    nullptr;
-
-// This is the main body of the callback. It's called from the lambda,
-// which itself is called from the callback function which is passed to Rust.
-static void body(jsi::Runtime &rt,
-                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-                 std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_uniffiHandle, RustBuffer *rs_uniffiOutReturn,
-                 RustCallStatus *uniffi_call_status) {
-
-  // Convert the arguments from Rust, into jsi::Values.
-  // We'll use the Bridging class to do this…
-  auto js_uniffiHandle =
-      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
-
-  // Now we are ready to call the callback.
-  // We are already on the JS thread, because this `body` function was
-  // invoked from the CallInvoker.
-  try {
-    // Getting the callback function
-    auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult = cb.call(rt, js_uniffiHandle);
-
-    // Now copy the result back from JS into the RustCallStatus object.
-    uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyFromJs(
-        rt, callInvoker, uniffiResult, uniffi_call_status);
-
-    if (uniffi_call_status->code != UNIFFI_CALL_STATUS_OK) {
-      // The JS callback finished abnormally, so we cannot retrieve the return
-      // value.
-      return;
-    }
-
-    // return type is MutReference(RustBuffer(Some(ExternalFfiMetadata { name:
-    // "PublicKeyBytes", module_path: "breez_sdk_spark" }))) Finally, we need to
-    // copy the return value back into the Rust pointer.
-    *rs_uniffiOutReturn =
-        uniffi::breez_sdk_spark::Bridging<ReferenceHolder<RustBuffer>>::fromJs(
-            rt, callInvoker, uniffiResult);
-  } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod0: "
-        << error.what() << std::endl;
-    throw error;
-  }
-}
-
-static void callback(uint64_t rs_uniffiHandle, RustBuffer *rs_uniffiOutReturn,
-                     RustCallStatus *uniffi_call_status) {
-  // If the runtime has shutdown, then there is no point in trying to
-  // call into Javascript. BUT how do we tell if the runtime has shutdown?
-  //
-  // Answer: the module destructor calls into callback `cleanup` method,
-  // which nulls out the rsLamda.
-  //
-  // If rsLamda is null, then there is no runtime to call into.
-  if (rsLambda == nullptr) {
-    // This only occurs when destructors are calling into Rust free/drop,
-    // which causes the JS callback to be dropped.
-    return;
-  }
-
-  // The runtime, the actual callback jsi::funtion, and the callInvoker
-  // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_uniffiOutReturn, uniffi_call_status);
-}
-
-static UniffiCallbackInterfaceExternalSignerMethod0
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod0
-    jsi::Runtime &rt,
-    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-    const jsi::Value &value) {
-  if (rsLambda != nullptr) {
-    // `makeCallbackFunction` is called in two circumstances:
-    //
-    // 1. at startup, when initializing callback interface vtables.
-    // 2. when polling futures. This happens at least once per future that is
-    //    exposed to Javascript. We know that this is always the same function,
-    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
-    //
-    // We can therefore return the callback function without making anything
-    // new if we've been initialized already.
-    return callback;
-  }
-  auto callbackFunction = value.asObject(rt).asFunction(rt);
-  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
-  rsLambda = [&rt, callInvoker, callbackValue](
-                 uint64_t rs_uniffiHandle, RustBuffer *rs_uniffiOutReturn,
-                 RustCallStatus *uniffi_call_status) {
-    // We immediately make a lambda which will do the work of transforming the
-    // arguments into JSI values and calling the callback.
-    uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_uniffiHandle, rs_uniffiOutReturn,
-         uniffi_call_status](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_uniffiHandle,
-               rs_uniffiOutReturn, uniffi_call_status);
-        };
-    // We'll then call that lambda from the callInvoker which will
-    // look after calling it on the correct thread.
-    callInvoker->invokeBlocking(rt, jsLambda);
-  };
-  return callback;
-}
-
-// This method is called from the destructor of NativeBreezSdkSpark, which only
-// happens when the jsi::Runtime is being destroyed.
-static void cleanup() {
-  // The lambda holds a reference to the the Runtime, so when this is nulled
-  // out, then the pointer will no longer be left dangling.
-  rsLambda = nullptr;
-}
-} // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod0
-  // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod1
-
-// Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod1::UniffiCallbackInterfaceExternalSignerMethod1
-//
-// We have the following constraints:
-// - we need to pass a function pointer to Rust.
-// - we need a jsi::Runtime and jsi::Function to call into JS.
-// - function pointers can't store state, so we can't use a lamda.
-//
-// For this, we store a lambda as a global, as `rsLambda`. The `callback`
-// function calls the lambda, which itself calls the `body` which then calls
-// into JS.
-//
-// We then give the `callback` function pointer to Rust which will call the
-// lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod1 {
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalbreezsignermethod0 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -4923,9 +5141,9 @@ static void body(jsi::Runtime &rt,
         uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod1: "
-        << error.what() << std::endl;
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalBreezSignerMethod0: "
+              << error.what() << std::endl;
     throw error;
   }
 }
@@ -4954,8 +5172,8 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_path,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceExternalSignerMethod1
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod1
+static UniffiCallbackInterfaceExternalBreezSignerMethod0
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod0
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -5003,12 +5221,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod1
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod0
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod2
+  // CallbackInterfaceExternalBreezSignerMethod1
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod2::UniffiCallbackInterfaceExternalSignerMethod2
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod1::UniffiCallbackInterfaceExternalBreezSignerMethod1
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -5021,7 +5239,8 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod2 {
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalbreezsignermethod1 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -5071,9 +5290,9 @@ static void body(jsi::Runtime &rt,
         uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod2: "
-        << error.what() << std::endl;
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalBreezSignerMethod1: "
+              << error.what() << std::endl;
     throw error;
   }
 }
@@ -5102,8 +5321,8 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_message, RustBuffer rs_path,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceExternalSignerMethod2
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod2
+static UniffiCallbackInterfaceExternalBreezSignerMethod1
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod1
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -5152,12 +5371,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod2
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod1
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod3
+  // CallbackInterfaceExternalBreezSignerMethod2
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod3::UniffiCallbackInterfaceExternalSignerMethod3
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod2::UniffiCallbackInterfaceExternalBreezSignerMethod2
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -5170,7 +5389,8 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod3 {
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalbreezsignermethod2 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -5220,9 +5440,9 @@ static void body(jsi::Runtime &rt,
         uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod3: "
-        << error.what() << std::endl;
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalBreezSignerMethod2: "
+              << error.what() << std::endl;
     throw error;
   }
 }
@@ -5251,8 +5471,8 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_message, RustBuffer rs_path,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceExternalSignerMethod3
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod3
+static UniffiCallbackInterfaceExternalBreezSignerMethod2
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod2
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -5301,12 +5521,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod3
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod2
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod4
+  // CallbackInterfaceExternalBreezSignerMethod3
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod4::UniffiCallbackInterfaceExternalSignerMethod4
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod3::UniffiCallbackInterfaceExternalBreezSignerMethod3
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -5319,7 +5539,8 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod4 {
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalbreezsignermethod3 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -5369,9 +5590,9 @@ static void body(jsi::Runtime &rt,
         uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod4: "
-        << error.what() << std::endl;
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalBreezSignerMethod3: "
+              << error.what() << std::endl;
     throw error;
   }
 }
@@ -5400,8 +5621,8 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_message, RustBuffer rs_path,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceExternalSignerMethod4
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod4
+static UniffiCallbackInterfaceExternalBreezSignerMethod3
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod3
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -5450,12 +5671,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod4
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod3
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod5
+  // CallbackInterfaceExternalBreezSignerMethod4
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod5::UniffiCallbackInterfaceExternalSignerMethod5
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod4::UniffiCallbackInterfaceExternalBreezSignerMethod4
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -5468,7 +5689,8 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod5 {
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalbreezsignermethod4 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -5518,9 +5740,9 @@ static void body(jsi::Runtime &rt,
         uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod5: "
-        << error.what() << std::endl;
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalBreezSignerMethod4: "
+              << error.what() << std::endl;
     throw error;
   }
 }
@@ -5549,8 +5771,8 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_message, RustBuffer rs_path,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceExternalSignerMethod5
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod5
+static UniffiCallbackInterfaceExternalBreezSignerMethod4
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod4
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -5599,12 +5821,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod5
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod4
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod6
+  // CallbackInterfaceExternalBreezSignerMethod5
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod6::UniffiCallbackInterfaceExternalSignerMethod6
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod5::UniffiCallbackInterfaceExternalBreezSignerMethod5
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -5617,7 +5839,8 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod6 {
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalbreezsignermethod5 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -5667,9 +5890,9 @@ static void body(jsi::Runtime &rt,
         uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod6: "
-        << error.what() << std::endl;
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalBreezSignerMethod5: "
+              << error.what() << std::endl;
     throw error;
   }
 }
@@ -5698,8 +5921,8 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_hash, RustBuffer rs_path,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceExternalSignerMethod6
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod6
+static UniffiCallbackInterfaceExternalBreezSignerMethod5
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod5
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -5748,12 +5971,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod6
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod5
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod7
+  // CallbackInterfaceExternalBreezSignerMethod6
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod7::UniffiCallbackInterfaceExternalSignerMethod7
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod6::UniffiCallbackInterfaceExternalBreezSignerMethod6
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -5766,7 +5989,8 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod7 {
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalbreezsignermethod6 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -5816,9 +6040,9 @@ static void body(jsi::Runtime &rt,
         uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod7: "
-        << error.what() << std::endl;
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalBreezSignerMethod6: "
+              << error.what() << std::endl;
     throw error;
   }
 }
@@ -5847,8 +6071,8 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_message, RustBuffer rs_path,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceExternalSignerMethod7
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod7
+static UniffiCallbackInterfaceExternalBreezSignerMethod6
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod6
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -5897,12 +6121,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod7
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod6
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod8
+  // CallbackInterfaceExternalSparkSignerMethod0
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod8::UniffiCallbackInterfaceExternalSignerMethod8
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod0::UniffiCallbackInterfaceExternalSparkSignerMethod0
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -5915,7 +6139,8 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod8 {
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod0 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -5959,9 +6184,9 @@ static void body(jsi::Runtime &rt,
         uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod8: "
-        << error.what() << std::endl;
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod0: "
+              << error.what() << std::endl;
     throw error;
   }
 }
@@ -5990,8 +6215,8 @@ callback(uint64_t rs_uniffiHandle,
            rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceExternalSignerMethod8
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod8
+static UniffiCallbackInterfaceExternalSparkSignerMethod0
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod0
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -6038,12 +6263,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod8
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod0
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod9
+  // CallbackInterfaceExternalSparkSignerMethod1
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod9::UniffiCallbackInterfaceExternalSignerMethod9
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod1::UniffiCallbackInterfaceExternalSparkSignerMethod1
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -6056,7 +6281,8 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod9 {
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod1 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -6071,7 +6297,7 @@ static std::function<void(uint64_t, RustBuffer,
 static void body(jsi::Runtime &rt,
                  std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
                  std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_uniffiHandle, RustBuffer rs_id,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_leafId,
                  UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
                  uint64_t rs_uniffiCallbackData,
                  UniffiForeignFuture *rs_uniffiOutReturn) {
@@ -6080,8 +6306,8 @@ static void body(jsi::Runtime &rt,
   // We'll use the Bridging class to do this…
   auto js_uniffiHandle =
       uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
-  auto js_id = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
-      rt, callInvoker, rs_id);
+  auto js_leafId = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_leafId);
   auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
       UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
                                                    rs_uniffiFutureCallback);
@@ -6094,7 +6320,7 @@ static void body(jsi::Runtime &rt,
   try {
     // Getting the callback function
     auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_id,
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_leafId,
                                 js_uniffiFutureCallback, js_uniffiCallbackData);
 
     // return type is MutReference(Struct("ForeignFuture"))
@@ -6103,15 +6329,15 @@ static void body(jsi::Runtime &rt,
         uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod9: "
-        << error.what() << std::endl;
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod1: "
+              << error.what() << std::endl;
     throw error;
   }
 }
 
 static void
-callback(uint64_t rs_uniffiHandle, RustBuffer rs_id,
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_leafId,
          UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
          uint64_t rs_uniffiCallbackData,
          UniffiForeignFuture *rs_uniffiOutReturn) {
@@ -6130,12 +6356,12 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_id,
 
   // The runtime, the actual callback jsi::funtion, and the callInvoker
   // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_id, rs_uniffiFutureCallback,
+  rsLambda(rs_uniffiHandle, rs_leafId, rs_uniffiFutureCallback,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceExternalSignerMethod9
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod9
+static UniffiCallbackInterfaceExternalSparkSignerMethod1
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod1
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -6154,17 +6380,17 @@ makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternals
   auto callbackFunction = value.asObject(rt).asFunction(rt);
   auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
   rsLambda = [&rt, callInvoker, callbackValue](
-                 uint64_t rs_uniffiHandle, RustBuffer rs_id,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_leafId,
                  UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
                  uint64_t rs_uniffiCallbackData,
                  UniffiForeignFuture *rs_uniffiOutReturn) {
     // We immediately make a lambda which will do the work of transforming the
     // arguments into JSI values and calling the callback.
     uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_uniffiHandle, rs_id,
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_leafId,
          rs_uniffiFutureCallback, rs_uniffiCallbackData,
          rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_id,
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_leafId,
                rs_uniffiFutureCallback, rs_uniffiCallbackData,
                rs_uniffiOutReturn);
         };
@@ -6183,12 +6409,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod9
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod1
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod10
+  // CallbackInterfaceExternalSparkSignerMethod2
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod10::UniffiCallbackInterfaceExternalSignerMethod10
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod2::UniffiCallbackInterfaceExternalSparkSignerMethod2
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -6201,148 +6427,8 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod10 {
-using namespace facebook;
-
-// We need to store a lambda in a global so we can call it from
-// a function pointer. The function pointer is passed to Rust.
-static std::function<void(uint64_t, UniffiForeignFutureCompleteRustBuffer,
-                          uint64_t, UniffiForeignFuture *)>
-    rsLambda = nullptr;
-
-// This is the main body of the callback. It's called from the lambda,
-// which itself is called from the callback function which is passed to Rust.
-static void body(jsi::Runtime &rt,
-                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-                 std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_uniffiHandle,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-
-  // Convert the arguments from Rust, into jsi::Values.
-  // We'll use the Bridging class to do this…
-  auto js_uniffiHandle =
-      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
-  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
-      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
-                                                   rs_uniffiFutureCallback);
-  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
-      rt, callInvoker, rs_uniffiCallbackData);
-
-  // Now we are ready to call the callback.
-  // We are already on the JS thread, because this `body` function was
-  // invoked from the CallInvoker.
-  try {
-    // Getting the callback function
-    auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_uniffiFutureCallback,
-                                js_uniffiCallbackData);
-
-    // return type is MutReference(Struct("ForeignFuture"))
-    // Finally, we need to copy the return value back into the Rust pointer.
-    *rs_uniffiOutReturn =
-        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
-            rt, callInvoker, uniffiResult);
-  } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod10: "
-        << error.what() << std::endl;
-    throw error;
-  }
-}
-
-static void
-callback(uint64_t rs_uniffiHandle,
-         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-         uint64_t rs_uniffiCallbackData,
-         UniffiForeignFuture *rs_uniffiOutReturn) {
-  // If the runtime has shutdown, then there is no point in trying to
-  // call into Javascript. BUT how do we tell if the runtime has shutdown?
-  //
-  // Answer: the module destructor calls into callback `cleanup` method,
-  // which nulls out the rsLamda.
-  //
-  // If rsLamda is null, then there is no runtime to call into.
-  if (rsLambda == nullptr) {
-    // This only occurs when destructors are calling into Rust free/drop,
-    // which causes the JS callback to be dropped.
-    return;
-  }
-
-  // The runtime, the actual callback jsi::funtion, and the callInvoker
-  // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_uniffiFutureCallback, rs_uniffiCallbackData,
-           rs_uniffiOutReturn);
-}
-
-static UniffiCallbackInterfaceExternalSignerMethod10
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod10
-    jsi::Runtime &rt,
-    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-    const jsi::Value &value) {
-  if (rsLambda != nullptr) {
-    // `makeCallbackFunction` is called in two circumstances:
-    //
-    // 1. at startup, when initializing callback interface vtables.
-    // 2. when polling futures. This happens at least once per future that is
-    //    exposed to Javascript. We know that this is always the same function,
-    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
-    //
-    // We can therefore return the callback function without making anything
-    // new if we've been initialized already.
-    return callback;
-  }
-  auto callbackFunction = value.asObject(rt).asFunction(rt);
-  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
-  rsLambda = [&rt, callInvoker, callbackValue](
-                 uint64_t rs_uniffiHandle,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-    // We immediately make a lambda which will do the work of transforming the
-    // arguments into JSI values and calling the callback.
-    uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_uniffiHandle, rs_uniffiFutureCallback,
-         rs_uniffiCallbackData, rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_uniffiHandle,
-               rs_uniffiFutureCallback, rs_uniffiCallbackData,
-               rs_uniffiOutReturn);
-        };
-    // We'll then call that lambda from the callInvoker which will
-    // look after calling it on the correct thread.
-    callInvoker->invokeBlocking(rt, jsLambda);
-  };
-  return callback;
-}
-
-// This method is called from the destructor of NativeBreezSdkSpark, which only
-// happens when the jsi::Runtime is being destroyed.
-static void cleanup() {
-  // The lambda holds a reference to the the Runtime, so when this is nulled
-  // out, then the pointer will no longer be left dangling.
-  rsLambda = nullptr;
-}
-} // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod10
-  // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod11
-
-// Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod11::UniffiCallbackInterfaceExternalSignerMethod11
-//
-// We have the following constraints:
-// - we need to pass a function pointer to Rust.
-// - we need a jsi::Runtime and jsi::Function to call into JS.
-// - function pointers can't store state, so we can't use a lamda.
-//
-// For this, we store a lambda as a global, as `rsLambda`. The `callback`
-// function calls the lambda, which itself calls the `body` which then calls
-// into JS.
-//
-// We then give the `callback` function pointer to Rust which will call the
-// lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod11 {
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod2 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -6389,9 +6475,9 @@ static void body(jsi::Runtime &rt,
         uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod11: "
-        << error.what() << std::endl;
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod2: "
+              << error.what() << std::endl;
     throw error;
   }
 }
@@ -6420,8 +6506,8 @@ callback(uint64_t rs_uniffiHandle, uint32_t rs_index,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceExternalSignerMethod11
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod11
+static UniffiCallbackInterfaceExternalSparkSignerMethod2
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod2
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -6469,12 +6555,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod11
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod2
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod12
+  // CallbackInterfaceExternalSparkSignerMethod3
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod12::UniffiCallbackInterfaceExternalSignerMethod12
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod3::UniffiCallbackInterfaceExternalSparkSignerMethod3
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -6487,754 +6573,8 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod12 {
-using namespace facebook;
-
-// We need to store a lambda in a global so we can call it from
-// a function pointer. The function pointer is passed to Rust.
-static std::function<void(uint64_t, uint32_t,
-                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
-                          UniffiForeignFuture *)>
-    rsLambda = nullptr;
-
-// This is the main body of the callback. It's called from the lambda,
-// which itself is called from the callback function which is passed to Rust.
-static void body(jsi::Runtime &rt,
-                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-                 std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_uniffiHandle, uint32_t rs_index,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-
-  // Convert the arguments from Rust, into jsi::Values.
-  // We'll use the Bridging class to do this…
-  auto js_uniffiHandle =
-      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
-  auto js_index =
-      uniffi_jsi::Bridging<uint32_t>::toJs(rt, callInvoker, rs_index);
-  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
-      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
-                                                   rs_uniffiFutureCallback);
-  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
-      rt, callInvoker, rs_uniffiCallbackData);
-
-  // Now we are ready to call the callback.
-  // We are already on the JS thread, because this `body` function was
-  // invoked from the CallInvoker.
-  try {
-    // Getting the callback function
-    auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_index,
-                                js_uniffiFutureCallback, js_uniffiCallbackData);
-
-    // return type is MutReference(Struct("ForeignFuture"))
-    // Finally, we need to copy the return value back into the Rust pointer.
-    *rs_uniffiOutReturn =
-        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
-            rt, callInvoker, uniffiResult);
-  } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod12: "
-        << error.what() << std::endl;
-    throw error;
-  }
-}
-
-static void
-callback(uint64_t rs_uniffiHandle, uint32_t rs_index,
-         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-         uint64_t rs_uniffiCallbackData,
-         UniffiForeignFuture *rs_uniffiOutReturn) {
-  // If the runtime has shutdown, then there is no point in trying to
-  // call into Javascript. BUT how do we tell if the runtime has shutdown?
-  //
-  // Answer: the module destructor calls into callback `cleanup` method,
-  // which nulls out the rsLamda.
-  //
-  // If rsLamda is null, then there is no runtime to call into.
-  if (rsLambda == nullptr) {
-    // This only occurs when destructors are calling into Rust free/drop,
-    // which causes the JS callback to be dropped.
-    return;
-  }
-
-  // The runtime, the actual callback jsi::funtion, and the callInvoker
-  // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_index, rs_uniffiFutureCallback,
-           rs_uniffiCallbackData, rs_uniffiOutReturn);
-}
-
-static UniffiCallbackInterfaceExternalSignerMethod12
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod12
-    jsi::Runtime &rt,
-    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-    const jsi::Value &value) {
-  if (rsLambda != nullptr) {
-    // `makeCallbackFunction` is called in two circumstances:
-    //
-    // 1. at startup, when initializing callback interface vtables.
-    // 2. when polling futures. This happens at least once per future that is
-    //    exposed to Javascript. We know that this is always the same function,
-    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
-    //
-    // We can therefore return the callback function without making anything
-    // new if we've been initialized already.
-    return callback;
-  }
-  auto callbackFunction = value.asObject(rt).asFunction(rt);
-  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
-  rsLambda = [&rt, callInvoker, callbackValue](
-                 uint64_t rs_uniffiHandle, uint32_t rs_index,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-    // We immediately make a lambda which will do the work of transforming the
-    // arguments into JSI values and calling the callback.
-    uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_uniffiHandle, rs_index,
-         rs_uniffiFutureCallback, rs_uniffiCallbackData,
-         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_index,
-               rs_uniffiFutureCallback, rs_uniffiCallbackData,
-               rs_uniffiOutReturn);
-        };
-    // We'll then call that lambda from the callInvoker which will
-    // look after calling it on the correct thread.
-    callInvoker->invokeBlocking(rt, jsLambda);
-  };
-  return callback;
-}
-
-// This method is called from the destructor of NativeBreezSdkSpark, which only
-// happens when the jsi::Runtime is being destroyed.
-static void cleanup() {
-  // The lambda holds a reference to the the Runtime, so when this is nulled
-  // out, then the pointer will no longer be left dangling.
-  rsLambda = nullptr;
-}
-} // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod12
-  // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod13
-
-// Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod13::UniffiCallbackInterfaceExternalSignerMethod13
-//
-// We have the following constraints:
-// - we need to pass a function pointer to Rust.
-// - we need a jsi::Runtime and jsi::Function to call into JS.
-// - function pointers can't store state, so we can't use a lamda.
-//
-// For this, we store a lambda as a global, as `rsLambda`. The `callback`
-// function calls the lambda, which itself calls the `body` which then calls
-// into JS.
-//
-// We then give the `callback` function pointer to Rust which will call the
-// lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod13 {
-using namespace facebook;
-
-// We need to store a lambda in a global so we can call it from
-// a function pointer. The function pointer is passed to Rust.
-static std::function<void(uint64_t, uint32_t,
-                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
-                          UniffiForeignFuture *)>
-    rsLambda = nullptr;
-
-// This is the main body of the callback. It's called from the lambda,
-// which itself is called from the callback function which is passed to Rust.
-static void body(jsi::Runtime &rt,
-                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-                 std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_uniffiHandle, uint32_t rs_index,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-
-  // Convert the arguments from Rust, into jsi::Values.
-  // We'll use the Bridging class to do this…
-  auto js_uniffiHandle =
-      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
-  auto js_index =
-      uniffi_jsi::Bridging<uint32_t>::toJs(rt, callInvoker, rs_index);
-  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
-      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
-                                                   rs_uniffiFutureCallback);
-  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
-      rt, callInvoker, rs_uniffiCallbackData);
-
-  // Now we are ready to call the callback.
-  // We are already on the JS thread, because this `body` function was
-  // invoked from the CallInvoker.
-  try {
-    // Getting the callback function
-    auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_index,
-                                js_uniffiFutureCallback, js_uniffiCallbackData);
-
-    // return type is MutReference(Struct("ForeignFuture"))
-    // Finally, we need to copy the return value back into the Rust pointer.
-    *rs_uniffiOutReturn =
-        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
-            rt, callInvoker, uniffiResult);
-  } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod13: "
-        << error.what() << std::endl;
-    throw error;
-  }
-}
-
-static void
-callback(uint64_t rs_uniffiHandle, uint32_t rs_index,
-         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-         uint64_t rs_uniffiCallbackData,
-         UniffiForeignFuture *rs_uniffiOutReturn) {
-  // If the runtime has shutdown, then there is no point in trying to
-  // call into Javascript. BUT how do we tell if the runtime has shutdown?
-  //
-  // Answer: the module destructor calls into callback `cleanup` method,
-  // which nulls out the rsLamda.
-  //
-  // If rsLamda is null, then there is no runtime to call into.
-  if (rsLambda == nullptr) {
-    // This only occurs when destructors are calling into Rust free/drop,
-    // which causes the JS callback to be dropped.
-    return;
-  }
-
-  // The runtime, the actual callback jsi::funtion, and the callInvoker
-  // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_index, rs_uniffiFutureCallback,
-           rs_uniffiCallbackData, rs_uniffiOutReturn);
-}
-
-static UniffiCallbackInterfaceExternalSignerMethod13
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod13
-    jsi::Runtime &rt,
-    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-    const jsi::Value &value) {
-  if (rsLambda != nullptr) {
-    // `makeCallbackFunction` is called in two circumstances:
-    //
-    // 1. at startup, when initializing callback interface vtables.
-    // 2. when polling futures. This happens at least once per future that is
-    //    exposed to Javascript. We know that this is always the same function,
-    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
-    //
-    // We can therefore return the callback function without making anything
-    // new if we've been initialized already.
-    return callback;
-  }
-  auto callbackFunction = value.asObject(rt).asFunction(rt);
-  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
-  rsLambda = [&rt, callInvoker, callbackValue](
-                 uint64_t rs_uniffiHandle, uint32_t rs_index,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-    // We immediately make a lambda which will do the work of transforming the
-    // arguments into JSI values and calling the callback.
-    uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_uniffiHandle, rs_index,
-         rs_uniffiFutureCallback, rs_uniffiCallbackData,
-         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_index,
-               rs_uniffiFutureCallback, rs_uniffiCallbackData,
-               rs_uniffiOutReturn);
-        };
-    // We'll then call that lambda from the callInvoker which will
-    // look after calling it on the correct thread.
-    callInvoker->invokeBlocking(rt, jsLambda);
-  };
-  return callback;
-}
-
-// This method is called from the destructor of NativeBreezSdkSpark, which only
-// happens when the jsi::Runtime is being destroyed.
-static void cleanup() {
-  // The lambda holds a reference to the the Runtime, so when this is nulled
-  // out, then the pointer will no longer be left dangling.
-  rsLambda = nullptr;
-}
-} // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod13
-  // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod14
-
-// Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod14::UniffiCallbackInterfaceExternalSignerMethod14
-//
-// We have the following constraints:
-// - we need to pass a function pointer to Rust.
-// - we need a jsi::Runtime and jsi::Function to call into JS.
-// - function pointers can't store state, so we can't use a lamda.
-//
-// For this, we store a lambda as a global, as `rsLambda`. The `callback`
-// function calls the lambda, which itself calls the `body` which then calls
-// into JS.
-//
-// We then give the `callback` function pointer to Rust which will call the
-// lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod14 {
-using namespace facebook;
-
-// We need to store a lambda in a global so we can call it from
-// a function pointer. The function pointer is passed to Rust.
-static std::function<void(uint64_t, RustBuffer, RustBuffer,
-                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
-                          UniffiForeignFuture *)>
-    rsLambda = nullptr;
-
-// This is the main body of the callback. It's called from the lambda,
-// which itself is called from the callback function which is passed to Rust.
-static void body(jsi::Runtime &rt,
-                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-                 std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_uniffiHandle, RustBuffer rs_signingKey,
-                 RustBuffer rs_newSigningKey,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-
-  // Convert the arguments from Rust, into jsi::Values.
-  // We'll use the Bridging class to do this…
-  auto js_uniffiHandle =
-      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
-  auto js_signingKey = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
-      rt, callInvoker, rs_signingKey);
-  auto js_newSigningKey = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
-      rt, callInvoker, rs_newSigningKey);
-  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
-      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
-                                                   rs_uniffiFutureCallback);
-  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
-      rt, callInvoker, rs_uniffiCallbackData);
-
-  // Now we are ready to call the callback.
-  // We are already on the JS thread, because this `body` function was
-  // invoked from the CallInvoker.
-  try {
-    // Getting the callback function
-    auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult =
-        cb.call(rt, js_uniffiHandle, js_signingKey, js_newSigningKey,
-                js_uniffiFutureCallback, js_uniffiCallbackData);
-
-    // return type is MutReference(Struct("ForeignFuture"))
-    // Finally, we need to copy the return value back into the Rust pointer.
-    *rs_uniffiOutReturn =
-        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
-            rt, callInvoker, uniffiResult);
-  } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod14: "
-        << error.what() << std::endl;
-    throw error;
-  }
-}
-
-static void
-callback(uint64_t rs_uniffiHandle, RustBuffer rs_signingKey,
-         RustBuffer rs_newSigningKey,
-         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-         uint64_t rs_uniffiCallbackData,
-         UniffiForeignFuture *rs_uniffiOutReturn) {
-  // If the runtime has shutdown, then there is no point in trying to
-  // call into Javascript. BUT how do we tell if the runtime has shutdown?
-  //
-  // Answer: the module destructor calls into callback `cleanup` method,
-  // which nulls out the rsLamda.
-  //
-  // If rsLamda is null, then there is no runtime to call into.
-  if (rsLambda == nullptr) {
-    // This only occurs when destructors are calling into Rust free/drop,
-    // which causes the JS callback to be dropped.
-    return;
-  }
-
-  // The runtime, the actual callback jsi::funtion, and the callInvoker
-  // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_signingKey, rs_newSigningKey,
-           rs_uniffiFutureCallback, rs_uniffiCallbackData, rs_uniffiOutReturn);
-}
-
-static UniffiCallbackInterfaceExternalSignerMethod14
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod14
-    jsi::Runtime &rt,
-    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-    const jsi::Value &value) {
-  if (rsLambda != nullptr) {
-    // `makeCallbackFunction` is called in two circumstances:
-    //
-    // 1. at startup, when initializing callback interface vtables.
-    // 2. when polling futures. This happens at least once per future that is
-    //    exposed to Javascript. We know that this is always the same function,
-    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
-    //
-    // We can therefore return the callback function without making anything
-    // new if we've been initialized already.
-    return callback;
-  }
-  auto callbackFunction = value.asObject(rt).asFunction(rt);
-  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
-  rsLambda = [&rt, callInvoker, callbackValue](
-                 uint64_t rs_uniffiHandle, RustBuffer rs_signingKey,
-                 RustBuffer rs_newSigningKey,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-    // We immediately make a lambda which will do the work of transforming the
-    // arguments into JSI values and calling the callback.
-    uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_uniffiHandle, rs_signingKey,
-         rs_newSigningKey, rs_uniffiFutureCallback, rs_uniffiCallbackData,
-         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_signingKey,
-               rs_newSigningKey, rs_uniffiFutureCallback, rs_uniffiCallbackData,
-               rs_uniffiOutReturn);
-        };
-    // We'll then call that lambda from the callInvoker which will
-    // look after calling it on the correct thread.
-    callInvoker->invokeBlocking(rt, jsLambda);
-  };
-  return callback;
-}
-
-// This method is called from the destructor of NativeBreezSdkSpark, which only
-// happens when the jsi::Runtime is being destroyed.
-static void cleanup() {
-  // The lambda holds a reference to the the Runtime, so when this is nulled
-  // out, then the pointer will no longer be left dangling.
-  rsLambda = nullptr;
-}
-} // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod14
-  // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod15
-
-// Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod15::UniffiCallbackInterfaceExternalSignerMethod15
-//
-// We have the following constraints:
-// - we need to pass a function pointer to Rust.
-// - we need a jsi::Runtime and jsi::Function to call into JS.
-// - function pointers can't store state, so we can't use a lamda.
-//
-// For this, we store a lambda as a global, as `rsLambda`. The `callback`
-// function calls the lambda, which itself calls the `body` which then calls
-// into JS.
-//
-// We then give the `callback` function pointer to Rust which will call the
-// lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod15 {
-using namespace facebook;
-
-// We need to store a lambda in a global so we can call it from
-// a function pointer. The function pointer is passed to Rust.
-static std::function<void(uint64_t, RustBuffer, uint32_t, uint32_t,
-                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
-                          UniffiForeignFuture *)>
-    rsLambda = nullptr;
-
-// This is the main body of the callback. It's called from the lambda,
-// which itself is called from the callback function which is passed to Rust.
-static void body(jsi::Runtime &rt,
-                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-                 std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_uniffiHandle, RustBuffer rs_secret,
-                 uint32_t rs_threshold, uint32_t rs_numShares,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-
-  // Convert the arguments from Rust, into jsi::Values.
-  // We'll use the Bridging class to do this…
-  auto js_uniffiHandle =
-      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
-  auto js_secret = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
-      rt, callInvoker, rs_secret);
-  auto js_threshold =
-      uniffi_jsi::Bridging<uint32_t>::toJs(rt, callInvoker, rs_threshold);
-  auto js_numShares =
-      uniffi_jsi::Bridging<uint32_t>::toJs(rt, callInvoker, rs_numShares);
-  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
-      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
-                                                   rs_uniffiFutureCallback);
-  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
-      rt, callInvoker, rs_uniffiCallbackData);
-
-  // Now we are ready to call the callback.
-  // We are already on the JS thread, because this `body` function was
-  // invoked from the CallInvoker.
-  try {
-    // Getting the callback function
-    auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult =
-        cb.call(rt, js_uniffiHandle, js_secret, js_threshold, js_numShares,
-                js_uniffiFutureCallback, js_uniffiCallbackData);
-
-    // return type is MutReference(Struct("ForeignFuture"))
-    // Finally, we need to copy the return value back into the Rust pointer.
-    *rs_uniffiOutReturn =
-        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
-            rt, callInvoker, uniffiResult);
-  } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod15: "
-        << error.what() << std::endl;
-    throw error;
-  }
-}
-
-static void
-callback(uint64_t rs_uniffiHandle, RustBuffer rs_secret, uint32_t rs_threshold,
-         uint32_t rs_numShares,
-         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-         uint64_t rs_uniffiCallbackData,
-         UniffiForeignFuture *rs_uniffiOutReturn) {
-  // If the runtime has shutdown, then there is no point in trying to
-  // call into Javascript. BUT how do we tell if the runtime has shutdown?
-  //
-  // Answer: the module destructor calls into callback `cleanup` method,
-  // which nulls out the rsLamda.
-  //
-  // If rsLamda is null, then there is no runtime to call into.
-  if (rsLambda == nullptr) {
-    // This only occurs when destructors are calling into Rust free/drop,
-    // which causes the JS callback to be dropped.
-    return;
-  }
-
-  // The runtime, the actual callback jsi::funtion, and the callInvoker
-  // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_secret, rs_threshold, rs_numShares,
-           rs_uniffiFutureCallback, rs_uniffiCallbackData, rs_uniffiOutReturn);
-}
-
-static UniffiCallbackInterfaceExternalSignerMethod15
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod15
-    jsi::Runtime &rt,
-    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-    const jsi::Value &value) {
-  if (rsLambda != nullptr) {
-    // `makeCallbackFunction` is called in two circumstances:
-    //
-    // 1. at startup, when initializing callback interface vtables.
-    // 2. when polling futures. This happens at least once per future that is
-    //    exposed to Javascript. We know that this is always the same function,
-    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
-    //
-    // We can therefore return the callback function without making anything
-    // new if we've been initialized already.
-    return callback;
-  }
-  auto callbackFunction = value.asObject(rt).asFunction(rt);
-  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
-  rsLambda = [&rt, callInvoker, callbackValue](
-                 uint64_t rs_uniffiHandle, RustBuffer rs_secret,
-                 uint32_t rs_threshold, uint32_t rs_numShares,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-    // We immediately make a lambda which will do the work of transforming the
-    // arguments into JSI values and calling the callback.
-    uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_uniffiHandle, rs_secret, rs_threshold,
-         rs_numShares, rs_uniffiFutureCallback, rs_uniffiCallbackData,
-         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_secret,
-               rs_threshold, rs_numShares, rs_uniffiFutureCallback,
-               rs_uniffiCallbackData, rs_uniffiOutReturn);
-        };
-    // We'll then call that lambda from the callInvoker which will
-    // look after calling it on the correct thread.
-    callInvoker->invokeBlocking(rt, jsLambda);
-  };
-  return callback;
-}
-
-// This method is called from the destructor of NativeBreezSdkSpark, which only
-// happens when the jsi::Runtime is being destroyed.
-static void cleanup() {
-  // The lambda holds a reference to the the Runtime, so when this is nulled
-  // out, then the pointer will no longer be left dangling.
-  rsLambda = nullptr;
-}
-} // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod15
-  // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod16
-
-// Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod16::UniffiCallbackInterfaceExternalSignerMethod16
-//
-// We have the following constraints:
-// - we need to pass a function pointer to Rust.
-// - we need a jsi::Runtime and jsi::Function to call into JS.
-// - function pointers can't store state, so we can't use a lamda.
-//
-// For this, we store a lambda as a global, as `rsLambda`. The `callback`
-// function calls the lambda, which itself calls the `body` which then calls
-// into JS.
-//
-// We then give the `callback` function pointer to Rust which will call the
-// lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod16 {
-using namespace facebook;
-
-// We need to store a lambda in a global so we can call it from
-// a function pointer. The function pointer is passed to Rust.
-static std::function<void(uint64_t, RustBuffer, RustBuffer,
-                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
-                          UniffiForeignFuture *)>
-    rsLambda = nullptr;
-
-// This is the main body of the callback. It's called from the lambda,
-// which itself is called from the callback function which is passed to Rust.
-static void body(jsi::Runtime &rt,
-                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-                 std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_uniffiHandle, RustBuffer rs_encryptedSecret,
-                 RustBuffer rs_receiverPublicKey,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-
-  // Convert the arguments from Rust, into jsi::Values.
-  // We'll use the Bridging class to do this…
-  auto js_uniffiHandle =
-      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
-  auto js_encryptedSecret = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
-      rt, callInvoker, rs_encryptedSecret);
-  auto js_receiverPublicKey =
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(rt, callInvoker,
-                                                          rs_receiverPublicKey);
-  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
-      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
-                                                   rs_uniffiFutureCallback);
-  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
-      rt, callInvoker, rs_uniffiCallbackData);
-
-  // Now we are ready to call the callback.
-  // We are already on the JS thread, because this `body` function was
-  // invoked from the CallInvoker.
-  try {
-    // Getting the callback function
-    auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult =
-        cb.call(rt, js_uniffiHandle, js_encryptedSecret, js_receiverPublicKey,
-                js_uniffiFutureCallback, js_uniffiCallbackData);
-
-    // return type is MutReference(Struct("ForeignFuture"))
-    // Finally, we need to copy the return value back into the Rust pointer.
-    *rs_uniffiOutReturn =
-        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
-            rt, callInvoker, uniffiResult);
-  } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod16: "
-        << error.what() << std::endl;
-    throw error;
-  }
-}
-
-static void
-callback(uint64_t rs_uniffiHandle, RustBuffer rs_encryptedSecret,
-         RustBuffer rs_receiverPublicKey,
-         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-         uint64_t rs_uniffiCallbackData,
-         UniffiForeignFuture *rs_uniffiOutReturn) {
-  // If the runtime has shutdown, then there is no point in trying to
-  // call into Javascript. BUT how do we tell if the runtime has shutdown?
-  //
-  // Answer: the module destructor calls into callback `cleanup` method,
-  // which nulls out the rsLamda.
-  //
-  // If rsLamda is null, then there is no runtime to call into.
-  if (rsLambda == nullptr) {
-    // This only occurs when destructors are calling into Rust free/drop,
-    // which causes the JS callback to be dropped.
-    return;
-  }
-
-  // The runtime, the actual callback jsi::funtion, and the callInvoker
-  // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_encryptedSecret, rs_receiverPublicKey,
-           rs_uniffiFutureCallback, rs_uniffiCallbackData, rs_uniffiOutReturn);
-}
-
-static UniffiCallbackInterfaceExternalSignerMethod16
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod16
-    jsi::Runtime &rt,
-    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-    const jsi::Value &value) {
-  if (rsLambda != nullptr) {
-    // `makeCallbackFunction` is called in two circumstances:
-    //
-    // 1. at startup, when initializing callback interface vtables.
-    // 2. when polling futures. This happens at least once per future that is
-    //    exposed to Javascript. We know that this is always the same function,
-    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
-    //
-    // We can therefore return the callback function without making anything
-    // new if we've been initialized already.
-    return callback;
-  }
-  auto callbackFunction = value.asObject(rt).asFunction(rt);
-  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
-  rsLambda = [&rt, callInvoker, callbackValue](
-                 uint64_t rs_uniffiHandle, RustBuffer rs_encryptedSecret,
-                 RustBuffer rs_receiverPublicKey,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-    // We immediately make a lambda which will do the work of transforming the
-    // arguments into JSI values and calling the callback.
-    uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_uniffiHandle, rs_encryptedSecret,
-         rs_receiverPublicKey, rs_uniffiFutureCallback, rs_uniffiCallbackData,
-         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_uniffiHandle,
-               rs_encryptedSecret, rs_receiverPublicKey,
-               rs_uniffiFutureCallback, rs_uniffiCallbackData,
-               rs_uniffiOutReturn);
-        };
-    // We'll then call that lambda from the callInvoker which will
-    // look after calling it on the correct thread.
-    callInvoker->invokeBlocking(rt, jsLambda);
-  };
-  return callback;
-}
-
-// This method is called from the destructor of NativeBreezSdkSpark, which only
-// happens when the jsi::Runtime is being destroyed.
-static void cleanup() {
-  // The lambda holds a reference to the the Runtime, so when this is nulled
-  // out, then the pointer will no longer be left dangling.
-  rsLambda = nullptr;
-}
-} // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod16
-  // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod17
-
-// Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod17::UniffiCallbackInterfaceExternalSignerMethod17
-//
-// We have the following constraints:
-// - we need to pass a function pointer to Rust.
-// - we need a jsi::Runtime and jsi::Function to call into JS.
-// - function pointers can't store state, so we can't use a lamda.
-//
-// For this, we store a lambda as a global, as `rsLambda`. The `callback`
-// function calls the lambda, which itself calls the `body` which then calls
-// into JS.
-//
-// We then give the `callback` function pointer to Rust which will call the
-// lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod17 {
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod3 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -7249,7 +6589,7 @@ static std::function<void(uint64_t, RustBuffer,
 static void body(jsi::Runtime &rt,
                  std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
                  std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_uniffiHandle, RustBuffer rs_secret,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_challenge,
                  UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
                  uint64_t rs_uniffiCallbackData,
                  UniffiForeignFuture *rs_uniffiOutReturn) {
@@ -7258,8 +6598,8 @@ static void body(jsi::Runtime &rt,
   // We'll use the Bridging class to do this…
   auto js_uniffiHandle =
       uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
-  auto js_secret = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
-      rt, callInvoker, rs_secret);
+  auto js_challenge = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_challenge);
   auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
       UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
                                                    rs_uniffiFutureCallback);
@@ -7272,7 +6612,7 @@ static void body(jsi::Runtime &rt,
   try {
     // Getting the callback function
     auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_secret,
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_challenge,
                                 js_uniffiFutureCallback, js_uniffiCallbackData);
 
     // return type is MutReference(Struct("ForeignFuture"))
@@ -7281,15 +6621,15 @@ static void body(jsi::Runtime &rt,
         uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod17: "
-        << error.what() << std::endl;
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod3: "
+              << error.what() << std::endl;
     throw error;
   }
 }
 
 static void
-callback(uint64_t rs_uniffiHandle, RustBuffer rs_secret,
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_challenge,
          UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
          uint64_t rs_uniffiCallbackData,
          UniffiForeignFuture *rs_uniffiOutReturn) {
@@ -7308,12 +6648,12 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_secret,
 
   // The runtime, the actual callback jsi::funtion, and the callInvoker
   // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_secret, rs_uniffiFutureCallback,
+  rsLambda(rs_uniffiHandle, rs_challenge, rs_uniffiFutureCallback,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceExternalSignerMethod17
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod17
+static UniffiCallbackInterfaceExternalSparkSignerMethod3
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod3
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -7332,17 +6672,17 @@ makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternals
   auto callbackFunction = value.asObject(rt).asFunction(rt);
   auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
   rsLambda = [&rt, callInvoker, callbackValue](
-                 uint64_t rs_uniffiHandle, RustBuffer rs_secret,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_challenge,
                  UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
                  uint64_t rs_uniffiCallbackData,
                  UniffiForeignFuture *rs_uniffiOutReturn) {
     // We immediately make a lambda which will do the work of transforming the
     // arguments into JSI values and calling the callback.
     uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_uniffiHandle, rs_secret,
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_challenge,
          rs_uniffiFutureCallback, rs_uniffiCallbackData,
          rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_secret,
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_challenge,
                rs_uniffiFutureCallback, rs_uniffiCallbackData,
                rs_uniffiOutReturn);
         };
@@ -7361,12 +6701,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod17
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod3
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod18
+  // CallbackInterfaceExternalSparkSignerMethod4
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod18::UniffiCallbackInterfaceExternalSignerMethod18
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod4::UniffiCallbackInterfaceExternalSparkSignerMethod4
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -7379,7 +6719,300 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod18 {
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod4 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer,
+                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_message,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_message = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_message);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_message,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod4: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_message,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_message, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceExternalSparkSignerMethod4
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod4
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_message,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_message,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_message,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod4
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceExternalSparkSignerMethod5
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod5::UniffiCallbackInterfaceExternalSparkSignerMethod5
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod5 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer,
+                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_jobs,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_jobs = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_jobs);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_jobs,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod5: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_jobs,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_jobs, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceExternalSparkSignerMethod5
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod5
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_jobs,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_jobs,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_jobs,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod5
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceExternalSparkSignerMethod6
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod6::UniffiCallbackInterfaceExternalSparkSignerMethod6
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod6 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -7426,9 +7059,9 @@ static void body(jsi::Runtime &rt,
         uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod18: "
-        << error.what() << std::endl;
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod6: "
+              << error.what() << std::endl;
     throw error;
   }
 }
@@ -7457,8 +7090,8 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_request,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceExternalSignerMethod18
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod18
+static UniffiCallbackInterfaceExternalSparkSignerMethod6
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod6
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -7506,12 +7139,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod18
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod6
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceExternalSignerMethod19
+  // CallbackInterfaceExternalSparkSignerMethod7
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod19::UniffiCallbackInterfaceExternalSignerMethod19
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod7::UniffiCallbackInterfaceExternalSparkSignerMethod7
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -7524,7 +7157,8 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod19 {
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod7 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -7571,9 +7205,9 @@ static void body(jsi::Runtime &rt,
         uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
-    std::cout
-        << "Error in callback UniffiCallbackInterfaceExternalSignerMethod19: "
-        << error.what() << std::endl;
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod7: "
+              << error.what() << std::endl;
     throw error;
   }
 }
@@ -7602,8 +7236,8 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_request,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceExternalSignerMethod19
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod19
+static UniffiCallbackInterfaceExternalSparkSignerMethod7
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod7
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -7651,7 +7285,1029 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod19
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod7
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceExternalSparkSignerMethod8
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod8::UniffiCallbackInterfaceExternalSparkSignerMethod8
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod8 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer,
+                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_request = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_request);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_request,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod8: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_request,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_request, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceExternalSparkSignerMethod8
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod8
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod8
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceExternalSparkSignerMethod9
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod9::UniffiCallbackInterfaceExternalSparkSignerMethod9
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod9 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer,
+                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_request = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_request);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_request,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod9: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_request,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_request, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceExternalSparkSignerMethod9
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod9
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod9
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceExternalSparkSignerMethod10
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod10::UniffiCallbackInterfaceExternalSparkSignerMethod10
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod10 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer,
+                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_request = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_request);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_request,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod10: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_request,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_request, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceExternalSparkSignerMethod10
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod10
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod10
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceExternalSparkSignerMethod11
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod11::UniffiCallbackInterfaceExternalSparkSignerMethod11
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod11 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer,
+                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_request = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_request);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_request,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod11: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_request,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_request, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceExternalSparkSignerMethod11
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod11
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod11
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceExternalSparkSignerMethod12
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod12::UniffiCallbackInterfaceExternalSparkSignerMethod12
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod12 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer,
+                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_request = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_request);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_request,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod12: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_request,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_request, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceExternalSparkSignerMethod12
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod12
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod12
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceExternalSparkSignerMethod13
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod13::UniffiCallbackInterfaceExternalSparkSignerMethod13
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod13 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer,
+                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_request = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_request);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_request,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod13: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_request,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_request, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceExternalSparkSignerMethod13
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod13
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod13
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceExternalSparkSignerMethod14
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod14::UniffiCallbackInterfaceExternalSparkSignerMethod14
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfaceexternalsparksignermethod14 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer,
+                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_request = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_request);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_request,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceExternalSparkSignerMethod14: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_request,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_request, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceExternalSparkSignerMethod14
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod14
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod14
   // Implementation of callback function calling from Rust to JS
   // CallbackInterfaceFiatServiceMethod0
 
@@ -7931,293 +8587,6 @@ static void cleanup() {
 }
 } // namespace uniffi::breez_sdk_spark::cb::callbackinterfacefiatservicemethod1
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfacePasskeyPrfProviderMethod0
-
-// Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfacepasskeyprfprovidermethod0::UniffiCallbackInterfacePasskeyPrfProviderMethod0
-//
-// We have the following constraints:
-// - we need to pass a function pointer to Rust.
-// - we need a jsi::Runtime and jsi::Function to call into JS.
-// - function pointers can't store state, so we can't use a lamda.
-//
-// For this, we store a lambda as a global, as `rsLambda`. The `callback`
-// function calls the lambda, which itself calls the `body` which then calls
-// into JS.
-//
-// We then give the `callback` function pointer to Rust which will call the
-// lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::
-    callbackinterfacepasskeyprfprovidermethod0 {
-using namespace facebook;
-
-// We need to store a lambda in a global so we can call it from
-// a function pointer. The function pointer is passed to Rust.
-static std::function<void(uint64_t, RustBuffer,
-                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
-                          UniffiForeignFuture *)>
-    rsLambda = nullptr;
-
-// This is the main body of the callback. It's called from the lambda,
-// which itself is called from the callback function which is passed to Rust.
-static void body(jsi::Runtime &rt,
-                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-                 std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_uniffiHandle, RustBuffer rs_salt,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-
-  // Convert the arguments from Rust, into jsi::Values.
-  // We'll use the Bridging class to do this…
-  auto js_uniffiHandle =
-      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
-  auto js_salt = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
-      rt, callInvoker, rs_salt);
-  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
-      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
-                                                   rs_uniffiFutureCallback);
-  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
-      rt, callInvoker, rs_uniffiCallbackData);
-
-  // Now we are ready to call the callback.
-  // We are already on the JS thread, because this `body` function was
-  // invoked from the CallInvoker.
-  try {
-    // Getting the callback function
-    auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_salt,
-                                js_uniffiFutureCallback, js_uniffiCallbackData);
-
-    // return type is MutReference(Struct("ForeignFuture"))
-    // Finally, we need to copy the return value back into the Rust pointer.
-    *rs_uniffiOutReturn =
-        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
-            rt, callInvoker, uniffiResult);
-  } catch (const jsi::JSError &error) {
-    std::cout << "Error in callback "
-                 "UniffiCallbackInterfacePasskeyPrfProviderMethod0: "
-              << error.what() << std::endl;
-    throw error;
-  }
-}
-
-static void
-callback(uint64_t rs_uniffiHandle, RustBuffer rs_salt,
-         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-         uint64_t rs_uniffiCallbackData,
-         UniffiForeignFuture *rs_uniffiOutReturn) {
-  // If the runtime has shutdown, then there is no point in trying to
-  // call into Javascript. BUT how do we tell if the runtime has shutdown?
-  //
-  // Answer: the module destructor calls into callback `cleanup` method,
-  // which nulls out the rsLamda.
-  //
-  // If rsLamda is null, then there is no runtime to call into.
-  if (rsLambda == nullptr) {
-    // This only occurs when destructors are calling into Rust free/drop,
-    // which causes the JS callback to be dropped.
-    return;
-  }
-
-  // The runtime, the actual callback jsi::funtion, and the callInvoker
-  // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_salt, rs_uniffiFutureCallback,
-           rs_uniffiCallbackData, rs_uniffiOutReturn);
-}
-
-static UniffiCallbackInterfacePasskeyPrfProviderMethod0
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacepasskeyprfprovidermethod0
-    jsi::Runtime &rt,
-    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-    const jsi::Value &value) {
-  if (rsLambda != nullptr) {
-    // `makeCallbackFunction` is called in two circumstances:
-    //
-    // 1. at startup, when initializing callback interface vtables.
-    // 2. when polling futures. This happens at least once per future that is
-    //    exposed to Javascript. We know that this is always the same function,
-    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
-    //
-    // We can therefore return the callback function without making anything
-    // new if we've been initialized already.
-    return callback;
-  }
-  auto callbackFunction = value.asObject(rt).asFunction(rt);
-  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
-  rsLambda = [&rt, callInvoker, callbackValue](
-                 uint64_t rs_uniffiHandle, RustBuffer rs_salt,
-                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-    // We immediately make a lambda which will do the work of transforming the
-    // arguments into JSI values and calling the callback.
-    uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_uniffiHandle, rs_salt,
-         rs_uniffiFutureCallback, rs_uniffiCallbackData,
-         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_salt,
-               rs_uniffiFutureCallback, rs_uniffiCallbackData,
-               rs_uniffiOutReturn);
-        };
-    // We'll then call that lambda from the callInvoker which will
-    // look after calling it on the correct thread.
-    callInvoker->invokeBlocking(rt, jsLambda);
-  };
-  return callback;
-}
-
-// This method is called from the destructor of NativeBreezSdkSpark, which only
-// happens when the jsi::Runtime is being destroyed.
-static void cleanup() {
-  // The lambda holds a reference to the the Runtime, so when this is nulled
-  // out, then the pointer will no longer be left dangling.
-  rsLambda = nullptr;
-}
-} // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfacepasskeyprfprovidermethod0
-  // Implementation of callback function calling from Rust to JS
-  // CallbackInterfacePasskeyPrfProviderMethod1
-
-// Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfacepasskeyprfprovidermethod1::UniffiCallbackInterfacePasskeyPrfProviderMethod1
-//
-// We have the following constraints:
-// - we need to pass a function pointer to Rust.
-// - we need a jsi::Runtime and jsi::Function to call into JS.
-// - function pointers can't store state, so we can't use a lamda.
-//
-// For this, we store a lambda as a global, as `rsLambda`. The `callback`
-// function calls the lambda, which itself calls the `body` which then calls
-// into JS.
-//
-// We then give the `callback` function pointer to Rust which will call the
-// lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::
-    callbackinterfacepasskeyprfprovidermethod1 {
-using namespace facebook;
-
-// We need to store a lambda in a global so we can call it from
-// a function pointer. The function pointer is passed to Rust.
-static std::function<void(uint64_t, UniffiForeignFutureCompleteI8, uint64_t,
-                          UniffiForeignFuture *)>
-    rsLambda = nullptr;
-
-// This is the main body of the callback. It's called from the lambda,
-// which itself is called from the callback function which is passed to Rust.
-static void body(jsi::Runtime &rt,
-                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-                 std::shared_ptr<jsi::Value> callbackValue,
-                 uint64_t rs_uniffiHandle,
-                 UniffiForeignFutureCompleteI8 rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-
-  // Convert the arguments from Rust, into jsi::Values.
-  // We'll use the Bridging class to do this…
-  auto js_uniffiHandle =
-      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
-  auto js_uniffiFutureCallback =
-      uniffi::breez_sdk_spark::Bridging<UniffiForeignFutureCompleteI8>::toJs(
-          rt, callInvoker, rs_uniffiFutureCallback);
-  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
-      rt, callInvoker, rs_uniffiCallbackData);
-
-  // Now we are ready to call the callback.
-  // We are already on the JS thread, because this `body` function was
-  // invoked from the CallInvoker.
-  try {
-    // Getting the callback function
-    auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_uniffiFutureCallback,
-                                js_uniffiCallbackData);
-
-    // return type is MutReference(Struct("ForeignFuture"))
-    // Finally, we need to copy the return value back into the Rust pointer.
-    *rs_uniffiOutReturn =
-        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
-            rt, callInvoker, uniffiResult);
-  } catch (const jsi::JSError &error) {
-    std::cout << "Error in callback "
-                 "UniffiCallbackInterfacePasskeyPrfProviderMethod1: "
-              << error.what() << std::endl;
-    throw error;
-  }
-}
-
-static void callback(uint64_t rs_uniffiHandle,
-                     UniffiForeignFutureCompleteI8 rs_uniffiFutureCallback,
-                     uint64_t rs_uniffiCallbackData,
-                     UniffiForeignFuture *rs_uniffiOutReturn) {
-  // If the runtime has shutdown, then there is no point in trying to
-  // call into Javascript. BUT how do we tell if the runtime has shutdown?
-  //
-  // Answer: the module destructor calls into callback `cleanup` method,
-  // which nulls out the rsLamda.
-  //
-  // If rsLamda is null, then there is no runtime to call into.
-  if (rsLambda == nullptr) {
-    // This only occurs when destructors are calling into Rust free/drop,
-    // which causes the JS callback to be dropped.
-    return;
-  }
-
-  // The runtime, the actual callback jsi::funtion, and the callInvoker
-  // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_uniffiFutureCallback, rs_uniffiCallbackData,
-           rs_uniffiOutReturn);
-}
-
-static UniffiCallbackInterfacePasskeyPrfProviderMethod1
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacepasskeyprfprovidermethod1
-    jsi::Runtime &rt,
-    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
-    const jsi::Value &value) {
-  if (rsLambda != nullptr) {
-    // `makeCallbackFunction` is called in two circumstances:
-    //
-    // 1. at startup, when initializing callback interface vtables.
-    // 2. when polling futures. This happens at least once per future that is
-    //    exposed to Javascript. We know that this is always the same function,
-    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
-    //
-    // We can therefore return the callback function without making anything
-    // new if we've been initialized already.
-    return callback;
-  }
-  auto callbackFunction = value.asObject(rt).asFunction(rt);
-  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
-  rsLambda = [&rt, callInvoker, callbackValue](
-                 uint64_t rs_uniffiHandle,
-                 UniffiForeignFutureCompleteI8 rs_uniffiFutureCallback,
-                 uint64_t rs_uniffiCallbackData,
-                 UniffiForeignFuture *rs_uniffiOutReturn) {
-    // We immediately make a lambda which will do the work of transforming the
-    // arguments into JSI values and calling the callback.
-    uniffi_runtime::UniffiCallFunc jsLambda =
-        [callInvoker, callbackValue, rs_uniffiHandle, rs_uniffiFutureCallback,
-         rs_uniffiCallbackData, rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
-          body(rt, callInvoker, callbackValue, rs_uniffiHandle,
-               rs_uniffiFutureCallback, rs_uniffiCallbackData,
-               rs_uniffiOutReturn);
-        };
-    // We'll then call that lambda from the callInvoker which will
-    // look after calling it on the correct thread.
-    callInvoker->invokeBlocking(rt, jsLambda);
-  };
-  return callback;
-}
-
-// This method is called from the destructor of NativeBreezSdkSpark, which only
-// happens when the jsi::Runtime is being destroyed.
-static void cleanup() {
-  // The lambda holds a reference to the the Runtime, so when this is nulled
-  // out, then the pointer will no longer be left dangling.
-  rsLambda = nullptr;
-}
-} // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfacepasskeyprfprovidermethod1
-  // Implementation of callback function calling from Rust to JS
   // CallbackInterfacePaymentObserverMethod0
 
 // Callback function:
@@ -8360,6 +8729,713 @@ static void cleanup() {
 }
 } // namespace
   // uniffi::breez_sdk_spark::cb::callbackinterfacepaymentobservermethod0
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfacePaymentObserverMethod1
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfacepaymentobservermethod1::UniffiCallbackInterfacePaymentObserverMethod1
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::callbackinterfacepaymentobservermethod1 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer, UniffiForeignFutureCompleteVoid,
+                          uint64_t, UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_updates,
+                 UniffiForeignFutureCompleteVoid rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_updates = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_updates);
+  auto js_uniffiFutureCallback =
+      uniffi::breez_sdk_spark::Bridging<UniffiForeignFutureCompleteVoid>::toJs(
+          rt, callInvoker, rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_updates,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout
+        << "Error in callback UniffiCallbackInterfacePaymentObserverMethod1: "
+        << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void callback(uint64_t rs_uniffiHandle, RustBuffer rs_updates,
+                     UniffiForeignFutureCompleteVoid rs_uniffiFutureCallback,
+                     uint64_t rs_uniffiCallbackData,
+                     UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_updates, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfacePaymentObserverMethod1
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacepaymentobservermethod1
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_updates,
+                 UniffiForeignFutureCompleteVoid rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_updates,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_updates,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::cb::callbackinterfacepaymentobservermethod1
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfacePrfProviderMethod0
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod0::UniffiCallbackInterfacePrfProviderMethod0
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod0 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer,
+                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_request = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_request);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_request,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback UniffiCallbackInterfacePrfProviderMethod0: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_request,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_request, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfacePrfProviderMethod0
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod0
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_request,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_request,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod0
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfacePrfProviderMethod1
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod1::UniffiCallbackInterfacePrfProviderMethod1
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod1 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, UniffiForeignFutureCompleteI8, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle,
+                 UniffiForeignFutureCompleteI8 rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_uniffiFutureCallback =
+      uniffi::breez_sdk_spark::Bridging<UniffiForeignFutureCompleteI8>::toJs(
+          rt, callInvoker, rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_uniffiFutureCallback,
+                                js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback UniffiCallbackInterfacePrfProviderMethod1: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void callback(uint64_t rs_uniffiHandle,
+                     UniffiForeignFutureCompleteI8 rs_uniffiFutureCallback,
+                     uint64_t rs_uniffiCallbackData,
+                     UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_uniffiFutureCallback, rs_uniffiCallbackData,
+           rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfacePrfProviderMethod1
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod1
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle,
+                 UniffiForeignFutureCompleteI8 rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_uniffiFutureCallback,
+         rs_uniffiCallbackData, rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod1
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfacePrfProviderMethod2
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod2::UniffiCallbackInterfacePrfProviderMethod2
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod2 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer,
+                          UniffiForeignFutureCompleteRustBuffer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_excludeCredentials,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_excludeCredentials =
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+          rt, callInvoker, rs_excludeCredentials);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_excludeCredentials,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback UniffiCallbackInterfacePrfProviderMethod2: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle, RustBuffer rs_excludeCredentials,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_excludeCredentials, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfacePrfProviderMethod2
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod2
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_excludeCredentials,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_excludeCredentials,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle,
+               rs_excludeCredentials, rs_uniffiFutureCallback,
+               rs_uniffiCallbackData, rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod2
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfacePrfProviderMethod3
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod3::UniffiCallbackInterfacePrfProviderMethod3
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod3 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, UniffiForeignFutureCompleteRustBuffer,
+                          uint64_t, UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
+                                                   rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_uniffiFutureCallback,
+                                js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback UniffiCallbackInterfacePrfProviderMethod3: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void
+callback(uint64_t rs_uniffiHandle,
+         UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+         uint64_t rs_uniffiCallbackData,
+         UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_uniffiFutureCallback, rs_uniffiCallbackData,
+           rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfacePrfProviderMethod3
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod3
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle,
+                 UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_uniffiFutureCallback,
+         rs_uniffiCallbackData, rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod3
   // Implementation of callback function calling from Rust to JS
   // CallbackInterfaceRestClientMethod0
 
@@ -8810,10 +9886,10 @@ static void cleanup() {
 }
 } // namespace uniffi::breez_sdk_spark::cb::callbackinterfacerestclientmethod2
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceSessionManagerMethod0
+  // CallbackInterfaceSessionStoreMethod0
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfacesessionmanagermethod0::UniffiCallbackInterfaceSessionManagerMethod0
+// uniffi::breez_sdk_spark::cb::callbackinterfacesessionstoremethod0::UniffiCallbackInterfaceSessionStoreMethod0
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -8826,7 +9902,7 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfacesessionmanagermethod0 {
+namespace uniffi::breez_sdk_spark::cb::callbackinterfacesessionstoremethod0 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -8875,7 +9951,7 @@ static void body(jsi::Runtime &rt,
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
     std::cout
-        << "Error in callback UniffiCallbackInterfaceSessionManagerMethod0: "
+        << "Error in callback UniffiCallbackInterfaceSessionStoreMethod0: "
         << error.what() << std::endl;
     throw error;
   }
@@ -8905,8 +9981,8 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_serviceIdentityKey,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceSessionManagerMethod0
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacesessionmanagermethod0
+static UniffiCallbackInterfaceSessionStoreMethod0
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacesessionstoremethod0
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -8953,13 +10029,12 @@ static void cleanup() {
   // out, then the pointer will no longer be left dangling.
   rsLambda = nullptr;
 }
-} // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfacesessionmanagermethod0
+} // namespace uniffi::breez_sdk_spark::cb::callbackinterfacesessionstoremethod0
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceSessionManagerMethod1
+  // CallbackInterfaceSessionStoreMethod1
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfacesessionmanagermethod1::UniffiCallbackInterfaceSessionManagerMethod1
+// uniffi::breez_sdk_spark::cb::callbackinterfacesessionstoremethod1::UniffiCallbackInterfaceSessionStoreMethod1
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -8972,7 +10047,7 @@ static void cleanup() {
 //
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
-namespace uniffi::breez_sdk_spark::cb::callbackinterfacesessionmanagermethod1 {
+namespace uniffi::breez_sdk_spark::cb::callbackinterfacesessionstoremethod1 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -9025,7 +10100,7 @@ static void body(jsi::Runtime &rt,
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
     std::cout
-        << "Error in callback UniffiCallbackInterfaceSessionManagerMethod1: "
+        << "Error in callback UniffiCallbackInterfaceSessionStoreMethod1: "
         << error.what() << std::endl;
     throw error;
   }
@@ -9055,8 +10130,8 @@ static void callback(uint64_t rs_uniffiHandle, RustBuffer rs_serviceIdentityKey,
            rs_uniffiFutureCallback, rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceSessionManagerMethod1
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacesessionmanagermethod1
+static UniffiCallbackInterfaceSessionStoreMethod1
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacesessionstoremethod1
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -9104,8 +10179,7 @@ static void cleanup() {
   // out, then the pointer will no longer be left dangling.
   rsLambda = nullptr;
 }
-} // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfacesessionmanagermethod1
+} // namespace uniffi::breez_sdk_spark::cb::callbackinterfacesessionstoremethod1
   // Implementation of callback function calling from Rust to JS
   // CallbackInterfaceStorageMethod0
 
@@ -9702,7 +10776,7 @@ using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
 // a function pointer. The function pointer is passed to Rust.
-static std::function<void(uint64_t, RustBuffer, UniffiForeignFutureCompleteVoid,
+static std::function<void(uint64_t, RustBuffer, UniffiForeignFutureCompleteI8,
                           uint64_t, UniffiForeignFuture *)>
     rsLambda = nullptr;
 
@@ -9712,7 +10786,7 @@ static void body(jsi::Runtime &rt,
                  std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
                  std::shared_ptr<jsi::Value> callbackValue,
                  uint64_t rs_uniffiHandle, RustBuffer rs_payment,
-                 UniffiForeignFutureCompleteVoid rs_uniffiFutureCallback,
+                 UniffiForeignFutureCompleteI8 rs_uniffiFutureCallback,
                  uint64_t rs_uniffiCallbackData,
                  UniffiForeignFuture *rs_uniffiOutReturn) {
 
@@ -9723,7 +10797,7 @@ static void body(jsi::Runtime &rt,
   auto js_payment = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
       rt, callInvoker, rs_payment);
   auto js_uniffiFutureCallback =
-      uniffi::breez_sdk_spark::Bridging<UniffiForeignFutureCompleteVoid>::toJs(
+      uniffi::breez_sdk_spark::Bridging<UniffiForeignFutureCompleteI8>::toJs(
           rt, callInvoker, rs_uniffiFutureCallback);
   auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
       rt, callInvoker, rs_uniffiCallbackData);
@@ -9750,7 +10824,7 @@ static void body(jsi::Runtime &rt,
 }
 
 static void callback(uint64_t rs_uniffiHandle, RustBuffer rs_payment,
-                     UniffiForeignFutureCompleteVoid rs_uniffiFutureCallback,
+                     UniffiForeignFutureCompleteI8 rs_uniffiFutureCallback,
                      uint64_t rs_uniffiCallbackData,
                      UniffiForeignFuture *rs_uniffiOutReturn) {
   // If the runtime has shutdown, then there is no point in trying to
@@ -9793,7 +10867,7 @@ makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacestorageme
   auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
   rsLambda = [&rt, callInvoker, callbackValue](
                  uint64_t rs_uniffiHandle, RustBuffer rs_payment,
-                 UniffiForeignFutureCompleteVoid rs_uniffiFutureCallback,
+                 UniffiForeignFutureCompleteI8 rs_uniffiFutureCallback,
                  uint64_t rs_uniffiCallbackData,
                  UniffiForeignFuture *rs_uniffiOutReturn) {
     // We immediately make a lambda which will do the work of transforming the
@@ -12966,6 +14040,155 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod26
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceStorageBackendMethod0
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfacestoragebackendmethod0::UniffiCallbackInterfaceStorageBackendMethod0
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::callbackinterfacestoragebackendmethod0 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, RustBuffer, RustBuffer,
+                          UniffiForeignFutureCompletePointer, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle, RustBuffer rs_network,
+                 RustBuffer rs_identity,
+                 UniffiForeignFutureCompletePointer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_network = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_network);
+  auto js_identity = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_identity);
+  auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
+      UniffiForeignFutureCompletePointer>::toJs(rt, callInvoker,
+                                                rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_network, js_identity,
+                                js_uniffiFutureCallback, js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout
+        << "Error in callback UniffiCallbackInterfaceStorageBackendMethod0: "
+        << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void callback(uint64_t rs_uniffiHandle, RustBuffer rs_network,
+                     RustBuffer rs_identity,
+                     UniffiForeignFutureCompletePointer rs_uniffiFutureCallback,
+                     uint64_t rs_uniffiCallbackData,
+                     UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_network, rs_identity, rs_uniffiFutureCallback,
+           rs_uniffiCallbackData, rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceStorageBackendMethod0
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacestoragebackendmethod0
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle, RustBuffer rs_network,
+                 RustBuffer rs_identity,
+                 UniffiForeignFutureCompletePointer rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_network, rs_identity,
+         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle, rs_network,
+               rs_identity, rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::cb::callbackinterfacestoragebackendmethod0
 namespace uniffi::breez_sdk_spark {
 using namespace facebook;
 using CallInvoker = uniffi_runtime::UniffiCallInvoker;
@@ -13086,92 +14309,135 @@ namespace uniffi::breez_sdk_spark {
 using namespace facebook;
 using CallInvoker = uniffi_runtime::UniffiCallInvoker;
 
-template <> struct Bridging<UniffiVTableCallbackInterfaceExternalSigner> {
-  static UniffiVTableCallbackInterfaceExternalSigner
+template <> struct Bridging<UniffiVTableCallbackInterfaceExternalBreezSigner> {
+  static UniffiVTableCallbackInterfaceExternalBreezSigner
   fromJs(jsi::Runtime &rt, std::shared_ptr<CallInvoker> callInvoker,
          const jsi::Value &jsValue) {
     // Check if the input is an object
     if (!jsValue.isObject()) {
-      throw jsi::JSError(
-          rt,
-          "Expected an object for UniffiVTableCallbackInterfaceExternalSigner");
+      throw jsi::JSError(rt,
+                         "Expected an object for "
+                         "UniffiVTableCallbackInterfaceExternalBreezSigner");
     }
 
     // Get the object from the jsi::Value
     auto jsObject = jsValue.getObject(rt);
 
     // Create the vtable struct
-    UniffiVTableCallbackInterfaceExternalSigner rsObject;
+    UniffiVTableCallbackInterfaceExternalBreezSigner rsObject;
 
     // Create the vtable from the js callbacks.
-    rsObject.identity_public_key = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod0::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "identityPublicKey"));
     rsObject.derive_public_key = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod1::makeCallbackFunction(
+        callbackinterfaceexternalbreezsignermethod0::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "derivePublicKey"));
     rsObject.sign_ecdsa = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod2::makeCallbackFunction(
+        callbackinterfaceexternalbreezsignermethod1::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "signEcdsa"));
     rsObject.sign_ecdsa_recoverable = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod3::makeCallbackFunction(
+        callbackinterfaceexternalbreezsignermethod2::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "signEcdsaRecoverable"));
     rsObject.encrypt_ecies = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod4::makeCallbackFunction(
+        callbackinterfaceexternalbreezsignermethod3::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "encryptEcies"));
     rsObject.decrypt_ecies = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod5::makeCallbackFunction(
+        callbackinterfaceexternalbreezsignermethod4::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "decryptEcies"));
     rsObject.sign_hash_schnorr = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod6::makeCallbackFunction(
+        callbackinterfaceexternalbreezsignermethod5::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "signHashSchnorr"));
     rsObject.hmac_sha256 = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod7::makeCallbackFunction(
+        callbackinterfaceexternalbreezsignermethod6::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "hmacSha256"));
-    rsObject.generate_random_signing_commitment = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod8::makeCallbackFunction(
+    rsObject.uniffi_free = uniffi::breez_sdk_spark::st::
+        vtablecallbackinterfaceexternalbreezsigner::
+            vtablecallbackinterfaceexternalbreezsigner::free::
+                makeCallbackFunction(rt, callInvoker,
+                                     jsObject.getProperty(rt, "uniffiFree"));
+
+    return rsObject;
+  }
+};
+
+} // namespace uniffi::breez_sdk_spark
+namespace uniffi::breez_sdk_spark {
+using namespace facebook;
+using CallInvoker = uniffi_runtime::UniffiCallInvoker;
+
+template <> struct Bridging<UniffiVTableCallbackInterfaceExternalSparkSigner> {
+  static UniffiVTableCallbackInterfaceExternalSparkSigner
+  fromJs(jsi::Runtime &rt, std::shared_ptr<CallInvoker> callInvoker,
+         const jsi::Value &jsValue) {
+    // Check if the input is an object
+    if (!jsValue.isObject()) {
+      throw jsi::JSError(rt,
+                         "Expected an object for "
+                         "UniffiVTableCallbackInterfaceExternalSparkSigner");
+    }
+
+    // Get the object from the jsi::Value
+    auto jsObject = jsValue.getObject(rt);
+
+    // Create the vtable struct
+    UniffiVTableCallbackInterfaceExternalSparkSigner rsObject;
+
+    // Create the vtable from the js callbacks.
+    rsObject.get_identity_public_key = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod0::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "getIdentityPublicKey"));
+    rsObject.get_public_key_for_leaf = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod1::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "getPublicKeyForLeaf"));
+    rsObject.get_static_deposit_public_key = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod2::makeCallbackFunction(
             rt, callInvoker,
-            jsObject.getProperty(rt, "generateRandomSigningCommitment"));
-    rsObject.get_public_key_for_node = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod9::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "getPublicKeyForNode"));
-    rsObject.generate_random_secret = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod10::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "generateRandomSecret"));
-    rsObject.static_deposit_secret_encrypted = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod11::makeCallbackFunction(
+            jsObject.getProperty(rt, "getStaticDepositPublicKey"));
+    rsObject.sign_authentication_challenge = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod3::makeCallbackFunction(
             rt, callInvoker,
-            jsObject.getProperty(rt, "staticDepositSecretEncrypted"));
-    rsObject.static_deposit_secret = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod12::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "staticDepositSecret"));
-    rsObject.static_deposit_signing_key = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod13::makeCallbackFunction(
-            rt, callInvoker,
-            jsObject.getProperty(rt, "staticDepositSigningKey"));
-    rsObject.subtract_secrets = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod14::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "subtractSecrets"));
-    rsObject.split_secret_with_proofs = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod15::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "splitSecretWithProofs"));
-    rsObject.encrypt_secret_for_receiver = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod16::makeCallbackFunction(
-            rt, callInvoker,
-            jsObject.getProperty(rt, "encryptSecretForReceiver"));
-    rsObject.public_key_from_secret = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod17::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "publicKeyFromSecret"));
+            jsObject.getProperty(rt, "signAuthenticationChallenge"));
+    rsObject.sign_message = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod4::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "signMessage"));
     rsObject.sign_frost = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod18::makeCallbackFunction(
+        callbackinterfaceexternalsparksignermethod5::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "signFrost"));
-    rsObject.aggregate_frost = uniffi::breez_sdk_spark::cb::
-        callbackinterfaceexternalsignermethod19::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "aggregateFrost"));
-    rsObject.uniffi_free =
-        uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalsigner::
-            vtablecallbackinterfaceexternalsigner::free::makeCallbackFunction(
-                rt, callInvoker, jsObject.getProperty(rt, "uniffiFree"));
+    rsObject.prepare_transfer = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod6::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "prepareTransfer"));
+    rsObject.prepare_claim = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod7::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "prepareClaim"));
+    rsObject.prepare_lightning_receive = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod8::makeCallbackFunction(
+            rt, callInvoker,
+            jsObject.getProperty(rt, "prepareLightningReceive"));
+    rsObject.prepare_static_deposit = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod9::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "prepareStaticDeposit"));
+    rsObject.start_static_deposit_refund = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod10::makeCallbackFunction(
+            rt, callInvoker,
+            jsObject.getProperty(rt, "startStaticDepositRefund"));
+    rsObject.sign_static_deposit_refund = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod11::makeCallbackFunction(
+            rt, callInvoker,
+            jsObject.getProperty(rt, "signStaticDepositRefund"));
+    rsObject.sign_spark_invoice = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod12::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "signSparkInvoice"));
+    rsObject.prepare_token_transaction = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod13::makeCallbackFunction(
+            rt, callInvoker,
+            jsObject.getProperty(rt, "prepareTokenTransaction"));
+    rsObject.prepare_static_deposit_claim = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceexternalsparksignermethod14::makeCallbackFunction(
+            rt, callInvoker,
+            jsObject.getProperty(rt, "prepareStaticDepositClaim"));
+    rsObject.uniffi_free = uniffi::breez_sdk_spark::st::
+        vtablecallbackinterfaceexternalsparksigner::
+            vtablecallbackinterfaceexternalsparksigner::free::
+                makeCallbackFunction(rt, callInvoker,
+                                     jsObject.getProperty(rt, "uniffiFree"));
 
     return rsObject;
   }
@@ -13220,44 +14486,6 @@ namespace uniffi::breez_sdk_spark {
 using namespace facebook;
 using CallInvoker = uniffi_runtime::UniffiCallInvoker;
 
-template <> struct Bridging<UniffiVTableCallbackInterfacePasskeyPrfProvider> {
-  static UniffiVTableCallbackInterfacePasskeyPrfProvider
-  fromJs(jsi::Runtime &rt, std::shared_ptr<CallInvoker> callInvoker,
-         const jsi::Value &jsValue) {
-    // Check if the input is an object
-    if (!jsValue.isObject()) {
-      throw jsi::JSError(rt, "Expected an object for "
-                             "UniffiVTableCallbackInterfacePasskeyPrfProvider");
-    }
-
-    // Get the object from the jsi::Value
-    auto jsObject = jsValue.getObject(rt);
-
-    // Create the vtable struct
-    UniffiVTableCallbackInterfacePasskeyPrfProvider rsObject;
-
-    // Create the vtable from the js callbacks.
-    rsObject.derive_prf_seed = uniffi::breez_sdk_spark::cb::
-        callbackinterfacepasskeyprfprovidermethod0::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "derivePrfSeed"));
-    rsObject.is_prf_available = uniffi::breez_sdk_spark::cb::
-        callbackinterfacepasskeyprfprovidermethod1::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "isPrfAvailable"));
-    rsObject.uniffi_free =
-        uniffi::breez_sdk_spark::st::vtablecallbackinterfacepasskeyprfprovider::
-            vtablecallbackinterfacepasskeyprfprovider::free::
-                makeCallbackFunction(rt, callInvoker,
-                                     jsObject.getProperty(rt, "uniffiFree"));
-
-    return rsObject;
-  }
-};
-
-} // namespace uniffi::breez_sdk_spark
-namespace uniffi::breez_sdk_spark {
-using namespace facebook;
-using CallInvoker = uniffi_runtime::UniffiCallInvoker;
-
 template <> struct Bridging<UniffiVTableCallbackInterfacePaymentObserver> {
   static UniffiVTableCallbackInterfacePaymentObserver
   fromJs(jsi::Runtime &rt, std::shared_ptr<CallInvoker> callInvoker,
@@ -13278,9 +14506,57 @@ template <> struct Bridging<UniffiVTableCallbackInterfacePaymentObserver> {
     rsObject.before_send = uniffi::breez_sdk_spark::cb::
         callbackinterfacepaymentobservermethod0::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "beforeSend"));
+    rsObject.after_send = uniffi::breez_sdk_spark::cb::
+        callbackinterfacepaymentobservermethod1::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "afterSend"));
     rsObject.uniffi_free =
         uniffi::breez_sdk_spark::st::vtablecallbackinterfacepaymentobserver::
             vtablecallbackinterfacepaymentobserver::free::makeCallbackFunction(
+                rt, callInvoker, jsObject.getProperty(rt, "uniffiFree"));
+
+    return rsObject;
+  }
+};
+
+} // namespace uniffi::breez_sdk_spark
+namespace uniffi::breez_sdk_spark {
+using namespace facebook;
+using CallInvoker = uniffi_runtime::UniffiCallInvoker;
+
+template <> struct Bridging<UniffiVTableCallbackInterfacePrfProvider> {
+  static UniffiVTableCallbackInterfacePrfProvider
+  fromJs(jsi::Runtime &rt, std::shared_ptr<CallInvoker> callInvoker,
+         const jsi::Value &jsValue) {
+    // Check if the input is an object
+    if (!jsValue.isObject()) {
+      throw jsi::JSError(
+          rt,
+          "Expected an object for UniffiVTableCallbackInterfacePrfProvider");
+    }
+
+    // Get the object from the jsi::Value
+    auto jsObject = jsValue.getObject(rt);
+
+    // Create the vtable struct
+    UniffiVTableCallbackInterfacePrfProvider rsObject;
+
+    // Create the vtable from the js callbacks.
+    rsObject.derive_seeds = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceprfprovidermethod0::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "deriveSeeds"));
+    rsObject.is_supported = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceprfprovidermethod1::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "isSupported"));
+    rsObject.create_passkey = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceprfprovidermethod2::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "createPasskey"));
+    rsObject.check_domain_association = uniffi::breez_sdk_spark::cb::
+        callbackinterfaceprfprovidermethod3::makeCallbackFunction(
+            rt, callInvoker,
+            jsObject.getProperty(rt, "checkDomainAssociation"));
+    rsObject.uniffi_free =
+        uniffi::breez_sdk_spark::st::vtablecallbackinterfaceprfprovider::
+            vtablecallbackinterfaceprfprovider::free::makeCallbackFunction(
                 rt, callInvoker, jsObject.getProperty(rt, "uniffiFree"));
 
     return rsObject;
@@ -13332,33 +14608,33 @@ namespace uniffi::breez_sdk_spark {
 using namespace facebook;
 using CallInvoker = uniffi_runtime::UniffiCallInvoker;
 
-template <> struct Bridging<UniffiVTableCallbackInterfaceSessionManager> {
-  static UniffiVTableCallbackInterfaceSessionManager
+template <> struct Bridging<UniffiVTableCallbackInterfaceSessionStore> {
+  static UniffiVTableCallbackInterfaceSessionStore
   fromJs(jsi::Runtime &rt, std::shared_ptr<CallInvoker> callInvoker,
          const jsi::Value &jsValue) {
     // Check if the input is an object
     if (!jsValue.isObject()) {
       throw jsi::JSError(
           rt,
-          "Expected an object for UniffiVTableCallbackInterfaceSessionManager");
+          "Expected an object for UniffiVTableCallbackInterfaceSessionStore");
     }
 
     // Get the object from the jsi::Value
     auto jsObject = jsValue.getObject(rt);
 
     // Create the vtable struct
-    UniffiVTableCallbackInterfaceSessionManager rsObject;
+    UniffiVTableCallbackInterfaceSessionStore rsObject;
 
     // Create the vtable from the js callbacks.
     rsObject.get_session = uniffi::breez_sdk_spark::cb::
-        callbackinterfacesessionmanagermethod0::makeCallbackFunction(
+        callbackinterfacesessionstoremethod0::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "getSession"));
     rsObject.set_session = uniffi::breez_sdk_spark::cb::
-        callbackinterfacesessionmanagermethod1::makeCallbackFunction(
+        callbackinterfacesessionstoremethod1::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "setSession"));
     rsObject.uniffi_free =
-        uniffi::breez_sdk_spark::st::vtablecallbackinterfacesessionmanager::
-            vtablecallbackinterfacesessionmanager::free::makeCallbackFunction(
+        uniffi::breez_sdk_spark::st::vtablecallbackinterfacesessionstore::
+            vtablecallbackinterfacesessionstore::free::makeCallbackFunction(
                 rt, callInvoker, jsObject.getProperty(rt, "uniffiFree"));
 
     return rsObject;
@@ -13399,9 +14675,9 @@ template <> struct Bridging<UniffiVTableCallbackInterfaceStorage> {
     rsObject.list_payments = uniffi::breez_sdk_spark::cb::
         callbackinterfacestoragemethod3::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "listPayments"));
-    rsObject.insert_payment = uniffi::breez_sdk_spark::cb::
+    rsObject.apply_payment_update = uniffi::breez_sdk_spark::cb::
         callbackinterfacestoragemethod4::makeCallbackFunction(
-            rt, callInvoker, jsObject.getProperty(rt, "insertPayment"));
+            rt, callInvoker, jsObject.getProperty(rt, "applyPaymentUpdate"));
     rsObject.insert_payment_metadata = uniffi::breez_sdk_spark::cb::
         callbackinterfacestoragemethod5::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "insertPaymentMetadata"));
@@ -13475,6 +14751,41 @@ template <> struct Bridging<UniffiVTableCallbackInterfaceStorage> {
     rsObject.uniffi_free =
         uniffi::breez_sdk_spark::st::vtablecallbackinterfacestorage::
             vtablecallbackinterfacestorage::free::makeCallbackFunction(
+                rt, callInvoker, jsObject.getProperty(rt, "uniffiFree"));
+
+    return rsObject;
+  }
+};
+
+} // namespace uniffi::breez_sdk_spark
+namespace uniffi::breez_sdk_spark {
+using namespace facebook;
+using CallInvoker = uniffi_runtime::UniffiCallInvoker;
+
+template <> struct Bridging<UniffiVTableCallbackInterfaceStorageBackend> {
+  static UniffiVTableCallbackInterfaceStorageBackend
+  fromJs(jsi::Runtime &rt, std::shared_ptr<CallInvoker> callInvoker,
+         const jsi::Value &jsValue) {
+    // Check if the input is an object
+    if (!jsValue.isObject()) {
+      throw jsi::JSError(
+          rt,
+          "Expected an object for UniffiVTableCallbackInterfaceStorageBackend");
+    }
+
+    // Get the object from the jsi::Value
+    auto jsObject = jsValue.getObject(rt);
+
+    // Create the vtable struct
+    UniffiVTableCallbackInterfaceStorageBackend rsObject;
+
+    // Create the vtable from the js callbacks.
+    rsObject.create_stores = uniffi::breez_sdk_spark::cb::
+        callbackinterfacestoragebackendmethod0::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "createStores"));
+    rsObject.uniffi_free =
+        uniffi::breez_sdk_spark::st::vtablecallbackinterfacestoragebackend::
+            vtablecallbackinterfacestoragebackend::free::makeCallbackFunction(
                 rt, callInvoker, jsObject.getProperty(rt, "uniffiFree"));
 
     return rsObject;
@@ -13683,6 +14994,19 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_add_event_listener(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_authorize_lightning_"
+        "address_transfer"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(
+          rt, "ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_authorize_"
+              "lightning_address_transfer"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_authorize_lightning_address_transfer(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_buy_bitcoin"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -13695,18 +15019,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_buy_bitcoin(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_cancel_leaf_"
-        "optimization"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "breezsdk_cancel_leaf_optimization"),
-      1,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_cancel_leaf_optimization(
-                rt, thisVal, args, count);
-      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_check_lightning_"
         "address_available"] = jsi::Function::createFromHostFunction(
       rt,
@@ -13758,6 +15070,19 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_claim_htlc_payment(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_claim_lightning_"
+        "address_transfer"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                "breezsdk_claim_lightning_address_transfer"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_claim_lightning_address_transfer(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_delete_contact"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -13818,18 +15143,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             return this->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_info(
                 rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_leaf_optimization_"
-        "progress"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "breezsdk_get_leaf_optimization_progress"),
-      1,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_leaf_optimization_progress(
-                rt, thisVal, args, count);
-      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_lightning_"
         "address"] = jsi::Function::createFromHostFunction(
       rt,
@@ -14003,6 +15316,19 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_lnurl_withdraw(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_optimize_leaves"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_optimize_leaves"),
+          2,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_optimize_leaves(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_parse"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -14150,18 +15476,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_sign_message(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_"
-        "optimization"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "breezsdk_start_leaf_optimization"),
-      1,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_optimization(
-                rt, thisVal, args, count);
-      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -14211,282 +15525,349 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_update_user_settings(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_clone_externalsigner"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_clone_externalbreezsigner"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_externalsigner"),
-          1,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this->cpp_uniffi_breez_sdk_spark_fn_clone_externalsigner(
-                rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_free_externalsigner"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_externalsigner"),
-          1,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this->cpp_uniffi_breez_sdk_spark_fn_free_externalsigner(
-                rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsigner"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_init_"
-                                        "callback_vtable_externalsigner"),
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_externalbreezsigner"),
           1,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsigner(
+                ->cpp_uniffi_breez_sdk_spark_fn_clone_externalbreezsigner(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_identity_public_"
-        "key"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_fn_free_externalbreezsigner"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_externalbreezsigner"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_free_externalbreezsigner(
+                rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_"
+        "externalbreezsigner"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "externalsigner_identity_public_key"),
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_init_"
+                                    "callback_vtable_externalbreezsigner"),
       1,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_identity_public_key(
+            ->cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalbreezsigner(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_derive_public_"
-        "key"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_derive_"
+        "public_key"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "externalsigner_derive_public_key"),
+                                    "externalbreezsigner_derive_public_key"),
       2,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_derive_public_key(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_derive_public_key(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                        "externalsigner_sign_ecdsa"),
-          3,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa(
-                    rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa_"
-        "recoverable"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_"
+        "ecdsa"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "externalsigner_sign_ecdsa_recoverable"),
+                                    "externalbreezsigner_sign_ecdsa"),
       3,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa_recoverable(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_ecdsa(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_ecies"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                        "externalsigner_encrypt_ecies"),
-          3,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_ecies(
-                    rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_decrypt_ecies"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                        "externalsigner_decrypt_ecies"),
-          3,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_decrypt_ecies(
-                    rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_hash_"
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_ecdsa_"
+        "recoverable"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                "externalbreezsigner_sign_ecdsa_recoverable"),
+      3,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_ecdsa_recoverable(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_encrypt_"
+        "ecies"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "externalbreezsigner_encrypt_ecies"),
+      3,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_encrypt_ecies(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_decrypt_"
+        "ecies"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "externalbreezsigner_decrypt_ecies"),
+      3,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_decrypt_ecies(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_hash_"
         "schnorr"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "externalsigner_sign_hash_schnorr"),
+                                    "externalbreezsigner_sign_hash_schnorr"),
       3,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_hash_schnorr(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_hash_schnorr(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_hmac_sha256"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_hmac_"
+        "sha256"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "externalbreezsigner_hmac_sha256"),
+      3,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_hmac_sha256(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_clone_externalsparksigner"] =
       jsi::Function::createFromHostFunction(
           rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                        "externalsigner_hmac_sha256"),
-          3,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_externalsparksigner"),
+          1,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_hmac_sha256(
+                ->cpp_uniffi_breez_sdk_spark_fn_clone_externalsparksigner(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_"
-        "signing_commitment"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_fn_free_externalsparksigner"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_externalsparksigner"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_free_externalsparksigner(
+                rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_"
+        "externalsparksigner"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(
-          rt, "ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_"
-              "random_signing_commitment"),
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_init_"
+                                    "callback_vtable_externalsparksigner"),
       1,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_signing_commitment(
+            ->cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsparksigner(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_get_public_key_"
-        "for_node"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_"
+        "identity_public_key"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "externalsigner_get_public_key_for_node"),
-      2,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_get_public_key_for_node(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_"
-        "secret"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "externalsigner_generate_random_secret"),
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                "externalsparksigner_get_identity_public_key"),
       1,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_secret(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_identity_public_key(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_"
-        "secret_encrypted"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_public_"
+        "key_for_leaf"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                "externalsparksigner_get_public_key_for_leaf"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_public_key_for_leaf(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_static_"
+        "deposit_public_key"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(
-          rt, "ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_"
-              "deposit_secret_encrypted"),
+          rt, "ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_"
+              "static_deposit_public_key"),
       2,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_encrypted(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_static_deposit_public_key(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_"
-        "secret"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_"
+        "authentication_challenge"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "externalsigner_static_deposit_secret"),
+      jsi::PropNameID::forAscii(
+          rt, "ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_"
+              "authentication_challenge"),
       2,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_authentication_challenge(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_"
-        "signing_key"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_"
+        "message"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                "externalsigner_static_deposit_signing_key"),
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "externalsparksigner_sign_message"),
       2,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_signing_key(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_message(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_"
-        "secrets"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "externalsigner_subtract_secrets"),
-      3,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secrets(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_split_secret_"
-        "with_proofs"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "externalsigner_split_secret_with_proofs"),
-      4,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_split_secret_with_proofs(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_"
-        "for_receiver"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                "externalsigner_encrypt_secret_for_receiver"),
-      3,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_for_receiver(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_"
-        "secret"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "externalsigner_public_key_from_secret"),
-      2,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_frost"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                        "externalsigner_sign_frost"),
-          2,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_frost(
-                    rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_aggregate_"
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_"
         "frost"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "externalsigner_aggregate_frost"),
+                                    "externalsparksigner_sign_frost"),
       2,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_aggregate_frost(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_frost(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_"
+        "transfer"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "externalsparksigner_prepare_transfer"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_transfer(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_"
+        "claim"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "externalsparksigner_prepare_claim"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_claim(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_"
+        "lightning_receive"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(
+          rt, "ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_"
+              "prepare_lightning_receive"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_lightning_receive(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_"
+        "static_deposit"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                "externalsparksigner_prepare_static_deposit"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_static_deposit(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_start_"
+        "static_deposit_refund"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(
+          rt, "ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_start_"
+              "static_deposit_refund"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_start_static_deposit_refund(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_static_"
+        "deposit_refund"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(
+          rt, "ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_"
+              "static_deposit_refund"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_static_deposit_refund(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_spark_"
+        "invoice"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "externalsparksigner_sign_spark_invoice"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_spark_invoice(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_"
+        "token_transaction"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(
+          rt, "ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_"
+              "prepare_token_transaction"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_token_transaction(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_"
+        "static_deposit_claim"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(
+          rt, "ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_"
+              "prepare_static_deposit_claim"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_static_deposit_claim(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_fn_clone_fiatservice"] =
@@ -14547,145 +15928,149 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_fiatservice_fetch_fiat_rates(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_clone_passkey"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_clone_passkeyclient"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_passkey"),
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_passkeyclient"),
           1,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
-            return this->cpp_uniffi_breez_sdk_spark_fn_clone_passkey(
+            return this->cpp_uniffi_breez_sdk_spark_fn_clone_passkeyclient(
                 rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_free_passkey"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_free_passkeyclient"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_passkey"),
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_passkeyclient"),
           1,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
-            return this->cpp_uniffi_breez_sdk_spark_fn_free_passkey(
+            return this->cpp_uniffi_breez_sdk_spark_fn_free_passkeyclient(
                 rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_constructor_passkey_new"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_constructor_passkeyclient_new"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_constructor_passkey_new"),
-          2,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this->cpp_uniffi_breez_sdk_spark_fn_constructor_passkey_new(
-                rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkey_get_wallet"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_method_passkey_get_wallet"),
-          2,
+              rt,
+              "ubrn_uniffi_breez_sdk_spark_fn_constructor_passkeyclient_new"),
+          3,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_passkey_get_wallet(
+                ->cpp_uniffi_breez_sdk_spark_fn_constructor_passkeyclient_new(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkey_is_available"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_method_passkey_is_available"),
-          1,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_passkey_is_available(
-                    rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkey_list_labels"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_method_passkey_list_labels"),
-          1,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_passkey_list_labels(
-                    rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkey_store_label"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_method_passkey_store_label"),
-          2,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_passkey_store_label(
-                    rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_clone_passkeyprfprovider"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_passkeyprfprovider"),
-          1,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this->cpp_uniffi_breez_sdk_spark_fn_clone_passkeyprfprovider(
-                rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_free_passkeyprfprovider"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_passkeyprfprovider"),
-          1,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this->cpp_uniffi_breez_sdk_spark_fn_free_passkeyprfprovider(
-                rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_"
-        "passkeyprfprovider"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkeyclient_check_"
+        "availability"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_init_"
-                                    "callback_vtable_passkeyprfprovider"),
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "passkeyclient_check_availability"),
       1,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_passkeyprfprovider(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_passkeyclient_check_availability(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkeyprfprovider_derive_prf_"
-        "seed"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkeyclient_connect_with_"
+        "passkey"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "passkeyprfprovider_derive_prf_seed"),
+                                    "passkeyclient_connect_with_passkey"),
       2,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_passkeyprfprovider_derive_prf_seed(
+            ->cpp_uniffi_breez_sdk_spark_fn_method_passkeyclient_connect_with_passkey(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkeyprfprovider_is_prf_"
-        "available"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                    "passkeyprfprovider_is_prf_available"),
-      1,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_fn_method_passkeyprfprovider_is_prf_available(
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkeyclient_labels"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_method_passkeyclient_labels"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_passkeyclient_labels(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkeyclient_register"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_breez_sdk_spark_fn_method_passkeyclient_register"),
+          2,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_passkeyclient_register(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkeyclient_sign_in"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_breez_sdk_spark_fn_method_passkeyclient_sign_in"),
+          2,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_passkeyclient_sign_in(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_clone_passkeylabels"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_passkeylabels"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_clone_passkeylabels(
                 rt, thisVal, args, count);
-      });
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_free_passkeylabels"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_passkeylabels"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_free_passkeylabels(
+                rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkeylabels_list"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_method_passkeylabels_list"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_passkeylabels_list(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_passkeylabels_store"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_method_passkeylabels_store"),
+          2,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_passkeylabels_store(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_fn_clone_paymentobserver"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -14731,6 +16116,124 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             return this
                 ->cpp_uniffi_breez_sdk_spark_fn_method_paymentobserver_before_send(
                     rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_paymentobserver_after_send"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                        "paymentobserver_after_send"),
+          2,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_paymentobserver_after_send(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_clone_prfprovider"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_prfprovider"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_clone_prfprovider(
+                rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_free_prfprovider"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_prfprovider"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_free_prfprovider(
+                rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_prfprovider"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_init_"
+                                        "callback_vtable_prfprovider"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_prfprovider(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_derive_seeds"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_derive_seeds"),
+          2,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_prfprovider_derive_seeds(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_is_supported"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_is_supported"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_prfprovider_is_supported(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_create_passkey"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                        "prfprovider_create_passkey"),
+          2,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_prfprovider_create_passkey(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_check_domain_"
+        "association"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "prfprovider_check_domain_association"),
+      1,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_prfprovider_check_domain_association(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_clone_resolvedstores"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_resolvedstores"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_clone_resolvedstores(
+                rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_free_resolvedstores"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_resolvedstores"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_free_resolvedstores(
+                rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_fn_clone_restclient"] =
       jsi::Function::createFromHostFunction(
@@ -14839,6 +16342,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new_with_"
+        "signer"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_"
+                                    "constructor_sdkbuilder_new_with_signer"),
+      3,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new_with_signer(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_build"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -14850,6 +16365,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             return this->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_build(
                 rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_account_"
+        "number"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "sdkbuilder_with_account_number"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_account_number(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_chain_service"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -14884,19 +16411,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
                 ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_fiat_service(
-                    rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(
-              rt,
-              "ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set"),
-          2,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_lnurl_client"] =
@@ -14960,6 +16474,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_storage(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_storage_"
+        "backend"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "sdkbuilder_with_storage_backend"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_storage_backend(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_clone_sdkcontext"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -14982,62 +16508,64 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             return this->cpp_uniffi_breez_sdk_spark_fn_free_sdkcontext(
                 rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_clone_sessionmanager"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_clone_sessionstore"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_sessionmanager"),
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_sessionstore"),
           1,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
-            return this->cpp_uniffi_breez_sdk_spark_fn_clone_sessionmanager(
+            return this->cpp_uniffi_breez_sdk_spark_fn_clone_sessionstore(
                 rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_free_sessionmanager"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_free_sessionstore"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_sessionmanager"),
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_sessionstore"),
           1,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
-            return this->cpp_uniffi_breez_sdk_spark_fn_free_sessionmanager(
+            return this->cpp_uniffi_breez_sdk_spark_fn_free_sessionstore(
                 rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionmanager"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionstore"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_init_"
-                                        "callback_vtable_sessionmanager"),
+                                        "callback_vtable_sessionstore"),
           1,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionmanager(
+                ->cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionstore(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_sessionmanager_get_session"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_sessionstore_get_session"] =
       jsi::Function::createFromHostFunction(
           rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                        "sessionmanager_get_session"),
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_breez_sdk_spark_fn_method_sessionstore_get_session"),
           2,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_sessionmanager_get_session(
+                ->cpp_uniffi_breez_sdk_spark_fn_method_sessionstore_get_session(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_sessionmanager_set_session"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_sessionstore_set_session"] =
       jsi::Function::createFromHostFunction(
           rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
-                                        "sessionmanager_set_session"),
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_breez_sdk_spark_fn_method_sessionstore_set_session"),
           3,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_sessionmanager_set_session(
+                ->cpp_uniffi_breez_sdk_spark_fn_method_sessionstore_set_session(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_fn_clone_storage"] =
@@ -15126,17 +16654,16 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_storage_list_payments(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_method_storage_insert_payment"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_storage_apply_payment_update"] =
       jsi::Function::createFromHostFunction(
           rt,
-          jsi::PropNameID::forAscii(
-              rt,
-              "ubrn_uniffi_breez_sdk_spark_fn_method_storage_insert_payment"),
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                        "storage_apply_payment_update"),
           2,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_fn_method_storage_insert_payment(
+                ->cpp_uniffi_breez_sdk_spark_fn_method_storage_apply_payment_update(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_storage_insert_payment_"
@@ -15409,6 +16936,40 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_fn_method_storage_update_record_from_incoming(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_fn_clone_storagebackend"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_clone_storagebackend"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_clone_storagebackend(
+                rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_free_storagebackend"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_free_storagebackend"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_free_storagebackend(
+                rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_storagebackend_create_stores"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                        "storagebackend_create_stores"),
+          3,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_storagebackend_create_stores(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_fn_clone_tokenissuer"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -15561,6 +17122,29 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             return this->cpp_uniffi_breez_sdk_spark_fn_func_connect_with_signer(
                 rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_func_create_turnkey_signer"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_func_create_turnkey_signer"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_func_create_turnkey_signer(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_func_custom_storage"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_func_custom_storage"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_func_custom_storage(
+                rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_fn_func_default_config"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -15572,17 +17156,17 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             return this->cpp_uniffi_breez_sdk_spark_fn_func_default_config(
                 rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_fn_func_default_external_signer"] =
+  props["ubrn_uniffi_breez_sdk_spark_fn_func_default_external_signers"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(
               rt,
-              "ubrn_uniffi_breez_sdk_spark_fn_func_default_external_signer"),
+              "ubrn_uniffi_breez_sdk_spark_fn_func_default_external_signers"),
           4,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_fn_func_default_external_signer(
+                ->cpp_uniffi_breez_sdk_spark_fn_func_default_external_signers(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_fn_func_default_server_config"] =
@@ -15596,6 +17180,17 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             return this
                 ->cpp_uniffi_breez_sdk_spark_fn_func_default_server_config(
                     rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_fn_func_default_storage"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_func_default_storage"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this->cpp_uniffi_breez_sdk_spark_fn_func_default_storage(
+                rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_fn_func_get_spark_status"] =
       jsi::Function::createFromHostFunction(
@@ -16240,6 +17835,30 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_func_connect_with_signer(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_func_create_turnkey_signer"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                        "func_create_turnkey_signer"),
+          0,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_checksum_func_create_turnkey_signer(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_func_custom_storage"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_checksum_func_custom_storage"),
+          0,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_checksum_func_custom_storage(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_checksum_func_default_config"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -16252,16 +17871,16 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_func_default_config(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_func_default_external_signer"] =
+  props["ubrn_uniffi_breez_sdk_spark_checksum_func_default_external_signers"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                        "func_default_external_signer"),
+                                        "func_default_external_signers"),
           0,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_checksum_func_default_external_signer(
+                ->cpp_uniffi_breez_sdk_spark_checksum_func_default_external_signers(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_checksum_func_default_server_config"] =
@@ -16274,6 +17893,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
                 ->cpp_uniffi_breez_sdk_spark_checksum_func_default_server_config(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_func_default_storage"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_checksum_func_default_storage"),
+          0,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_checksum_func_default_storage(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_checksum_func_get_spark_status"] =
@@ -16412,6 +18043,19 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_authorize_"
+        "lightning_address_transfer"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(
+          rt, "ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_authorize_"
+              "lightning_address_transfer"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_authorize_lightning_address_transfer(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -16424,18 +18068,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_"
-        "optimization"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_breezsdk_cancel_leaf_optimization"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_optimization(
-                rt, thisVal, args, count);
-      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_lightning_"
         "address_available"] = jsi::Function::createFromHostFunction(
       rt,
@@ -16483,6 +18115,19 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
             ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_htlc_payment(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_lightning_"
+        "address_transfer"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "breezsdk_claim_lightning_address_transfer"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_lightning_address_transfer(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_contact"] =
@@ -16546,19 +18191,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_"
-        "optimization_progress"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "breezsdk_get_leaf_optimization_progress"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress(
-                rt, thisVal, args, count);
-      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_lightning_"
         "address"] = jsi::Function::createFromHostFunction(
       rt,
@@ -16728,6 +18360,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_withdraw(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_optimize_"
+        "leaves"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_breezsdk_optimize_leaves"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_optimize_leaves(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_parse"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -16874,18 +18518,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_"
-        "optimization"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_breezsdk_start_leaf_optimization"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization(
-                rt, thisVal, args, count);
-      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -16934,255 +18566,283 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_update_user_settings(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_identity_"
-        "public_key"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_"
+        "derive_public_key"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt,
                                 "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "externalsigner_identity_public_key"),
+                                "externalbreezsigner_derive_public_key"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_identity_public_key(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_derive_public_key(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_derive_"
-        "public_key"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_externalsigner_derive_public_key"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_derive_public_key(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_"
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_"
         "ecdsa"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_externalsigner_sign_ecdsa"),
+                                    "method_externalbreezsigner_sign_ecdsa"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_ecdsa(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa_"
-        "recoverable"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_"
+        "ecdsa_recoverable"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt,
                                 "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "externalsigner_sign_ecdsa_recoverable"),
+                                "externalbreezsigner_sign_ecdsa_recoverable"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa_recoverable(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_ecdsa_recoverable(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_"
-        "ecies"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_"
+        "encrypt_ecies"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_externalsigner_encrypt_ecies"),
+                                    "method_externalbreezsigner_encrypt_ecies"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_ecies(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_encrypt_ecies(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_decrypt_"
-        "ecies"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_"
+        "decrypt_ecies"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_externalsigner_decrypt_ecies"),
+                                    "method_externalbreezsigner_decrypt_ecies"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_decrypt_ecies(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_decrypt_ecies(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_hash_"
-        "schnorr"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_"
+        "hash_schnorr"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_externalsigner_sign_hash_schnorr"),
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "externalbreezsigner_sign_hash_schnorr"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_hash_schnorr(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_hash_schnorr(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_hmac_"
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_hmac_"
         "sha256"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_externalsigner_hmac_sha256"),
+                                    "method_externalbreezsigner_hmac_sha256"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_hmac_sha256(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_hmac_sha256(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_"
-        "random_signing_commitment"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_"
+        "identity_public_key"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "externalsparksigner_get_identity_public_key"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_identity_public_key(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_"
+        "public_key_for_leaf"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "externalsparksigner_get_public_key_for_leaf"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_public_key_for_leaf(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_"
+        "static_deposit_public_key"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(
-          rt, "ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_"
-              "generate_random_signing_commitment"),
+          rt, "ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_"
+              "get_static_deposit_public_key"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_signing_commitment(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_static_deposit_public_key(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_"
-        "key_for_node"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "externalsigner_get_public_key_for_node"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_"
-        "random_secret"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "externalsigner_generate_random_secret"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_secret(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_"
-        "deposit_secret_encrypted"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_"
+        "authentication_challenge"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(
-          rt, "ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_"
-              "static_deposit_secret_encrypted"),
+          rt, "ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_"
+              "sign_authentication_challenge"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_encrypted(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_authentication_challenge(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_"
-        "deposit_secret"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "externalsigner_static_deposit_secret"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_"
-        "deposit_signing_key"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "externalsigner_static_deposit_signing_key"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_signing_key(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_"
-        "secrets"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_"
+        "message"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_externalsigner_subtract_secrets"),
+                                    "method_externalsparksigner_sign_message"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secrets(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_message(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_split_"
-        "secret_with_proofs"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "externalsigner_split_secret_with_proofs"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret_with_proofs(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_"
-        "secret_for_receiver"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "externalsigner_encrypt_secret_for_receiver"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_for_receiver(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_"
-        "from_secret"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "externalsigner_public_key_from_secret"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_"
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_"
         "frost"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_externalsigner_sign_frost"),
+                                    "method_externalsparksigner_sign_frost"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_frost(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_"
-        "frost"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_"
+        "prepare_transfer"] = jsi::Function::createFromHostFunction(
       rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_externalsigner_aggregate_frost"),
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "externalsparksigner_prepare_transfer"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_transfer(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_"
+        "prepare_claim"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_externalsparksigner_prepare_claim"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_claim(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_"
+        "prepare_lightning_receive"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(
+          rt, "ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_"
+              "prepare_lightning_receive"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_lightning_receive(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_"
+        "prepare_static_deposit"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "externalsparksigner_prepare_static_deposit"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_"
+        "static_deposit_refund"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(
+          rt, "ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_"
+              "start_static_deposit_refund"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_static_deposit_refund(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_"
+        "static_deposit_refund"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(
+          rt, "ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_"
+              "sign_static_deposit_refund"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_static_deposit_refund(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_"
+        "spark_invoice"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "externalsparksigner_sign_spark_invoice"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_spark_invoice(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_"
+        "prepare_token_transaction"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(
+          rt, "ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_"
+              "prepare_token_transaction"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_token_transaction(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_"
+        "prepare_static_deposit_claim"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(
+          rt, "ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_"
+              "prepare_static_deposit_claim"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit_claim(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_fiatservice_fetch_fiat_"
@@ -17209,81 +18869,92 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_fiatservice_fetch_fiat_rates(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_get_wallet"] =
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyclient_check_"
+        "availability"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_passkeyclient_check_availability"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_passkeyclient_check_availability(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyclient_connect_"
+        "with_passkey"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "passkeyclient_connect_with_passkey"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_passkeyclient_connect_with_passkey(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyclient_labels"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                        "method_passkeyclient_labels"),
+          0,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_checksum_method_passkeyclient_labels(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyclient_register"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                        "method_passkeyclient_register"),
+          0,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_checksum_method_passkeyclient_register(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyclient_sign_in"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                        "method_passkeyclient_sign_in"),
+          0,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_checksum_method_passkeyclient_sign_in(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkeylabels_list"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(
               rt,
-              "ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_get_wallet"),
+              "ubrn_uniffi_breez_sdk_spark_checksum_method_passkeylabels_list"),
           0,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_checksum_method_passkey_get_wallet(
+                ->cpp_uniffi_breez_sdk_spark_checksum_method_passkeylabels_list(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_is_available"] =
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkeylabels_store"] =
       jsi::Function::createFromHostFunction(
           rt,
           jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                        "method_passkey_is_available"),
+                                        "method_passkeylabels_store"),
           0,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_checksum_method_passkey_is_available(
+                ->cpp_uniffi_breez_sdk_spark_checksum_method_passkeylabels_store(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_list_labels"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                        "method_passkey_list_labels"),
-          0,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_checksum_method_passkey_list_labels(
-                    rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_store_label"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                        "method_passkey_store_label"),
-          0,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_checksum_method_passkey_store_label(
-                    rt, thisVal, args, count);
-          });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_derive_"
-        "prf_seed"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "passkeyprfprovider_derive_prf_seed"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_derive_prf_seed(
-                rt, thisVal, args, count);
-      });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_is_prf_"
-        "available"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt,
-                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
-                                "passkeyprfprovider_is_prf_available"),
-      0,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_is_prf_available(
-                rt, thisVal, args, count);
-      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_paymentobserver_before_"
         "send"] = jsi::Function::createFromHostFunction(
       rt,
@@ -17294,6 +18965,67 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
             ->cpp_uniffi_breez_sdk_spark_checksum_method_paymentobserver_before_send(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_paymentobserver_after_"
+        "send"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_paymentobserver_after_send"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_paymentobserver_after_send(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_prfprovider_derive_"
+        "seeds"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_prfprovider_derive_seeds"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_prfprovider_derive_seeds(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_prfprovider_is_"
+        "supported"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_prfprovider_is_supported"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_prfprovider_is_supported(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_prfprovider_create_"
+        "passkey"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_prfprovider_create_passkey"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_prfprovider_create_passkey(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_prfprovider_check_domain_"
+        "association"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "prfprovider_check_domain_association"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_prfprovider_check_domain_association(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_restclient_get_request"] =
@@ -17345,6 +19077,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_build(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_account_"
+        "number"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_sdkbuilder_with_account_number"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_account_number(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_chain_"
         "service"] = jsi::Function::createFromHostFunction(
       rt,
@@ -17381,18 +19125,6 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_fiat_service(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                        "method_sdkbuilder_with_key_set"),
-          0,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set(
-                    rt, thisVal, args, count);
-          });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_lnurl_"
         "client"] = jsi::Function::createFromHostFunction(
       rt,
@@ -17454,28 +19186,40 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_sessionmanager_get_"
-        "session"] = jsi::Function::createFromHostFunction(
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage_"
+        "backend"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_sessionmanager_get_session"),
+                                    "method_sdkbuilder_with_storage_backend"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_sessionmanager_get_session(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage_backend(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_sessionmanager_set_"
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_sessionstore_get_"
         "session"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                    "method_sessionmanager_set_session"),
+                                    "method_sessionstore_get_session"),
       0,
       [this](jsi::Runtime &rt, const jsi::Value &thisVal,
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
-            ->cpp_uniffi_breez_sdk_spark_checksum_method_sessionmanager_set_session(
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_sessionstore_get_session(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_sessionstore_set_"
+        "session"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_sessionstore_set_session"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_sessionstore_set_session(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_cached_"
@@ -17526,18 +19270,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_method_storage_list_payments(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_method_storage_insert_payment"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
-                                        "method_storage_insert_payment"),
-          0,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_breez_sdk_spark_checksum_method_storage_insert_payment(
-                    rt, thisVal, args, count);
-          });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_storage_apply_payment_"
+        "update"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_storage_apply_payment_update"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_storage_apply_payment_update(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_storage_insert_payment_"
         "metadata"] = jsi::Function::createFromHostFunction(
       rt,
@@ -17806,6 +19550,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_storage_update_record_from_incoming(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_storagebackend_create_"
+        "stores"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_storagebackend_create_stores"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_storagebackend_create_stores(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_burn_issuer_"
         "token"] = jsi::Function::createFromHostFunction(
       rt,
@@ -17892,17 +19648,16 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_unfreeze_issuer_token(
                 rt, thisVal, args, count);
       });
-  props["ubrn_uniffi_breez_sdk_spark_checksum_constructor_passkey_new"] =
+  props["ubrn_uniffi_breez_sdk_spark_checksum_constructor_passkeyclient_new"] =
       jsi::Function::createFromHostFunction(
           rt,
-          jsi::PropNameID::forAscii(
-              rt,
-              "ubrn_uniffi_breez_sdk_spark_checksum_constructor_passkey_new"),
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                        "constructor_passkeyclient_new"),
           0,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_breez_sdk_spark_checksum_constructor_passkey_new(
+                ->cpp_uniffi_breez_sdk_spark_checksum_constructor_passkeyclient_new(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new"] =
@@ -17917,6 +19672,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new_with_"
+        "signer"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "constructor_sdkbuilder_new_with_signer"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new_with_signer(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_eventlistener_on_event"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -17975,18 +19742,30 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_internal_fn_method_breezsdk_ffi__bless_pointer(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_internal_fn_method_externalsigner_ffi__bless_pointer"] =
-      jsi::Function::createFromHostFunction(
-          rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_internal_fn_method_"
-                                        "externalsigner_ffi__bless_pointer"),
-          1,
-          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-                 const jsi::Value *args, size_t count) -> jsi::Value {
-            return this
-                ->cpp_uniffi_internal_fn_method_externalsigner_ffi__bless_pointer(
-                    rt, thisVal, args, count);
-          });
+  props["ubrn_uniffi_internal_fn_method_externalbreezsigner_ffi__bless_"
+        "pointer"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_internal_fn_method_"
+                                    "externalbreezsigner_ffi__bless_pointer"),
+      1,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_internal_fn_method_externalbreezsigner_ffi__bless_pointer(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_internal_fn_method_externalsparksigner_ffi__bless_"
+        "pointer"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_internal_fn_method_"
+                                    "externalsparksigner_ffi__bless_pointer"),
+      1,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_internal_fn_method_externalsparksigner_ffi__bless_pointer(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_internal_fn_method_fiatservice_ffi__bless_pointer"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -18000,30 +19779,30 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_internal_fn_method_fiatservice_ffi__bless_pointer(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_internal_fn_method_passkey_ffi__bless_pointer"] =
+  props["ubrn_uniffi_internal_fn_method_passkeyclient_ffi__bless_pointer"] =
       jsi::Function::createFromHostFunction(
           rt,
-          jsi::PropNameID::forAscii(
-              rt, "ubrn_uniffi_internal_fn_method_passkey_ffi__bless_pointer"),
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_internal_fn_method_"
+                                        "passkeyclient_ffi__bless_pointer"),
           1,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_internal_fn_method_passkey_ffi__bless_pointer(
+                ->cpp_uniffi_internal_fn_method_passkeyclient_ffi__bless_pointer(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_internal_fn_method_passkeyprfprovider_ffi__bless_"
-        "pointer"] = jsi::Function::createFromHostFunction(
-      rt,
-      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_internal_fn_method_"
-                                    "passkeyprfprovider_ffi__bless_pointer"),
-      1,
-      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
-             const jsi::Value *args, size_t count) -> jsi::Value {
-        return this
-            ->cpp_uniffi_internal_fn_method_passkeyprfprovider_ffi__bless_pointer(
-                rt, thisVal, args, count);
-      });
+  props["ubrn_uniffi_internal_fn_method_passkeylabels_ffi__bless_pointer"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_internal_fn_method_"
+                                        "passkeylabels_ffi__bless_pointer"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_internal_fn_method_passkeylabels_ffi__bless_pointer(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_internal_fn_method_paymentobserver_ffi__bless_pointer"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -18034,6 +19813,31 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
                 ->cpp_uniffi_internal_fn_method_paymentobserver_ffi__bless_pointer(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_internal_fn_method_prfprovider_ffi__bless_pointer"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_internal_fn_method_prfprovider_ffi__bless_pointer"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_internal_fn_method_prfprovider_ffi__bless_pointer(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_internal_fn_method_resolvedstores_ffi__bless_pointer"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_internal_fn_method_"
+                                        "resolvedstores_ffi__bless_pointer"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_internal_fn_method_resolvedstores_ffi__bless_pointer(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_internal_fn_method_restclient_ffi__bless_pointer"] =
@@ -18075,16 +19879,17 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_internal_fn_method_sdkcontext_ffi__bless_pointer(
                     rt, thisVal, args, count);
           });
-  props["ubrn_uniffi_internal_fn_method_sessionmanager_ffi__bless_pointer"] =
+  props["ubrn_uniffi_internal_fn_method_sessionstore_ffi__bless_pointer"] =
       jsi::Function::createFromHostFunction(
           rt,
-          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_internal_fn_method_"
-                                        "sessionmanager_ffi__bless_pointer"),
+          jsi::PropNameID::forAscii(
+              rt,
+              "ubrn_uniffi_internal_fn_method_sessionstore_ffi__bless_pointer"),
           1,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
-                ->cpp_uniffi_internal_fn_method_sessionmanager_ffi__bless_pointer(
+                ->cpp_uniffi_internal_fn_method_sessionstore_ffi__bless_pointer(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_internal_fn_method_storage_ffi__bless_pointer"] =
@@ -18097,6 +19902,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
                 ->cpp_uniffi_internal_fn_method_storage_ffi__bless_pointer(
+                    rt, thisVal, args, count);
+          });
+  props["ubrn_uniffi_internal_fn_method_storagebackend_ffi__bless_pointer"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_internal_fn_method_"
+                                        "storagebackend_ffi__bless_pointer"),
+          1,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_internal_fn_method_storagebackend_ffi__bless_pointer(
                     rt, thisVal, args, count);
           });
   props["ubrn_uniffi_internal_fn_method_tokenissuer_ffi__bless_pointer"] =
@@ -18161,20 +19978,24 @@ NativeBreezSdkSpark::~NativeBreezSdkSpark() {
       vtablecallbackinterfacelogger::free::cleanup();
   uniffi::breez_sdk_spark::st::vtablecallbackinterfacebitcoinchainservice::
       vtablecallbackinterfacebitcoinchainservice::free::cleanup();
-  uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalsigner::
-      vtablecallbackinterfaceexternalsigner::free::cleanup();
+  uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalbreezsigner::
+      vtablecallbackinterfaceexternalbreezsigner::free::cleanup();
+  uniffi::breez_sdk_spark::st::vtablecallbackinterfaceexternalsparksigner::
+      vtablecallbackinterfaceexternalsparksigner::free::cleanup();
   uniffi::breez_sdk_spark::st::vtablecallbackinterfacefiatservice::
       vtablecallbackinterfacefiatservice::free::cleanup();
-  uniffi::breez_sdk_spark::st::vtablecallbackinterfacepasskeyprfprovider::
-      vtablecallbackinterfacepasskeyprfprovider::free::cleanup();
   uniffi::breez_sdk_spark::st::vtablecallbackinterfacepaymentobserver::
       vtablecallbackinterfacepaymentobserver::free::cleanup();
+  uniffi::breez_sdk_spark::st::vtablecallbackinterfaceprfprovider::
+      vtablecallbackinterfaceprfprovider::free::cleanup();
   uniffi::breez_sdk_spark::st::vtablecallbackinterfacerestclient::
       vtablecallbackinterfacerestclient::free::cleanup();
-  uniffi::breez_sdk_spark::st::vtablecallbackinterfacesessionmanager::
-      vtablecallbackinterfacesessionmanager::free::cleanup();
+  uniffi::breez_sdk_spark::st::vtablecallbackinterfacesessionstore::
+      vtablecallbackinterfacesessionstore::free::cleanup();
   uniffi::breez_sdk_spark::st::vtablecallbackinterfacestorage::
       vtablecallbackinterfacestorage::free::cleanup();
+  uniffi::breez_sdk_spark::st::vtablecallbackinterfacestoragebackend::
+      vtablecallbackinterfacestoragebackend::free::cleanup();
   // Cleanup for callback function CallbackInterfaceEventListenerMethod0
   uniffi::breez_sdk_spark::cb::callbackinterfaceeventlistenermethod0::cleanup();
   // Cleanup for callback function CallbackInterfaceLoggerMethod0
@@ -18194,91 +20015,100 @@ NativeBreezSdkSpark::~NativeBreezSdkSpark() {
   // Cleanup for callback function CallbackInterfaceBitcoinChainServiceMethod4
   uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod4::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod0
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod0::
+  // Cleanup for callback function CallbackInterfaceExternalBreezSignerMethod0
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod0::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod1
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod1::
+  // Cleanup for callback function CallbackInterfaceExternalBreezSignerMethod1
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod1::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod2
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod2::
+  // Cleanup for callback function CallbackInterfaceExternalBreezSignerMethod2
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod2::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod3
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod3::
+  // Cleanup for callback function CallbackInterfaceExternalBreezSignerMethod3
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod3::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod4
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod4::
+  // Cleanup for callback function CallbackInterfaceExternalBreezSignerMethod4
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod4::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod5
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod5::
+  // Cleanup for callback function CallbackInterfaceExternalBreezSignerMethod5
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod5::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod6
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod6::
+  // Cleanup for callback function CallbackInterfaceExternalBreezSignerMethod6
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalbreezsignermethod6::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod7
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod7::
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod0
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod0::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod8
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod8::
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod1
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod1::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod9
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod9::
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod2
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod2::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod10
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod10::
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod3
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod3::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod11
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod11::
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod4
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod4::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod12
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod12::
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod5
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod5::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod13
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod13::
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod6
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod6::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod14
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod14::
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod7
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod7::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod15
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod15::
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod8
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod8::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod16
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod16::
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod9
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod9::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod17
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod17::
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod10
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod10::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod18
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod18::
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod11
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod11::
       cleanup();
-  // Cleanup for callback function CallbackInterfaceExternalSignerMethod19
-  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsignermethod19::
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod12
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod12::
+      cleanup();
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod13
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod13::
+      cleanup();
+  // Cleanup for callback function CallbackInterfaceExternalSparkSignerMethod14
+  uniffi::breez_sdk_spark::cb::callbackinterfaceexternalsparksignermethod14::
       cleanup();
   // Cleanup for callback function CallbackInterfaceFiatServiceMethod0
   uniffi::breez_sdk_spark::cb::callbackinterfacefiatservicemethod0::cleanup();
   // Cleanup for callback function CallbackInterfaceFiatServiceMethod1
   uniffi::breez_sdk_spark::cb::callbackinterfacefiatservicemethod1::cleanup();
-  // Cleanup for callback function CallbackInterfacePasskeyPrfProviderMethod0
-  uniffi::breez_sdk_spark::cb::callbackinterfacepasskeyprfprovidermethod0::
-      cleanup();
-  // Cleanup for callback function CallbackInterfacePasskeyPrfProviderMethod1
-  uniffi::breez_sdk_spark::cb::callbackinterfacepasskeyprfprovidermethod1::
-      cleanup();
   // Cleanup for callback function CallbackInterfacePaymentObserverMethod0
   uniffi::breez_sdk_spark::cb::callbackinterfacepaymentobservermethod0::
       cleanup();
+  // Cleanup for callback function CallbackInterfacePaymentObserverMethod1
+  uniffi::breez_sdk_spark::cb::callbackinterfacepaymentobservermethod1::
+      cleanup();
+  // Cleanup for callback function CallbackInterfacePrfProviderMethod0
+  uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod0::cleanup();
+  // Cleanup for callback function CallbackInterfacePrfProviderMethod1
+  uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod1::cleanup();
+  // Cleanup for callback function CallbackInterfacePrfProviderMethod2
+  uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod2::cleanup();
+  // Cleanup for callback function CallbackInterfacePrfProviderMethod3
+  uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovidermethod3::cleanup();
   // Cleanup for callback function CallbackInterfaceRestClientMethod0
   uniffi::breez_sdk_spark::cb::callbackinterfacerestclientmethod0::cleanup();
   // Cleanup for callback function CallbackInterfaceRestClientMethod1
   uniffi::breez_sdk_spark::cb::callbackinterfacerestclientmethod1::cleanup();
   // Cleanup for callback function CallbackInterfaceRestClientMethod2
   uniffi::breez_sdk_spark::cb::callbackinterfacerestclientmethod2::cleanup();
-  // Cleanup for callback function CallbackInterfaceSessionManagerMethod0
-  uniffi::breez_sdk_spark::cb::callbackinterfacesessionmanagermethod0::
-      cleanup();
-  // Cleanup for callback function CallbackInterfaceSessionManagerMethod1
-  uniffi::breez_sdk_spark::cb::callbackinterfacesessionmanagermethod1::
-      cleanup();
+  // Cleanup for callback function CallbackInterfaceSessionStoreMethod0
+  uniffi::breez_sdk_spark::cb::callbackinterfacesessionstoremethod0::cleanup();
+  // Cleanup for callback function CallbackInterfaceSessionStoreMethod1
+  uniffi::breez_sdk_spark::cb::callbackinterfacesessionstoremethod1::cleanup();
   // Cleanup for callback function CallbackInterfaceStorageMethod0
   uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod0::cleanup();
   // Cleanup for callback function CallbackInterfaceStorageMethod1
@@ -18333,6 +20163,9 @@ NativeBreezSdkSpark::~NativeBreezSdkSpark() {
   uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod25::cleanup();
   // Cleanup for callback function CallbackInterfaceStorageMethod26
   uniffi::breez_sdk_spark::cb::callbackinterfacestoragemethod26::cleanup();
+  // Cleanup for callback function CallbackInterfaceStorageBackendMethod0
+  uniffi::breez_sdk_spark::cb::callbackinterfacestoragebackendmethod0::
+      cleanup();
 }
 
 // Utility functions for serialization/deserialization of strings.
@@ -18389,7 +20222,7 @@ NativeBreezSdkSpark::cpp_uniffi_internal_fn_method_breezsdk_ffi__bless_pointer(
   return jsi::Value(rt, obj);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_internal_fn_method_externalsigner_ffi__bless_pointer(
+    cpp_uniffi_internal_fn_method_externalbreezsigner_ffi__bless_pointer(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto pointer =
@@ -18397,7 +20230,23 @@ jsi::Value NativeBreezSdkSpark::
   auto static destructor = [](uint64_t p) {
     auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
     RustCallStatus status = {0};
-    uniffi_breez_sdk_spark_fn_free_externalsigner(pointer, &status);
+    uniffi_breez_sdk_spark_fn_free_externalbreezsigner(pointer, &status);
+  };
+  auto ptrObj =
+      std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
+  auto obj = jsi::Object::createFromHostObject(rt, ptrObj);
+  return jsi::Value(rt, obj);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_internal_fn_method_externalsparksigner_ffi__bless_pointer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto pointer =
+      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[0]);
+  auto static destructor = [](uint64_t p) {
+    auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
+    RustCallStatus status = {0};
+    uniffi_breez_sdk_spark_fn_free_externalsparksigner(pointer, &status);
   };
   auto ptrObj =
       std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
@@ -18420,24 +20269,8 @@ jsi::Value NativeBreezSdkSpark::
   auto obj = jsi::Object::createFromHostObject(rt, ptrObj);
   return jsi::Value(rt, obj);
 }
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_internal_fn_method_passkey_ffi__bless_pointer(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  auto pointer =
-      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[0]);
-  auto static destructor = [](uint64_t p) {
-    auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
-    RustCallStatus status = {0};
-    uniffi_breez_sdk_spark_fn_free_passkey(pointer, &status);
-  };
-  auto ptrObj =
-      std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
-  auto obj = jsi::Object::createFromHostObject(rt, ptrObj);
-  return jsi::Value(rt, obj);
-}
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_internal_fn_method_passkeyprfprovider_ffi__bless_pointer(
+    cpp_uniffi_internal_fn_method_passkeyclient_ffi__bless_pointer(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto pointer =
@@ -18445,7 +20278,23 @@ jsi::Value NativeBreezSdkSpark::
   auto static destructor = [](uint64_t p) {
     auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
     RustCallStatus status = {0};
-    uniffi_breez_sdk_spark_fn_free_passkeyprfprovider(pointer, &status);
+    uniffi_breez_sdk_spark_fn_free_passkeyclient(pointer, &status);
+  };
+  auto ptrObj =
+      std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
+  auto obj = jsi::Object::createFromHostObject(rt, ptrObj);
+  return jsi::Value(rt, obj);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_internal_fn_method_passkeylabels_ffi__bless_pointer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto pointer =
+      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[0]);
+  auto static destructor = [](uint64_t p) {
+    auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
+    RustCallStatus status = {0};
+    uniffi_breez_sdk_spark_fn_free_passkeylabels(pointer, &status);
   };
   auto ptrObj =
       std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
@@ -18462,6 +20311,38 @@ jsi::Value NativeBreezSdkSpark::
     auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
     RustCallStatus status = {0};
     uniffi_breez_sdk_spark_fn_free_paymentobserver(pointer, &status);
+  };
+  auto ptrObj =
+      std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
+  auto obj = jsi::Object::createFromHostObject(rt, ptrObj);
+  return jsi::Value(rt, obj);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_internal_fn_method_prfprovider_ffi__bless_pointer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto pointer =
+      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[0]);
+  auto static destructor = [](uint64_t p) {
+    auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
+    RustCallStatus status = {0};
+    uniffi_breez_sdk_spark_fn_free_prfprovider(pointer, &status);
+  };
+  auto ptrObj =
+      std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
+  auto obj = jsi::Object::createFromHostObject(rt, ptrObj);
+  return jsi::Value(rt, obj);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_internal_fn_method_resolvedstores_ffi__bless_pointer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto pointer =
+      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[0]);
+  auto static destructor = [](uint64_t p) {
+    auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
+    RustCallStatus status = {0};
+    uniffi_breez_sdk_spark_fn_free_resolvedstores(pointer, &status);
   };
   auto ptrObj =
       std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
@@ -18517,7 +20398,7 @@ jsi::Value NativeBreezSdkSpark::
   return jsi::Value(rt, obj);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_internal_fn_method_sessionmanager_ffi__bless_pointer(
+    cpp_uniffi_internal_fn_method_sessionstore_ffi__bless_pointer(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto pointer =
@@ -18525,7 +20406,7 @@ jsi::Value NativeBreezSdkSpark::
   auto static destructor = [](uint64_t p) {
     auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
     RustCallStatus status = {0};
-    uniffi_breez_sdk_spark_fn_free_sessionmanager(pointer, &status);
+    uniffi_breez_sdk_spark_fn_free_sessionstore(pointer, &status);
   };
   auto ptrObj =
       std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
@@ -18542,6 +20423,22 @@ NativeBreezSdkSpark::cpp_uniffi_internal_fn_method_storage_ffi__bless_pointer(
     auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
     RustCallStatus status = {0};
     uniffi_breez_sdk_spark_fn_free_storage(pointer, &status);
+  };
+  auto ptrObj =
+      std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
+  auto obj = jsi::Object::createFromHostObject(rt, ptrObj);
+  return jsi::Value(rt, obj);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_internal_fn_method_storagebackend_ffi__bless_pointer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto pointer =
+      uniffi_jsi::Bridging<uint64_t>::fromJs(rt, callInvoker, args[0]);
+  auto static destructor = [](uint64_t p) {
+    auto pointer = reinterpret_cast<void *>(static_cast<uintptr_t>(p));
+    RustCallStatus status = {0};
+    uniffi_breez_sdk_spark_fn_free_storagebackend(pointer, &status);
   };
   auto ptrObj =
       std::make_shared<uniffi_jsi::DestructibleObject>(pointer, destructor);
@@ -18717,6 +20614,19 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_authorize_lightning_address_transfer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_breezsdk_authorize_lightning_address_transfer(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_buy_bitcoin(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -18725,17 +20635,6 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_buy_bitcoin(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[1]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_cancel_leaf_optimization(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_breezsdk_cancel_leaf_optimization(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
@@ -18785,6 +20684,19 @@ jsi::Value NativeBreezSdkSpark::
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_claim_lightning_address_transfer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_breezsdk_claim_lightning_address_transfer(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
@@ -18846,22 +20758,6 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_info(
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_leaf_optimization_progress(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_breezsdk_get_leaf_optimization_progress(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-          &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
-
-  return uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(rt, callInvoker,
-                                                             value);
 }
 jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_get_lightning_address(
@@ -19023,6 +20919,18 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_optimize_leaves(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_optimize_leaves(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_parse(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -19165,17 +21073,6 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_sign_message(
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_optimization(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_optimization(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -19225,12 +21122,12 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_externalsigner(
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_externalbreezsigner(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
   RustCallStatus status =
       uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  auto value = uniffi_breez_sdk_spark_fn_clone_externalsigner(
+  auto value = uniffi_breez_sdk_spark_fn_clone_externalbreezsigner(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
   uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
       rt, callInvoker, status, args[count - 1]);
@@ -19238,12 +21135,12 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_externalsigner(
   return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
 }
 jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_externalsigner(
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_externalbreezsigner(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
   RustCallStatus status =
       uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  uniffi_breez_sdk_spark_fn_free_externalsigner(
+  uniffi_breez_sdk_spark_fn_free_externalbreezsigner(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
   uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
       rt, callInvoker, status, args[count - 1]);
@@ -19251,152 +21148,179 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_externalsigner(
   return jsi::Value::undefined();
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsigner(
+    cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalbreezsigner(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto vtableInstance = uniffi::breez_sdk_spark::Bridging<
-      UniffiVTableCallbackInterfaceExternalSigner>::fromJs(rt, callInvoker,
-                                                           args[0]);
+      UniffiVTableCallbackInterfaceExternalBreezSigner>::fromJs(rt, callInvoker,
+                                                                args[0]);
 
   std::lock_guard<std::mutex> lock(
       uniffi::breez_sdk_spark::registry::vtableMutex);
-  uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsigner(
+  uniffi_breez_sdk_spark_fn_init_callback_vtable_externalbreezsigner(
       uniffi::breez_sdk_spark::registry::putTable(
-          "UniffiVTableCallbackInterfaceExternalSigner", vtableInstance));
+          "UniffiVTableCallbackInterfaceExternalBreezSigner", vtableInstance));
   return jsi::Value::undefined();
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_identity_public_key(
+    cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_derive_public_key(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalbreezsigner_derive_public_key(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_ecdsa(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_ecdsa(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[2]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_ecdsa_recoverable(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_ecdsa_recoverable(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[2]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_encrypt_ecies(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalbreezsigner_encrypt_ecies(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[2]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_decrypt_ecies(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalbreezsigner_decrypt_ecies(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[2]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_hash_schnorr(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_hash_schnorr(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[2]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_hmac_sha256(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_externalbreezsigner_hmac_sha256(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[2]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_externalsparksigner(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
   RustCallStatus status =
       uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_identity_public_key(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-          &status);
+  auto value = uniffi_breez_sdk_spark_fn_clone_externalsparksigner(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
   uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
       rt, callInvoker, status, args[count - 1]);
 
-  return uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(rt, callInvoker,
-                                                             value);
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_externalsparksigner(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  uniffi_breez_sdk_spark_fn_free_externalsparksigner(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return jsi::Value::undefined();
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_derive_public_key(
+    cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsparksigner(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto vtableInstance = uniffi::breez_sdk_spark::Bridging<
+      UniffiVTableCallbackInterfaceExternalSparkSigner>::fromJs(rt, callInvoker,
+                                                                args[0]);
+
+  std::lock_guard<std::mutex> lock(
+      uniffi::breez_sdk_spark::registry::vtableMutex);
+  uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsparksigner(
+      uniffi::breez_sdk_spark::registry::putTable(
+          "UniffiVTableCallbackInterfaceExternalSparkSigner", vtableInstance));
+  return jsi::Value::undefined();
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_identity_public_key(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_derive_public_key(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                                args[1]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[1]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[2]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa_recoverable(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa_recoverable(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                                args[1]),
-          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                                args[2]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_ecies(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_ecies(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[1]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[2]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_decrypt_ecies(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_externalsigner_decrypt_ecies(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[1]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[2]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_hash_schnorr(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_sign_hash_schnorr(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                                args[1]),
-          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                                args[2]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_hmac_sha256(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_externalsigner_hmac_sha256(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[1]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[2]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_signing_commitment(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_signing_commitment(
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_identity_public_key(
           uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_get_public_key_for_node(
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_public_key_for_leaf(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_get_public_key_for_node(
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_public_key_for_leaf(
           uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
           uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                                 args[1]));
@@ -19405,22 +21329,11 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_secret(
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_static_deposit_public_key(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_secret(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_encrypted(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_encrypted(
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_static_deposit_public_key(
           uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
           uniffi_jsi::Bridging<uint32_t>::fromJs(rt, callInvoker, args[1]));
 
@@ -19428,79 +21341,11 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret(
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_authentication_challenge(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-          uniffi_jsi::Bridging<uint32_t>::fromJs(rt, callInvoker, args[1]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_signing_key(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_signing_key(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-          uniffi_jsi::Bridging<uint32_t>::fromJs(rt, callInvoker, args[1]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secrets(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secrets(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[1]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[2]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_split_secret_with_proofs(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_split_secret_with_proofs(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                                args[1]),
-          uniffi_jsi::Bridging<uint32_t>::fromJs(rt, callInvoker, args[2]),
-          uniffi_jsi::Bridging<uint32_t>::fromJs(rt, callInvoker, args[3]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_for_receiver(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_for_receiver(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                                args[1]),
-          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                                args[2]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret(
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_authentication_challenge(
           uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
           uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                                 args[1]));
@@ -19509,10 +21354,23 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_frost(
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_message(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_externalsigner_sign_frost(
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_message(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_frost(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_frost(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[1]));
@@ -19521,13 +21379,118 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_externalsigner_aggregate_frost(
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_transfer(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_externalsigner_aggregate_frost(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[1]));
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_transfer(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_claim(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_claim(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_lightning_receive(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_lightning_receive(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_static_deposit(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_static_deposit(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_start_static_deposit_refund(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_start_static_deposit_refund(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_static_deposit_refund(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_static_deposit_refund(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_spark_invoice(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_spark_invoice(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_token_transaction(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_token_transaction(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_static_deposit_claim(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_static_deposit_claim(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
@@ -19592,137 +21555,67 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
-jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_passkey(
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_passkeyclient(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
   RustCallStatus status =
       uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  auto value = uniffi_breez_sdk_spark_fn_clone_passkey(
+  auto value = uniffi_breez_sdk_spark_fn_clone_passkeyclient(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
   uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
       rt, callInvoker, status, args[count - 1]);
 
   return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
 }
-jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_passkey(
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_passkeyclient(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
   RustCallStatus status =
       uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  uniffi_breez_sdk_spark_fn_free_passkey(
+  uniffi_breez_sdk_spark_fn_free_passkeyclient(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
   uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
       rt, callInvoker, status, args[count - 1]);
 
   return jsi::Value::undefined();
 }
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_constructor_passkey_new(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_constructor_passkeyclient_new(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
   RustCallStatus status =
       uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  auto value = uniffi_breez_sdk_spark_fn_constructor_passkey_new(
+  auto value = uniffi_breez_sdk_spark_fn_constructor_passkeyclient_new(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[1]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[2]),
       &status);
   uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
       rt, callInvoker, status, args[count - 1]);
 
   return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
 }
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_passkey_get_wallet(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_passkey_get_wallet(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[1]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_passkey_is_available(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_passkey_is_available(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_passkey_list_labels(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_passkey_list_labels(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_passkey_store_label(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_passkey_store_label(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[1]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_passkeyprfprovider(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  auto value = uniffi_breez_sdk_spark_fn_clone_passkeyprfprovider(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
-
-  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
-}
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_passkeyprfprovider(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
-  RustCallStatus status =
-      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  uniffi_breez_sdk_spark_fn_free_passkeyprfprovider(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
-  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
-      rt, callInvoker, status, args[count - 1]);
-
-  return jsi::Value::undefined();
-}
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_passkeyprfprovider(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto vtableInstance = uniffi::breez_sdk_spark::Bridging<
-      UniffiVTableCallbackInterfacePasskeyPrfProvider>::fromJs(rt, callInvoker,
-                                                               args[0]);
-
-  std::lock_guard<std::mutex> lock(
-      uniffi::breez_sdk_spark::registry::vtableMutex);
-  uniffi_breez_sdk_spark_fn_init_callback_vtable_passkeyprfprovider(
-      uniffi::breez_sdk_spark::registry::putTable(
-          "UniffiVTableCallbackInterfacePasskeyPrfProvider", vtableInstance));
-  return jsi::Value::undefined();
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_passkeyprfprovider_derive_prf_seed(
+    cpp_uniffi_breez_sdk_spark_fn_method_passkeyclient_check_availability(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_fn_method_passkeyprfprovider_derive_prf_seed(
+      uniffi_breez_sdk_spark_fn_method_passkeyclient_check_availability(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_passkeyclient_connect_with_passkey(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_passkeyclient_connect_with_passkey(
           uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
           uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                                 args[1]));
@@ -19730,13 +21623,87 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_passkeyclient_labels(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_spark_fn_method_passkeyclient_labels(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+}
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_passkeyprfprovider_is_prf_available(
+    cpp_uniffi_breez_sdk_spark_fn_method_passkeyclient_register(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_fn_method_passkeyprfprovider_is_prf_available(
-          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+  auto value = uniffi_breez_sdk_spark_fn_method_passkeyclient_register(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_passkeyclient_sign_in(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_passkeyclient_sign_in(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_passkeylabels(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_spark_fn_clone_passkeylabels(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_passkeylabels(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  uniffi_breez_sdk_spark_fn_free_passkeylabels(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return jsi::Value::undefined();
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_passkeylabels_list(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_passkeylabels_list(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_passkeylabels_store(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_passkeylabels_store(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
@@ -19793,6 +21760,128 @@ jsi::Value NativeBreezSdkSpark::
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_paymentobserver_after_send(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_paymentobserver_after_send(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_prfprovider(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_spark_fn_clone_prfprovider(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_prfprovider(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  uniffi_breez_sdk_spark_fn_free_prfprovider(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return jsi::Value::undefined();
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_prfprovider(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto vtableInstance = uniffi::breez_sdk_spark::Bridging<
+      UniffiVTableCallbackInterfacePrfProvider>::fromJs(rt, callInvoker,
+                                                        args[0]);
+
+  std::lock_guard<std::mutex> lock(
+      uniffi::breez_sdk_spark::registry::vtableMutex);
+  uniffi_breez_sdk_spark_fn_init_callback_vtable_prfprovider(
+      uniffi::breez_sdk_spark::registry::putTable(
+          "UniffiVTableCallbackInterfacePrfProvider", vtableInstance));
+  return jsi::Value::undefined();
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_prfprovider_derive_seeds(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_prfprovider_derive_seeds(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_prfprovider_is_supported(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_prfprovider_is_supported(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_prfprovider_create_passkey(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_prfprovider_create_passkey(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_prfprovider_check_domain_association(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_prfprovider_check_domain_association(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_resolvedstores(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_spark_fn_clone_resolvedstores(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_resolvedstores(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  uniffi_breez_sdk_spark_fn_free_resolvedstores(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return jsi::Value::undefined();
 }
 jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_restclient(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -19920,12 +22009,39 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new(
 
   return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
 }
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new_with_signer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new_with_signer(
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[0]),
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[1]),
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[2]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+}
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_build(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
   auto value = uniffi_breez_sdk_spark_fn_method_sdkbuilder_build(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_account_number(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_account_number(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi_jsi::Bridging<uint32_t>::fromJs(rt, callInvoker, args[1]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
@@ -19960,18 +22076,6 @@ jsi::Value NativeBreezSdkSpark::
   auto value = uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_fiat_service(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[1]));
-
-  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
-                                                         value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(
-      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
-      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[1]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
@@ -20038,6 +22142,17 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_storage_backend(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_storage_backend(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
 jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_sdkcontext(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
@@ -20063,25 +22178,24 @@ jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_sdkcontext(
   return jsi::Value::undefined();
 }
 jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_sessionmanager(
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_sessionstore(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
   RustCallStatus status =
       uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  auto value = uniffi_breez_sdk_spark_fn_clone_sessionmanager(
+  auto value = uniffi_breez_sdk_spark_fn_clone_sessionstore(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
   uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
       rt, callInvoker, status, args[count - 1]);
 
   return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
 }
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_sessionmanager(
+jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_sessionstore(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
   RustCallStatus status =
       uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  uniffi_breez_sdk_spark_fn_free_sessionmanager(
+  uniffi_breez_sdk_spark_fn_free_sessionstore(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
   uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
       rt, callInvoker, status, args[count - 1]);
@@ -20089,25 +22203,25 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_sessionmanager(
   return jsi::Value::undefined();
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionmanager(
+    cpp_uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionstore(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto vtableInstance = uniffi::breez_sdk_spark::Bridging<
-      UniffiVTableCallbackInterfaceSessionManager>::fromJs(rt, callInvoker,
-                                                           args[0]);
+      UniffiVTableCallbackInterfaceSessionStore>::fromJs(rt, callInvoker,
+                                                         args[0]);
 
   std::lock_guard<std::mutex> lock(
       uniffi::breez_sdk_spark::registry::vtableMutex);
-  uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionmanager(
+  uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionstore(
       uniffi::breez_sdk_spark::registry::putTable(
-          "UniffiVTableCallbackInterfaceSessionManager", vtableInstance));
+          "UniffiVTableCallbackInterfaceSessionStore", vtableInstance));
   return jsi::Value::undefined();
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_sessionmanager_get_session(
+    cpp_uniffi_breez_sdk_spark_fn_method_sessionstore_get_session(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_sessionmanager_get_session(
+  auto value = uniffi_breez_sdk_spark_fn_method_sessionstore_get_session(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[1]));
@@ -20116,10 +22230,10 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_sessionmanager_set_session(
+    cpp_uniffi_breez_sdk_spark_fn_method_sessionstore_set_session(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_sessionmanager_set_session(
+  auto value = uniffi_breez_sdk_spark_fn_method_sessionstore_set_session(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[1]),
@@ -20218,10 +22332,10 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_storage_list_payments(
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_fn_method_storage_insert_payment(
+    cpp_uniffi_breez_sdk_spark_fn_method_storage_apply_payment_update(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_method_storage_insert_payment(
+  auto value = uniffi_breez_sdk_spark_fn_method_storage_apply_payment_update(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[1]));
@@ -20499,6 +22613,46 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
 }
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_storagebackend(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_spark_fn_clone_storagebackend(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_free_storagebackend(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  uniffi_breez_sdk_spark_fn_free_storagebackend(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return jsi::Value::undefined();
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_storagebackend_create_stores(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_storagebackend_create_stores(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[2]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
 jsi::Value NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_clone_tokenissuer(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
@@ -20657,6 +22811,30 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_connect_with_signer(
                                                          value);
 }
 jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_create_turnkey_signer(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_func_create_turnkey_signer(
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_custom_storage(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_spark_fn_func_custom_storage(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]), &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+}
+jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_default_config(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
@@ -20672,13 +22850,13 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_default_config(
   return uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(rt, callInvoker,
                                                              value);
 }
-jsi::Value
-NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_default_external_signer(
-    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-    size_t count) {
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_func_default_external_signers(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
   RustCallStatus status =
       uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
-  auto value = uniffi_breez_sdk_spark_fn_func_default_external_signer(
+  auto value = uniffi_breez_sdk_spark_fn_func_default_external_signers(
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
@@ -20691,7 +22869,8 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_default_external_signer(
   uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
       rt, callInvoker, status, args[count - 1]);
 
-  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
+  return uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(rt, callInvoker,
+                                                             value);
 }
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_default_server_config(
@@ -20708,6 +22887,21 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_default_server_config(
 
   return uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(rt, callInvoker,
                                                              value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_default_storage(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  RustCallStatus status =
+      uniffi::breez_sdk_spark::Bridging<RustCallStatus>::rustSuccess(rt);
+  auto value = uniffi_breez_sdk_spark_fn_func_default_storage(
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[0]),
+      &status);
+  uniffi::breez_sdk_spark::Bridging<RustCallStatus>::copyIntoJs(
+      rt, callInvoker, status, args[count - 1]);
+
+  return uniffi_jsi::Bridging<void *>::toJs(rt, callInvoker, value);
 }
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_get_spark_status(
@@ -21396,6 +23590,22 @@ jsi::Value NativeBreezSdkSpark::
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_func_create_turnkey_signer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_checksum_func_create_turnkey_signer();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_checksum_func_custom_storage(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  auto value = uniffi_breez_sdk_spark_checksum_func_custom_storage();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_checksum_func_default_config(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -21405,10 +23615,10 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_checksum_func_default_config(
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_func_default_external_signer(
+    cpp_uniffi_breez_sdk_spark_checksum_func_default_external_signers(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value = uniffi_breez_sdk_spark_checksum_func_default_external_signer();
+  auto value = uniffi_breez_sdk_spark_checksum_func_default_external_signers();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -21417,6 +23627,14 @@ jsi::Value NativeBreezSdkSpark::
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value = uniffi_breez_sdk_spark_checksum_func_default_server_config();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_checksum_func_default_storage(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  auto value = uniffi_breez_sdk_spark_checksum_func_default_storage();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -21515,19 +23733,19 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin(
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_authorize_lightning_address_transfer(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value = uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin();
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_authorize_lightning_address_transfer();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_optimization(
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_optimization();
+  auto value = uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -21562,6 +23780,15 @@ jsi::Value NativeBreezSdkSpark::
         size_t count) {
   auto value =
       uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_htlc_payment();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_lightning_address_transfer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_lightning_address_transfer();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -21604,15 +23831,6 @@ jsi::Value NativeBreezSdkSpark::
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value = uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info();
-
-  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -21735,6 +23953,15 @@ jsi::Value NativeBreezSdkSpark::
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_optimize_leaves(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_optimize_leaves();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
 jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_parse(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -21840,15 +24067,6 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value =
-      uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization();
-
-  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
-}
-jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -21883,182 +24101,200 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_identity_public_key(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_derive_public_key(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_identity_public_key();
+      uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_derive_public_key();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_derive_public_key(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_ecdsa(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_derive_public_key();
+      uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_ecdsa();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_ecdsa_recoverable(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa();
+      uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_ecdsa_recoverable();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa_recoverable(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_encrypt_ecies(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa_recoverable();
+      uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_encrypt_ecies();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_ecies(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_decrypt_ecies(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_ecies();
+      uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_decrypt_ecies();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_decrypt_ecies(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_hash_schnorr(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_decrypt_ecies();
+      uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_hash_schnorr();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_hash_schnorr(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_hmac_sha256(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_hash_schnorr();
+      uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_hmac_sha256();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_hmac_sha256(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_identity_public_key(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_hmac_sha256();
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_identity_public_key();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_signing_commitment(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_public_key_for_leaf(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_signing_commitment();
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_public_key_for_leaf();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_static_deposit_public_key(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node();
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_static_deposit_public_key();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_secret(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_authentication_challenge(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_secret();
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_authentication_challenge();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_encrypted(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_message(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_encrypted();
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_message();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_frost(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret();
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_frost();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_signing_key(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_transfer(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_signing_key();
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_transfer();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secrets(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_claim(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secrets();
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_claim();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret_with_proofs(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_lightning_receive(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret_with_proofs();
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_lightning_receive();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_for_receiver(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_for_receiver();
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_static_deposit_refund(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret();
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_static_deposit_refund();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_static_deposit_refund(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost();
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_static_deposit_refund();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost(
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_spark_invoice(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost();
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_spark_invoice();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_token_transaction(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_token_transaction();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit_claim(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit_claim();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -22081,52 +24317,60 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_passkey_get_wallet(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_checksum_method_passkey_get_wallet();
-
-  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_passkey_is_available(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_checksum_method_passkey_is_available();
-
-  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_passkey_list_labels(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_checksum_method_passkey_list_labels();
-
-  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_passkey_store_label(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_checksum_method_passkey_store_label();
-
-  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_derive_prf_seed(
+    cpp_uniffi_breez_sdk_spark_checksum_method_passkeyclient_check_availability(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_derive_prf_seed();
+      uniffi_breez_sdk_spark_checksum_method_passkeyclient_check_availability();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_is_prf_available(
+    cpp_uniffi_breez_sdk_spark_checksum_method_passkeyclient_connect_with_passkey(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_is_prf_available();
+      uniffi_breez_sdk_spark_checksum_method_passkeyclient_connect_with_passkey();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_passkeyclient_labels(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_checksum_method_passkeyclient_labels();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_passkeyclient_register(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_checksum_method_passkeyclient_register();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_passkeyclient_sign_in(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_checksum_method_passkeyclient_sign_in();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_passkeylabels_list(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_checksum_method_passkeylabels_list();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_passkeylabels_store(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_checksum_method_passkeylabels_store();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -22136,6 +24380,51 @@ jsi::Value NativeBreezSdkSpark::
         size_t count) {
   auto value =
       uniffi_breez_sdk_spark_checksum_method_paymentobserver_before_send();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_paymentobserver_after_send(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_paymentobserver_after_send();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_prfprovider_derive_seeds(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_prfprovider_derive_seeds();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_prfprovider_is_supported(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_prfprovider_is_supported();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_prfprovider_create_passkey(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_prfprovider_create_passkey();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_prfprovider_check_domain_association(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_prfprovider_check_domain_association();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -22173,6 +24462,15 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_account_number(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_account_number();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_chain_service(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -22196,14 +24494,6 @@ jsi::Value NativeBreezSdkSpark::
         size_t count) {
   auto value =
       uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_fiat_service();
-
-  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
-}
-jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set(
-        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
-        size_t count) {
-  auto value = uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -22252,20 +24542,29 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_sessionmanager_get_session(
+    cpp_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage_backend(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_sessionmanager_get_session();
+      uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage_backend();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_sessionmanager_set_session(
+    cpp_uniffi_breez_sdk_spark_checksum_method_sessionstore_get_session(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value =
-      uniffi_breez_sdk_spark_checksum_method_sessionmanager_set_session();
+      uniffi_breez_sdk_spark_checksum_method_sessionstore_get_session();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_sessionstore_set_session(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_sessionstore_set_session();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -22303,10 +24602,11 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_method_storage_insert_payment(
+    cpp_uniffi_breez_sdk_spark_checksum_method_storage_apply_payment_update(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value = uniffi_breez_sdk_spark_checksum_method_storage_insert_payment();
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_storage_apply_payment_update();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -22501,6 +24801,15 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_storagebackend_create_stores(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_storagebackend_create_stores();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_checksum_method_tokenissuer_burn_issuer_token(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -22564,10 +24873,10 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
-    cpp_uniffi_breez_sdk_spark_checksum_constructor_passkey_new(
+    cpp_uniffi_breez_sdk_spark_checksum_constructor_passkeyclient_new(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
-  auto value = uniffi_breez_sdk_spark_checksum_constructor_passkey_new();
+  auto value = uniffi_breez_sdk_spark_checksum_constructor_passkeyclient_new();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
@@ -22576,6 +24885,15 @@ jsi::Value NativeBreezSdkSpark::
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value = uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new_with_signer(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new_with_signer();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }

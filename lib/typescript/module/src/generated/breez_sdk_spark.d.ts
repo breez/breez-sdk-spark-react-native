@@ -30,25 +30,42 @@ export declare function connect(request: ConnectRequest, asyncOpts_?: {
 export declare function connectWithSigner(request: ConnectWithSignerRequest, asyncOpts_?: {
     signal: AbortSignal;
 }): Promise<BreezSdkInterface>;
+/**
+ * Builds the Turnkey-backed Breez and Spark signers from `config`, sharing one
+ * Turnkey client.
+ *
+ * The Spark signer keeps every signing operation in the Turnkey enclave; the
+ * Breez signer does too, except ECIES and HMAC, which run locally against a
+ * dedicated, non-Spark key exported once here. Exporting a non-Spark key keeps
+ * every Spark key (the identity key included) in the enclave; ECIES/HMAC only
+ * need a stable key, not a Spark one.
+ */
+export declare function createTurnkeySigner(config: TurnkeyConfig, asyncOpts_?: {
+    signal: AbortSignal;
+}): Promise<ExternalSigners>;
+/**
+ * Wraps a caller-supplied [`Storage`] implementation as a [`StorageBackend`].
+ * The tree, token-output and session stores use the in-memory defaults.
+ */
+export declare function customStorage(storage: Storage): StorageBackend;
 export declare function defaultConfig(network: Network): Config;
 /**
- * Creates a default external signer from a mnemonic.
+ * Creates the default external signers from a mnemonic.
  *
- * This is a convenience factory method for creating a signer that can be used
- * with `connect_with_signer` or `SdkBuilder::new_with_signer`.
+ * This is a convenience factory method for creating the two signer halves
+ * that can be passed to `connect_with_signer` or `SdkBuilder::new_with_signer`.
+ * Key derivation matches the seed-based connect path: an SDK built either way
+ * from the same mnemonic is the same wallet.
  *
  * # Arguments
  *
  * * `mnemonic` - BIP39 mnemonic phrase (12 or 24 words)
  * * `passphrase` - Optional passphrase for the mnemonic
  * * `network` - Network to use (Mainnet or Regtest)
- * * `key_set_config` - Optional key set configuration. If None, uses default configuration.
- *
- * # Returns
- *
- * Result containing the signer as `Arc<dyn ExternalSigner>`
+ * * `account_number` - Account number in the derivation path. Unset uses the
+ * network default: 0 on Regtest, 1 on all other networks.
  */
-export declare function defaultExternalSigner(mnemonic: string, passphrase: string | undefined, network: Network, keySetConfig: KeySetConfig | undefined): ExternalSigner;
+export declare function defaultExternalSigners(mnemonic: string, passphrase: string | undefined, network: Network, accountNumber: /*u32*/ number | undefined): ExternalSigners;
 /**
  * Builds a [`Config`] suitable for multi-tenant server-mode deployments.
  *
@@ -86,6 +103,12 @@ export declare function defaultExternalSigner(mnemonic: string, passphrase: stri
  */
 export declare function defaultServerConfig(network: Network): Config;
 /**
+ * File-based `SQLite` storage rooted at `storage_dir` — the default for
+ * mobile and desktop apps. Each tenant gets its own database file under the
+ * directory.
+ */
+export declare function defaultStorage(storageDir: string): StorageBackend;
+/**
  * Fetches the current status of Spark network services relevant to the SDK.
  *
  * This function queries the Spark status API and returns the worst status
@@ -112,10 +135,8 @@ export declare function newRestChainService(url: string, network: Network, apiTy
 /**
  * Constructs an [`SdkContext`] from a `SdkContextConfig`.
  *
- * The returned `Arc` is cheap to clone and can back many SDK instances.
- * `SdkContextConfig::new(network)` yields an in-memory, single-tenant setup;
- * supply a DB config to back the SDKs with a shared `PostgreSQL` or `MySQL`
- * pool.
+ * The returned `Arc` is cheap to clone and can back many SDK instances,
+ * sharing their HTTP client and operator gRPC channels.
  */
 export declare function newSharedSdkContext(config: SdkContextConfig, asyncOpts_?: {
     signal: AbortSignal;
@@ -232,6 +253,36 @@ export declare const AesSuccessActionDataDecrypted: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<AesSuccessActionDataDecrypted>;
+}>;
+/**
+ * Request for [`BreezSdk::authorize_lightning_address_transfer`]. Called by
+ * the *current owner* to authorize handing their registered username over to
+ * `transferee_pubkey`.
+ */
+export type AuthorizeTransferRequest = {
+    /**
+     * The new owner's identity public key.
+     */
+    transfereePubkey: string;
+};
+/**
+ * Generated factory for {@link AuthorizeTransferRequest} record objects.
+ */
+export declare const AuthorizeTransferRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link AuthorizeTransferRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<AuthorizeTransferRequest> & Required<Omit<AuthorizeTransferRequest, never>>) => AuthorizeTransferRequest;
+    /**
+     * Create a frozen instance of {@link AuthorizeTransferRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<AuthorizeTransferRequest> & Required<Omit<AuthorizeTransferRequest, never>>) => AuthorizeTransferRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<AuthorizeTransferRequest>;
 }>;
 export type Bip21Details = {
     amountSat: /*u64*/ bigint | undefined;
@@ -789,6 +840,41 @@ export declare const ClaimHtlcPaymentResponse: Readonly<{
      */
     defaults: () => Partial<ClaimHtlcPaymentResponse>;
 }>;
+/**
+ * Request for [`BreezSdk::claim_lightning_address_transfer`]. Called by the
+ * *new owner* to complete the takeover using the authorization produced by
+ * the current owner.
+ */
+export type ClaimTransferRequest = {
+    /**
+     * Authorization produced by the current owner via
+     * [`BreezSdk::authorize_lightning_address_transfer`].
+     */
+    authorization: TransferAuthorization;
+    /**
+     * Description for the address. Defaults to `"Pay to {username}@{domain}"`.
+     */
+    description: string | undefined;
+};
+/**
+ * Generated factory for {@link ClaimTransferRequest} record objects.
+ */
+export declare const ClaimTransferRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ClaimTransferRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ClaimTransferRequest> & Required<Omit<ClaimTransferRequest, "description">>) => ClaimTransferRequest;
+    /**
+     * Create a frozen instance of {@link ClaimTransferRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ClaimTransferRequest> & Required<Omit<ClaimTransferRequest, "description">>) => ClaimTransferRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ClaimTransferRequest>;
+}>;
 export type Config = {
     apiKey: string | undefined;
     network: Network;
@@ -944,13 +1030,96 @@ export declare const ConnectRequest: Readonly<{
     defaults: () => Partial<ConnectRequest>;
 }>;
 /**
+ * Request shape for [`PasskeyClient::connect_with_passkey`].
+ */
+export type ConnectWithPasskeyRequest = {
+    /**
+     * Wallet label. Defaults to the configured default label when
+     * `None`. Used both for the silent sign-in attempt and, if it
+     * fast-fails, for the fallback registration.
+     */
+    label: string | undefined;
+    /**
+     * Optional credential IDs to restrict the silent sign-in
+     * attempt to (reauthentication path). See
+     * [`SignInRequest::allow_credentials`]. Ignored on the fallback
+     * registration path.
+     */
+    allowCredentials: Array<ArrayBuffer> | undefined;
+    /**
+     * Optional already-registered credential IDs to surface
+     * duplicates on the fallback registration path. See
+     * [`RegisterRequest::exclude_credentials`]. Ignored on the
+     * silent sign-in attempt.
+     */
+    excludeCredentials: Array<ArrayBuffer> | undefined;
+};
+/**
+ * Generated factory for {@link ConnectWithPasskeyRequest} record objects.
+ */
+export declare const ConnectWithPasskeyRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ConnectWithPasskeyRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ConnectWithPasskeyRequest> & Required<Omit<ConnectWithPasskeyRequest, "label" | "allowCredentials" | "excludeCredentials">>) => ConnectWithPasskeyRequest;
+    /**
+     * Create a frozen instance of {@link ConnectWithPasskeyRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ConnectWithPasskeyRequest> & Required<Omit<ConnectWithPasskeyRequest, "label" | "allowCredentials" | "excludeCredentials">>) => ConnectWithPasskeyRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ConnectWithPasskeyRequest>;
+}>;
+/**
+ * Response from [`PasskeyClient::connect_with_passkey`].
+ *
+ * `credential` carries whichever credential signed in or was
+ * registered, when the provider surfaces it. The register path also
+ * populates the attestation fields (`aaguid`, `backup_eligible`); the
+ * sign-in path sets only `credential_id`.
+ */
+export type ConnectWithPasskeyResponse = {
+    wallet: Wallet;
+    credential: PasskeyCredential | undefined;
+};
+/**
+ * Generated factory for {@link ConnectWithPasskeyResponse} record objects.
+ */
+export declare const ConnectWithPasskeyResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link ConnectWithPasskeyResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ConnectWithPasskeyResponse> & Required<Omit<ConnectWithPasskeyResponse, never>>) => ConnectWithPasskeyResponse;
+    /**
+     * Create a frozen instance of {@link ConnectWithPasskeyResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ConnectWithPasskeyResponse> & Required<Omit<ConnectWithPasskeyResponse, never>>) => ConnectWithPasskeyResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ConnectWithPasskeyResponse>;
+}>;
+/**
  * Request object for connecting to the Spark network using an external signer.
  *
  * This allows using a custom signer implementation instead of providing a seed directly.
  */
 export type ConnectWithSignerRequest = {
     config: Config;
-    signer: ExternalSigner;
+    /**
+     * External signer for non-Spark SDK signing (LNURL-auth, sync, message
+     * signing, ECIES).
+     */
+    breezSigner: ExternalBreezSigner;
+    /**
+     * External high-level Spark signer for the Spark wallet flows.
+     */
+    sparkSigner: ExternalSparkSigner;
     storageDir: string;
 };
 /**
@@ -1340,6 +1509,83 @@ export declare const DepositInfo: Readonly<{
     defaults: () => Partial<DepositInfo>;
 }>;
 /**
+ * Derived seeds plus the credential observed in the same assertion.
+ */
+export type DeriveSeedsOutput = {
+    seeds: Array<ArrayBuffer>;
+    /**
+     * Absent when the provider does not surface it.
+     */
+    credentialId: ArrayBuffer | undefined;
+};
+/**
+ * Generated factory for {@link DeriveSeedsOutput} record objects.
+ */
+export declare const DeriveSeedsOutput: Readonly<{
+    /**
+     * Create a frozen instance of {@link DeriveSeedsOutput}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<DeriveSeedsOutput> & Required<Omit<DeriveSeedsOutput, never>>) => DeriveSeedsOutput;
+    /**
+     * Create a frozen instance of {@link DeriveSeedsOutput}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<DeriveSeedsOutput> & Required<Omit<DeriveSeedsOutput, never>>) => DeriveSeedsOutput;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<DeriveSeedsOutput>;
+}>;
+/**
+ * Per-call inputs for [`PrfProvider::derive_seeds`]. Hosts that
+ * don't need per-ceremony overrides fall back to [`Default`]
+ * (`salts` only, all overrides empty / `None`).
+ */
+export type DeriveSeedsRequest = {
+    /**
+     * Salt strings in caller order. One 32-byte PRF output is
+     * returned per salt, in the same order.
+     */
+    salts: Array<string>;
+    /**
+     * Credential IDs the assertion is restricted to. The main use is
+     * reauthenticating a known user: if a listed credential is on the
+     * device the OS unlocks straight away (no account picker); otherwise
+     * it asks for another device (paired phone, security key) holding one.
+     * Empty falls through to the provider's configured default.
+     */
+    allowCredentials: Array<ArrayBuffer>;
+    /**
+     * Restrict the assertion to credentials already present on this
+     * device. When `true`, the OS skips the cross-device picker (iOS
+     * QR, Android hybrid, web `mediation: undefined`) and surfaces a
+     * missing local credential as `CredentialNotFound` immediately.
+     * When `false`, the OS picker is shown as usual. Unset uses the
+     * provider's default (`true` for built-in providers).
+     */
+    preferImmediatelyAvailableCredentials: boolean | undefined;
+};
+/**
+ * Generated factory for {@link DeriveSeedsRequest} record objects.
+ */
+export declare const DeriveSeedsRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link DeriveSeedsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<DeriveSeedsRequest> & Required<Omit<DeriveSeedsRequest, "allowCredentials" | "preferImmediatelyAvailableCredentials">>) => DeriveSeedsRequest;
+    /**
+     * Create a frozen instance of {@link DeriveSeedsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<DeriveSeedsRequest> & Required<Omit<DeriveSeedsRequest, "allowCredentials" | "preferImmediatelyAvailableCredentials">>) => DeriveSeedsRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<DeriveSeedsRequest>;
+}>;
+/**
  * FFI-safe representation of an ECDSA signature (64 bytes)
  */
 export type EcdsaSignatureBytes = {
@@ -1365,92 +1611,31 @@ export declare const EcdsaSignatureBytes: Readonly<{
     defaults: () => Partial<EcdsaSignatureBytes>;
 }>;
 /**
- * FFI-safe representation of `spark_wallet::AggregateFrostRequest`
+ * FFI-safe representation of `spark_wallet::ClaimLeafInput`.
  */
-export type ExternalAggregateFrostRequest = {
-    /**
-     * The message that was signed
-     */
-    message: ArrayBuffer;
-    /**
-     * Statechain signatures as a list of identifier-signature pairs
-     */
-    statechainSignatures: Array<IdentifierSignaturePair>;
-    /**
-     * Statechain public keys as a list of identifier-publickey pairs
-     */
-    statechainPublicKeys: Array<IdentifierPublicKeyPair>;
-    /**
-     * The verifying key (33 bytes compressed)
-     */
-    verifyingKey: ArrayBuffer;
-    /**
-     * Statechain commitments as a list of identifier-commitment pairs
-     */
-    statechainCommitments: Array<IdentifierCommitmentPair>;
-    /**
-     * The self commitment
-     */
-    selfCommitment: ExternalSigningCommitments;
-    /**
-     * The public key (33 bytes compressed)
-     */
-    publicKey: ArrayBuffer;
-    /**
-     * The self signature share
-     */
-    selfSignature: ExternalFrostSignatureShare;
-    /**
-     * Optional adaptor public key (33 bytes compressed)
-     */
-    adaptorPublicKey: ArrayBuffer | undefined;
+export type ExternalClaimLeafInput = {
+    nodeId: ExternalTreeNodeId;
+    senderSignature: ArrayBuffer;
+    leafKeyCiphertext: ArrayBuffer;
 };
 /**
- * Generated factory for {@link ExternalAggregateFrostRequest} record objects.
+ * Generated factory for {@link ExternalClaimLeafInput} record objects.
  */
-export declare const ExternalAggregateFrostRequest: Readonly<{
+export declare const ExternalClaimLeafInput: Readonly<{
     /**
-     * Create a frozen instance of {@link ExternalAggregateFrostRequest}, with defaults specified
+     * Create a frozen instance of {@link ExternalClaimLeafInput}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<ExternalAggregateFrostRequest> & Required<Omit<ExternalAggregateFrostRequest, never>>) => ExternalAggregateFrostRequest;
+    create: (partial: Partial<ExternalClaimLeafInput> & Required<Omit<ExternalClaimLeafInput, never>>) => ExternalClaimLeafInput;
     /**
-     * Create a frozen instance of {@link ExternalAggregateFrostRequest}, with defaults specified
+     * Create a frozen instance of {@link ExternalClaimLeafInput}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<ExternalAggregateFrostRequest> & Required<Omit<ExternalAggregateFrostRequest, never>>) => ExternalAggregateFrostRequest;
+    new: (partial: Partial<ExternalClaimLeafInput> & Required<Omit<ExternalClaimLeafInput, never>>) => ExternalClaimLeafInput;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
-    defaults: () => Partial<ExternalAggregateFrostRequest>;
-}>;
-/**
- * FFI-safe representation of `spark_wallet::EncryptedSecret`
- */
-export type ExternalEncryptedSecret = {
-    /**
-     * The encrypted ciphertext
-     */
-    ciphertext: ArrayBuffer;
-};
-/**
- * Generated factory for {@link ExternalEncryptedSecret} record objects.
- */
-export declare const ExternalEncryptedSecret: Readonly<{
-    /**
-     * Create a frozen instance of {@link ExternalEncryptedSecret}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create: (partial: Partial<ExternalEncryptedSecret> & Required<Omit<ExternalEncryptedSecret, never>>) => ExternalEncryptedSecret;
-    /**
-     * Create a frozen instance of {@link ExternalEncryptedSecret}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: (partial: Partial<ExternalEncryptedSecret> & Required<Omit<ExternalEncryptedSecret, never>>) => ExternalEncryptedSecret;
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Partial<ExternalEncryptedSecret>;
+    defaults: () => Partial<ExternalClaimLeafInput>;
 }>;
 /**
  * FFI-safe representation of `spark_wallet::FrostSigningCommitmentsWithNonces`
@@ -1487,6 +1672,82 @@ export declare const ExternalFrostCommitments: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<ExternalFrostCommitments>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::FrostJob`.
+ */
+export type ExternalFrostJob = {
+    /**
+     * Which key to sign with.
+     */
+    derivation: ExternalFrostDerivation;
+    /**
+     * 32-byte BIP-341 sighash to sign.
+     */
+    sighash: ArrayBuffer;
+    /**
+     * FROST group verifying key (33 bytes compressed).
+     */
+    verifyingKey: ArrayBuffer;
+    /**
+     * Per-operator round-1 commitments.
+     */
+    operatorCommitments: Array<IdentifierCommitmentPair>;
+    /**
+     * Optional adaptor public key (33 bytes compressed).
+     */
+    adaptorPublicKey: ArrayBuffer | undefined;
+};
+/**
+ * Generated factory for {@link ExternalFrostJob} record objects.
+ */
+export declare const ExternalFrostJob: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalFrostJob}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalFrostJob> & Required<Omit<ExternalFrostJob, never>>) => ExternalFrostJob;
+    /**
+     * Create a frozen instance of {@link ExternalFrostJob}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalFrostJob> & Required<Omit<ExternalFrostJob, never>>) => ExternalFrostJob;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalFrostJob>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::FrostShareResult`.
+ */
+export type ExternalFrostShareResult = {
+    /**
+     * The user's nonce commitment (round-1 output).
+     */
+    commitment: ExternalFrostCommitments;
+    /**
+     * The user's signature share (round-2 output).
+     */
+    signatureShare: ExternalFrostSignatureShare;
+};
+/**
+ * Generated factory for {@link ExternalFrostShareResult} record objects.
+ */
+export declare const ExternalFrostShareResult: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalFrostShareResult}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalFrostShareResult> & Required<Omit<ExternalFrostShareResult, never>>) => ExternalFrostShareResult;
+    /**
+     * Create a frozen instance of {@link ExternalFrostShareResult}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalFrostShareResult> & Required<Omit<ExternalFrostShareResult, never>>) => ExternalFrostShareResult;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalFrostShareResult>;
 }>;
 /**
  * FFI-safe representation of `frost_secp256k1_tr::Signature`
@@ -1610,120 +1871,553 @@ export declare const ExternalInputParser: Readonly<{
     defaults: () => Partial<ExternalInputParser>;
 }>;
 /**
- * FFI-safe representation of `k256::Scalar` (32 bytes)
+ * FFI-safe representation of `spark_wallet::NewLeafKey`.
  */
-export type ExternalScalar = {
+export type ExternalNewLeafKey = {
+    nodeId: ExternalTreeNodeId;
     /**
-     * The 32-byte scalar value
+     * New signing public key (33 bytes compressed).
      */
-    bytes: ArrayBuffer;
+    newSigningPublicKey: ArrayBuffer;
 };
 /**
- * Generated factory for {@link ExternalScalar} record objects.
+ * Generated factory for {@link ExternalNewLeafKey} record objects.
  */
-export declare const ExternalScalar: Readonly<{
+export declare const ExternalNewLeafKey: Readonly<{
     /**
-     * Create a frozen instance of {@link ExternalScalar}, with defaults specified
+     * Create a frozen instance of {@link ExternalNewLeafKey}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<ExternalScalar> & Required<Omit<ExternalScalar, never>>) => ExternalScalar;
+    create: (partial: Partial<ExternalNewLeafKey> & Required<Omit<ExternalNewLeafKey, never>>) => ExternalNewLeafKey;
     /**
-     * Create a frozen instance of {@link ExternalScalar}, with defaults specified
+     * Create a frozen instance of {@link ExternalNewLeafKey}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<ExternalScalar> & Required<Omit<ExternalScalar, never>>) => ExternalScalar;
+    new: (partial: Partial<ExternalNewLeafKey> & Required<Omit<ExternalNewLeafKey, never>>) => ExternalNewLeafKey;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
-    defaults: () => Partial<ExternalScalar>;
+    defaults: () => Partial<ExternalNewLeafKey>;
 }>;
 /**
- * FFI-safe representation of `spark_wallet::SecretShare`
+ * FFI-safe representation of `spark_wallet::OperatorPackage`.
  */
-export type ExternalSecretShare = {
+export type ExternalOperatorPackage = {
     /**
-     * Number of shares required to recover the secret
+     * The operator this package is encrypted for.
      */
-    threshold: number;
+    operatorIdentifier: ExternalIdentifier;
     /**
-     * Index (x-coordinate) of the share as 32 bytes
+     * The ECIES-encrypted package bytes.
      */
-    index: ExternalScalar;
-    /**
-     * Share value (y-coordinate) as 32 bytes
-     */
-    share: ExternalScalar;
+    encryptedPackage: ArrayBuffer;
 };
 /**
- * Generated factory for {@link ExternalSecretShare} record objects.
+ * Generated factory for {@link ExternalOperatorPackage} record objects.
  */
-export declare const ExternalSecretShare: Readonly<{
+export declare const ExternalOperatorPackage: Readonly<{
     /**
-     * Create a frozen instance of {@link ExternalSecretShare}, with defaults specified
+     * Create a frozen instance of {@link ExternalOperatorPackage}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<ExternalSecretShare> & Required<Omit<ExternalSecretShare, never>>) => ExternalSecretShare;
+    create: (partial: Partial<ExternalOperatorPackage> & Required<Omit<ExternalOperatorPackage, never>>) => ExternalOperatorPackage;
     /**
-     * Create a frozen instance of {@link ExternalSecretShare}, with defaults specified
+     * Create a frozen instance of {@link ExternalOperatorPackage}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<ExternalSecretShare> & Required<Omit<ExternalSecretShare, never>>) => ExternalSecretShare;
+    new: (partial: Partial<ExternalOperatorPackage> & Required<Omit<ExternalOperatorPackage, never>>) => ExternalOperatorPackage;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
-    defaults: () => Partial<ExternalSecretShare>;
+    defaults: () => Partial<ExternalOperatorPackage>;
 }>;
 /**
- * FFI-safe representation of `spark_wallet::SignFrostRequest`
+ * FFI-safe representation of `spark_wallet::OperatorRecipient`.
  */
-export type ExternalSignFrostRequest = {
+export type ExternalOperatorRecipient = {
     /**
-     * The message to sign
+     * Numeric operator id (determines the Feldman share index).
      */
-    message: ArrayBuffer;
+    id: bigint;
     /**
-     * The public key (33 bytes compressed)
+     * FROST identifier.
+     */
+    identifier: ExternalIdentifier;
+    /**
+     * The operator's ECIES / identity public key (33 bytes compressed).
      */
     publicKey: ArrayBuffer;
-    /**
-     * The private key source
-     */
-    secret: ExternalSecretSource;
-    /**
-     * The verifying key (33 bytes compressed)
-     */
-    verifyingKey: ArrayBuffer;
-    /**
-     * The self nonce commitment
-     */
-    selfNonceCommitment: ExternalFrostCommitments;
-    /**
-     * Statechain commitments as a list of identifier-commitment pairs
-     */
-    statechainCommitments: Array<IdentifierCommitmentPair>;
-    /**
-     * Optional adaptor public key (33 bytes compressed)
-     */
-    adaptorPublicKey: ArrayBuffer | undefined;
 };
 /**
- * Generated factory for {@link ExternalSignFrostRequest} record objects.
+ * Generated factory for {@link ExternalOperatorRecipient} record objects.
  */
-export declare const ExternalSignFrostRequest: Readonly<{
+export declare const ExternalOperatorRecipient: Readonly<{
     /**
-     * Create a frozen instance of {@link ExternalSignFrostRequest}, with defaults specified
+     * Create a frozen instance of {@link ExternalOperatorRecipient}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<ExternalSignFrostRequest> & Required<Omit<ExternalSignFrostRequest, never>>) => ExternalSignFrostRequest;
+    create: (partial: Partial<ExternalOperatorRecipient> & Required<Omit<ExternalOperatorRecipient, never>>) => ExternalOperatorRecipient;
     /**
-     * Create a frozen instance of {@link ExternalSignFrostRequest}, with defaults specified
+     * Create a frozen instance of {@link ExternalOperatorRecipient}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<ExternalSignFrostRequest> & Required<Omit<ExternalSignFrostRequest, never>>) => ExternalSignFrostRequest;
+    new: (partial: Partial<ExternalOperatorRecipient> & Required<Omit<ExternalOperatorRecipient, never>>) => ExternalOperatorRecipient;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
-    defaults: () => Partial<ExternalSignFrostRequest>;
+    defaults: () => Partial<ExternalOperatorRecipient>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::PrepareClaimRequest`.
+ */
+export type ExternalPrepareClaimRequest = {
+    transferId: string;
+    /**
+     * Sender identity public key (33 bytes compressed).
+     */
+    senderIdentityPublicKey: ArrayBuffer;
+    leaves: Array<ExternalClaimLeafInput>;
+    operatorRecipients: Array<ExternalOperatorRecipient>;
+    threshold: number;
+};
+/**
+ * Generated factory for {@link ExternalPrepareClaimRequest} record objects.
+ */
+export declare const ExternalPrepareClaimRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalPrepareClaimRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalPrepareClaimRequest> & Required<Omit<ExternalPrepareClaimRequest, never>>) => ExternalPrepareClaimRequest;
+    /**
+     * Create a frozen instance of {@link ExternalPrepareClaimRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalPrepareClaimRequest> & Required<Omit<ExternalPrepareClaimRequest, never>>) => ExternalPrepareClaimRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalPrepareClaimRequest>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::PrepareLightningReceiveRequest`.
+ */
+export type ExternalPrepareLightningReceiveRequest = {
+    operatorRecipients: Array<ExternalOperatorRecipient>;
+    threshold: number;
+};
+/**
+ * Generated factory for {@link ExternalPrepareLightningReceiveRequest} record objects.
+ */
+export declare const ExternalPrepareLightningReceiveRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalPrepareLightningReceiveRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalPrepareLightningReceiveRequest> & Required<Omit<ExternalPrepareLightningReceiveRequest, never>>) => ExternalPrepareLightningReceiveRequest;
+    /**
+     * Create a frozen instance of {@link ExternalPrepareLightningReceiveRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalPrepareLightningReceiveRequest> & Required<Omit<ExternalPrepareLightningReceiveRequest, never>>) => ExternalPrepareLightningReceiveRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalPrepareLightningReceiveRequest>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::PrepareStaticDepositClaimRequest`.
+ */
+export type ExternalPrepareStaticDepositClaimRequest = {
+    index: number;
+    userStatement: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link ExternalPrepareStaticDepositClaimRequest} record objects.
+ */
+export declare const ExternalPrepareStaticDepositClaimRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalPrepareStaticDepositClaimRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalPrepareStaticDepositClaimRequest> & Required<Omit<ExternalPrepareStaticDepositClaimRequest, never>>) => ExternalPrepareStaticDepositClaimRequest;
+    /**
+     * Create a frozen instance of {@link ExternalPrepareStaticDepositClaimRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalPrepareStaticDepositClaimRequest> & Required<Omit<ExternalPrepareStaticDepositClaimRequest, never>>) => ExternalPrepareStaticDepositClaimRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalPrepareStaticDepositClaimRequest>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::PrepareStaticDepositRequest`.
+ */
+export type ExternalPrepareStaticDepositRequest = {
+    index: number;
+    /**
+     * SSP public key (33 bytes compressed).
+     */
+    sspPublicKey: ArrayBuffer;
+    frostJobs: Array<ExternalFrostJob>;
+};
+/**
+ * Generated factory for {@link ExternalPrepareStaticDepositRequest} record objects.
+ */
+export declare const ExternalPrepareStaticDepositRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalPrepareStaticDepositRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalPrepareStaticDepositRequest> & Required<Omit<ExternalPrepareStaticDepositRequest, never>>) => ExternalPrepareStaticDepositRequest;
+    /**
+     * Create a frozen instance of {@link ExternalPrepareStaticDepositRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalPrepareStaticDepositRequest> & Required<Omit<ExternalPrepareStaticDepositRequest, never>>) => ExternalPrepareStaticDepositRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalPrepareStaticDepositRequest>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::PrepareTokenTransactionRequest`.
+ */
+export type ExternalPrepareTokenTransactionRequest = {
+    kind: ExternalTokenTransactionKind;
+    digest: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link ExternalPrepareTokenTransactionRequest} record objects.
+ */
+export declare const ExternalPrepareTokenTransactionRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalPrepareTokenTransactionRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalPrepareTokenTransactionRequest> & Required<Omit<ExternalPrepareTokenTransactionRequest, never>>) => ExternalPrepareTokenTransactionRequest;
+    /**
+     * Create a frozen instance of {@link ExternalPrepareTokenTransactionRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalPrepareTokenTransactionRequest> & Required<Omit<ExternalPrepareTokenTransactionRequest, never>>) => ExternalPrepareTokenTransactionRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalPrepareTokenTransactionRequest>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::PrepareTransferRequest`.
+ */
+export type ExternalPrepareTransferRequest = {
+    transferId: string;
+    /**
+     * Receiver public key (33 bytes compressed).
+     */
+    receiverPublicKey: ArrayBuffer;
+    leaves: Array<ExternalTransferLeafInput>;
+    operatorRecipients: Array<ExternalOperatorRecipient>;
+    threshold: number;
+};
+/**
+ * Generated factory for {@link ExternalPrepareTransferRequest} record objects.
+ */
+export declare const ExternalPrepareTransferRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalPrepareTransferRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalPrepareTransferRequest> & Required<Omit<ExternalPrepareTransferRequest, never>>) => ExternalPrepareTransferRequest;
+    /**
+     * Create a frozen instance of {@link ExternalPrepareTransferRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalPrepareTransferRequest> & Required<Omit<ExternalPrepareTransferRequest, never>>) => ExternalPrepareTransferRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalPrepareTransferRequest>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::PreparedClaim`.
+ */
+export type ExternalPreparedClaim = {
+    operatorPackages: Array<ExternalOperatorPackage>;
+};
+/**
+ * Generated factory for {@link ExternalPreparedClaim} record objects.
+ */
+export declare const ExternalPreparedClaim: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalPreparedClaim}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalPreparedClaim> & Required<Omit<ExternalPreparedClaim, never>>) => ExternalPreparedClaim;
+    /**
+     * Create a frozen instance of {@link ExternalPreparedClaim}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalPreparedClaim> & Required<Omit<ExternalPreparedClaim, never>>) => ExternalPreparedClaim;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalPreparedClaim>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::PreparedLightningReceive`.
+ */
+export type ExternalPreparedLightningReceive = {
+    /**
+     * SHA256 of the in-enclave preimage (32 bytes).
+     */
+    paymentHash: ArrayBuffer;
+    operatorPreimagePackages: Array<ExternalOperatorPackage>;
+};
+/**
+ * Generated factory for {@link ExternalPreparedLightningReceive} record objects.
+ */
+export declare const ExternalPreparedLightningReceive: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalPreparedLightningReceive}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalPreparedLightningReceive> & Required<Omit<ExternalPreparedLightningReceive, never>>) => ExternalPreparedLightningReceive;
+    /**
+     * Create a frozen instance of {@link ExternalPreparedLightningReceive}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalPreparedLightningReceive> & Required<Omit<ExternalPreparedLightningReceive, never>>) => ExternalPreparedLightningReceive;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalPreparedLightningReceive>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::PreparedStaticDeposit`.
+ */
+export type ExternalPreparedStaticDeposit = {
+    exportedSecret: ArrayBuffer;
+    frostShares: Array<ExternalFrostShareResult>;
+};
+/**
+ * Generated factory for {@link ExternalPreparedStaticDeposit} record objects.
+ */
+export declare const ExternalPreparedStaticDeposit: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalPreparedStaticDeposit}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalPreparedStaticDeposit> & Required<Omit<ExternalPreparedStaticDeposit, never>>) => ExternalPreparedStaticDeposit;
+    /**
+     * Create a frozen instance of {@link ExternalPreparedStaticDeposit}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalPreparedStaticDeposit> & Required<Omit<ExternalPreparedStaticDeposit, never>>) => ExternalPreparedStaticDeposit;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalPreparedStaticDeposit>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::PreparedStaticDepositClaim`.
+ */
+export type ExternalPreparedStaticDepositClaim = {
+    /**
+     * The static-deposit secret key, exported in the clear for the SSP.
+     */
+    depositSecretKey: SecretBytes;
+    userSignature: EcdsaSignatureBytes;
+};
+/**
+ * Generated factory for {@link ExternalPreparedStaticDepositClaim} record objects.
+ */
+export declare const ExternalPreparedStaticDepositClaim: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalPreparedStaticDepositClaim}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalPreparedStaticDepositClaim> & Required<Omit<ExternalPreparedStaticDepositClaim, never>>) => ExternalPreparedStaticDepositClaim;
+    /**
+     * Create a frozen instance of {@link ExternalPreparedStaticDepositClaim}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalPreparedStaticDepositClaim> & Required<Omit<ExternalPreparedStaticDepositClaim, never>>) => ExternalPreparedStaticDepositClaim;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalPreparedStaticDepositClaim>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::PreparedTokenTransaction`.
+ */
+export type ExternalPreparedTokenTransaction = {
+    signature: SchnorrSignatureBytes;
+};
+/**
+ * Generated factory for {@link ExternalPreparedTokenTransaction} record objects.
+ */
+export declare const ExternalPreparedTokenTransaction: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalPreparedTokenTransaction}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalPreparedTokenTransaction> & Required<Omit<ExternalPreparedTokenTransaction, never>>) => ExternalPreparedTokenTransaction;
+    /**
+     * Create a frozen instance of {@link ExternalPreparedTokenTransaction}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalPreparedTokenTransaction> & Required<Omit<ExternalPreparedTokenTransaction, never>>) => ExternalPreparedTokenTransaction;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalPreparedTokenTransaction>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::PreparedTransfer`.
+ */
+export type ExternalPreparedTransfer = {
+    operatorPackages: Array<ExternalOperatorPackage>;
+    newLeafKeys: Array<ExternalNewLeafKey>;
+    transferUserSignature: EcdsaSignatureBytes;
+};
+/**
+ * Generated factory for {@link ExternalPreparedTransfer} record objects.
+ */
+export declare const ExternalPreparedTransfer: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalPreparedTransfer}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalPreparedTransfer> & Required<Omit<ExternalPreparedTransfer, never>>) => ExternalPreparedTransfer;
+    /**
+     * Create a frozen instance of {@link ExternalPreparedTransfer}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalPreparedTransfer> & Required<Omit<ExternalPreparedTransfer, never>>) => ExternalPreparedTransfer;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalPreparedTransfer>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::SignSparkInvoiceRequest`.
+ */
+export type ExternalSignSparkInvoiceRequest = {
+    kind: ExternalSparkInvoiceKind;
+    invoiceHash: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link ExternalSignSparkInvoiceRequest} record objects.
+ */
+export declare const ExternalSignSparkInvoiceRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalSignSparkInvoiceRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalSignSparkInvoiceRequest> & Required<Omit<ExternalSignSparkInvoiceRequest, never>>) => ExternalSignSparkInvoiceRequest;
+    /**
+     * Create a frozen instance of {@link ExternalSignSparkInvoiceRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalSignSparkInvoiceRequest> & Required<Omit<ExternalSignSparkInvoiceRequest, never>>) => ExternalSignSparkInvoiceRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalSignSparkInvoiceRequest>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::SignStaticDepositRefundRequest`.
+ */
+export type ExternalSignStaticDepositRefundRequest = {
+    index: number;
+    sighash: ArrayBuffer;
+    /**
+     * FROST group verifying key (33 bytes compressed).
+     */
+    verifyingKey: ArrayBuffer;
+    nonceCommitment: ExternalFrostCommitments;
+    statechainCommitments: Array<IdentifierCommitmentPair>;
+    statechainSignatures: Array<IdentifierSignaturePair>;
+    statechainPublicKeys: Array<IdentifierPublicKeyPair>;
+};
+/**
+ * Generated factory for {@link ExternalSignStaticDepositRefundRequest} record objects.
+ */
+export declare const ExternalSignStaticDepositRefundRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalSignStaticDepositRefundRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalSignStaticDepositRefundRequest> & Required<Omit<ExternalSignStaticDepositRefundRequest, never>>) => ExternalSignStaticDepositRefundRequest;
+    /**
+     * Create a frozen instance of {@link ExternalSignStaticDepositRefundRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalSignStaticDepositRefundRequest> & Required<Omit<ExternalSignStaticDepositRefundRequest, never>>) => ExternalSignStaticDepositRefundRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalSignStaticDepositRefundRequest>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::SignedSparkInvoice`.
+ */
+export type ExternalSignedSparkInvoice = {
+    signature: SchnorrSignatureBytes;
+};
+/**
+ * Generated factory for {@link ExternalSignedSparkInvoice} record objects.
+ */
+export declare const ExternalSignedSparkInvoice: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalSignedSparkInvoice}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalSignedSparkInvoice> & Required<Omit<ExternalSignedSparkInvoice, never>>) => ExternalSignedSparkInvoice;
+    /**
+     * Create a frozen instance of {@link ExternalSignedSparkInvoice}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalSignedSparkInvoice> & Required<Omit<ExternalSignedSparkInvoice, never>>) => ExternalSignedSparkInvoice;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalSignedSparkInvoice>;
+}>;
+/**
+ * The two default external signers created from one mnemonic by
+ * [`default_external_signers`].
+ */
+export type ExternalSigners = {
+    /**
+     * External signer for non-Spark SDK signing (LNURL-auth, sync, message
+     * signing, ECIES).
+     */
+    breezSigner: ExternalBreezSigner;
+    /**
+     * External high-level Spark signer for the Spark wallet flows.
+     */
+    sparkSigner: ExternalSparkSigner;
+};
+/**
+ * Generated factory for {@link ExternalSigners} record objects.
+ */
+export declare const ExternalSigners: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalSigners}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalSigners> & Required<Omit<ExternalSigners, never>>) => ExternalSigners;
+    /**
+     * Create a frozen instance of {@link ExternalSigners}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalSigners> & Required<Omit<ExternalSigners, never>>) => ExternalSigners;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalSigners>;
 }>;
 /**
  * FFI-safe representation of `frost_secp256k1_tr::round1::SigningCommitments`
@@ -1758,6 +2452,89 @@ export declare const ExternalSigningCommitments: Readonly<{
     defaults: () => Partial<ExternalSigningCommitments>;
 }>;
 /**
+ * FFI-safe representation of `spark_wallet::StartStaticDepositRefundRequest`.
+ */
+export type ExternalStartStaticDepositRefundRequest = {
+    index: number;
+    userStatement: ArrayBuffer;
+};
+/**
+ * Generated factory for {@link ExternalStartStaticDepositRefundRequest} record objects.
+ */
+export declare const ExternalStartStaticDepositRefundRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalStartStaticDepositRefundRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalStartStaticDepositRefundRequest> & Required<Omit<ExternalStartStaticDepositRefundRequest, never>>) => ExternalStartStaticDepositRefundRequest;
+    /**
+     * Create a frozen instance of {@link ExternalStartStaticDepositRefundRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalStartStaticDepositRefundRequest> & Required<Omit<ExternalStartStaticDepositRefundRequest, never>>) => ExternalStartStaticDepositRefundRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalStartStaticDepositRefundRequest>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::StartedStaticDepositRefund`.
+ */
+export type ExternalStartedStaticDepositRefund = {
+    /**
+     * Static-deposit signing public key (33 bytes compressed).
+     */
+    signingPublicKey: ArrayBuffer;
+    nonceCommitment: ExternalFrostCommitments;
+    userSignature: EcdsaSignatureBytes;
+};
+/**
+ * Generated factory for {@link ExternalStartedStaticDepositRefund} record objects.
+ */
+export declare const ExternalStartedStaticDepositRefund: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalStartedStaticDepositRefund}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalStartedStaticDepositRefund> & Required<Omit<ExternalStartedStaticDepositRefund, never>>) => ExternalStartedStaticDepositRefund;
+    /**
+     * Create a frozen instance of {@link ExternalStartedStaticDepositRefund}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalStartedStaticDepositRefund> & Required<Omit<ExternalStartedStaticDepositRefund, never>>) => ExternalStartedStaticDepositRefund;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalStartedStaticDepositRefund>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::TransferLeafInput`. Conveys the old
+ * leaf id and the new (post-transfer) leaf id; the signer derives keys from them.
+ */
+export type ExternalTransferLeafInput = {
+    nodeId: ExternalTreeNodeId;
+    newLeafId: ExternalTreeNodeId;
+};
+/**
+ * Generated factory for {@link ExternalTransferLeafInput} record objects.
+ */
+export declare const ExternalTransferLeafInput: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalTransferLeafInput}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalTransferLeafInput> & Required<Omit<ExternalTransferLeafInput, never>>) => ExternalTransferLeafInput;
+    /**
+     * Create a frozen instance of {@link ExternalTransferLeafInput}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalTransferLeafInput> & Required<Omit<ExternalTransferLeafInput, never>>) => ExternalTransferLeafInput;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalTransferLeafInput>;
+}>;
+/**
  * FFI-safe representation of `spark_wallet::TreeNodeId`
  */
 export type ExternalTreeNodeId = {
@@ -1784,38 +2561,6 @@ export declare const ExternalTreeNodeId: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<ExternalTreeNodeId>;
-}>;
-/**
- * FFI-safe representation of `spark_wallet::VerifiableSecretShare`
- */
-export type ExternalVerifiableSecretShare = {
-    /**
-     * Base secret share containing threshold, index, and share value
-     */
-    secretShare: ExternalSecretShare;
-    /**
-     * Cryptographic proofs for share verification (each proof is 33 bytes compressed public key)
-     */
-    proofs: Array<ArrayBuffer>;
-};
-/**
- * Generated factory for {@link ExternalVerifiableSecretShare} record objects.
- */
-export declare const ExternalVerifiableSecretShare: Readonly<{
-    /**
-     * Create a frozen instance of {@link ExternalVerifiableSecretShare}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create: (partial: Partial<ExternalVerifiableSecretShare> & Required<Omit<ExternalVerifiableSecretShare, never>>) => ExternalVerifiableSecretShare;
-    /**
-     * Create a frozen instance of {@link ExternalVerifiableSecretShare}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: (partial: Partial<ExternalVerifiableSecretShare> & Required<Omit<ExternalVerifiableSecretShare, never>>) => ExternalVerifiableSecretShare;
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Partial<ExternalVerifiableSecretShare>;
 }>;
 export type FetchConversionLimitsRequest = {
     /**
@@ -2227,44 +2972,6 @@ export declare const IncomingChange: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<IncomingChange>;
-}>;
-/**
- * Configuration for key set derivation.
- *
- * This struct encapsulates the parameters needed for BIP32 key derivation.
- */
-export type KeySetConfig = {
-    /**
-     * The key set type which determines the derivation path
-     */
-    keySetType: KeySetType;
-    /**
-     * Controls the structure of the BIP derivation path
-     */
-    useAddressIndex: boolean;
-    /**
-     * Optional account number for key derivation
-     */
-    accountNumber: /*u32*/ number | undefined;
-};
-/**
- * Generated factory for {@link KeySetConfig} record objects.
- */
-export declare const KeySetConfig: Readonly<{
-    /**
-     * Create a frozen instance of {@link KeySetConfig}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create: (partial: Partial<KeySetConfig> & Required<Omit<KeySetConfig, never>>) => KeySetConfig;
-    /**
-     * Create a frozen instance of {@link KeySetConfig}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: (partial: Partial<KeySetConfig> & Required<Omit<KeySetConfig, never>>) => KeySetConfig;
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Partial<KeySetConfig>;
 }>;
 /**
  * Configuration for leaf optimization.
@@ -3089,65 +3796,61 @@ export declare const MintIssuerTokenRequest: Readonly<{
     defaults: () => Partial<MintIssuerTokenRequest>;
 }>;
 /**
- * Configuration for Nostr relay connections used in `Passkey`.
- *
- * Relay URLs are managed internally by the client:
- * - Public relays are always included
- * - Breez relay is added when `breez_api_key` is provided (enables NIP-42 auth)
+ * Request for [`BreezSdk::optimize_leaves`]. Defaults to
+ * [`OptimizationMode::Full`].
  */
-export type NostrRelayConfig = {
+export type OptimizeLeavesRequest = {
     /**
-     * Optional Breez API key for authenticated access to the Breez relay.
-     * When provided, the Breez relay is added and NIP-42 authentication is enabled.
+     * Controls how much work the call performs before returning.
      */
-    breezApiKey: string | undefined;
-    /**
-     * Connection timeout in seconds. Defaults to 30 when `None`.
-     */
-    timeoutSecs: /*u32*/ number | undefined;
+    mode: OptimizationMode;
 };
 /**
- * Generated factory for {@link NostrRelayConfig} record objects.
+ * Generated factory for {@link OptimizeLeavesRequest} record objects.
  */
-export declare const NostrRelayConfig: Readonly<{
+export declare const OptimizeLeavesRequest: Readonly<{
     /**
-     * Create a frozen instance of {@link NostrRelayConfig}, with defaults specified
+     * Create a frozen instance of {@link OptimizeLeavesRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<NostrRelayConfig> & Required<Omit<NostrRelayConfig, "breezApiKey" | "timeoutSecs">>) => NostrRelayConfig;
+    create: (partial: Partial<OptimizeLeavesRequest> & Required<Omit<OptimizeLeavesRequest, never>>) => OptimizeLeavesRequest;
     /**
-     * Create a frozen instance of {@link NostrRelayConfig}, with defaults specified
+     * Create a frozen instance of {@link OptimizeLeavesRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<NostrRelayConfig> & Required<Omit<NostrRelayConfig, "breezApiKey" | "timeoutSecs">>) => NostrRelayConfig;
+    new: (partial: Partial<OptimizeLeavesRequest> & Required<Omit<OptimizeLeavesRequest, never>>) => OptimizeLeavesRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
-    defaults: () => Partial<NostrRelayConfig>;
+    defaults: () => Partial<OptimizeLeavesRequest>;
 }>;
-export type OptimizationProgress = {
-    isRunning: boolean;
-    currentRound: number;
-    totalRounds: number;
+/**
+ * Response from a [`BreezSdk::optimize_leaves`] call.
+ */
+export type OptimizeLeavesResponse = {
+    /**
+     * The outcome of the optimization run.
+     */
+    outcome: OptimizationOutcome;
 };
 /**
- * Generated factory for {@link OptimizationProgress} record objects.
+ * Generated factory for {@link OptimizeLeavesResponse} record objects.
  */
-export declare const OptimizationProgress: Readonly<{
+export declare const OptimizeLeavesResponse: Readonly<{
     /**
-     * Create a frozen instance of {@link OptimizationProgress}, with defaults specified
+     * Create a frozen instance of {@link OptimizeLeavesResponse}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<OptimizationProgress> & Required<Omit<OptimizationProgress, never>>) => OptimizationProgress;
+    create: (partial: Partial<OptimizeLeavesResponse> & Required<Omit<OptimizeLeavesResponse, never>>) => OptimizeLeavesResponse;
     /**
-     * Create a frozen instance of {@link OptimizationProgress}, with defaults specified
+     * Create a frozen instance of {@link OptimizeLeavesResponse}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<OptimizationProgress> & Required<Omit<OptimizationProgress, never>>) => OptimizationProgress;
+    new: (partial: Partial<OptimizeLeavesResponse> & Required<Omit<OptimizeLeavesResponse, never>>) => OptimizeLeavesResponse;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
-    defaults: () => Partial<OptimizationProgress>;
+    defaults: () => Partial<OptimizeLeavesResponse>;
 }>;
 export type OutgoingChange = {
     change: RecordChange;
@@ -3171,6 +3874,138 @@ export declare const OutgoingChange: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<OutgoingChange>;
+}>;
+/**
+ * Configuration for the passkey client.
+ */
+export type PasskeyConfig = {
+    /**
+     * Default wallet label when a call provides none. Unset uses
+     * `"Default"`.
+     */
+    defaultLabel: string | undefined;
+    /**
+     * Relying Party and user identity for the built-in provider, used
+     * on the zero-config path. Ignored when you inject your own
+     * provider.
+     */
+    providerOptions: PasskeyProviderOptions | undefined;
+};
+/**
+ * Generated factory for {@link PasskeyConfig} record objects.
+ */
+export declare const PasskeyConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link PasskeyConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PasskeyConfig> & Required<Omit<PasskeyConfig, "defaultLabel" | "providerOptions">>) => PasskeyConfig;
+    /**
+     * Create a frozen instance of {@link PasskeyConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PasskeyConfig> & Required<Omit<PasskeyConfig, "defaultLabel" | "providerOptions">>) => PasskeyConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PasskeyConfig>;
+}>;
+/**
+ * A passkey credential from a register or sign-in ceremony.
+ * `credential_id` is always set; the attestation fields are
+ * populated on registration and absent on sign-in (an assertion
+ * carries no attestation). Persist `credential_id` to drive
+ * `exclude_credentials` / `allow_credentials` on later calls.
+ */
+export type PasskeyCredential = {
+    /**
+     * The credential used on sign-in or created on registration.
+     */
+    credentialId: ArrayBuffer;
+    /**
+     * `WebAuthn` user handle, provider-minted at registration.
+     * Absent on sign-in.
+     */
+    userId: ArrayBuffer | undefined;
+    /**
+     * Authenticator AAGUID. A display hint only: the attestation is
+     * unverified. Absent on sign-in.
+     */
+    aaguid: ArrayBuffer | undefined;
+    /**
+     * Whether the credential is eligible for cloud backup / sync.
+     * Absent on sign-in.
+     */
+    backupEligible: boolean | undefined;
+};
+/**
+ * Generated factory for {@link PasskeyCredential} record objects.
+ */
+export declare const PasskeyCredential: Readonly<{
+    /**
+     * Create a frozen instance of {@link PasskeyCredential}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PasskeyCredential> & Required<Omit<PasskeyCredential, never>>) => PasskeyCredential;
+    /**
+     * Create a frozen instance of {@link PasskeyCredential}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PasskeyCredential> & Required<Omit<PasskeyCredential, never>>) => PasskeyCredential;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PasskeyCredential>;
+}>;
+/**
+ * Relying Party and user identity for the built-in passkey provider.
+ * Applies only when a binding builds the provider for you (the
+ * zero-config path); a provider you construct yourself owns these and
+ * ignores them.
+ */
+export type PasskeyProviderOptions = {
+    /**
+     * Relying Party ID. Unset uses the Breez shared RP
+     * (`keys.breez.technology`).
+     */
+    rpId: string | undefined;
+    /**
+     * Relying Party name. Unset uses `"Breez"`.
+     */
+    rpName: string | undefined;
+    /**
+     * `WebAuthn` `user.name`: the account identifier the OS sign-in
+     * picker shows beneath the display name, typically an email or
+     * handle (e.g. `john@doe.com`). Set a stable per-user
+     * value to keep each registration a distinct entry. Unset uses
+     * `rp_name`.
+     */
+    userName: string | undefined;
+    /**
+     * `WebAuthn` `user.display_name`: the human-friendly name the
+     * picker shows most prominently (e.g. `John Doe`). Unset uses
+     * `user_name`.
+     */
+    userDisplayName: string | undefined;
+};
+/**
+ * Generated factory for {@link PasskeyProviderOptions} record objects.
+ */
+export declare const PasskeyProviderOptions: Readonly<{
+    /**
+     * Create a frozen instance of {@link PasskeyProviderOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PasskeyProviderOptions> & Required<Omit<PasskeyProviderOptions, "rpId" | "rpName" | "userName" | "userDisplayName">>) => PasskeyProviderOptions;
+    /**
+     * Create a frozen instance of {@link PasskeyProviderOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PasskeyProviderOptions> & Required<Omit<PasskeyProviderOptions, "rpId" | "rpName" | "userName" | "userDisplayName">>) => PasskeyProviderOptions;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PasskeyProviderOptions>;
 }>;
 /**
  * Represents a payment (sent or received)
@@ -3232,6 +4067,35 @@ export declare const Payment: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<Payment>;
+}>;
+export type PaymentIdUpdate = {
+    /**
+     * Provisional payment id reported by `before_send`, in the form `{partial_tx_id}:{index}`
+     */
+    provisionalPaymentId: string;
+    /**
+     * Final payment id once the transaction is broadcast, in the form `{final_tx_id}:{vout}`
+     */
+    finalPaymentId: string;
+};
+/**
+ * Generated factory for {@link PaymentIdUpdate} record objects.
+ */
+export declare const PaymentIdUpdate: Readonly<{
+    /**
+     * Create a frozen instance of {@link PaymentIdUpdate}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PaymentIdUpdate> & Required<Omit<PaymentIdUpdate, never>>) => PaymentIdUpdate;
+    /**
+     * Create a frozen instance of {@link PaymentIdUpdate}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PaymentIdUpdate> & Required<Omit<PaymentIdUpdate, never>>) => PaymentIdUpdate;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PaymentIdUpdate>;
 }>;
 /**
  * Metadata associated with a payment that cannot be extracted from the Spark operator.
@@ -3785,6 +4649,80 @@ export declare const RegisterLightningAddressRequest: Readonly<{
     defaults: () => Partial<RegisterLightningAddressRequest>;
 }>;
 /**
+ * Request shape for [`PasskeyClient::register`].
+ */
+export type RegisterRequest = {
+    /**
+     * User-chosen label for the new wallet. Defaults to the configured
+     * default label when `None`. Always published to the label
+     * store as part of registration.
+     */
+    label: string | undefined;
+    /**
+     * Optional list of already-registered credential IDs. Prevents
+     * registering the same device twice: when any entry matches a
+     * credential already on the device, the platform raises
+     * [`crate::passkey::PrfProviderError::CredentialAlreadyExists`]
+     * so the host can flip the user to the sign-in path. Unset is
+     * treated as empty. Forwarded to [`PrfProvider::create_passkey`].
+     */
+    excludeCredentials: Array<ArrayBuffer> | undefined;
+};
+/**
+ * Generated factory for {@link RegisterRequest} record objects.
+ */
+export declare const RegisterRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link RegisterRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<RegisterRequest> & Required<Omit<RegisterRequest, "label" | "excludeCredentials">>) => RegisterRequest;
+    /**
+     * Create a frozen instance of {@link RegisterRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<RegisterRequest> & Required<Omit<RegisterRequest, "label" | "excludeCredentials">>) => RegisterRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<RegisterRequest>;
+}>;
+/**
+ * Response from [`PasskeyClient::register`].
+ */
+export type RegisterResponse = {
+    /**
+     * The newly-derived wallet for [`RegisterRequest::label`].
+     */
+    wallet: Wallet;
+    /**
+     * The credential the platform just registered. Persist
+     * [`PasskeyCredential::credential_id`] to populate
+     * `exclude_credentials` on future [`PasskeyClient::register`]
+     * calls. Always set on the register path.
+     */
+    credential: PasskeyCredential | undefined;
+};
+/**
+ * Generated factory for {@link RegisterResponse} record objects.
+ */
+export declare const RegisterResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link RegisterResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<RegisterResponse> & Required<Omit<RegisterResponse, never>>) => RegisterResponse;
+    /**
+     * Create a frozen instance of {@link RegisterResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<RegisterResponse> & Required<Omit<RegisterResponse, never>>) => RegisterResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<RegisterResponse>;
+}>;
+/**
  * Request to register a new webhook.
  */
 export type RegisterWebhookRequest = {
@@ -3920,6 +4858,16 @@ export type SdkContextConfig = {
      * requests across them.
      */
     connectionsPerOperator: /*u32*/ number | undefined;
+    /**
+     * Shared storage backend for SDKs built from this context. When set,
+     * every SDK built from the context reuses it (and its database
+     * connection pool). Construct via
+     * [`default_storage`](crate::default_storage),
+     * [`postgres_storage`](crate::postgres_storage),
+     * [`mysql_storage`](crate::mysql_storage) or
+     * [`custom_storage`](crate::custom_storage).
+     */
+    storage: StorageBackend | undefined;
 };
 /**
  * Generated factory for {@link SdkContextConfig} record objects.
@@ -3929,12 +4877,12 @@ export declare const SdkContextConfig: Readonly<{
      * Create a frozen instance of {@link SdkContextConfig}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<SdkContextConfig> & Required<Omit<SdkContextConfig, "apiKey" | "connectionsPerOperator">>) => SdkContextConfig;
+    create: (partial: Partial<SdkContextConfig> & Required<Omit<SdkContextConfig, "apiKey" | "connectionsPerOperator" | "storage">>) => SdkContextConfig;
     /**
      * Create a frozen instance of {@link SdkContextConfig}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<SdkContextConfig> & Required<Omit<SdkContextConfig, "apiKey" | "connectionsPerOperator">>) => SdkContextConfig;
+    new: (partial: Partial<SdkContextConfig> & Required<Omit<SdkContextConfig, "apiKey" | "connectionsPerOperator" | "storage">>) => SdkContextConfig;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -4116,6 +5064,130 @@ export declare const SetLnurlMetadataItem: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<SetLnurlMetadataItem>;
+}>;
+/**
+ * Request for [`crate::passkey::Passkey::setup_wallet`].
+ */
+export type SetupWalletRequest = {
+    /**
+     * Wallet label. Unset uses the configured default label.
+     */
+    label: string | undefined;
+    /**
+     * Publish the label to Nostr after deriving. Leave false for
+     * speculative derivations (cold restore).
+     */
+    publishLabel: boolean;
+    /**
+     * Restrict the assertion to these credential IDs. Useful for
+     * server-driven flows that resolve the credential set out-of-band.
+     */
+    allowCredentials: Array<ArrayBuffer>;
+    /**
+     * Prefer credentials already on this device over the cross-device
+     * picker. Unset uses the platform default.
+     */
+    preferImmediatelyAvailableCredentials: boolean | undefined;
+};
+/**
+ * Generated factory for {@link SetupWalletRequest} record objects.
+ */
+export declare const SetupWalletRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link SetupWalletRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SetupWalletRequest> & Required<Omit<SetupWalletRequest, "label" | "allowCredentials" | "preferImmediatelyAvailableCredentials" | "publishLabel">>) => SetupWalletRequest;
+    /**
+     * Create a frozen instance of {@link SetupWalletRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SetupWalletRequest> & Required<Omit<SetupWalletRequest, "label" | "allowCredentials" | "preferImmediatelyAvailableCredentials" | "publishLabel">>) => SetupWalletRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SetupWalletRequest>;
+}>;
+/**
+ * Request shape for [`PasskeyClient::sign_in`].
+ */
+export type SignInRequest = {
+    /**
+     * When present, the fast path: one ceremony, no label-store
+     * query. When absent, triggers discovery: derives the configured
+     * default label and also returns the user's full label set in
+     * [`SignInResponse::labels`].
+     */
+    label: string | undefined;
+    /**
+     * Optional credential IDs the assertion is restricted to
+     * (reauthentication of a known user). Unset or empty lets the OS
+     * pick any matching credential for this RP. Forwarded to
+     * [`crate::passkey::DeriveSeedsRequest::allow_credentials`].
+     */
+    allowCredentials: Array<ArrayBuffer> | undefined;
+    /**
+     * Forwarded to
+     * [`crate::passkey::DeriveSeedsRequest::prefer_immediately_available_credentials`].
+     */
+    preferImmediatelyAvailableCredentials: boolean | undefined;
+};
+/**
+ * Generated factory for {@link SignInRequest} record objects.
+ */
+export declare const SignInRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link SignInRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SignInRequest> & Required<Omit<SignInRequest, "label" | "allowCredentials" | "preferImmediatelyAvailableCredentials">>) => SignInRequest;
+    /**
+     * Create a frozen instance of {@link SignInRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SignInRequest> & Required<Omit<SignInRequest, "label" | "allowCredentials" | "preferImmediatelyAvailableCredentials">>) => SignInRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SignInRequest>;
+}>;
+/**
+ * Response from [`PasskeyClient::sign_in`].
+ */
+export type SignInResponse = {
+    wallet: Wallet;
+    /**
+     * Empty on the fast path. Populated on discovery (or empty if
+     * the label store was unreachable).
+     */
+    labels: Array<string>;
+    /**
+     * The credential the user signed in with, when the underlying
+     * [`PrfProvider`] surfaces it. `None` for providers that don't
+     * expose this signal (CLI / file-backed / hardware). Only
+     * `credential_id` is set: a sign-in assertion carries no
+     * attestation.
+     */
+    credential: PasskeyCredential | undefined;
+};
+/**
+ * Generated factory for {@link SignInResponse} record objects.
+ */
+export declare const SignInResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link SignInResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SignInResponse> & Required<Omit<SignInResponse, never>>) => SignInResponse;
+    /**
+     * Create a frozen instance of {@link SignInResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SignInResponse> & Required<Omit<SignInResponse, never>>) => SignInResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SignInResponse>;
 }>;
 export type SignMessageRequest = {
     message: string;
@@ -4853,6 +5925,152 @@ export declare const TokenOptimizationConfig: Readonly<{
      */
     defaults: () => Partial<TokenOptimizationConfig>;
 }>;
+/**
+ * Authorization from the current owner granting a specific new owner the
+ * right to take over a username. Produced by
+ * [`BreezSdk::authorize_lightning_address_transfer`] and handed to the new
+ * owner, who passes it to [`BreezSdk::claim_lightning_address_transfer`]. It
+ * fully describes the transfer, so the new owner needs nothing else to claim.
+ */
+export type TransferAuthorization = {
+    /**
+     * The username being handed over.
+     */
+    username: string;
+    /**
+     * The current owner's public key.
+     */
+    pubkey: string;
+    /**
+     * The current owner's signature authorizing the transfer.
+     */
+    signature: string;
+};
+/**
+ * Generated factory for {@link TransferAuthorization} record objects.
+ */
+export declare const TransferAuthorization: Readonly<{
+    /**
+     * Create a frozen instance of {@link TransferAuthorization}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<TransferAuthorization> & Required<Omit<TransferAuthorization, never>>) => TransferAuthorization;
+    /**
+     * Create a frozen instance of {@link TransferAuthorization}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<TransferAuthorization> & Required<Omit<TransferAuthorization, never>>) => TransferAuthorization;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<TransferAuthorization>;
+}>;
+export type TurnkeyConfig = {
+    /**
+     * Turnkey API base URL. Unset uses `https://api.turnkey.com`.
+     */
+    baseUrl: string | undefined;
+    /**
+     * Organization (or sub-organization) id that owns the wallet.
+     */
+    organizationId: string;
+    /**
+     * API public key (compressed, hex), registered with the organization.
+     */
+    apiPublicKey: string;
+    /**
+     * API private key (hex) used to stamp requests.
+     */
+    apiPrivateKey: string;
+    /**
+     * Id of the Spark wallet to sign with.
+     */
+    walletId: string;
+    /**
+     * Network the wallet operates on; selects the Spark address format
+     * (mainnet or regtest) used for Spark-protocol and Schnorr signing.
+     */
+    network: Network;
+    /**
+     * Spark account number: the `{account}` in every derivation path
+     * (`m/8797555'/{account}'/...`). Unset uses the network default, matching
+     * the seed-based signer, so the same wallet seed derives the same keys on
+     * either backend.
+     */
+    accountNumber: /*u32*/ number | undefined;
+    /**
+     * Retry policy for Turnkey requests. Unset uses the default policy.
+     */
+    retry: TurnkeyRetryConfig | undefined;
+};
+/**
+ * Generated factory for {@link TurnkeyConfig} record objects.
+ */
+export declare const TurnkeyConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link TurnkeyConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<TurnkeyConfig> & Required<Omit<TurnkeyConfig, never>>) => TurnkeyConfig;
+    /**
+     * Create a frozen instance of {@link TurnkeyConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<TurnkeyConfig> & Required<Omit<TurnkeyConfig, never>>) => TurnkeyConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<TurnkeyConfig>;
+}>;
+/**
+ * Retry policy for Turnkey API requests (used while polling a pending
+ * activity). Mirrors `turnkey_client`'s `RetryConfig` with FFI-friendly
+ * millisecond fields.
+ */
+export type TurnkeyRetryConfig = {
+    /**
+     * Delay before the first retry, in milliseconds.
+     */
+    initialDelayMs: bigint;
+    /**
+     * Multiplier applied to the delay after each attempt.
+     */
+    multiplier: number;
+    /**
+     * Upper bound on the delay between retries, in milliseconds.
+     */
+    maxDelayMs: bigint;
+    /**
+     * Maximum number of retries (0 disables retrying).
+     */
+    maxRetries: number;
+    /**
+     * Total time budget for one API request including its retries and waits,
+     * in milliseconds. No retry begins past this deadline: when the next wait
+     * (server-requested or backoff) would end after it, the request fails with
+     * the last error instead of stalling.
+     */
+    requestTimeoutMs: bigint;
+};
+/**
+ * Generated factory for {@link TurnkeyRetryConfig} record objects.
+ */
+export declare const TurnkeyRetryConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link TurnkeyRetryConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<TurnkeyRetryConfig> & Required<Omit<TurnkeyRetryConfig, never>>) => TurnkeyRetryConfig;
+    /**
+     * Create a frozen instance of {@link TurnkeyRetryConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<TurnkeyRetryConfig> & Required<Omit<TurnkeyRetryConfig, never>>) => TurnkeyRetryConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<TurnkeyRetryConfig>;
+}>;
 export type TxStatus = {
     confirmed: boolean;
     blockHeight: /*u32*/ number | undefined;
@@ -5118,16 +6336,11 @@ export declare const Utxo: Readonly<{
 }>;
 /**
  * A wallet derived from a passkey.
- *
- * Contains the derived seed and the label used during derivation.
  */
 export type Wallet = {
-    /**
-     * The derived seed.
-     */
     seed: Seed;
     /**
-     * The label used for derivation (either user-provided or the default).
+     * Label used for derivation: user-provided or the default.
      */
     label: string;
 };
@@ -5149,6 +6362,36 @@ export declare const Wallet: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<Wallet>;
+}>;
+/**
+ * Response from [`crate::passkey::Passkey::setup_wallet`].
+ */
+export type WalletSetup = {
+    wallet: Wallet;
+    /**
+     * Credential that derived this wallet. Absent when the provider
+     * does not surface it.
+     */
+    credentialId: ArrayBuffer | undefined;
+};
+/**
+ * Generated factory for {@link WalletSetup} record objects.
+ */
+export declare const WalletSetup: Readonly<{
+    /**
+     * Create a frozen instance of {@link WalletSetup}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<WalletSetup> & Required<Omit<WalletSetup, never>>) => WalletSetup;
+    /**
+     * Create a frozen instance of {@link WalletSetup}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<WalletSetup> & Required<Omit<WalletSetup, never>>) => WalletSetup;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<WalletSetup>;
 }>;
 /**
  * A registered webhook entry.
@@ -5484,6 +6727,218 @@ export declare const AssetFilter: Readonly<{
  * A field of [`ListPaymentsRequest`] when listing payments filtered by asset
  */
 export type AssetFilter = InstanceType<(typeof AssetFilter)[keyof Omit<typeof AssetFilter, 'instanceOf'>]>;
+export declare enum AutoOptimizationEvent_Tags {
+    Started = "Started",
+    RoundCompleted = "RoundCompleted",
+    Completed = "Completed",
+    Cancelled = "Cancelled",
+    Failed = "Failed",
+    Skipped = "Skipped"
+}
+export declare const AutoOptimizationEvent: Readonly<{
+    instanceOf: (obj: any) => obj is AutoOptimizationEvent;
+    Started: {
+        new (inner: {
+            totalRounds: number;
+        }): {
+            readonly tag: AutoOptimizationEvent_Tags.Started;
+            readonly inner: Readonly<{
+                totalRounds: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+        "new"(inner: {
+            totalRounds: number;
+        }): {
+            readonly tag: AutoOptimizationEvent_Tags.Started;
+            readonly inner: Readonly<{
+                totalRounds: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: AutoOptimizationEvent_Tags.Started;
+            readonly inner: Readonly<{
+                totalRounds: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+    };
+    RoundCompleted: {
+        new (inner: {
+            currentRound: number;
+            totalRounds: number;
+        }): {
+            readonly tag: AutoOptimizationEvent_Tags.RoundCompleted;
+            readonly inner: Readonly<{
+                currentRound: number;
+                totalRounds: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+        "new"(inner: {
+            currentRound: number;
+            totalRounds: number;
+        }): {
+            readonly tag: AutoOptimizationEvent_Tags.RoundCompleted;
+            readonly inner: Readonly<{
+                currentRound: number;
+                totalRounds: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: AutoOptimizationEvent_Tags.RoundCompleted;
+            readonly inner: Readonly<{
+                currentRound: number;
+                totalRounds: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+    };
+    Completed: {
+        new (): {
+            readonly tag: AutoOptimizationEvent_Tags.Completed;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+        "new"(): {
+            readonly tag: AutoOptimizationEvent_Tags.Completed;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: AutoOptimizationEvent_Tags.Completed;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+    };
+    Cancelled: {
+        new (): {
+            readonly tag: AutoOptimizationEvent_Tags.Cancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+        "new"(): {
+            readonly tag: AutoOptimizationEvent_Tags.Cancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: AutoOptimizationEvent_Tags.Cancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+    };
+    Failed: {
+        new (inner: {
+            error: string;
+        }): {
+            readonly tag: AutoOptimizationEvent_Tags.Failed;
+            readonly inner: Readonly<{
+                error: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+        "new"(inner: {
+            error: string;
+        }): {
+            readonly tag: AutoOptimizationEvent_Tags.Failed;
+            readonly inner: Readonly<{
+                error: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: AutoOptimizationEvent_Tags.Failed;
+            readonly inner: Readonly<{
+                error: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+    };
+    Skipped: {
+        new (): {
+            readonly tag: AutoOptimizationEvent_Tags.Skipped;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+        "new"(): {
+            readonly tag: AutoOptimizationEvent_Tags.Skipped;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: AutoOptimizationEvent_Tags.Skipped;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "AutoOptimizationEvent";
+        };
+    };
+}>;
+export type AutoOptimizationEvent = InstanceType<(typeof AutoOptimizationEvent)[keyof Omit<typeof AutoOptimizationEvent, 'instanceOf'>]>;
 export declare enum BitcoinNetwork {
     /**
      * Mainnet
@@ -6197,190 +7652,344 @@ export declare const DepositClaimError: Readonly<{
     };
 }>;
 export type DepositClaimError = InstanceType<(typeof DepositClaimError)[keyof Omit<typeof DepositClaimError, 'instanceOf'>]>;
-export declare enum ExternalSecretSource_Tags {
-    Derived = "Derived",
-    Encrypted = "Encrypted"
+export declare enum DomainAssociation_Tags {
+    Associated = "Associated",
+    NotAssociated = "NotAssociated",
+    Skipped = "Skipped"
 }
 /**
- * FFI-safe representation of `spark_wallet::SecretSource`
+ * Result of [`PrfProvider::check_domain_association`]. The platform's
+ * out-of-band verification (AASA / assetlinks) gates passkey
+ * ceremonies but its failures collapse into opaque platform errors;
+ * this gives callers a definitive signal they can gate UX on.
  */
-export declare const ExternalSecretSource: Readonly<{
-    instanceOf: (obj: any) => obj is ExternalSecretSource;
-    Derived: {
-        new (inner: {
-            nodeId: ExternalTreeNodeId;
-        }): {
-            readonly tag: ExternalSecretSource_Tags.Derived;
-            readonly inner: Readonly<{
-                nodeId: ExternalTreeNodeId;
-            }>;
+export declare const DomainAssociation: Readonly<{
+    instanceOf: (obj: any) => obj is DomainAssociation;
+    Associated: {
+        new (): {
+            readonly tag: DomainAssociation_Tags.Associated;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretSource";
+            readonly [uniffiTypeNameSymbol]: "DomainAssociation";
         };
-        "new"(inner: {
-            nodeId: ExternalTreeNodeId;
-        }): {
-            readonly tag: ExternalSecretSource_Tags.Derived;
-            readonly inner: Readonly<{
-                nodeId: ExternalTreeNodeId;
-            }>;
+        "new"(): {
+            readonly tag: DomainAssociation_Tags.Associated;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretSource";
+            readonly [uniffiTypeNameSymbol]: "DomainAssociation";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: ExternalSecretSource_Tags.Derived;
-            readonly inner: Readonly<{
-                nodeId: ExternalTreeNodeId;
-            }>;
+            readonly tag: DomainAssociation_Tags.Associated;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretSource";
+            readonly [uniffiTypeNameSymbol]: "DomainAssociation";
         };
     };
-    Encrypted: {
+    NotAssociated: {
         new (inner: {
-            key: ExternalEncryptedSecret;
+            source: string;
+            reason: string;
         }): {
-            readonly tag: ExternalSecretSource_Tags.Encrypted;
+            readonly tag: DomainAssociation_Tags.NotAssociated;
             readonly inner: Readonly<{
-                key: ExternalEncryptedSecret;
+                source: string;
+                reason: string;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretSource";
+            readonly [uniffiTypeNameSymbol]: "DomainAssociation";
         };
         "new"(inner: {
-            key: ExternalEncryptedSecret;
+            source: string;
+            reason: string;
         }): {
-            readonly tag: ExternalSecretSource_Tags.Encrypted;
+            readonly tag: DomainAssociation_Tags.NotAssociated;
             readonly inner: Readonly<{
-                key: ExternalEncryptedSecret;
+                source: string;
+                reason: string;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretSource";
+            readonly [uniffiTypeNameSymbol]: "DomainAssociation";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: ExternalSecretSource_Tags.Encrypted;
+            readonly tag: DomainAssociation_Tags.NotAssociated;
             readonly inner: Readonly<{
-                key: ExternalEncryptedSecret;
+                source: string;
+                reason: string;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretSource";
+            readonly [uniffiTypeNameSymbol]: "DomainAssociation";
+        };
+    };
+    Skipped: {
+        new (inner: {
+            reason: string;
+        }): {
+            readonly tag: DomainAssociation_Tags.Skipped;
+            readonly inner: Readonly<{
+                reason: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "DomainAssociation";
+        };
+        "new"(inner: {
+            reason: string;
+        }): {
+            readonly tag: DomainAssociation_Tags.Skipped;
+            readonly inner: Readonly<{
+                reason: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "DomainAssociation";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: DomainAssociation_Tags.Skipped;
+            readonly inner: Readonly<{
+                reason: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "DomainAssociation";
         };
     };
 }>;
 /**
- * FFI-safe representation of `spark_wallet::SecretSource`
+ * Result of [`PrfProvider::check_domain_association`]. The platform's
+ * out-of-band verification (AASA / assetlinks) gates passkey
+ * ceremonies but its failures collapse into opaque platform errors;
+ * this gives callers a definitive signal they can gate UX on.
  */
-export type ExternalSecretSource = InstanceType<(typeof ExternalSecretSource)[keyof Omit<typeof ExternalSecretSource, 'instanceOf'>]>;
-export declare enum ExternalSecretToSplit_Tags {
-    SecretSource = "SecretSource",
-    Preimage = "Preimage"
+export type DomainAssociation = InstanceType<(typeof DomainAssociation)[keyof Omit<typeof DomainAssociation, 'instanceOf'>]>;
+/**
+ * Coarse classification of a passkey error by the UX reaction it
+ * warrants. The variant names the action to take, not the cause.
+ */
+export declare enum ErrorKind {
+    /**
+     * User dismissed the prompt. Do not auto-retry.
+     */
+    Cancel = 0,
+    /**
+     * No matching credential on this device. Offer to register one.
+     */
+    NoCredential = 1,
+    /**
+     * Authenticator lacks the PRF extension. Fall back to a non-passkey
+     * flow or guide the user to another credential provider.
+     */
+    PrfUnsupported = 2,
+    /**
+     * PRF is supported but evaluation failed. Often transient: retrying
+     * the ceremony may succeed.
+     */
+    PrfFailed = 3,
+    /**
+     * Platform / app setup is wrong (entitlement, assetlinks, rpId
+     * scope). Not retryable until the integrator fixes it.
+     */
+    Configuration = 4,
+    /**
+     * An existing credential matched. Route the user to sign-in.
+     */
+    AlreadyExists = 5,
+    /**
+     * The prompt closed on the platform inactivity timeout with no user
+     * action. Unlike `Cancel`, safe to auto-retry or re-prompt.
+     */
+    Timeout = 6,
+    /**
+     * The ceremony failed for a security or state reason. Offer a retry;
+     * if it persists, the credential or RP setup may be at fault.
+     */
+    AuthFailure = 7,
+    /**
+     * Failure the caller can't act on. Show a generic "try again".
+     */
+    Internal = 8
+}
+export declare enum ExternalFrostDerivation_Tags {
+    SigningLeaf = "SigningLeaf",
+    StaticDeposit = "StaticDeposit",
+    HtlcPreimage = "HtlcPreimage",
+    Identity = "Identity"
 }
 /**
- * FFI-safe representation of `spark_wallet::SecretToSplit`
+ * FFI-safe representation of `spark_wallet::FrostDerivation`.
  */
-export declare const ExternalSecretToSplit: Readonly<{
-    instanceOf: (obj: any) => obj is ExternalSecretToSplit;
-    SecretSource: {
+export declare const ExternalFrostDerivation: Readonly<{
+    instanceOf: (obj: any) => obj is ExternalFrostDerivation;
+    SigningLeaf: {
         new (inner: {
-            source: ExternalSecretSource;
+            leafId: ExternalTreeNodeId;
         }): {
-            readonly tag: ExternalSecretToSplit_Tags.SecretSource;
+            readonly tag: ExternalFrostDerivation_Tags.SigningLeaf;
             readonly inner: Readonly<{
-                source: ExternalSecretSource;
+                leafId: ExternalTreeNodeId;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
+            readonly [uniffiTypeNameSymbol]: "ExternalFrostDerivation";
         };
         "new"(inner: {
-            source: ExternalSecretSource;
+            leafId: ExternalTreeNodeId;
         }): {
-            readonly tag: ExternalSecretToSplit_Tags.SecretSource;
+            readonly tag: ExternalFrostDerivation_Tags.SigningLeaf;
             readonly inner: Readonly<{
-                source: ExternalSecretSource;
+                leafId: ExternalTreeNodeId;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
+            readonly [uniffiTypeNameSymbol]: "ExternalFrostDerivation";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: ExternalSecretToSplit_Tags.SecretSource;
+            readonly tag: ExternalFrostDerivation_Tags.SigningLeaf;
             readonly inner: Readonly<{
-                source: ExternalSecretSource;
+                leafId: ExternalTreeNodeId;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
+            readonly [uniffiTypeNameSymbol]: "ExternalFrostDerivation";
         };
     };
-    Preimage: {
+    StaticDeposit: {
         new (inner: {
-            data: ArrayBuffer;
+            index: number;
         }): {
-            readonly tag: ExternalSecretToSplit_Tags.Preimage;
+            readonly tag: ExternalFrostDerivation_Tags.StaticDeposit;
             readonly inner: Readonly<{
-                data: ArrayBuffer;
+                index: number;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
+            readonly [uniffiTypeNameSymbol]: "ExternalFrostDerivation";
         };
         "new"(inner: {
-            data: ArrayBuffer;
+            index: number;
         }): {
-            readonly tag: ExternalSecretToSplit_Tags.Preimage;
+            readonly tag: ExternalFrostDerivation_Tags.StaticDeposit;
             readonly inner: Readonly<{
-                data: ArrayBuffer;
+                index: number;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
+            readonly [uniffiTypeNameSymbol]: "ExternalFrostDerivation";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: ExternalSecretToSplit_Tags.Preimage;
+            readonly tag: ExternalFrostDerivation_Tags.StaticDeposit;
             readonly inner: Readonly<{
-                data: ArrayBuffer;
+                index: number;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "ExternalSecretToSplit";
+            readonly [uniffiTypeNameSymbol]: "ExternalFrostDerivation";
+        };
+    };
+    HtlcPreimage: {
+        new (): {
+            readonly tag: ExternalFrostDerivation_Tags.HtlcPreimage;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalFrostDerivation";
+        };
+        "new"(): {
+            readonly tag: ExternalFrostDerivation_Tags.HtlcPreimage;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalFrostDerivation";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExternalFrostDerivation_Tags.HtlcPreimage;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalFrostDerivation";
+        };
+    };
+    Identity: {
+        new (): {
+            readonly tag: ExternalFrostDerivation_Tags.Identity;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalFrostDerivation";
+        };
+        "new"(): {
+            readonly tag: ExternalFrostDerivation_Tags.Identity;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalFrostDerivation";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExternalFrostDerivation_Tags.Identity;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExternalFrostDerivation";
         };
     };
 }>;
 /**
- * FFI-safe representation of `spark_wallet::SecretToSplit`
+ * FFI-safe representation of `spark_wallet::FrostDerivation`.
  */
-export type ExternalSecretToSplit = InstanceType<(typeof ExternalSecretToSplit)[keyof Omit<typeof ExternalSecretToSplit, 'instanceOf'>]>;
+export type ExternalFrostDerivation = InstanceType<(typeof ExternalFrostDerivation)[keyof Omit<typeof ExternalFrostDerivation, 'instanceOf'>]>;
+/**
+ * FFI-safe representation of `spark_wallet::SparkInvoiceKind`.
+ */
+export declare enum ExternalSparkInvoiceKind {
+    Sats = 0,
+    Tokens = 1
+}
+/**
+ * FFI-safe representation of `spark_wallet::TokenTransactionKind`.
+ */
+export declare enum ExternalTokenTransactionKind {
+    Freeze = 0,
+    Partial = 1,
+    Final = 2
+}
 export declare enum Fee_Tags {
     Fixed = "Fixed",
     Rate = "Rate"
@@ -6908,13 +8517,6 @@ export declare const InputType: Readonly<{
     };
 }>;
 export type InputType = InstanceType<(typeof InputType)[keyof Omit<typeof InputType, 'instanceOf'>]>;
-export declare enum KeySetType {
-    Default = 0,
-    Taproot = 1,
-    NativeSegwit = 2,
-    WrappedSegwit = 3,
-    Legacy = 4
-}
 export declare enum LnurlCallbackStatus_Tags {
     Ok = "Ok",
     ErrorStatus = "ErrorStatus"
@@ -7129,220 +8731,301 @@ export declare enum OnchainConfirmationSpeed {
     Medium = 1,
     Slow = 2
 }
-export declare enum OptimizationEvent_Tags {
-    Started = "Started",
-    RoundCompleted = "RoundCompleted",
-    Completed = "Completed",
-    Cancelled = "Cancelled",
-    Failed = "Failed",
-    Skipped = "Skipped"
+/**
+ * Mode of a manually-triggered optimization run.
+ */
+export declare enum OptimizationMode {
+    /**
+     * Run until no further optimization is productive.
+     */
+    Full = 0,
+    /**
+     * Execute a single round and return so the caller can drive progress.
+     */
+    SingleRound = 1
 }
-export declare const OptimizationEvent: Readonly<{
-    instanceOf: (obj: any) => obj is OptimizationEvent;
-    Started: {
-        new (inner: {
-            totalRounds: number;
-        }): {
-            readonly tag: OptimizationEvent_Tags.Started;
-            readonly inner: Readonly<{
-                totalRounds: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
-        };
-        "new"(inner: {
-            totalRounds: number;
-        }): {
-            readonly tag: OptimizationEvent_Tags.Started;
-            readonly inner: Readonly<{
-                totalRounds: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: OptimizationEvent_Tags.Started;
-            readonly inner: Readonly<{
-                totalRounds: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
-        };
-    };
-    RoundCompleted: {
-        new (inner: {
-            currentRound: number;
-            totalRounds: number;
-        }): {
-            readonly tag: OptimizationEvent_Tags.RoundCompleted;
-            readonly inner: Readonly<{
-                currentRound: number;
-                totalRounds: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
-        };
-        "new"(inner: {
-            currentRound: number;
-            totalRounds: number;
-        }): {
-            readonly tag: OptimizationEvent_Tags.RoundCompleted;
-            readonly inner: Readonly<{
-                currentRound: number;
-                totalRounds: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: OptimizationEvent_Tags.RoundCompleted;
-            readonly inner: Readonly<{
-                currentRound: number;
-                totalRounds: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
-        };
-    };
+export declare enum OptimizationOutcome_Tags {
+    Completed = "Completed",
+    InProgress = "InProgress"
+}
+/**
+ * Outcome of a [`BreezSdk::optimize_leaves`] call.
+ *
+ * `rounds_executed` on `Completed` refers to rounds run by *this call*.
+ * The SDK holds no cross-call state — callers driving a `SingleRound`
+ * loop maintain their own cumulative counter if they need one.
+ *
+ * A `Completed { rounds_executed: 0 }` outcome means the wallet was
+ * already optimal at call time (no swap was needed).
+ *
+ * **`SingleRound` loop pattern**: terminate on anything that isn't
+ * `InProgress`. `Completed` covers both the final swap of a productive
+ * run and the "already optimal" no-op case (the latter as
+ * `rounds_executed: 0`).
+ *
+ * ```ignore
+ * loop {
+ * let request = OptimizeLeavesRequest { mode: OptimizationMode::SingleRound };
+ * match sdk.optimize_leaves(request).await?.outcome {
+ * OptimizationOutcome::InProgress => continue,
+ * OptimizationOutcome::Completed { .. } => break,
+ * }
+ * }
+ * ```
+ */
+export declare const OptimizationOutcome: Readonly<{
+    instanceOf: (obj: any) => obj is OptimizationOutcome;
     Completed: {
-        new (): {
-            readonly tag: OptimizationEvent_Tags.Completed;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
-        };
-        "new"(): {
-            readonly tag: OptimizationEvent_Tags.Completed;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: OptimizationEvent_Tags.Completed;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
-        };
-    };
-    Cancelled: {
-        new (): {
-            readonly tag: OptimizationEvent_Tags.Cancelled;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
-        };
-        "new"(): {
-            readonly tag: OptimizationEvent_Tags.Cancelled;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: OptimizationEvent_Tags.Cancelled;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
-        };
-    };
-    Failed: {
         new (inner: {
-            error: string;
+            roundsExecuted: number;
         }): {
-            readonly tag: OptimizationEvent_Tags.Failed;
+            readonly tag: OptimizationOutcome_Tags.Completed;
             readonly inner: Readonly<{
-                error: string;
+                roundsExecuted: number;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+            readonly [uniffiTypeNameSymbol]: "OptimizationOutcome";
         };
         "new"(inner: {
-            error: string;
+            roundsExecuted: number;
         }): {
-            readonly tag: OptimizationEvent_Tags.Failed;
+            readonly tag: OptimizationOutcome_Tags.Completed;
             readonly inner: Readonly<{
-                error: string;
+                roundsExecuted: number;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+            readonly [uniffiTypeNameSymbol]: "OptimizationOutcome";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: OptimizationEvent_Tags.Failed;
+            readonly tag: OptimizationOutcome_Tags.Completed;
             readonly inner: Readonly<{
-                error: string;
+                roundsExecuted: number;
             }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+            readonly [uniffiTypeNameSymbol]: "OptimizationOutcome";
         };
     };
-    Skipped: {
+    InProgress: {
         new (): {
-            readonly tag: OptimizationEvent_Tags.Skipped;
+            readonly tag: OptimizationOutcome_Tags.InProgress;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+            readonly [uniffiTypeNameSymbol]: "OptimizationOutcome";
         };
         "new"(): {
-            readonly tag: OptimizationEvent_Tags.Skipped;
+            readonly tag: OptimizationOutcome_Tags.InProgress;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+            readonly [uniffiTypeNameSymbol]: "OptimizationOutcome";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: OptimizationEvent_Tags.Skipped;
+            readonly tag: OptimizationOutcome_Tags.InProgress;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "OptimizationEvent";
+            readonly [uniffiTypeNameSymbol]: "OptimizationOutcome";
         };
     };
 }>;
-export type OptimizationEvent = InstanceType<(typeof OptimizationEvent)[keyof Omit<typeof OptimizationEvent, 'instanceOf'>]>;
+/**
+ * Outcome of a [`BreezSdk::optimize_leaves`] call.
+ *
+ * `rounds_executed` on `Completed` refers to rounds run by *this call*.
+ * The SDK holds no cross-call state — callers driving a `SingleRound`
+ * loop maintain their own cumulative counter if they need one.
+ *
+ * A `Completed { rounds_executed: 0 }` outcome means the wallet was
+ * already optimal at call time (no swap was needed).
+ *
+ * **`SingleRound` loop pattern**: terminate on anything that isn't
+ * `InProgress`. `Completed` covers both the final swap of a productive
+ * run and the "already optimal" no-op case (the latter as
+ * `rounds_executed: 0`).
+ *
+ * ```ignore
+ * loop {
+ * let request = OptimizeLeavesRequest { mode: OptimizationMode::SingleRound };
+ * match sdk.optimize_leaves(request).await?.outcome {
+ * OptimizationOutcome::InProgress => continue,
+ * OptimizationOutcome::Completed { .. } => break,
+ * }
+ * }
+ * ```
+ */
+export type OptimizationOutcome = InstanceType<(typeof OptimizationOutcome)[keyof Omit<typeof OptimizationOutcome, 'instanceOf'>]>;
+export declare enum PasskeyAvailability_Tags {
+    Available = "Available",
+    PrfUnsupported = "PrfUnsupported",
+    NotAssociated = "NotAssociated",
+    Skipped = "Skipped"
+}
+/**
+ * Single-value result of [`PasskeyClient::check_availability`].
+ * Collapses [`PrfProvider::is_supported`] +
+ * [`PrfProvider::check_domain_association`] into one variant per
+ * distinct host UX reaction.
+ */
+export declare const PasskeyAvailability: Readonly<{
+    instanceOf: (obj: any) => obj is PasskeyAvailability;
+    Available: {
+        new (): {
+            readonly tag: PasskeyAvailability_Tags.Available;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyAvailability";
+        };
+        "new"(): {
+            readonly tag: PasskeyAvailability_Tags.Available;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyAvailability";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyAvailability_Tags.Available;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyAvailability";
+        };
+    };
+    PrfUnsupported: {
+        new (): {
+            readonly tag: PasskeyAvailability_Tags.PrfUnsupported;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyAvailability";
+        };
+        "new"(): {
+            readonly tag: PasskeyAvailability_Tags.PrfUnsupported;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyAvailability";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyAvailability_Tags.PrfUnsupported;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyAvailability";
+        };
+    };
+    NotAssociated: {
+        new (inner: {
+            source: string;
+            reason: string;
+        }): {
+            readonly tag: PasskeyAvailability_Tags.NotAssociated;
+            readonly inner: Readonly<{
+                source: string;
+                reason: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyAvailability";
+        };
+        "new"(inner: {
+            source: string;
+            reason: string;
+        }): {
+            readonly tag: PasskeyAvailability_Tags.NotAssociated;
+            readonly inner: Readonly<{
+                source: string;
+                reason: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyAvailability";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyAvailability_Tags.NotAssociated;
+            readonly inner: Readonly<{
+                source: string;
+                reason: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyAvailability";
+        };
+    };
+    Skipped: {
+        new (inner: {
+            reason: string;
+        }): {
+            readonly tag: PasskeyAvailability_Tags.Skipped;
+            readonly inner: Readonly<{
+                reason: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyAvailability";
+        };
+        "new"(inner: {
+            reason: string;
+        }): {
+            readonly tag: PasskeyAvailability_Tags.Skipped;
+            readonly inner: Readonly<{
+                reason: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyAvailability";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyAvailability_Tags.Skipped;
+            readonly inner: Readonly<{
+                reason: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyAvailability";
+        };
+    };
+}>;
+/**
+ * Single-value result of [`PasskeyClient::check_availability`].
+ * Collapses [`PrfProvider::is_supported`] +
+ * [`PrfProvider::check_domain_association`] into one variant per
+ * distinct host UX reaction.
+ */
+export type PasskeyAvailability = InstanceType<(typeof PasskeyAvailability)[keyof Omit<typeof PasskeyAvailability, 'instanceOf'>]>;
 export declare enum PasskeyError_Tags {
-    PrfError = "PrfError",
+    Prf = "Prf",
     RelayConnectionFailed = "RelayConnectionFailed",
     NostrWriteFailed = "NostrWriteFailed",
     NostrReadFailed = "NostrReadFailed",
@@ -7357,10 +9040,10 @@ export declare enum PasskeyError_Tags {
  */
 export declare const PasskeyError: Readonly<{
     instanceOf: (obj: any) => obj is PasskeyError;
-    PrfError: {
-        new (v0: PasskeyPrfError): {
-            readonly tag: PasskeyError_Tags.PrfError;
-            readonly inner: Readonly<[PasskeyPrfError]>;
+    Prf: {
+        new (v0: PrfProviderError): {
+            readonly tag: PasskeyError_Tags.Prf;
+            readonly inner: Readonly<[PrfProviderError]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -7371,9 +9054,9 @@ export declare const PasskeyError: Readonly<{
             stack?: string;
             cause?: unknown;
         };
-        "new"(v0: PasskeyPrfError): {
-            readonly tag: PasskeyError_Tags.PrfError;
-            readonly inner: Readonly<[PasskeyPrfError]>;
+        "new"(v0: PrfProviderError): {
+            readonly tag: PasskeyError_Tags.Prf;
+            readonly inner: Readonly<[PrfProviderError]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -7385,8 +9068,8 @@ export declare const PasskeyError: Readonly<{
             cause?: unknown;
         };
         instanceOf(obj: any): obj is {
-            readonly tag: PasskeyError_Tags.PrfError;
-            readonly inner: Readonly<[PasskeyPrfError]>;
+            readonly tag: PasskeyError_Tags.Prf;
+            readonly inner: Readonly<[PrfProviderError]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -7398,8 +9081,8 @@ export declare const PasskeyError: Readonly<{
             cause?: unknown;
         };
         hasInner(obj: any): obj is {
-            readonly tag: PasskeyError_Tags.PrfError;
-            readonly inner: Readonly<[PasskeyPrfError]>;
+            readonly tag: PasskeyError_Tags.Prf;
+            readonly inner: Readonly<[PrfProviderError]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -7411,8 +9094,8 @@ export declare const PasskeyError: Readonly<{
             cause?: unknown;
         };
         getInner(obj: {
-            readonly tag: PasskeyError_Tags.PrfError;
-            readonly inner: Readonly<[PasskeyPrfError]>;
+            readonly tag: PasskeyError_Tags.Prf;
+            readonly inner: Readonly<[PrfProviderError]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -7422,7 +9105,7 @@ export declare const PasskeyError: Readonly<{
             message: string;
             stack?: string;
             cause?: unknown;
-        }): Readonly<[PasskeyPrfError]>;
+        }): Readonly<[PrfProviderError]>;
         isError(error: unknown): error is Error;
         captureStackTrace(targetObject: object, constructorOpt?: Function): void;
         prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
@@ -8001,401 +9684,6 @@ export declare const PasskeyError: Readonly<{
  * Error type for passkey operations.
  */
 export type PasskeyError = InstanceType<(typeof PasskeyError)[keyof Omit<typeof PasskeyError, 'instanceOf'>]>;
-export declare enum PasskeyPrfError_Tags {
-    PrfNotSupported = "PrfNotSupported",
-    UserCancelled = "UserCancelled",
-    CredentialNotFound = "CredentialNotFound",
-    AuthenticationFailed = "AuthenticationFailed",
-    PrfEvaluationFailed = "PrfEvaluationFailed",
-    Generic = "Generic"
-}
-/**
- * Error type for passkey PRF operations.
- * Platforms implement `PasskeyPrfProvider` and return this error type.
- */
-export declare const PasskeyPrfError: Readonly<{
-    instanceOf: (obj: any) => obj is PasskeyPrfError;
-    PrfNotSupported: {
-        new (): {
-            readonly tag: PasskeyPrfError_Tags.PrfNotSupported;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        "new"(): {
-            readonly tag: PasskeyPrfError_Tags.PrfNotSupported;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: PasskeyPrfError_Tags.PrfNotSupported;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        hasInner(obj: any): obj is {
-            readonly tag: PasskeyPrfError_Tags.PrfNotSupported;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        isError(error: unknown): error is Error;
-        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
-        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
-        stackTraceLimit: number;
-    };
-    UserCancelled: {
-        new (): {
-            readonly tag: PasskeyPrfError_Tags.UserCancelled;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        "new"(): {
-            readonly tag: PasskeyPrfError_Tags.UserCancelled;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: PasskeyPrfError_Tags.UserCancelled;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        hasInner(obj: any): obj is {
-            readonly tag: PasskeyPrfError_Tags.UserCancelled;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        isError(error: unknown): error is Error;
-        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
-        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
-        stackTraceLimit: number;
-    };
-    CredentialNotFound: {
-        new (): {
-            readonly tag: PasskeyPrfError_Tags.CredentialNotFound;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        "new"(): {
-            readonly tag: PasskeyPrfError_Tags.CredentialNotFound;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: PasskeyPrfError_Tags.CredentialNotFound;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        hasInner(obj: any): obj is {
-            readonly tag: PasskeyPrfError_Tags.CredentialNotFound;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        isError(error: unknown): error is Error;
-        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
-        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
-        stackTraceLimit: number;
-    };
-    AuthenticationFailed: {
-        new (v0: string): {
-            readonly tag: PasskeyPrfError_Tags.AuthenticationFailed;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        "new"(v0: string): {
-            readonly tag: PasskeyPrfError_Tags.AuthenticationFailed;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: PasskeyPrfError_Tags.AuthenticationFailed;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        hasInner(obj: any): obj is {
-            readonly tag: PasskeyPrfError_Tags.AuthenticationFailed;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        getInner(obj: {
-            readonly tag: PasskeyPrfError_Tags.AuthenticationFailed;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        }): Readonly<[string]>;
-        isError(error: unknown): error is Error;
-        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
-        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
-        stackTraceLimit: number;
-    };
-    PrfEvaluationFailed: {
-        new (v0: string): {
-            readonly tag: PasskeyPrfError_Tags.PrfEvaluationFailed;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        "new"(v0: string): {
-            readonly tag: PasskeyPrfError_Tags.PrfEvaluationFailed;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: PasskeyPrfError_Tags.PrfEvaluationFailed;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        hasInner(obj: any): obj is {
-            readonly tag: PasskeyPrfError_Tags.PrfEvaluationFailed;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        getInner(obj: {
-            readonly tag: PasskeyPrfError_Tags.PrfEvaluationFailed;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        }): Readonly<[string]>;
-        isError(error: unknown): error is Error;
-        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
-        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
-        stackTraceLimit: number;
-    };
-    Generic: {
-        new (v0: string): {
-            readonly tag: PasskeyPrfError_Tags.Generic;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        "new"(v0: string): {
-            readonly tag: PasskeyPrfError_Tags.Generic;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: PasskeyPrfError_Tags.Generic;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        hasInner(obj: any): obj is {
-            readonly tag: PasskeyPrfError_Tags.Generic;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        getInner(obj: {
-            readonly tag: PasskeyPrfError_Tags.Generic;
-            readonly inner: Readonly<[string]>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "PasskeyPrfError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        }): Readonly<[string]>;
-        isError(error: unknown): error is Error;
-        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
-        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
-        stackTraceLimit: number;
-    };
-}>;
-/**
- * Error type for passkey PRF operations.
- * Platforms implement `PasskeyPrfProvider` and return this error type.
- */
-export type PasskeyPrfError = InstanceType<(typeof PasskeyPrfError)[keyof Omit<typeof PasskeyPrfError, 'instanceOf'>]>;
 export declare enum PaymentDetails_Tags {
     Spark = "Spark",
     Token = "Token",
@@ -8676,10 +9964,12 @@ export declare const PaymentDetails: Readonly<{
     Deposit: {
         new (inner: {
             txId: string;
+            vout: number;
         }): {
             readonly tag: PaymentDetails_Tags.Deposit;
             readonly inner: Readonly<{
                 txId: string;
+                vout: number;
             }>;
             /**
              * @private
@@ -8689,10 +9979,12 @@ export declare const PaymentDetails: Readonly<{
         };
         "new"(inner: {
             txId: string;
+            vout: number;
         }): {
             readonly tag: PaymentDetails_Tags.Deposit;
             readonly inner: Readonly<{
                 txId: string;
+                vout: number;
             }>;
             /**
              * @private
@@ -8704,6 +9996,7 @@ export declare const PaymentDetails: Readonly<{
             readonly tag: PaymentDetails_Tags.Deposit;
             readonly inner: Readonly<{
                 txId: string;
+                vout: number;
             }>;
             /**
              * @private
@@ -9067,6 +10360,619 @@ export declare enum PaymentType {
      */
     Receive = 1
 }
+export declare enum PrfProviderError_Tags {
+    PrfNotSupported = "PrfNotSupported",
+    UserCancelled = "UserCancelled",
+    UserTimedOut = "UserTimedOut",
+    CredentialNotFound = "CredentialNotFound",
+    AuthenticationFailed = "AuthenticationFailed",
+    PrfEvaluationFailed = "PrfEvaluationFailed",
+    Configuration = "Configuration",
+    CredentialAlreadyExists = "CredentialAlreadyExists",
+    Generic = "Generic"
+}
+/**
+ * Failures from a passkey PRF operation. Each platform normalizes its
+ * native errors into these variants so callers match one taxonomy
+ * everywhere; anything unclassifiable becomes [`Generic`](Self::Generic).
+ */
+export declare const PrfProviderError: Readonly<{
+    instanceOf: (obj: any) => obj is PrfProviderError;
+    PrfNotSupported: {
+        new (): {
+            readonly tag: PrfProviderError_Tags.PrfNotSupported;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(): {
+            readonly tag: PrfProviderError_Tags.PrfNotSupported;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.PrfNotSupported;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.PrfNotSupported;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    UserCancelled: {
+        new (): {
+            readonly tag: PrfProviderError_Tags.UserCancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(): {
+            readonly tag: PrfProviderError_Tags.UserCancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.UserCancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.UserCancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    UserTimedOut: {
+        new (): {
+            readonly tag: PrfProviderError_Tags.UserTimedOut;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(): {
+            readonly tag: PrfProviderError_Tags.UserTimedOut;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.UserTimedOut;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.UserTimedOut;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    CredentialNotFound: {
+        new (v0: string): {
+            readonly tag: PrfProviderError_Tags.CredentialNotFound;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PrfProviderError_Tags.CredentialNotFound;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.CredentialNotFound;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.CredentialNotFound;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PrfProviderError_Tags.CredentialNotFound;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    AuthenticationFailed: {
+        new (v0: string): {
+            readonly tag: PrfProviderError_Tags.AuthenticationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PrfProviderError_Tags.AuthenticationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.AuthenticationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.AuthenticationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PrfProviderError_Tags.AuthenticationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    PrfEvaluationFailed: {
+        new (v0: string): {
+            readonly tag: PrfProviderError_Tags.PrfEvaluationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PrfProviderError_Tags.PrfEvaluationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.PrfEvaluationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.PrfEvaluationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PrfProviderError_Tags.PrfEvaluationFailed;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    Configuration: {
+        new (v0: string): {
+            readonly tag: PrfProviderError_Tags.Configuration;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PrfProviderError_Tags.Configuration;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.Configuration;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.Configuration;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PrfProviderError_Tags.Configuration;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    CredentialAlreadyExists: {
+        new (v0: string): {
+            readonly tag: PrfProviderError_Tags.CredentialAlreadyExists;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PrfProviderError_Tags.CredentialAlreadyExists;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.CredentialAlreadyExists;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.CredentialAlreadyExists;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PrfProviderError_Tags.CredentialAlreadyExists;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    Generic: {
+        new (v0: string): {
+            readonly tag: PrfProviderError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PrfProviderError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PrfProviderError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PrfProviderError_Tags.Generic;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PrfProviderError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+}>;
+/**
+ * Failures from a passkey PRF operation. Each platform normalizes its
+ * native errors into these variants so callers match one taxonomy
+ * everywhere; anything unclassifiable becomes [`Generic`](Self::Generic).
+ */
+export type PrfProviderError = InstanceType<(typeof PrfProviderError)[keyof Omit<typeof PrfProviderError, 'instanceOf'>]>;
 export declare enum ProvisionalPaymentDetails_Tags {
     Bitcoin = "Bitcoin",
     Lightning = "Lightning",
@@ -9500,6 +11406,8 @@ export declare enum SdkError_Tags {
     MissingUtxo = "MissingUtxo",
     LnurlError = "LnurlError",
     Signer = "Signer",
+    OptimizationAlreadyRunning = "OptimizationAlreadyRunning",
+    OptimizationCancelled = "OptimizationCancelled",
     Generic = "Generic"
 }
 /**
@@ -10343,6 +12251,114 @@ export declare const SdkError: Readonly<{
         prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
         stackTraceLimit: number;
     };
+    OptimizationAlreadyRunning: {
+        new (): {
+            readonly tag: SdkError_Tags.OptimizationAlreadyRunning;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(): {
+            readonly tag: SdkError_Tags.OptimizationAlreadyRunning;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkError_Tags.OptimizationAlreadyRunning;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SdkError_Tags.OptimizationAlreadyRunning;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    OptimizationCancelled: {
+        new (): {
+            readonly tag: SdkError_Tags.OptimizationCancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(): {
+            readonly tag: SdkError_Tags.OptimizationCancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkError_Tags.OptimizationCancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SdkError_Tags.OptimizationCancelled;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
     Generic: {
         new (v0: string): {
             readonly tag: SdkError_Tags.Generic;
@@ -10426,7 +12442,7 @@ export declare enum SdkEvent_Tags {
     PaymentSucceeded = "PaymentSucceeded",
     PaymentPending = "PaymentPending",
     PaymentFailed = "PaymentFailed",
-    Optimization = "Optimization",
+    AutoOptimization = "AutoOptimization",
     LightningAddressChanged = "LightningAddressChanged",
     NewDeposits = "NewDeposits"
 }
@@ -10656,13 +12672,13 @@ export declare const SdkEvent: Readonly<{
             readonly [uniffiTypeNameSymbol]: "SdkEvent";
         };
     };
-    Optimization: {
+    AutoOptimization: {
         new (inner: {
-            optimizationEvent: OptimizationEvent;
+            optimizationEvent: AutoOptimizationEvent;
         }): {
-            readonly tag: SdkEvent_Tags.Optimization;
+            readonly tag: SdkEvent_Tags.AutoOptimization;
             readonly inner: Readonly<{
-                optimizationEvent: OptimizationEvent;
+                optimizationEvent: AutoOptimizationEvent;
             }>;
             /**
              * @private
@@ -10671,11 +12687,11 @@ export declare const SdkEvent: Readonly<{
             readonly [uniffiTypeNameSymbol]: "SdkEvent";
         };
         "new"(inner: {
-            optimizationEvent: OptimizationEvent;
+            optimizationEvent: AutoOptimizationEvent;
         }): {
-            readonly tag: SdkEvent_Tags.Optimization;
+            readonly tag: SdkEvent_Tags.AutoOptimization;
             readonly inner: Readonly<{
-                optimizationEvent: OptimizationEvent;
+                optimizationEvent: AutoOptimizationEvent;
             }>;
             /**
              * @private
@@ -10684,9 +12700,9 @@ export declare const SdkEvent: Readonly<{
             readonly [uniffiTypeNameSymbol]: "SdkEvent";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: SdkEvent_Tags.Optimization;
+            readonly tag: SdkEvent_Tags.AutoOptimization;
             readonly inner: Readonly<{
-                optimizationEvent: OptimizationEvent;
+                optimizationEvent: AutoOptimizationEvent;
             }>;
             /**
              * @private
@@ -12022,56 +14038,56 @@ export declare enum ServiceStatus {
      */
     Major = 4
 }
-export declare enum SessionManagerError_Tags {
+export declare enum SessionStoreError_Tags {
     NotFound = "NotFound",
     Generic = "Generic"
 }
-export declare const SessionManagerError: Readonly<{
-    instanceOf: (obj: any) => obj is SessionManagerError;
+export declare const SessionStoreError: Readonly<{
+    instanceOf: (obj: any) => obj is SessionStoreError;
     NotFound: {
         new (): {
-            readonly tag: SessionManagerError_Tags.NotFound;
+            readonly tag: SessionStoreError_Tags.NotFound;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            readonly [uniffiTypeNameSymbol]: "SessionStoreError";
             name: string;
             message: string;
             stack?: string;
             cause?: unknown;
         };
         "new"(): {
-            readonly tag: SessionManagerError_Tags.NotFound;
+            readonly tag: SessionStoreError_Tags.NotFound;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            readonly [uniffiTypeNameSymbol]: "SessionStoreError";
             name: string;
             message: string;
             stack?: string;
             cause?: unknown;
         };
         instanceOf(obj: any): obj is {
-            readonly tag: SessionManagerError_Tags.NotFound;
+            readonly tag: SessionStoreError_Tags.NotFound;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            readonly [uniffiTypeNameSymbol]: "SessionStoreError";
             name: string;
             message: string;
             stack?: string;
             cause?: unknown;
         };
         hasInner(obj: any): obj is {
-            readonly tag: SessionManagerError_Tags.NotFound;
+            readonly tag: SessionStoreError_Tags.NotFound;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            readonly [uniffiTypeNameSymbol]: "SessionStoreError";
             name: string;
             message: string;
             stack?: string;
@@ -12084,65 +14100,65 @@ export declare const SessionManagerError: Readonly<{
     };
     Generic: {
         new (v0: string): {
-            readonly tag: SessionManagerError_Tags.Generic;
+            readonly tag: SessionStoreError_Tags.Generic;
             readonly inner: Readonly<[string]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            readonly [uniffiTypeNameSymbol]: "SessionStoreError";
             name: string;
             message: string;
             stack?: string;
             cause?: unknown;
         };
         "new"(v0: string): {
-            readonly tag: SessionManagerError_Tags.Generic;
+            readonly tag: SessionStoreError_Tags.Generic;
             readonly inner: Readonly<[string]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            readonly [uniffiTypeNameSymbol]: "SessionStoreError";
             name: string;
             message: string;
             stack?: string;
             cause?: unknown;
         };
         instanceOf(obj: any): obj is {
-            readonly tag: SessionManagerError_Tags.Generic;
+            readonly tag: SessionStoreError_Tags.Generic;
             readonly inner: Readonly<[string]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            readonly [uniffiTypeNameSymbol]: "SessionStoreError";
             name: string;
             message: string;
             stack?: string;
             cause?: unknown;
         };
         hasInner(obj: any): obj is {
-            readonly tag: SessionManagerError_Tags.Generic;
+            readonly tag: SessionStoreError_Tags.Generic;
             readonly inner: Readonly<[string]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            readonly [uniffiTypeNameSymbol]: "SessionStoreError";
             name: string;
             message: string;
             stack?: string;
             cause?: unknown;
         };
         getInner(obj: {
-            readonly tag: SessionManagerError_Tags.Generic;
+            readonly tag: SessionStoreError_Tags.Generic;
             readonly inner: Readonly<[string]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SessionManagerError";
+            readonly [uniffiTypeNameSymbol]: "SessionStoreError";
             name: string;
             message: string;
             stack?: string;
@@ -12154,7 +14170,7 @@ export declare const SessionManagerError: Readonly<{
         stackTraceLimit: number;
     };
 }>;
-export type SessionManagerError = InstanceType<(typeof SessionManagerError)[keyof Omit<typeof SessionManagerError, 'instanceOf'>]>;
+export type SessionStoreError = InstanceType<(typeof SessionStoreError)[keyof Omit<typeof SessionStoreError, 'instanceOf'>]>;
 export declare enum SignerError_Tags {
     KeyDerivation = "KeyDerivation",
     Signing = "Signing",
@@ -13851,6 +15867,11 @@ export interface BreezSdkInterface {
     /**
      * Registers a listener to receive SDK events
      *
+     * The SDK holds the listener until it is removed with
+     * `remove_event_listener` or until `disconnect` unregisters all
+     * listeners. A held listener that references the SDK instance keeps
+     * that instance alive.
+     *
      * # Arguments
      *
      * * `listener` - An implementation of the `EventListener` trait
@@ -13863,6 +15884,16 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<string>;
     /**
+     * Authorize transferring the current owner's registered lightning address
+     * username to `request.transferee_pubkey`. Returns a
+     * [`TransferAuthorization`] to hand to the new owner, who
+     * claims it via [`BreezSdk::claim_lightning_address_transfer`].
+     * Errors if the current owner has no lightning address registered.
+     */
+    authorizeLightningAddressTransfer(request: AuthorizeTransferRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<TransferAuthorization>;
+    /**
      * Initiates a Bitcoin purchase flow via an external provider.
      *
      * Returns a URL the user should open to complete the purchase.
@@ -13874,19 +15905,6 @@ export interface BreezSdkInterface {
     buyBitcoin(request: BuyBitcoinRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<BuyBitcoinResponse>;
-    /**
-     * Cancels the ongoing leaf optimization.
-     *
-     * This method cancels the ongoing optimization and waits for it to fully stop.
-     * The current round will complete before stopping. This method blocks
-     * until the optimization has fully stopped and leaves reserved for optimization
-     * are available again.
-     *
-     * If no optimization is running, this method returns immediately.
-     */
-    cancelLeafOptimization(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
     checkLightningAddressAvailable(req: CheckLightningAddressRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
@@ -13904,6 +15922,15 @@ export interface BreezSdkInterface {
     claimHtlcPayment(request: ClaimHtlcPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ClaimHtlcPaymentResponse>;
+    /**
+     * Claim a lightning address username handed over by its current owner,
+     * using the [`TransferAuthorization`] from
+     * [`BreezSdk::authorize_lightning_address_transfer`]. Completes the
+     * takeover and returns the newly-owned address.
+     */
+    claimLightningAddressTransfer(request: ClaimTransferRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<LightningAddressInfo>;
     /**
      * Deletes a contact by its ID.
      *
@@ -13927,6 +15954,9 @@ export interface BreezSdkInterface {
      * This method stops the background tasks started by the `start()` method.
      * It should be called before your application terminates to ensure proper cleanup.
      *
+     * It also unregisters all event listeners, so listeners that reference
+     * the SDK no longer keep it alive after this call.
+     *
      * # Returns
      *
      * Result containing either success or an `SdkError` if the background task couldn't be stopped
@@ -13943,10 +15973,6 @@ export interface BreezSdkInterface {
     getInfo(request: GetInfoRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<GetInfoResponse>;
-    /**
-     * Returns the current optimization progress snapshot.
-     */
-    getLeafOptimizationProgress(): OptimizationProgress;
     getLightningAddress(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LightningAddressInfo | undefined>;
@@ -14077,6 +16103,28 @@ export interface BreezSdkInterface {
     lnurlWithdraw(request: LnurlWithdrawRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LnurlWithdrawResponse>;
+    /**
+     * Manually drives leaf optimization, blocking until the requested work
+     * is done.
+     *
+     * With [`OptimizationMode::Full`] (the default) the call runs the entire
+     * optimization in a single invocation. With
+     * [`OptimizationMode::SingleRound`] it executes one round and returns —
+     * the caller drives the loop by inspecting the
+     * [`OptimizeLeavesResponse::outcome`] and calling again until
+     * `InProgress` no longer appears.
+     *
+     * Returns an error if another optimization run (auto or manual) is
+     * already in flight ([`SdkError::OptimizationAlreadyRunning`]), or if
+     * the SDK preempted this run to free leaves for a payment
+     * ([`SdkError::OptimizationCancelled`]).
+     *
+     * Manual runs do not emit events; events ([`SdkEvent::AutoOptimization`])
+     * are reserved for the background auto-optimizer.
+     */
+    optimizeLeaves(request: OptimizeLeavesRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<OptimizeLeavesResponse>;
     parse(input: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<InputType>;
@@ -14158,16 +16206,6 @@ export interface BreezSdkInterface {
     signMessage(request: SignMessageRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SignMessageResponse>;
-    /**
-     * Starts leaf optimization in the background.
-     *
-     * This method spawns the optimization work in a background task and returns
-     * immediately. Progress is reported via events.
-     * If optimization is already running, no new task will be started.
-     */
-    startLeafOptimization(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
     /**
      * Synchronizes the wallet with the Spark network
      */
@@ -14236,6 +16274,11 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     /**
      * Registers a listener to receive SDK events
      *
+     * The SDK holds the listener until it is removed with
+     * `remove_event_listener` or until `disconnect` unregisters all
+     * listeners. A held listener that references the SDK instance keeps
+     * that instance alive.
+     *
      * # Arguments
      *
      * * `listener` - An implementation of the `EventListener` trait
@@ -14248,6 +16291,16 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<string>;
     /**
+     * Authorize transferring the current owner's registered lightning address
+     * username to `request.transferee_pubkey`. Returns a
+     * [`TransferAuthorization`] to hand to the new owner, who
+     * claims it via [`BreezSdk::claim_lightning_address_transfer`].
+     * Errors if the current owner has no lightning address registered.
+     */
+    authorizeLightningAddressTransfer(request: AuthorizeTransferRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<TransferAuthorization>;
+    /**
      * Initiates a Bitcoin purchase flow via an external provider.
      *
      * Returns a URL the user should open to complete the purchase.
@@ -14259,19 +16312,6 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     buyBitcoin(request: BuyBitcoinRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<BuyBitcoinResponse>;
-    /**
-     * Cancels the ongoing leaf optimization.
-     *
-     * This method cancels the ongoing optimization and waits for it to fully stop.
-     * The current round will complete before stopping. This method blocks
-     * until the optimization has fully stopped and leaves reserved for optimization
-     * are available again.
-     *
-     * If no optimization is running, this method returns immediately.
-     */
-    cancelLeafOptimization(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
     checkLightningAddressAvailable(req: CheckLightningAddressRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
@@ -14289,6 +16329,15 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     claimHtlcPayment(request: ClaimHtlcPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ClaimHtlcPaymentResponse>;
+    /**
+     * Claim a lightning address username handed over by its current owner,
+     * using the [`TransferAuthorization`] from
+     * [`BreezSdk::authorize_lightning_address_transfer`]. Completes the
+     * takeover and returns the newly-owned address.
+     */
+    claimLightningAddressTransfer(request: ClaimTransferRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<LightningAddressInfo>;
     /**
      * Deletes a contact by its ID.
      *
@@ -14312,6 +16361,9 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
      * This method stops the background tasks started by the `start()` method.
      * It should be called before your application terminates to ensure proper cleanup.
      *
+     * It also unregisters all event listeners, so listeners that reference
+     * the SDK no longer keep it alive after this call.
+     *
      * # Returns
      *
      * Result containing either success or an `SdkError` if the background task couldn't be stopped
@@ -14328,10 +16380,6 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     getInfo(request: GetInfoRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<GetInfoResponse>;
-    /**
-     * Returns the current optimization progress snapshot.
-     */
-    getLeafOptimizationProgress(): OptimizationProgress;
     getLightningAddress(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LightningAddressInfo | undefined>;
@@ -14462,6 +16510,28 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     lnurlWithdraw(request: LnurlWithdrawRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LnurlWithdrawResponse>;
+    /**
+     * Manually drives leaf optimization, blocking until the requested work
+     * is done.
+     *
+     * With [`OptimizationMode::Full`] (the default) the call runs the entire
+     * optimization in a single invocation. With
+     * [`OptimizationMode::SingleRound`] it executes one round and returns —
+     * the caller drives the loop by inspecting the
+     * [`OptimizeLeavesResponse::outcome`] and calling again until
+     * `InProgress` no longer appears.
+     *
+     * Returns an error if another optimization run (auto or manual) is
+     * already in flight ([`SdkError::OptimizationAlreadyRunning`]), or if
+     * the SDK preempted this run to free leaves for a payment
+     * ([`SdkError::OptimizationCancelled`]).
+     *
+     * Manual runs do not emit events; events ([`SdkEvent::AutoOptimization`])
+     * are reserved for the background auto-optimizer.
+     */
+    optimizeLeaves(request: OptimizeLeavesRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<OptimizeLeavesResponse>;
     parse(input: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<InputType>;
@@ -14544,16 +16614,6 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<SignMessageResponse>;
     /**
-     * Starts leaf optimization in the background.
-     *
-     * This method spawns the optimization work in a background task and returns
-     * immediately. Progress is reported via events.
-     * If optimization is already running, no new task will be started.
-     */
-    startLeafOptimization(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
      * Synchronizes the wallet with the Spark network
      */
     syncWallet(request: SyncWalletRequest, asyncOpts_?: {
@@ -14613,13 +16673,7 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
  *
  * Errors are returned as `SignerError` for FFI compatibility.
  */
-export interface ExternalSigner {
-    /**
-     * Returns the identity public key as 33 bytes (compressed secp256k1 key).
-     *
-     * See also: [JavaScript `getIdentityPublicKey`](https://docs.spark.money/wallets/spark-signer#get-identity-public-key)
-     */
-    identityPublicKey(): PublicKeyBytes;
+export interface ExternalBreezSigner {
     /**
      * Derives a public key for the given BIP32 derivation path.
      *
@@ -14720,182 +16774,6 @@ export interface ExternalSigner {
     hmacSha256(message: ArrayBuffer, path: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<HashedMessageBytes>;
-    /**
-     * Generates Frost signing commitments for multi-party signing.
-     *
-     * # Returns
-     * Frost commitments with nonces, or a `SignerError`
-     *
-     * See also: [JavaScript `getRandomSigningCommitment`](https://docs.spark.money/wallets/spark-signer#get-random-signing-commitment)
-     */
-    generateRandomSigningCommitment(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<ExternalFrostCommitments>;
-    /**
-     * Gets the public key for a specific tree node in the Spark wallet.
-     *
-     * # Arguments
-     * * `id` - The tree node identifier
-     *
-     * # Returns
-     * The public key for the node, or a `SignerError`
-     */
-    getPublicKeyForNode(id: ExternalTreeNodeId, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<PublicKeyBytes>;
-    /**
-     * Generates a random secret that is encrypted and known only to the signer.
-     *
-     * This method creates a new random secret and returns it in encrypted form.
-     * The plaintext secret never leaves the signer boundary, providing a secure way
-     * to create secrets that can be referenced in subsequent operations without
-     * exposing them.
-     *
-     * This is conceptually similar to Spark's key derivation system where secrets
-     * are represented by opaque references (like tree node IDs or Random) rather than raw values.
-     * The encrypted secret can be passed to other signer methods that need to operate
-     * on it, while keeping the actual secret material protected within the signer.
-     *
-     * # Returns
-     * An encrypted secret that can be used in subsequent signer operations,
-     * or a `SignerError` if generation fails.
-     *
-     * See also: [Key Derivation System](https://docs.spark.money/wallets/spark-signer#the-keyderivation-system)
-     */
-    generateRandomSecret(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<ExternalEncryptedSecret>;
-    /**
-     * Gets an encrypted static deposit secret by index.
-     *
-     * # Arguments
-     * * `index` - The index of the static deposit secret
-     *
-     * # Returns
-     * The encrypted secret, or a `SignerError`
-     *
-     * This is the encrypted version of: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
-     */
-    staticDepositSecretEncrypted(index: number, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<ExternalSecretSource>;
-    /**
-     * Gets a static deposit secret by index.
-     *
-     * # Arguments
-     * * `index` - The index of the static deposit secret
-     *
-     * # Returns
-     * The 32-byte secret, or a `SignerError`
-     *
-     * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
-     */
-    staticDepositSecret(index: number, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<SecretBytes>;
-    /**
-     * Gets a static deposit signing public key by index.
-     *
-     * # Arguments
-     * * `index` - The index of the static deposit public signing key
-     *
-     * # Returns
-     * The 33-byte public key, or a `SignerError`
-     *
-     * See also: [JavaScript `getStaticDepositSigningKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-signing-key)
-     */
-    staticDepositSigningKey(index: number, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<PublicKeyBytes>;
-    /**
-     * Subtracts one secret from another.
-     *
-     * This is a lower-level primitive used as part of key tweaking operations.
-     *
-     * # Arguments
-     * * `signing_key` - The first secret
-     * * `new_signing_key` - The second secret to subtract
-     *
-     * # Returns
-     * The resulting secret, or a `SignerError`
-     *
-     * See also: [JavaScript `subtractSplitAndEncrypt`](https://docs.spark.money/wallets/spark-signer#subtract,-split,-and-encrypt)
-     * (this method provides the subtraction step of that higher-level operation)
-     */
-    subtractSecrets(signingKey: ExternalSecretSource, newSigningKey: ExternalSecretSource, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<ExternalSecretSource>;
-    /**
-     * Splits a secret with proofs using Shamir's Secret Sharing.
-     *
-     * # Arguments
-     * * `secret` - The secret to split
-     * * `threshold` - Minimum number of shares needed to reconstruct
-     * * `num_shares` - Total number of shares to create
-     *
-     * # Returns
-     * Vector of verifiable secret shares, or a `SignerError`
-     *
-     * See also: [JavaScript `splitSecretWithProofs`](https://docs.spark.money/wallets/spark-signer#split-secret-with-proofs)
-     */
-    splitSecretWithProofs(secret: ExternalSecretToSplit, threshold: number, numShares: number, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<Array<ExternalVerifiableSecretShare>>;
-    /**
-     * Encrypts a secret for a specific receiver's public key.
-     *
-     * # Arguments
-     * * `encrypted_secret` - The encrypted secret to re-encrypt
-     * * `receiver_public_key` - The receiver's 33-byte public key
-     *
-     * # Returns
-     * Encrypted data for the receiver, or a `SignerError`
-     */
-    encryptSecretForReceiver(encryptedSecret: ExternalEncryptedSecret, receiverPublicKey: PublicKeyBytes, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<ArrayBuffer>;
-    /**
-     * Gets the public key from a secret.
-     *
-     * # Arguments
-     * * `secret` - The secret
-     *
-     * # Returns
-     * The corresponding 33-byte public key, or a `SignerError`
-     *
-     * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
-     */
-    publicKeyFromSecret(secret: ExternalSecretSource, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<PublicKeyBytes>;
-    /**
-     * Signs using Frost protocol (multi-party signing).
-     *
-     * # Arguments
-     * * `request` - The Frost signing request
-     *
-     * # Returns
-     * A signature share, or a `SignerError`
-     *
-     * See also: [JavaScript `signFrost`](https://docs.spark.money/wallets/spark-signer#frost-signing)
-     */
-    signFrost(request: ExternalSignFrostRequest, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<ExternalFrostSignatureShare>;
-    /**
-     * Aggregates Frost signature shares into a final signature.
-     *
-     * # Arguments
-     * * `request` - The Frost aggregation request
-     *
-     * # Returns
-     * The aggregated Frost signature, or a `SignerError`
-     *
-     * See also: [JavaScript `aggregateFrost`](https://docs.spark.money/wallets/spark-signer#aggregate-frost-signatures)
-     */
-    aggregateFrost(request: ExternalAggregateFrostRequest, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<ExternalFrostSignature>;
 }
 /**
  * External signer trait that can be implemented by users and passed to the SDK.
@@ -14910,17 +16788,11 @@ export interface ExternalSigner {
  *
  * Errors are returned as `SignerError` for FFI compatibility.
  */
-export declare class ExternalSignerImpl extends UniffiAbstractObject implements ExternalSigner {
-    readonly [uniffiTypeNameSymbol] = "ExternalSignerImpl";
+export declare class ExternalBreezSignerImpl extends UniffiAbstractObject implements ExternalBreezSigner {
+    readonly [uniffiTypeNameSymbol] = "ExternalBreezSignerImpl";
     readonly [destructorGuardSymbol]: UniffiRustArcPtr;
     readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
     private constructor();
-    /**
-     * Returns the identity public key as 33 bytes (compressed secp256k1 key).
-     *
-     * See also: [JavaScript `getIdentityPublicKey`](https://docs.spark.money/wallets/spark-signer#get-identity-public-key)
-     */
-    identityPublicKey(): PublicKeyBytes;
     /**
      * Derives a public key for the given BIP32 derivation path.
      *
@@ -15022,186 +16894,209 @@ export declare class ExternalSignerImpl extends UniffiAbstractObject implements 
         signal: AbortSignal;
     }): Promise<HashedMessageBytes>;
     /**
-     * Generates Frost signing commitments for multi-party signing.
-     *
-     * # Returns
-     * Frost commitments with nonces, or a `SignerError`
-     *
-     * See also: [JavaScript `getRandomSigningCommitment`](https://docs.spark.money/wallets/spark-signer#get-random-signing-commitment)
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
      */
-    generateRandomSigningCommitment(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<ExternalFrostCommitments>;
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is ExternalBreezSignerImpl;
+}
+/**
+ * FFI-compatible mirror of `spark_wallet::SparkSigner`.
+ */
+export interface ExternalSparkSigner {
     /**
-     * Gets the public key for a specific tree node in the Spark wallet.
-     *
-     * # Arguments
-     * * `id` - The tree node identifier
-     *
-     * # Returns
-     * The public key for the node, or a `SignerError`
+     * The wallet identity public key (33 bytes compressed).
      */
-    getPublicKeyForNode(id: ExternalTreeNodeId, asyncOpts_?: {
+    getIdentityPublicKey(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
-     * Generates a random secret that is encrypted and known only to the signer.
-     *
-     * This method creates a new random secret and returns it in encrypted form.
-     * The plaintext secret never leaves the signer boundary, providing a secure way
-     * to create secrets that can be referenced in subsequent operations without
-     * exposing them.
-     *
-     * This is conceptually similar to Spark's key derivation system where secrets
-     * are represented by opaque references (like tree node IDs or Random) rather than raw values.
-     * The encrypted secret can be passed to other signer methods that need to operate
-     * on it, while keeping the actual secret material protected within the signer.
-     *
-     * # Returns
-     * An encrypted secret that can be used in subsequent signer operations,
-     * or a `SignerError` if generation fails.
-     *
-     * See also: [Key Derivation System](https://docs.spark.money/wallets/spark-signer#the-keyderivation-system)
+     * The signing public key for a tree leaf.
      */
-    generateRandomSecret(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<ExternalEncryptedSecret>;
-    /**
-     * Gets an encrypted static deposit secret by index.
-     *
-     * # Arguments
-     * * `index` - The index of the static deposit secret
-     *
-     * # Returns
-     * The encrypted secret, or a `SignerError`
-     *
-     * This is the encrypted version of: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
-     */
-    staticDepositSecretEncrypted(index: number, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<ExternalSecretSource>;
-    /**
-     * Gets a static deposit secret by index.
-     *
-     * # Arguments
-     * * `index` - The index of the static deposit secret
-     *
-     * # Returns
-     * The 32-byte secret, or a `SignerError`
-     *
-     * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
-     */
-    staticDepositSecret(index: number, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<SecretBytes>;
-    /**
-     * Gets a static deposit signing public key by index.
-     *
-     * # Arguments
-     * * `index` - The index of the static deposit public signing key
-     *
-     * # Returns
-     * The 33-byte public key, or a `SignerError`
-     *
-     * See also: [JavaScript `getStaticDepositSigningKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-signing-key)
-     */
-    staticDepositSigningKey(index: number, asyncOpts_?: {
+    getPublicKeyForLeaf(leafId: ExternalTreeNodeId, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
-     * Subtracts one secret from another.
-     *
-     * This is a lower-level primitive used as part of key tweaking operations.
-     *
-     * # Arguments
-     * * `signing_key` - The first secret
-     * * `new_signing_key` - The second secret to subtract
-     *
-     * # Returns
-     * The resulting secret, or a `SignerError`
-     *
-     * See also: [JavaScript `subtractSplitAndEncrypt`](https://docs.spark.money/wallets/spark-signer#subtract,-split,-and-encrypt)
-     * (this method provides the subtraction step of that higher-level operation)
+     * The static-deposit signing public key at `index`.
      */
-    subtractSecrets(signingKey: ExternalSecretSource, newSigningKey: ExternalSecretSource, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<ExternalSecretSource>;
-    /**
-     * Splits a secret with proofs using Shamir's Secret Sharing.
-     *
-     * # Arguments
-     * * `secret` - The secret to split
-     * * `threshold` - Minimum number of shares needed to reconstruct
-     * * `num_shares` - Total number of shares to create
-     *
-     * # Returns
-     * Vector of verifiable secret shares, or a `SignerError`
-     *
-     * See also: [JavaScript `splitSecretWithProofs`](https://docs.spark.money/wallets/spark-signer#split-secret-with-proofs)
-     */
-    splitSecretWithProofs(secret: ExternalSecretToSplit, threshold: number, numShares: number, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<Array<ExternalVerifiableSecretShare>>;
-    /**
-     * Encrypts a secret for a specific receiver's public key.
-     *
-     * # Arguments
-     * * `encrypted_secret` - The encrypted secret to re-encrypt
-     * * `receiver_public_key` - The receiver's 33-byte public key
-     *
-     * # Returns
-     * Encrypted data for the receiver, or a `SignerError`
-     */
-    encryptSecretForReceiver(encryptedSecret: ExternalEncryptedSecret, receiverPublicKey: PublicKeyBytes, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<ArrayBuffer>;
-    /**
-     * Gets the public key from a secret.
-     *
-     * # Arguments
-     * * `secret` - The secret
-     *
-     * # Returns
-     * The corresponding 33-byte public key, or a `SignerError`
-     *
-     * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
-     */
-    publicKeyFromSecret(secret: ExternalSecretSource, asyncOpts_?: {
+    getStaticDepositPublicKey(index: number, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
-     * Signs using Frost protocol (multi-party signing).
-     *
-     * # Arguments
-     * * `request` - The Frost signing request
-     *
-     * # Returns
-     * A signature share, or a `SignerError`
-     *
-     * See also: [JavaScript `signFrost`](https://docs.spark.money/wallets/spark-signer#frost-signing)
+     * ECDSA-sign a server authentication challenge with the identity key.
      */
-    signFrost(request: ExternalSignFrostRequest, asyncOpts_?: {
+    signAuthenticationChallenge(challenge: ArrayBuffer, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<ExternalFrostSignatureShare>;
+    }): Promise<EcdsaSignatureBytes>;
     /**
-     * Aggregates Frost signature shares into a final signature.
-     *
-     * # Arguments
-     * * `request` - The Frost aggregation request
-     *
-     * # Returns
-     * The aggregated Frost signature, or a `SignerError`
-     *
-     * See also: [JavaScript `aggregateFrost`](https://docs.spark.money/wallets/spark-signer#aggregate-frost-signatures)
+     * ECDSA-sign an arbitrary user message with the identity key.
      */
-    aggregateFrost(request: ExternalAggregateFrostRequest, asyncOpts_?: {
+    signMessage(message: ArrayBuffer, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<EcdsaSignatureBytes>;
+    /**
+     * Produce FROST shares for a batch of jobs.
+     */
+    signFrost(jobs: Array<ExternalFrostJob>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<ExternalFrostShareResult>>;
+    /**
+     * Prepare an outbound transfer (key-tweak + packages + payload signature).
+     */
+    prepareTransfer(request: ExternalPrepareTransferRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPreparedTransfer>;
+    /**
+     * Claim an inbound transfer (key-tweak step).
+     */
+    prepareClaim(request: ExternalPrepareClaimRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPreparedClaim>;
+    /**
+     * Prepare a Lightning receive (in-enclave preimage + Feldman split).
+     */
+    prepareLightningReceive(request: ExternalPrepareLightningReceiveRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPreparedLightningReceive>;
+    /**
+     * Prepare a static deposit (export secret to SSP + FROST-sign tree txs).
+     */
+    prepareStaticDeposit(request: ExternalPrepareStaticDepositRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPreparedStaticDeposit>;
+    /**
+     * Begin a static-deposit refund (user-commits-first).
+     */
+    startStaticDepositRefund(request: ExternalStartStaticDepositRefundRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalStartedStaticDepositRefund>;
+    /**
+     * Finish a static-deposit refund (aggregate into the final signature).
+     */
+    signStaticDepositRefund(request: ExternalSignStaticDepositRefundRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ExternalFrostSignature>;
+    /**
+     * Schnorr-sign a Spark invoice (sats or tokens) with the identity key.
+     */
+    signSparkInvoice(request: ExternalSignSparkInvoiceRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalSignedSparkInvoice>;
+    /**
+     * Schnorr-sign a token-transaction digest with the identity key.
+     */
+    prepareTokenTransaction(request: ExternalPrepareTokenTransactionRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPreparedTokenTransaction>;
+    /**
+     * Prepare a static-deposit claim (export secret in the clear + sign).
+     */
+    prepareStaticDepositClaim(request: ExternalPrepareStaticDepositClaimRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPreparedStaticDepositClaim>;
+}
+/**
+ * FFI-compatible mirror of `spark_wallet::SparkSigner`.
+ */
+export declare class ExternalSparkSignerImpl extends UniffiAbstractObject implements ExternalSparkSigner {
+    readonly [uniffiTypeNameSymbol] = "ExternalSparkSignerImpl";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    /**
+     * The wallet identity public key (33 bytes compressed).
+     */
+    getIdentityPublicKey(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublicKeyBytes>;
+    /**
+     * The signing public key for a tree leaf.
+     */
+    getPublicKeyForLeaf(leafId: ExternalTreeNodeId, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublicKeyBytes>;
+    /**
+     * The static-deposit signing public key at `index`.
+     */
+    getStaticDepositPublicKey(index: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublicKeyBytes>;
+    /**
+     * ECDSA-sign a server authentication challenge with the identity key.
+     */
+    signAuthenticationChallenge(challenge: ArrayBuffer, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<EcdsaSignatureBytes>;
+    /**
+     * ECDSA-sign an arbitrary user message with the identity key.
+     */
+    signMessage(message: ArrayBuffer, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<EcdsaSignatureBytes>;
+    /**
+     * Produce FROST shares for a batch of jobs.
+     */
+    signFrost(jobs: Array<ExternalFrostJob>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<ExternalFrostShareResult>>;
+    /**
+     * Prepare an outbound transfer (key-tweak + packages + payload signature).
+     */
+    prepareTransfer(request: ExternalPrepareTransferRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPreparedTransfer>;
+    /**
+     * Claim an inbound transfer (key-tweak step).
+     */
+    prepareClaim(request: ExternalPrepareClaimRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPreparedClaim>;
+    /**
+     * Prepare a Lightning receive (in-enclave preimage + Feldman split).
+     */
+    prepareLightningReceive(request: ExternalPrepareLightningReceiveRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPreparedLightningReceive>;
+    /**
+     * Prepare a static deposit (export secret to SSP + FROST-sign tree txs).
+     */
+    prepareStaticDeposit(request: ExternalPrepareStaticDepositRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPreparedStaticDeposit>;
+    /**
+     * Begin a static-deposit refund (user-commits-first).
+     */
+    startStaticDepositRefund(request: ExternalStartStaticDepositRefundRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalStartedStaticDepositRefund>;
+    /**
+     * Finish a static-deposit refund (aggregate into the final signature).
+     */
+    signStaticDepositRefund(request: ExternalSignStaticDepositRefundRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalFrostSignature>;
+    /**
+     * Schnorr-sign a Spark invoice (sats or tokens) with the identity key.
+     */
+    signSparkInvoice(request: ExternalSignSparkInvoiceRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalSignedSparkInvoice>;
+    /**
+     * Schnorr-sign a token-transaction digest with the identity key.
+     */
+    prepareTokenTransaction(request: ExternalPrepareTokenTransactionRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPreparedTokenTransaction>;
+    /**
+     * Prepare a static-deposit claim (export secret in the clear + sign).
+     */
+    prepareStaticDepositClaim(request: ExternalPrepareStaticDepositClaimRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ExternalPreparedStaticDepositClaim>;
     /**
      * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
      */
     uniffiDestroy(): void;
-    static instanceOf(obj: any): obj is ExternalSignerImpl;
+    static instanceOf(obj: any): obj is ExternalSparkSignerImpl;
 }
 /**
  * Trait covering fiat-related functionality
@@ -15247,235 +17142,234 @@ export declare class FiatServiceImpl extends UniffiAbstractObject implements Fia
     static instanceOf(obj: any): obj is FiatServiceImpl;
 }
 /**
- * Orchestrates passkey-based wallet creation and restore operations.
+ * High-level orchestration over a [`PrfProvider`] and the internal
+ * Nostr-backed label store. Two named flows match the real onboarding
+ * states:
  *
- * This struct coordinates between the platform's passkey PRF provider and
- * Nostr relays to derive wallet mnemonics and manage labels.
+ * - [`Self::register`]: first-time setup (create credential + derive
+ * wallet + publish label) in one ceremony where the platform
+ * supports dual-salt PRF.
+ * - [`Self::sign_in`]: returning user. Fast path when the host has
+ * the label cached locally; cold-restore-with-discovery when not.
  *
- * The Nostr identity (derived from the passkey's magic salt) is cached after
- * the first derivation so that subsequent calls to [`Passkey::list_labels`]
- * and [`Passkey::store_label`] do not require additional PRF interactions.
+ * Label management hangs off the [`Self::labels`] sub-object.
+ *
+ * The `breez_api_key` is the Breez relay key used for authenticated
+ * (NIP-42) label storage. Hosts that already construct the SDK
+ * [`crate::Config`] can use [`Self::from_config`] to forward it.
  */
-export interface PasskeyInterface {
+export interface PasskeyClientInterface {
     /**
-     * Derive a wallet for a given label.
-     *
-     * Uses the passkey PRF to derive a 12-word BIP39 mnemonic from the label
-     * and returns it as a [`Wallet`] containing the seed and resolved label.
-     * This works for both creating a new wallet and restoring an existing one.
-     *
-     * # Arguments
-     * * `label` - A user-chosen label (e.g., "personal", "business").
-     * If `None`, defaults to [`DEFAULT_LABEL`].
+     * One-shot capability + configuration probe. Collapses
+     * [`PrfProvider::is_supported`] and
+     * [`PrfProvider::check_domain_association`] into a single value
+     * hosts can branch on.
      */
-    getWallet(label: string | undefined, asyncOpts_?: {
+    checkAvailability(asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<Wallet>;
+    }): Promise<PasskeyAvailability>;
     /**
-     * Check if passkey PRF is available on this device.
+     * Single-CTA onboarding: silent sign-in, falling through to
+     * registration when no credential exists on the device. The returned
+     * [`ConnectFlow`] tells the caller which path ran.
      *
-     * Delegates to the platform's `PasskeyPrfProvider` implementation.
+     * The silent sign-in pins `prefer_immediately_available_credentials =
+     * true` regardless of [`SignInRequest`]: the fallback depends on the OS
+     * fast-failing with [`PrfProviderError::CredentialNotFound`] when no
+     * local credential exists. Only `CredentialNotFound` flips to the
+     * register path; every other error (`Cancel`, `Timeout`, ...) propagates
+     * unchanged.
+     *
+     * Mobile-only: meant for iOS 18+ / Android 9+ where
+     * `preferImmediatelyAvailableCredentials` is honored. The web
+     * equivalent (`mediation: 'immediate'`) is not yet stable
+     * cross-browser, so this is not surfaced on WASM; web hosts call
+     * [`Self::sign_in`] and catch `CredentialNotFound` themselves.
      */
-    isAvailable(asyncOpts_?: {
+    connectWithPasskey(request: ConnectWithPasskeyRequest, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<boolean>;
+    }): Promise<ConnectWithPasskeyResponse>;
     /**
-     * List all labels published to Nostr for this passkey's identity.
-     *
-     * Queries Nostr relays for all labels associated with the Nostr identity
-     * derived from this passkey. Requires 1 PRF call.
+     * Label sub-object. List or publish labels for this passkey's
+     * identity.
      */
-    listLabels(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<Array<string>>;
+    labels(): PasskeyLabelsInterface;
     /**
-     * Publish a label to Nostr relays for this passkey's identity.
-     *
-     * Idempotent: if the label already exists, it is not published again.
-     * Requires 1 PRF call.
-     *
-     * # Arguments
-     * * `label` - A user-chosen label (e.g., "personal", "business")
+     * First-time setup. Drives [`PrfProvider::create_passkey`] (one
+     * ceremony) followed by the wallet-derivation flow that backs
+     * [`Passkey::setup_wallet`] (one ceremony, dual-salt where
+     * supported). The label is always published on success.
      */
-    storeLabel(label: string, asyncOpts_?: {
+    register(request: RegisterRequest, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<void>;
+    }): Promise<RegisterResponse>;
+    /**
+     * Returning-user sign-in. Fast path (`label` set) skips the
+     * label-store query; discovery path (`label = None`) derives
+     * the configured default label and lists the user's labels in
+     * the same ceremony. Never re-publishes the label.
+     */
+    signIn(request: SignInRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SignInResponse>;
 }
 /**
- * Orchestrates passkey-based wallet creation and restore operations.
+ * High-level orchestration over a [`PrfProvider`] and the internal
+ * Nostr-backed label store. Two named flows match the real onboarding
+ * states:
  *
- * This struct coordinates between the platform's passkey PRF provider and
- * Nostr relays to derive wallet mnemonics and manage labels.
+ * - [`Self::register`]: first-time setup (create credential + derive
+ * wallet + publish label) in one ceremony where the platform
+ * supports dual-salt PRF.
+ * - [`Self::sign_in`]: returning user. Fast path when the host has
+ * the label cached locally; cold-restore-with-discovery when not.
  *
- * The Nostr identity (derived from the passkey's magic salt) is cached after
- * the first derivation so that subsequent calls to [`Passkey::list_labels`]
- * and [`Passkey::store_label`] do not require additional PRF interactions.
+ * Label management hangs off the [`Self::labels`] sub-object.
+ *
+ * The `breez_api_key` is the Breez relay key used for authenticated
+ * (NIP-42) label storage. Hosts that already construct the SDK
+ * [`crate::Config`] can use [`Self::from_config`] to forward it.
  */
-export declare class Passkey extends UniffiAbstractObject implements PasskeyInterface {
-    readonly [uniffiTypeNameSymbol] = "Passkey";
+export declare class PasskeyClient extends UniffiAbstractObject implements PasskeyClientInterface {
+    readonly [uniffiTypeNameSymbol] = "PasskeyClient";
     readonly [destructorGuardSymbol]: UniffiRustArcPtr;
     readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
     /**
-     * Create a new `Passkey` instance.
-     *
-     * # Arguments
-     * * `prf_provider` - Platform implementation of passkey PRF operations
-     * * `relay_config` - Optional configuration for Nostr relay connections (uses default if None)
+     * Construct with the default Nostr-backed label store.
      */
-    constructor(prfProvider: PasskeyPrfProvider, relayConfig: NostrRelayConfig | undefined);
+    constructor(prfProvider: PrfProvider, breezApiKey: string | undefined, config: PasskeyConfig | undefined);
     /**
-     * Derive a wallet for a given label.
-     *
-     * Uses the passkey PRF to derive a 12-word BIP39 mnemonic from the label
-     * and returns it as a [`Wallet`] containing the seed and resolved label.
-     * This works for both creating a new wallet and restoring an existing one.
-     *
-     * # Arguments
-     * * `label` - A user-chosen label (e.g., "personal", "business").
-     * If `None`, defaults to [`DEFAULT_LABEL`].
+     * One-shot capability + configuration probe. Collapses
+     * [`PrfProvider::is_supported`] and
+     * [`PrfProvider::check_domain_association`] into a single value
+     * hosts can branch on.
      */
-    getWallet(label: string | undefined, asyncOpts_?: {
+    checkAvailability(asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<Wallet>;
+    }): Promise<PasskeyAvailability>;
     /**
-     * Check if passkey PRF is available on this device.
+     * Single-CTA onboarding: silent sign-in, falling through to
+     * registration when no credential exists on the device. The returned
+     * [`ConnectFlow`] tells the caller which path ran.
      *
-     * Delegates to the platform's `PasskeyPrfProvider` implementation.
+     * The silent sign-in pins `prefer_immediately_available_credentials =
+     * true` regardless of [`SignInRequest`]: the fallback depends on the OS
+     * fast-failing with [`PrfProviderError::CredentialNotFound`] when no
+     * local credential exists. Only `CredentialNotFound` flips to the
+     * register path; every other error (`Cancel`, `Timeout`, ...) propagates
+     * unchanged.
+     *
+     * Mobile-only: meant for iOS 18+ / Android 9+ where
+     * `preferImmediatelyAvailableCredentials` is honored. The web
+     * equivalent (`mediation: 'immediate'`) is not yet stable
+     * cross-browser, so this is not surfaced on WASM; web hosts call
+     * [`Self::sign_in`] and catch `CredentialNotFound` themselves.
      */
-    isAvailable(asyncOpts_?: {
+    connectWithPasskey(request: ConnectWithPasskeyRequest, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<boolean>;
+    }): Promise<ConnectWithPasskeyResponse>;
     /**
-     * List all labels published to Nostr for this passkey's identity.
-     *
-     * Queries Nostr relays for all labels associated with the Nostr identity
-     * derived from this passkey. Requires 1 PRF call.
+     * Label sub-object. List or publish labels for this passkey's
+     * identity.
      */
-    listLabels(asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<Array<string>>;
+    labels(): PasskeyLabelsInterface;
     /**
-     * Publish a label to Nostr relays for this passkey's identity.
-     *
-     * Idempotent: if the label already exists, it is not published again.
-     * Requires 1 PRF call.
-     *
-     * # Arguments
-     * * `label` - A user-chosen label (e.g., "personal", "business")
+     * First-time setup. Drives [`PrfProvider::create_passkey`] (one
+     * ceremony) followed by the wallet-derivation flow that backs
+     * [`Passkey::setup_wallet`] (one ceremony, dual-salt where
+     * supported). The label is always published on success.
      */
-    storeLabel(label: string, asyncOpts_?: {
+    register(request: RegisterRequest, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<void>;
+    }): Promise<RegisterResponse>;
+    /**
+     * Returning-user sign-in. Fast path (`label` set) skips the
+     * label-store query; discovery path (`label = None`) derives
+     * the configured default label and lists the user's labels in
+     * the same ceremony. Never re-publishes the label.
+     */
+    signIn(request: SignInRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SignInResponse>;
     /**
      * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
      */
     uniffiDestroy(): void;
-    static instanceOf(obj: any): obj is Passkey;
+    static instanceOf(obj: any): obj is PasskeyClient;
 }
 /**
- * Trait for passkey PRF (Pseudo-Random Function) operations.
- *
- * Platforms must implement this trait to provide passkey PRF functionality.
- * The implementation is responsible for:
- * - Authenticating the user via platform-specific passkey APIs (`WebAuthn`, native passkey managers)
- * - Evaluating the PRF extension with the provided salt
- * - Returning the 32-byte PRF output
+ * Label sub-object surfaced from [`PasskeyClient::labels`]. Holds a
+ * clone of the parent [`Passkey`] so calls re-use its cached identity.
  */
-export interface PasskeyPrfProvider {
+export interface PasskeyLabelsInterface {
     /**
-     * Derive a 32-byte seed from passkey PRF with the given salt.
-     *
-     * The platform authenticates the user via passkey and evaluates the PRF extension.
-     * The salt is used as input to the PRF to derive a deterministic output.
-     *
-     * # Arguments
-     * * `salt` - The salt string to use for PRF evaluation
-     *
-     * # Returns
-     * * `Ok(Vec<u8>)` - The 32-byte PRF output
-     * * `Err(PasskeyPrfError)` - If authentication fails or PRF is not supported
+     * List labels published for this passkey's identity.
      */
-    derivePrfSeed(salt: string, asyncOpts_?: {
+    list(asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<ArrayBuffer>;
+    }): Promise<Array<string>>;
     /**
-     * Check if a PRF-capable passkey is available on this device.
-     *
-     * This allows applications to gracefully degrade if passkey PRF is not supported.
-     *
-     * # Returns
-     * * `Ok(true)` - PRF-capable passkey is available
-     * * `Ok(false)` - No PRF-capable passkey available
-     * * `Err(PasskeyPrfError)` - If the check fails
+     * Idempotently publish `label` for this passkey's identity.
      */
-    isPrfAvailable(asyncOpts_?: {
+    store(label: string, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<boolean>;
+    }): Promise<void>;
 }
 /**
- * Trait for passkey PRF (Pseudo-Random Function) operations.
- *
- * Platforms must implement this trait to provide passkey PRF functionality.
- * The implementation is responsible for:
- * - Authenticating the user via platform-specific passkey APIs (`WebAuthn`, native passkey managers)
- * - Evaluating the PRF extension with the provided salt
- * - Returning the 32-byte PRF output
+ * Label sub-object surfaced from [`PasskeyClient::labels`]. Holds a
+ * clone of the parent [`Passkey`] so calls re-use its cached identity.
  */
-export declare class PasskeyPrfProviderImpl extends UniffiAbstractObject implements PasskeyPrfProvider {
-    readonly [uniffiTypeNameSymbol] = "PasskeyPrfProviderImpl";
+export declare class PasskeyLabels extends UniffiAbstractObject implements PasskeyLabelsInterface {
+    readonly [uniffiTypeNameSymbol] = "PasskeyLabels";
     readonly [destructorGuardSymbol]: UniffiRustArcPtr;
     readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
     private constructor();
     /**
-     * Derive a 32-byte seed from passkey PRF with the given salt.
-     *
-     * The platform authenticates the user via passkey and evaluates the PRF extension.
-     * The salt is used as input to the PRF to derive a deterministic output.
-     *
-     * # Arguments
-     * * `salt` - The salt string to use for PRF evaluation
-     *
-     * # Returns
-     * * `Ok(Vec<u8>)` - The 32-byte PRF output
-     * * `Err(PasskeyPrfError)` - If authentication fails or PRF is not supported
+     * List labels published for this passkey's identity.
      */
-    derivePrfSeed(salt: string, asyncOpts_?: {
+    list(asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<ArrayBuffer>;
+    }): Promise<Array<string>>;
     /**
-     * Check if a PRF-capable passkey is available on this device.
-     *
-     * This allows applications to gracefully degrade if passkey PRF is not supported.
-     *
-     * # Returns
-     * * `Ok(true)` - PRF-capable passkey is available
-     * * `Ok(false)` - No PRF-capable passkey available
-     * * `Err(PasskeyPrfError)` - If the check fails
+     * Idempotently publish `label` for this passkey's identity.
      */
-    isPrfAvailable(asyncOpts_?: {
+    store(label: string, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<boolean>;
+    }): Promise<void>;
     /**
      * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
      */
     uniffiDestroy(): void;
-    static instanceOf(obj: any): obj is PasskeyPrfProviderImpl;
+    static instanceOf(obj: any): obj is PasskeyLabels;
 }
 /**
- * This interface is used to observe outgoing payments before Lightning, Spark and onchain Bitcoin payments.
- * If the implementation returns an error, the payment is cancelled.
+ * This interface is used to observe outgoing Lightning, Spark, onchain Bitcoin and token payments.
+ *
+ * `before_send` is called before a payment is made; if the implementation returns an error the
+ * payment is cancelled. `after_send` is called after a token payment has been broadcast to report
+ * its final payment id; it cannot cancel the payment and any error it returns is ignored.
  */
 export interface PaymentObserver {
     /**
-     * Called before Lightning, Spark or onchain Bitcoin payments are made
+     * Called before Lightning, Spark, onchain Bitcoin or token payments are made
      */
     beforeSend(payments: Array<ProvisionalPayment>, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
+    /**
+     * Called after a token payment has been broadcast, mapping each provisional payment id
+     * reported by `before_send` to its final payment id
+     */
+    afterSend(updates: Array<PaymentIdUpdate>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
 }
 /**
- * This interface is used to observe outgoing payments before Lightning, Spark and onchain Bitcoin payments.
- * If the implementation returns an error, the payment is cancelled.
+ * This interface is used to observe outgoing Lightning, Spark, onchain Bitcoin and token payments.
+ *
+ * `before_send` is called before a payment is made; if the implementation returns an error the
+ * payment is cancelled. `after_send` is called after a token payment has been broadcast to report
+ * its final payment id; it cannot cancel the payment and any error it returns is ignored.
  */
 export declare class PaymentObserverImpl extends UniffiAbstractObject implements PaymentObserver {
     readonly [uniffiTypeNameSymbol] = "PaymentObserverImpl";
@@ -15483,9 +17377,16 @@ export declare class PaymentObserverImpl extends UniffiAbstractObject implements
     readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
     private constructor();
     /**
-     * Called before Lightning, Spark or onchain Bitcoin payments are made
+     * Called before Lightning, Spark, onchain Bitcoin or token payments are made
      */
     beforeSend(payments: Array<ProvisionalPayment>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Called after a token payment has been broadcast, mapping each provisional payment id
+     * reported by `before_send` to its final payment id
+     */
+    afterSend(updates: Array<PaymentIdUpdate>, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -15493,6 +17394,172 @@ export declare class PaymentObserverImpl extends UniffiAbstractObject implements
      */
     uniffiDestroy(): void;
     static instanceOf(obj: any): obj is PaymentObserverImpl;
+}
+/**
+ * Trait for PRF (Pseudo-Random Function) operations backing a
+ * passkey-derived wallet seed.
+ *
+ * Each platform's built-in `PasskeyProvider` implements this by
+ * authenticating with a platform passkey and evaluating the `WebAuthn`
+ * PRF extension. Custom providers (CLI tools backed by `YubiKey`, FIDO2
+ * hmac-secret, on-disk key material, HSMs) implement the same contract:
+ * anything that deterministically derives 32 bytes from a salt qualifies.
+ */
+export interface PrfProvider {
+    /**
+     * Derive 32-byte PRF outputs for `request.salts` in as few
+     * authenticator ceremonies as the platform supports, preserving input
+     * order. Empty `salts` returns an empty vec without prompting. Built-in
+     * providers pair salts via `WebAuthn`'s `prf.eval.first` + `.second`
+     * (halving prompts); custom providers without bulk support loop.
+     *
+     * `request.allow_credentials` and
+     * `request.prefer_immediately_available_credentials` shape this single
+     * ceremony; providers that don't model them (file-backed, `YubiKey`)
+     * ignore them. Returns the seeds plus the credential ID observed in the
+     * same assertion, absent when the provider does not surface it.
+     */
+    deriveSeeds(request: DeriveSeedsRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<DeriveSeedsOutput>;
+    /**
+     * Whether this provider can produce PRF outputs on the current
+     * device. Hosts gate UX on the result.
+     */
+    isSupported(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<boolean>;
+    /**
+     * Explicit registration. Platform passkey providers override this to
+     * drive the OS create ceremony and surface the credential metadata
+     * hosts need for `exclude_credentials` bookkeeping. CLI / hardware
+     * providers register lazily in [`Self::derive_seeds`] and inherit the
+     * default `PrfNotSupported`.
+     *
+     * `exclude_credentials` lists already-registered IDs and surfaces
+     * duplicates as `CredentialAlreadyExists`. The `user.id` is always
+     * provider-minted and returned on `PasskeyCredential.user_id`.
+     */
+    createPasskey(excludeCredentials: Array<ArrayBuffer>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PasskeyCredential>;
+    /**
+     * Advisory check against the platform's out-of-band verification
+     * source (iOS AASA / Android assetlinks / browser rpId scope).
+     * The SDK never gates internally; hosts pick their own policy.
+     *
+     * Built-in providers override:
+     * - **iOS/macOS**: AASA `webcredentials.apps` lookup. May be stale.
+     * - **Android**: Digital Asset Links query. Degrades `NotAssociated`
+     * to `Skipped` because `CredentialManager` runs its own check.
+     * - **Browser**: `rpId` is a registrable suffix of `window.location.hostname`.
+     *
+     * Custom providers without a verification source inherit the
+     * `Skipped` default.
+     */
+    checkDomainAssociation(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<DomainAssociation>;
+}
+/**
+ * Trait for PRF (Pseudo-Random Function) operations backing a
+ * passkey-derived wallet seed.
+ *
+ * Each platform's built-in `PasskeyProvider` implements this by
+ * authenticating with a platform passkey and evaluating the `WebAuthn`
+ * PRF extension. Custom providers (CLI tools backed by `YubiKey`, FIDO2
+ * hmac-secret, on-disk key material, HSMs) implement the same contract:
+ * anything that deterministically derives 32 bytes from a salt qualifies.
+ */
+export declare class PrfProviderImpl extends UniffiAbstractObject implements PrfProvider {
+    readonly [uniffiTypeNameSymbol] = "PrfProviderImpl";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    /**
+     * Derive 32-byte PRF outputs for `request.salts` in as few
+     * authenticator ceremonies as the platform supports, preserving input
+     * order. Empty `salts` returns an empty vec without prompting. Built-in
+     * providers pair salts via `WebAuthn`'s `prf.eval.first` + `.second`
+     * (halving prompts); custom providers without bulk support loop.
+     *
+     * `request.allow_credentials` and
+     * `request.prefer_immediately_available_credentials` shape this single
+     * ceremony; providers that don't model them (file-backed, `YubiKey`)
+     * ignore them. Returns the seeds plus the credential ID observed in the
+     * same assertion, absent when the provider does not surface it.
+     */
+    deriveSeeds(request: DeriveSeedsRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<DeriveSeedsOutput>;
+    /**
+     * Whether this provider can produce PRF outputs on the current
+     * device. Hosts gate UX on the result.
+     */
+    isSupported(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<boolean>;
+    /**
+     * Explicit registration. Platform passkey providers override this to
+     * drive the OS create ceremony and surface the credential metadata
+     * hosts need for `exclude_credentials` bookkeeping. CLI / hardware
+     * providers register lazily in [`Self::derive_seeds`] and inherit the
+     * default `PrfNotSupported`.
+     *
+     * `exclude_credentials` lists already-registered IDs and surfaces
+     * duplicates as `CredentialAlreadyExists`. The `user.id` is always
+     * provider-minted and returned on `PasskeyCredential.user_id`.
+     */
+    createPasskey(excludeCredentials: Array<ArrayBuffer>, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PasskeyCredential>;
+    /**
+     * Advisory check against the platform's out-of-band verification
+     * source (iOS AASA / Android assetlinks / browser rpId scope).
+     * The SDK never gates internally; hosts pick their own policy.
+     *
+     * Built-in providers override:
+     * - **iOS/macOS**: AASA `webcredentials.apps` lookup. May be stale.
+     * - **Android**: Digital Asset Links query. Degrades `NotAssociated`
+     * to `Skipped` because `CredentialManager` runs its own check.
+     * - **Browser**: `rpId` is a registrable suffix of `window.location.hostname`.
+     *
+     * Custom providers without a verification source inherit the
+     * `Skipped` default.
+     */
+    checkDomainAssociation(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<DomainAssociation>;
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is PrfProviderImpl;
+}
+/**
+ * The four per-tenant stores produced by a [`StorageBackend`].
+ *
+ * An opaque handle: the SDK reads its stores internally; the fields never
+ * cross the FFI boundary.
+ */
+export interface ResolvedStoresInterface {
+}
+/**
+ * The four per-tenant stores produced by a [`StorageBackend`].
+ *
+ * An opaque handle: the SDK reads its stores internally; the fields never
+ * cross the FFI boundary.
+ */
+export declare class ResolvedStores extends UniffiAbstractObject implements ResolvedStoresInterface {
+    readonly [uniffiTypeNameSymbol] = "ResolvedStores";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is ResolvedStores;
 }
 /**
  * REST client trait for making HTTP requests.
@@ -15590,6 +17657,17 @@ export interface SdkBuilderInterface {
         signal: AbortSignal;
     }): Promise<BreezSdkInterface>;
     /**
+     * Sets the account number for key derivation. All wallet keys derive from
+     * the seed at `m/8797555'/<account number>'`, so each account number
+     * yields an independent wallet from the same seed. Defaults to 0 on
+     * Regtest and 1 on all other networks when unset.
+     * Arguments:
+     * - `account_number`: The account number in the derivation path.
+     */
+    withAccountNumber(accountNumber: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
      * Sets the chain service to be used by the SDK.
      * Arguments:
      * - `chain_service`: The chain service to be used.
@@ -15613,14 +17691,6 @@ export interface SdkBuilderInterface {
      * - `fiat_service`: The fiat service to be used.
      */
     withFiatService(fiatService: FiatService, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
-     * Sets the key set type to be used by the SDK.
-     * Arguments:
-     * - `config`: Key set configuration containing the key set type, address index flag, and optional account number.
-     */
-    withKeySet(config: KeySetConfig, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     withLnurlClient(lnurlClient: RestClient, asyncOpts_?: {
@@ -15656,11 +17726,27 @@ export interface SdkBuilderInterface {
         signal: AbortSignal;
     }): Promise<void>;
     /**
-     * Sets the storage implementation to be used by the SDK.
+     * **Deprecated.** Use
+     * [`with_storage_backend`](SdkBuilder::with_storage_backend) with
+     * [`custom_storage`](crate::custom_storage).
      * Arguments:
      * - `storage`: The storage implementation to be used.
      */
     withStorage(storage: Storage, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Sets the storage backend to be used by the SDK.
+     *
+     * Build the [`StorageBackend`](crate::StorageBackend) via
+     * [`default_storage`](crate::default_storage),
+     * [`postgres_storage`](crate::postgres_storage),
+     * [`mysql_storage`](crate::mysql_storage) or
+     * [`custom_storage`](crate::custom_storage).
+     * Arguments:
+     * - `storage`: The storage backend to be used.
+     */
+    withStorageBackend(storage: StorageBackend, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
 }
@@ -15679,11 +17765,34 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
      */
     constructor(config: Config, seed: Seed);
     /**
+     * Creates a new `SdkBuilder` with the provided configuration and external
+     * signers (e.g. from `create_turnkey_signer`), so signer-based SDKs can be
+     * composed with any storage backend or shared context, unlike
+     * `connect_with_signer` which is fixed to the default storage.
+     * Arguments:
+     * - `config`: The configuration to be used.
+     * - `breez_signer`: External signer for non-Spark SDK signing (LNURL-auth,
+     * sync, message signing, ECIES).
+     * - `spark_signer`: External high-level Spark signer for the Spark wallet.
+     */
+    static newWithSigner(config: Config, breezSigner: ExternalBreezSigner, sparkSigner: ExternalSparkSigner): SdkBuilderInterface;
+    /**
      * Builds the `BreezSdk` instance with the configured components.
      */
     build(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<BreezSdkInterface>;
+    /**
+     * Sets the account number for key derivation. All wallet keys derive from
+     * the seed at `m/8797555'/<account number>'`, so each account number
+     * yields an independent wallet from the same seed. Defaults to 0 on
+     * Regtest and 1 on all other networks when unset.
+     * Arguments:
+     * - `account_number`: The account number in the derivation path.
+     */
+    withAccountNumber(accountNumber: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     /**
      * Sets the chain service to be used by the SDK.
      * Arguments:
@@ -15708,14 +17817,6 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
      * - `fiat_service`: The fiat service to be used.
      */
     withFiatService(fiatService: FiatService, asyncOpts_?: {
-        signal: AbortSignal;
-    }): Promise<void>;
-    /**
-     * Sets the key set type to be used by the SDK.
-     * Arguments:
-     * - `config`: Key set configuration containing the key set type, address index flag, and optional account number.
-     */
-    withKeySet(config: KeySetConfig, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     withLnurlClient(lnurlClient: RestClient, asyncOpts_?: {
@@ -15751,11 +17852,27 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
         signal: AbortSignal;
     }): Promise<void>;
     /**
-     * Sets the storage implementation to be used by the SDK.
+     * **Deprecated.** Use
+     * [`with_storage_backend`](SdkBuilder::with_storage_backend) with
+     * [`custom_storage`](crate::custom_storage).
      * Arguments:
      * - `storage`: The storage implementation to be used.
      */
     withStorage(storage: Storage, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Sets the storage backend to be used by the SDK.
+     *
+     * Build the [`StorageBackend`](crate::StorageBackend) via
+     * [`default_storage`](crate::default_storage),
+     * [`postgres_storage`](crate::postgres_storage),
+     * [`mysql_storage`](crate::mysql_storage) or
+     * [`custom_storage`](crate::custom_storage).
+     * Arguments:
+     * - `storage`: The storage backend to be used.
+     */
+    withStorageBackend(storage: StorageBackend, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -15770,14 +17887,17 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
  * Construct one with [`new_shared_sdk_context`] and pass the same `Arc` to every
  * [`SdkBuilder`](crate::SdkBuilder) whose SDKs should share those resources
  * (a single HTTP client across SSP / chain / LNURL / JWT / etc., a gRPC
- * channel pool to the Spark operators, the Breez backend gRPC client, a
- * database connection pool, …). Useful for multi-tenant servers that load
- * many wallets in one process.
+ * channel pool to the Spark operators, the Breez backend gRPC client, …).
+ * Useful for multi-tenant servers that load many wallets in one process.
+ *
+ * To share a database connection pool across SDKs, pass a
+ * [`StorageBackend`](crate::StorageBackend) as
+ * [`SdkContextConfig::storage`]: every SDK built from the context reuses it.
  *
  * The struct is intentionally opaque — all fields are crate-private. There
  * is no way to inject pre-built sub-components: the factory builds them
- * from settings so callers don't need to know about session managers,
- * connection-manager wiring, or pool plumbing.
+ * from settings so callers don't need to know about session stores or
+ * connection-manager wiring.
  */
 export interface SdkContextInterface {
 }
@@ -15787,14 +17907,17 @@ export interface SdkContextInterface {
  * Construct one with [`new_shared_sdk_context`] and pass the same `Arc` to every
  * [`SdkBuilder`](crate::SdkBuilder) whose SDKs should share those resources
  * (a single HTTP client across SSP / chain / LNURL / JWT / etc., a gRPC
- * channel pool to the Spark operators, the Breez backend gRPC client, a
- * database connection pool, …). Useful for multi-tenant servers that load
- * many wallets in one process.
+ * channel pool to the Spark operators, the Breez backend gRPC client, …).
+ * Useful for multi-tenant servers that load many wallets in one process.
+ *
+ * To share a database connection pool across SDKs, pass a
+ * [`StorageBackend`](crate::StorageBackend) as
+ * [`SdkContextConfig::storage`]: every SDK built from the context reuses it.
  *
  * The struct is intentionally opaque — all fields are crate-private. There
  * is no way to inject pre-built sub-components: the factory builds them
- * from settings so callers don't need to know about session managers,
- * connection-manager wiring, or pool plumbing.
+ * from settings so callers don't need to know about session stores or
+ * connection-manager wiring.
  */
 export declare class SdkContext extends UniffiAbstractObject implements SdkContextInterface {
     readonly [uniffiTypeNameSymbol] = "SdkContext";
@@ -15813,7 +17936,7 @@ export declare class SdkContext extends UniffiAbstractObject implements SdkConte
  * backed by an in-memory map (default) or a shared database for cross-pod
  * auth sharing.
  */
-export interface SessionManager {
+export interface SessionStore {
     getSession(serviceIdentityKey: PublicKey, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Session>;
@@ -15827,8 +17950,8 @@ export interface SessionManager {
  * backed by an in-memory map (default) or a shared database for cross-pod
  * auth sharing.
  */
-export declare class SessionManagerImpl extends UniffiAbstractObject implements SessionManager {
-    readonly [uniffiTypeNameSymbol] = "SessionManagerImpl";
+export declare class SessionStoreImpl extends UniffiAbstractObject implements SessionStore {
+    readonly [uniffiTypeNameSymbol] = "SessionStoreImpl";
     readonly [destructorGuardSymbol]: UniffiRustArcPtr;
     readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
     private constructor();
@@ -15842,7 +17965,7 @@ export declare class SessionManagerImpl extends UniffiAbstractObject implements 
      * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
      */
     uniffiDestroy(): void;
-    static instanceOf(obj: any): obj is SessionManagerImpl;
+    static instanceOf(obj: any): obj is SessionStoreImpl;
 }
 /**
  * Trait for persistent storage
@@ -15872,19 +17995,18 @@ export interface Storage {
         signal: AbortSignal;
     }): Promise<Array<Payment>>;
     /**
-     * Inserts a payment into storage
+     * Inserts or updates a payment unless it would replace a terminal status.
      *
-     * # Arguments
+     * Same-status updates are still persisted so details can be enriched.
      *
-     * * `payment` - The payment to insert
-     *
-     * # Returns
-     *
-     * Success or a `StorageError`
+     * Returns `true` if the caller should emit a payment event (new payment was
+     * inserted, or status transitioned). Returns `false` for redundant
+     * same-status updates and for rejected updates against a terminal stored
+     * status
      */
-    insertPayment(payment: Payment, asyncOpts_?: {
+    applyPaymentUpdate(payment: Payment, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<void>;
+    }): Promise<boolean>;
     /**
      * Inserts payment metadata into storage
      *
@@ -16105,19 +18227,18 @@ export declare class StorageImpl extends UniffiAbstractObject implements Storage
         signal: AbortSignal;
     }): Promise<Array<Payment>>;
     /**
-     * Inserts a payment into storage
+     * Inserts or updates a payment unless it would replace a terminal status.
      *
-     * # Arguments
+     * Same-status updates are still persisted so details can be enriched.
      *
-     * * `payment` - The payment to insert
-     *
-     * # Returns
-     *
-     * Success or a `StorageError`
+     * Returns `true` if the caller should emit a payment event (new payment was
+     * inserted, or status transitioned). Returns `false` for redundant
+     * same-status updates and for rejected updates against a terminal stored
+     * status
      */
-    insertPayment(payment: Payment, asyncOpts_?: {
+    applyPaymentUpdate(payment: Payment, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<void>;
+    }): Promise<boolean>;
     /**
      * Inserts payment metadata into storage
      *
@@ -16310,6 +18431,41 @@ export declare class StorageImpl extends UniffiAbstractObject implements Storage
      */
     uniffiDestroy(): void;
     static instanceOf(obj: any): obj is StorageImpl;
+}
+/**
+ * A factory for a tenant's storage.
+ *
+ * A single backend may back many SDK instances; each
+ * [`create_stores`](Self::create_stores) call yields the store set scoped to
+ * one tenant `identity` (a serialized public key). `network` lets file-based
+ * backends segregate tenants by network; database backends ignore it.
+ */
+export interface StorageBackend {
+    createStores(network: Network, identity: ArrayBuffer, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ResolvedStoresInterface>;
+}
+/**
+ * A factory for a tenant's storage.
+ *
+ * A single backend may back many SDK instances; each
+ * [`create_stores`](Self::create_stores) call yields the store set scoped to
+ * one tenant `identity` (a serialized public key). `network` lets file-based
+ * backends segregate tenants by network; database backends ignore it.
+ */
+export declare class StorageBackendImpl extends UniffiAbstractObject implements StorageBackend {
+    readonly [uniffiTypeNameSymbol] = "StorageBackendImpl";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    createStores(network: Network, identity: ArrayBuffer, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ResolvedStoresInterface>;
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is StorageBackendImpl;
 }
 export interface TokenIssuerInterface {
     /**
@@ -16595,6 +18751,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): AssetFilter;
             lower(value: AssetFilter): UniffiByteArray;
         };
+        FfiConverterTypeAuthorizeTransferRequest: {
+            read(from: RustBuffer): AuthorizeTransferRequest;
+            write(value: AuthorizeTransferRequest, into: RustBuffer): void;
+            allocationSize(value: AuthorizeTransferRequest): number;
+            lift(value: UniffiByteArray): AuthorizeTransferRequest;
+            lower(value: AuthorizeTransferRequest): UniffiByteArray;
+        };
+        FfiConverterTypeAutoOptimizationEvent: {
+            read(from: RustBuffer): AutoOptimizationEvent;
+            write(value: AutoOptimizationEvent, into: RustBuffer): void;
+            allocationSize(value: AutoOptimizationEvent): number;
+            lift(value: UniffiByteArray): AutoOptimizationEvent;
+            lower(value: AutoOptimizationEvent): UniffiByteArray;
+        };
         FfiConverterTypeBip21Details: {
             read(from: RustBuffer): Bip21Details;
             write(value: Bip21Details, into: RustBuffer): void;
@@ -16779,6 +18949,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ClaimHtlcPaymentResponse;
             lower(value: ClaimHtlcPaymentResponse): UniffiByteArray;
         };
+        FfiConverterTypeClaimTransferRequest: {
+            read(from: RustBuffer): ClaimTransferRequest;
+            write(value: ClaimTransferRequest, into: RustBuffer): void;
+            allocationSize(value: ClaimTransferRequest): number;
+            lift(value: UniffiByteArray): ClaimTransferRequest;
+            lower(value: ClaimTransferRequest): UniffiByteArray;
+        };
         FfiConverterTypeConfig: {
             read(from: RustBuffer): Config;
             write(value: Config, into: RustBuffer): void;
@@ -16792,6 +18969,20 @@ declare const _default: Readonly<{
             allocationSize(value: ConnectRequest): number;
             lift(value: UniffiByteArray): ConnectRequest;
             lower(value: ConnectRequest): UniffiByteArray;
+        };
+        FfiConverterTypeConnectWithPasskeyRequest: {
+            read(from: RustBuffer): ConnectWithPasskeyRequest;
+            write(value: ConnectWithPasskeyRequest, into: RustBuffer): void;
+            allocationSize(value: ConnectWithPasskeyRequest): number;
+            lift(value: UniffiByteArray): ConnectWithPasskeyRequest;
+            lower(value: ConnectWithPasskeyRequest): UniffiByteArray;
+        };
+        FfiConverterTypeConnectWithPasskeyResponse: {
+            read(from: RustBuffer): ConnectWithPasskeyResponse;
+            write(value: ConnectWithPasskeyResponse, into: RustBuffer): void;
+            allocationSize(value: ConnectWithPasskeyResponse): number;
+            lift(value: UniffiByteArray): ConnectWithPasskeyResponse;
+            lower(value: ConnectWithPasskeyResponse): UniffiByteArray;
         };
         FfiConverterTypeConnectWithSignerRequest: {
             read(from: RustBuffer): ConnectWithSignerRequest;
@@ -16898,6 +19089,27 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): DepositInfo;
             lower(value: DepositInfo): UniffiByteArray;
         };
+        FfiConverterTypeDeriveSeedsOutput: {
+            read(from: RustBuffer): DeriveSeedsOutput;
+            write(value: DeriveSeedsOutput, into: RustBuffer): void;
+            allocationSize(value: DeriveSeedsOutput): number;
+            lift(value: UniffiByteArray): DeriveSeedsOutput;
+            lower(value: DeriveSeedsOutput): UniffiByteArray;
+        };
+        FfiConverterTypeDeriveSeedsRequest: {
+            read(from: RustBuffer): DeriveSeedsRequest;
+            write(value: DeriveSeedsRequest, into: RustBuffer): void;
+            allocationSize(value: DeriveSeedsRequest): number;
+            lift(value: UniffiByteArray): DeriveSeedsRequest;
+            lower(value: DeriveSeedsRequest): UniffiByteArray;
+        };
+        FfiConverterTypeDomainAssociation: {
+            read(from: RustBuffer): DomainAssociation;
+            write(value: DomainAssociation, into: RustBuffer): void;
+            allocationSize(value: DomainAssociation): number;
+            lift(value: UniffiByteArray): DomainAssociation;
+            lower(value: DomainAssociation): UniffiByteArray;
+        };
         FfiConverterTypeEcdsaSignatureBytes: {
             read(from: RustBuffer): EcdsaSignatureBytes;
             write(value: EcdsaSignatureBytes, into: RustBuffer): void;
@@ -16905,19 +19117,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): EcdsaSignatureBytes;
             lower(value: EcdsaSignatureBytes): UniffiByteArray;
         };
-        FfiConverterTypeExternalAggregateFrostRequest: {
-            read(from: RustBuffer): ExternalAggregateFrostRequest;
-            write(value: ExternalAggregateFrostRequest, into: RustBuffer): void;
-            allocationSize(value: ExternalAggregateFrostRequest): number;
-            lift(value: UniffiByteArray): ExternalAggregateFrostRequest;
-            lower(value: ExternalAggregateFrostRequest): UniffiByteArray;
+        FfiConverterTypeErrorKind: {
+            read(from: RustBuffer): ErrorKind;
+            write(value: ErrorKind, into: RustBuffer): void;
+            allocationSize(value: ErrorKind): number;
+            lift(value: UniffiByteArray): ErrorKind;
+            lower(value: ErrorKind): UniffiByteArray;
         };
-        FfiConverterTypeExternalEncryptedSecret: {
-            read(from: RustBuffer): ExternalEncryptedSecret;
-            write(value: ExternalEncryptedSecret, into: RustBuffer): void;
-            allocationSize(value: ExternalEncryptedSecret): number;
-            lift(value: UniffiByteArray): ExternalEncryptedSecret;
-            lower(value: ExternalEncryptedSecret): UniffiByteArray;
+        FfiConverterTypeExternalBreezSigner: FfiConverterObjectWithCallbacks<ExternalBreezSigner>;
+        FfiConverterTypeExternalClaimLeafInput: {
+            read(from: RustBuffer): ExternalClaimLeafInput;
+            write(value: ExternalClaimLeafInput, into: RustBuffer): void;
+            allocationSize(value: ExternalClaimLeafInput): number;
+            lift(value: UniffiByteArray): ExternalClaimLeafInput;
+            lower(value: ExternalClaimLeafInput): UniffiByteArray;
         };
         FfiConverterTypeExternalFrostCommitments: {
             read(from: RustBuffer): ExternalFrostCommitments;
@@ -16925,6 +19138,27 @@ declare const _default: Readonly<{
             allocationSize(value: ExternalFrostCommitments): number;
             lift(value: UniffiByteArray): ExternalFrostCommitments;
             lower(value: ExternalFrostCommitments): UniffiByteArray;
+        };
+        FfiConverterTypeExternalFrostDerivation: {
+            read(from: RustBuffer): ExternalFrostDerivation;
+            write(value: ExternalFrostDerivation, into: RustBuffer): void;
+            allocationSize(value: ExternalFrostDerivation): number;
+            lift(value: UniffiByteArray): ExternalFrostDerivation;
+            lower(value: ExternalFrostDerivation): UniffiByteArray;
+        };
+        FfiConverterTypeExternalFrostJob: {
+            read(from: RustBuffer): ExternalFrostJob;
+            write(value: ExternalFrostJob, into: RustBuffer): void;
+            allocationSize(value: ExternalFrostJob): number;
+            lift(value: UniffiByteArray): ExternalFrostJob;
+            lower(value: ExternalFrostJob): UniffiByteArray;
+        };
+        FfiConverterTypeExternalFrostShareResult: {
+            read(from: RustBuffer): ExternalFrostShareResult;
+            write(value: ExternalFrostShareResult, into: RustBuffer): void;
+            allocationSize(value: ExternalFrostShareResult): number;
+            lift(value: UniffiByteArray): ExternalFrostShareResult;
+            lower(value: ExternalFrostShareResult): UniffiByteArray;
         };
         FfiConverterTypeExternalFrostSignature: {
             read(from: RustBuffer): ExternalFrostSignature;
@@ -16954,42 +19188,139 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ExternalInputParser;
             lower(value: ExternalInputParser): UniffiByteArray;
         };
-        FfiConverterTypeExternalScalar: {
-            read(from: RustBuffer): ExternalScalar;
-            write(value: ExternalScalar, into: RustBuffer): void;
-            allocationSize(value: ExternalScalar): number;
-            lift(value: UniffiByteArray): ExternalScalar;
-            lower(value: ExternalScalar): UniffiByteArray;
+        FfiConverterTypeExternalNewLeafKey: {
+            read(from: RustBuffer): ExternalNewLeafKey;
+            write(value: ExternalNewLeafKey, into: RustBuffer): void;
+            allocationSize(value: ExternalNewLeafKey): number;
+            lift(value: UniffiByteArray): ExternalNewLeafKey;
+            lower(value: ExternalNewLeafKey): UniffiByteArray;
         };
-        FfiConverterTypeExternalSecretShare: {
-            read(from: RustBuffer): ExternalSecretShare;
-            write(value: ExternalSecretShare, into: RustBuffer): void;
-            allocationSize(value: ExternalSecretShare): number;
-            lift(value: UniffiByteArray): ExternalSecretShare;
-            lower(value: ExternalSecretShare): UniffiByteArray;
+        FfiConverterTypeExternalOperatorPackage: {
+            read(from: RustBuffer): ExternalOperatorPackage;
+            write(value: ExternalOperatorPackage, into: RustBuffer): void;
+            allocationSize(value: ExternalOperatorPackage): number;
+            lift(value: UniffiByteArray): ExternalOperatorPackage;
+            lower(value: ExternalOperatorPackage): UniffiByteArray;
         };
-        FfiConverterTypeExternalSecretSource: {
-            read(from: RustBuffer): ExternalSecretSource;
-            write(value: ExternalSecretSource, into: RustBuffer): void;
-            allocationSize(value: ExternalSecretSource): number;
-            lift(value: UniffiByteArray): ExternalSecretSource;
-            lower(value: ExternalSecretSource): UniffiByteArray;
+        FfiConverterTypeExternalOperatorRecipient: {
+            read(from: RustBuffer): ExternalOperatorRecipient;
+            write(value: ExternalOperatorRecipient, into: RustBuffer): void;
+            allocationSize(value: ExternalOperatorRecipient): number;
+            lift(value: UniffiByteArray): ExternalOperatorRecipient;
+            lower(value: ExternalOperatorRecipient): UniffiByteArray;
         };
-        FfiConverterTypeExternalSecretToSplit: {
-            read(from: RustBuffer): ExternalSecretToSplit;
-            write(value: ExternalSecretToSplit, into: RustBuffer): void;
-            allocationSize(value: ExternalSecretToSplit): number;
-            lift(value: UniffiByteArray): ExternalSecretToSplit;
-            lower(value: ExternalSecretToSplit): UniffiByteArray;
+        FfiConverterTypeExternalPrepareClaimRequest: {
+            read(from: RustBuffer): ExternalPrepareClaimRequest;
+            write(value: ExternalPrepareClaimRequest, into: RustBuffer): void;
+            allocationSize(value: ExternalPrepareClaimRequest): number;
+            lift(value: UniffiByteArray): ExternalPrepareClaimRequest;
+            lower(value: ExternalPrepareClaimRequest): UniffiByteArray;
         };
-        FfiConverterTypeExternalSignFrostRequest: {
-            read(from: RustBuffer): ExternalSignFrostRequest;
-            write(value: ExternalSignFrostRequest, into: RustBuffer): void;
-            allocationSize(value: ExternalSignFrostRequest): number;
-            lift(value: UniffiByteArray): ExternalSignFrostRequest;
-            lower(value: ExternalSignFrostRequest): UniffiByteArray;
+        FfiConverterTypeExternalPrepareLightningReceiveRequest: {
+            read(from: RustBuffer): ExternalPrepareLightningReceiveRequest;
+            write(value: ExternalPrepareLightningReceiveRequest, into: RustBuffer): void;
+            allocationSize(value: ExternalPrepareLightningReceiveRequest): number;
+            lift(value: UniffiByteArray): ExternalPrepareLightningReceiveRequest;
+            lower(value: ExternalPrepareLightningReceiveRequest): UniffiByteArray;
         };
-        FfiConverterTypeExternalSigner: FfiConverterObjectWithCallbacks<ExternalSigner>;
+        FfiConverterTypeExternalPrepareStaticDepositClaimRequest: {
+            read(from: RustBuffer): ExternalPrepareStaticDepositClaimRequest;
+            write(value: ExternalPrepareStaticDepositClaimRequest, into: RustBuffer): void;
+            allocationSize(value: ExternalPrepareStaticDepositClaimRequest): number;
+            lift(value: UniffiByteArray): ExternalPrepareStaticDepositClaimRequest;
+            lower(value: ExternalPrepareStaticDepositClaimRequest): UniffiByteArray;
+        };
+        FfiConverterTypeExternalPrepareStaticDepositRequest: {
+            read(from: RustBuffer): ExternalPrepareStaticDepositRequest;
+            write(value: ExternalPrepareStaticDepositRequest, into: RustBuffer): void;
+            allocationSize(value: ExternalPrepareStaticDepositRequest): number;
+            lift(value: UniffiByteArray): ExternalPrepareStaticDepositRequest;
+            lower(value: ExternalPrepareStaticDepositRequest): UniffiByteArray;
+        };
+        FfiConverterTypeExternalPrepareTokenTransactionRequest: {
+            read(from: RustBuffer): ExternalPrepareTokenTransactionRequest;
+            write(value: ExternalPrepareTokenTransactionRequest, into: RustBuffer): void;
+            allocationSize(value: ExternalPrepareTokenTransactionRequest): number;
+            lift(value: UniffiByteArray): ExternalPrepareTokenTransactionRequest;
+            lower(value: ExternalPrepareTokenTransactionRequest): UniffiByteArray;
+        };
+        FfiConverterTypeExternalPrepareTransferRequest: {
+            read(from: RustBuffer): ExternalPrepareTransferRequest;
+            write(value: ExternalPrepareTransferRequest, into: RustBuffer): void;
+            allocationSize(value: ExternalPrepareTransferRequest): number;
+            lift(value: UniffiByteArray): ExternalPrepareTransferRequest;
+            lower(value: ExternalPrepareTransferRequest): UniffiByteArray;
+        };
+        FfiConverterTypeExternalPreparedClaim: {
+            read(from: RustBuffer): ExternalPreparedClaim;
+            write(value: ExternalPreparedClaim, into: RustBuffer): void;
+            allocationSize(value: ExternalPreparedClaim): number;
+            lift(value: UniffiByteArray): ExternalPreparedClaim;
+            lower(value: ExternalPreparedClaim): UniffiByteArray;
+        };
+        FfiConverterTypeExternalPreparedLightningReceive: {
+            read(from: RustBuffer): ExternalPreparedLightningReceive;
+            write(value: ExternalPreparedLightningReceive, into: RustBuffer): void;
+            allocationSize(value: ExternalPreparedLightningReceive): number;
+            lift(value: UniffiByteArray): ExternalPreparedLightningReceive;
+            lower(value: ExternalPreparedLightningReceive): UniffiByteArray;
+        };
+        FfiConverterTypeExternalPreparedStaticDeposit: {
+            read(from: RustBuffer): ExternalPreparedStaticDeposit;
+            write(value: ExternalPreparedStaticDeposit, into: RustBuffer): void;
+            allocationSize(value: ExternalPreparedStaticDeposit): number;
+            lift(value: UniffiByteArray): ExternalPreparedStaticDeposit;
+            lower(value: ExternalPreparedStaticDeposit): UniffiByteArray;
+        };
+        FfiConverterTypeExternalPreparedStaticDepositClaim: {
+            read(from: RustBuffer): ExternalPreparedStaticDepositClaim;
+            write(value: ExternalPreparedStaticDepositClaim, into: RustBuffer): void;
+            allocationSize(value: ExternalPreparedStaticDepositClaim): number;
+            lift(value: UniffiByteArray): ExternalPreparedStaticDepositClaim;
+            lower(value: ExternalPreparedStaticDepositClaim): UniffiByteArray;
+        };
+        FfiConverterTypeExternalPreparedTokenTransaction: {
+            read(from: RustBuffer): ExternalPreparedTokenTransaction;
+            write(value: ExternalPreparedTokenTransaction, into: RustBuffer): void;
+            allocationSize(value: ExternalPreparedTokenTransaction): number;
+            lift(value: UniffiByteArray): ExternalPreparedTokenTransaction;
+            lower(value: ExternalPreparedTokenTransaction): UniffiByteArray;
+        };
+        FfiConverterTypeExternalPreparedTransfer: {
+            read(from: RustBuffer): ExternalPreparedTransfer;
+            write(value: ExternalPreparedTransfer, into: RustBuffer): void;
+            allocationSize(value: ExternalPreparedTransfer): number;
+            lift(value: UniffiByteArray): ExternalPreparedTransfer;
+            lower(value: ExternalPreparedTransfer): UniffiByteArray;
+        };
+        FfiConverterTypeExternalSignSparkInvoiceRequest: {
+            read(from: RustBuffer): ExternalSignSparkInvoiceRequest;
+            write(value: ExternalSignSparkInvoiceRequest, into: RustBuffer): void;
+            allocationSize(value: ExternalSignSparkInvoiceRequest): number;
+            lift(value: UniffiByteArray): ExternalSignSparkInvoiceRequest;
+            lower(value: ExternalSignSparkInvoiceRequest): UniffiByteArray;
+        };
+        FfiConverterTypeExternalSignStaticDepositRefundRequest: {
+            read(from: RustBuffer): ExternalSignStaticDepositRefundRequest;
+            write(value: ExternalSignStaticDepositRefundRequest, into: RustBuffer): void;
+            allocationSize(value: ExternalSignStaticDepositRefundRequest): number;
+            lift(value: UniffiByteArray): ExternalSignStaticDepositRefundRequest;
+            lower(value: ExternalSignStaticDepositRefundRequest): UniffiByteArray;
+        };
+        FfiConverterTypeExternalSignedSparkInvoice: {
+            read(from: RustBuffer): ExternalSignedSparkInvoice;
+            write(value: ExternalSignedSparkInvoice, into: RustBuffer): void;
+            allocationSize(value: ExternalSignedSparkInvoice): number;
+            lift(value: UniffiByteArray): ExternalSignedSparkInvoice;
+            lower(value: ExternalSignedSparkInvoice): UniffiByteArray;
+        };
+        FfiConverterTypeExternalSigners: {
+            read(from: RustBuffer): ExternalSigners;
+            write(value: ExternalSigners, into: RustBuffer): void;
+            allocationSize(value: ExternalSigners): number;
+            lift(value: UniffiByteArray): ExternalSigners;
+            lower(value: ExternalSigners): UniffiByteArray;
+        };
         FfiConverterTypeExternalSigningCommitments: {
             read(from: RustBuffer): ExternalSigningCommitments;
             write(value: ExternalSigningCommitments, into: RustBuffer): void;
@@ -16997,19 +19328,48 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ExternalSigningCommitments;
             lower(value: ExternalSigningCommitments): UniffiByteArray;
         };
+        FfiConverterTypeExternalSparkInvoiceKind: {
+            read(from: RustBuffer): ExternalSparkInvoiceKind;
+            write(value: ExternalSparkInvoiceKind, into: RustBuffer): void;
+            allocationSize(value: ExternalSparkInvoiceKind): number;
+            lift(value: UniffiByteArray): ExternalSparkInvoiceKind;
+            lower(value: ExternalSparkInvoiceKind): UniffiByteArray;
+        };
+        FfiConverterTypeExternalSparkSigner: FfiConverterObjectWithCallbacks<ExternalSparkSigner>;
+        FfiConverterTypeExternalStartStaticDepositRefundRequest: {
+            read(from: RustBuffer): ExternalStartStaticDepositRefundRequest;
+            write(value: ExternalStartStaticDepositRefundRequest, into: RustBuffer): void;
+            allocationSize(value: ExternalStartStaticDepositRefundRequest): number;
+            lift(value: UniffiByteArray): ExternalStartStaticDepositRefundRequest;
+            lower(value: ExternalStartStaticDepositRefundRequest): UniffiByteArray;
+        };
+        FfiConverterTypeExternalStartedStaticDepositRefund: {
+            read(from: RustBuffer): ExternalStartedStaticDepositRefund;
+            write(value: ExternalStartedStaticDepositRefund, into: RustBuffer): void;
+            allocationSize(value: ExternalStartedStaticDepositRefund): number;
+            lift(value: UniffiByteArray): ExternalStartedStaticDepositRefund;
+            lower(value: ExternalStartedStaticDepositRefund): UniffiByteArray;
+        };
+        FfiConverterTypeExternalTokenTransactionKind: {
+            read(from: RustBuffer): ExternalTokenTransactionKind;
+            write(value: ExternalTokenTransactionKind, into: RustBuffer): void;
+            allocationSize(value: ExternalTokenTransactionKind): number;
+            lift(value: UniffiByteArray): ExternalTokenTransactionKind;
+            lower(value: ExternalTokenTransactionKind): UniffiByteArray;
+        };
+        FfiConverterTypeExternalTransferLeafInput: {
+            read(from: RustBuffer): ExternalTransferLeafInput;
+            write(value: ExternalTransferLeafInput, into: RustBuffer): void;
+            allocationSize(value: ExternalTransferLeafInput): number;
+            lift(value: UniffiByteArray): ExternalTransferLeafInput;
+            lower(value: ExternalTransferLeafInput): UniffiByteArray;
+        };
         FfiConverterTypeExternalTreeNodeId: {
             read(from: RustBuffer): ExternalTreeNodeId;
             write(value: ExternalTreeNodeId, into: RustBuffer): void;
             allocationSize(value: ExternalTreeNodeId): number;
             lift(value: UniffiByteArray): ExternalTreeNodeId;
             lower(value: ExternalTreeNodeId): UniffiByteArray;
-        };
-        FfiConverterTypeExternalVerifiableSecretShare: {
-            read(from: RustBuffer): ExternalVerifiableSecretShare;
-            write(value: ExternalVerifiableSecretShare, into: RustBuffer): void;
-            allocationSize(value: ExternalVerifiableSecretShare): number;
-            lift(value: UniffiByteArray): ExternalVerifiableSecretShare;
-            lower(value: ExternalVerifiableSecretShare): UniffiByteArray;
         };
         FfiConverterTypeFee: {
             read(from: RustBuffer): Fee;
@@ -17144,20 +19504,6 @@ declare const _default: Readonly<{
             allocationSize(value: InputType): number;
             lift(value: UniffiByteArray): InputType;
             lower(value: InputType): UniffiByteArray;
-        };
-        FfiConverterTypeKeySetConfig: {
-            read(from: RustBuffer): KeySetConfig;
-            write(value: KeySetConfig, into: RustBuffer): void;
-            allocationSize(value: KeySetConfig): number;
-            lift(value: UniffiByteArray): KeySetConfig;
-            lower(value: KeySetConfig): UniffiByteArray;
-        };
-        FfiConverterTypeKeySetType: {
-            read(from: RustBuffer): KeySetType;
-            write(value: KeySetType, into: RustBuffer): void;
-            allocationSize(value: KeySetType): number;
-            lift(value: UniffiByteArray): KeySetType;
-            lower(value: KeySetType): UniffiByteArray;
         };
         FfiConverterTypeLeafOptimizationConfig: {
             read(from: RustBuffer): LeafOptimizationConfig;
@@ -17376,13 +19722,6 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): Network;
             lower(value: Network): UniffiByteArray;
         };
-        FfiConverterTypeNostrRelayConfig: {
-            read(from: RustBuffer): NostrRelayConfig;
-            write(value: NostrRelayConfig, into: RustBuffer): void;
-            allocationSize(value: NostrRelayConfig): number;
-            lift(value: UniffiByteArray): NostrRelayConfig;
-            lower(value: NostrRelayConfig): UniffiByteArray;
-        };
         FfiConverterTypeOnchainConfirmationSpeed: {
             read(from: RustBuffer): OnchainConfirmationSpeed;
             write(value: OnchainConfirmationSpeed, into: RustBuffer): void;
@@ -17390,19 +19729,33 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): OnchainConfirmationSpeed;
             lower(value: OnchainConfirmationSpeed): UniffiByteArray;
         };
-        FfiConverterTypeOptimizationEvent: {
-            read(from: RustBuffer): OptimizationEvent;
-            write(value: OptimizationEvent, into: RustBuffer): void;
-            allocationSize(value: OptimizationEvent): number;
-            lift(value: UniffiByteArray): OptimizationEvent;
-            lower(value: OptimizationEvent): UniffiByteArray;
+        FfiConverterTypeOptimizationMode: {
+            read(from: RustBuffer): OptimizationMode;
+            write(value: OptimizationMode, into: RustBuffer): void;
+            allocationSize(value: OptimizationMode): number;
+            lift(value: UniffiByteArray): OptimizationMode;
+            lower(value: OptimizationMode): UniffiByteArray;
         };
-        FfiConverterTypeOptimizationProgress: {
-            read(from: RustBuffer): OptimizationProgress;
-            write(value: OptimizationProgress, into: RustBuffer): void;
-            allocationSize(value: OptimizationProgress): number;
-            lift(value: UniffiByteArray): OptimizationProgress;
-            lower(value: OptimizationProgress): UniffiByteArray;
+        FfiConverterTypeOptimizationOutcome: {
+            read(from: RustBuffer): OptimizationOutcome;
+            write(value: OptimizationOutcome, into: RustBuffer): void;
+            allocationSize(value: OptimizationOutcome): number;
+            lift(value: UniffiByteArray): OptimizationOutcome;
+            lower(value: OptimizationOutcome): UniffiByteArray;
+        };
+        FfiConverterTypeOptimizeLeavesRequest: {
+            read(from: RustBuffer): OptimizeLeavesRequest;
+            write(value: OptimizeLeavesRequest, into: RustBuffer): void;
+            allocationSize(value: OptimizeLeavesRequest): number;
+            lift(value: UniffiByteArray): OptimizeLeavesRequest;
+            lower(value: OptimizeLeavesRequest): UniffiByteArray;
+        };
+        FfiConverterTypeOptimizeLeavesResponse: {
+            read(from: RustBuffer): OptimizeLeavesResponse;
+            write(value: OptimizeLeavesResponse, into: RustBuffer): void;
+            allocationSize(value: OptimizeLeavesResponse): number;
+            lift(value: UniffiByteArray): OptimizeLeavesResponse;
+            lower(value: OptimizeLeavesResponse): UniffiByteArray;
         };
         FfiConverterTypeOutgoingChange: {
             read(from: RustBuffer): OutgoingChange;
@@ -17411,7 +19764,28 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): OutgoingChange;
             lower(value: OutgoingChange): UniffiByteArray;
         };
-        FfiConverterTypePasskey: FfiConverterObject<PasskeyInterface>;
+        FfiConverterTypePasskeyAvailability: {
+            read(from: RustBuffer): PasskeyAvailability;
+            write(value: PasskeyAvailability, into: RustBuffer): void;
+            allocationSize(value: PasskeyAvailability): number;
+            lift(value: UniffiByteArray): PasskeyAvailability;
+            lower(value: PasskeyAvailability): UniffiByteArray;
+        };
+        FfiConverterTypePasskeyClient: FfiConverterObject<PasskeyClientInterface>;
+        FfiConverterTypePasskeyConfig: {
+            read(from: RustBuffer): PasskeyConfig;
+            write(value: PasskeyConfig, into: RustBuffer): void;
+            allocationSize(value: PasskeyConfig): number;
+            lift(value: UniffiByteArray): PasskeyConfig;
+            lower(value: PasskeyConfig): UniffiByteArray;
+        };
+        FfiConverterTypePasskeyCredential: {
+            read(from: RustBuffer): PasskeyCredential;
+            write(value: PasskeyCredential, into: RustBuffer): void;
+            allocationSize(value: PasskeyCredential): number;
+            lift(value: UniffiByteArray): PasskeyCredential;
+            lower(value: PasskeyCredential): UniffiByteArray;
+        };
         FfiConverterTypePasskeyError: {
             read(from: RustBuffer): PasskeyError;
             write(value: PasskeyError, into: RustBuffer): void;
@@ -17419,14 +19793,14 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): PasskeyError;
             lower(value: PasskeyError): UniffiByteArray;
         };
-        FfiConverterTypePasskeyPrfError: {
-            read(from: RustBuffer): PasskeyPrfError;
-            write(value: PasskeyPrfError, into: RustBuffer): void;
-            allocationSize(value: PasskeyPrfError): number;
-            lift(value: UniffiByteArray): PasskeyPrfError;
-            lower(value: PasskeyPrfError): UniffiByteArray;
+        FfiConverterTypePasskeyLabels: FfiConverterObject<PasskeyLabelsInterface>;
+        FfiConverterTypePasskeyProviderOptions: {
+            read(from: RustBuffer): PasskeyProviderOptions;
+            write(value: PasskeyProviderOptions, into: RustBuffer): void;
+            allocationSize(value: PasskeyProviderOptions): number;
+            lift(value: UniffiByteArray): PasskeyProviderOptions;
+            lower(value: PasskeyProviderOptions): UniffiByteArray;
         };
-        FfiConverterTypePasskeyPrfProvider: FfiConverterObjectWithCallbacks<PasskeyPrfProvider>;
         FfiConverterTypePayment: {
             read(from: RustBuffer): Payment;
             write(value: Payment, into: RustBuffer): void;
@@ -17447,6 +19821,13 @@ declare const _default: Readonly<{
             allocationSize(value: PaymentDetailsFilter): number;
             lift(value: UniffiByteArray): PaymentDetailsFilter;
             lower(value: PaymentDetailsFilter): UniffiByteArray;
+        };
+        FfiConverterTypePaymentIdUpdate: {
+            read(from: RustBuffer): PaymentIdUpdate;
+            write(value: PaymentIdUpdate, into: RustBuffer): void;
+            allocationSize(value: PaymentIdUpdate): number;
+            lift(value: UniffiByteArray): PaymentIdUpdate;
+            lower(value: PaymentIdUpdate): UniffiByteArray;
         };
         FfiConverterTypePaymentMetadata: {
             read(from: RustBuffer): PaymentMetadata;
@@ -17518,6 +19899,14 @@ declare const _default: Readonly<{
             allocationSize(value: PrepareSendPaymentResponse): number;
             lift(value: UniffiByteArray): PrepareSendPaymentResponse;
             lower(value: PrepareSendPaymentResponse): UniffiByteArray;
+        };
+        FfiConverterTypePrfProvider: FfiConverterObjectWithCallbacks<PrfProvider>;
+        FfiConverterTypePrfProviderError: {
+            read(from: RustBuffer): PrfProviderError;
+            write(value: PrfProviderError, into: RustBuffer): void;
+            allocationSize(value: PrfProviderError): number;
+            lift(value: UniffiByteArray): PrfProviderError;
+            lower(value: PrfProviderError): UniffiByteArray;
         };
         FfiConverterTypeProvisionalPayment: {
             read(from: RustBuffer): ProvisionalPayment;
@@ -17625,6 +20014,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): RegisterLightningAddressRequest;
             lower(value: RegisterLightningAddressRequest): UniffiByteArray;
         };
+        FfiConverterTypeRegisterRequest: {
+            read(from: RustBuffer): RegisterRequest;
+            write(value: RegisterRequest, into: RustBuffer): void;
+            allocationSize(value: RegisterRequest): number;
+            lift(value: UniffiByteArray): RegisterRequest;
+            lower(value: RegisterRequest): UniffiByteArray;
+        };
+        FfiConverterTypeRegisterResponse: {
+            read(from: RustBuffer): RegisterResponse;
+            write(value: RegisterResponse, into: RustBuffer): void;
+            allocationSize(value: RegisterResponse): number;
+            lift(value: UniffiByteArray): RegisterResponse;
+            lower(value: RegisterResponse): UniffiByteArray;
+        };
         FfiConverterTypeRegisterWebhookRequest: {
             read(from: RustBuffer): RegisterWebhookRequest;
             write(value: RegisterWebhookRequest, into: RustBuffer): void;
@@ -17639,6 +20042,7 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): RegisterWebhookResponse;
             lower(value: RegisterWebhookResponse): UniffiByteArray;
         };
+        FfiConverterTypeResolvedStores: FfiConverterObject<ResolvedStoresInterface>;
         FfiConverterTypeRestClient: FfiConverterObjectWithCallbacks<RestClient>;
         FfiConverterTypeRestResponse: {
             read(from: RustBuffer): RestResponse;
@@ -17754,13 +20158,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): Session;
             lower(value: Session): UniffiByteArray;
         };
-        FfiConverterTypeSessionManager: FfiConverterObjectWithCallbacks<SessionManager>;
-        FfiConverterTypeSessionManagerError: {
-            read(from: RustBuffer): SessionManagerError;
-            write(value: SessionManagerError, into: RustBuffer): void;
-            allocationSize(value: SessionManagerError): number;
-            lift(value: UniffiByteArray): SessionManagerError;
-            lower(value: SessionManagerError): UniffiByteArray;
+        FfiConverterTypeSessionStore: FfiConverterObjectWithCallbacks<SessionStore>;
+        FfiConverterTypeSessionStoreError: {
+            read(from: RustBuffer): SessionStoreError;
+            write(value: SessionStoreError, into: RustBuffer): void;
+            allocationSize(value: SessionStoreError): number;
+            lift(value: UniffiByteArray): SessionStoreError;
+            lower(value: SessionStoreError): UniffiByteArray;
         };
         FfiConverterTypeSetLnurlMetadataItem: {
             read(from: RustBuffer): SetLnurlMetadataItem;
@@ -17768,6 +20172,27 @@ declare const _default: Readonly<{
             allocationSize(value: SetLnurlMetadataItem): number;
             lift(value: UniffiByteArray): SetLnurlMetadataItem;
             lower(value: SetLnurlMetadataItem): UniffiByteArray;
+        };
+        FfiConverterTypeSetupWalletRequest: {
+            read(from: RustBuffer): SetupWalletRequest;
+            write(value: SetupWalletRequest, into: RustBuffer): void;
+            allocationSize(value: SetupWalletRequest): number;
+            lift(value: UniffiByteArray): SetupWalletRequest;
+            lower(value: SetupWalletRequest): UniffiByteArray;
+        };
+        FfiConverterTypeSignInRequest: {
+            read(from: RustBuffer): SignInRequest;
+            write(value: SignInRequest, into: RustBuffer): void;
+            allocationSize(value: SignInRequest): number;
+            lift(value: UniffiByteArray): SignInRequest;
+            lower(value: SignInRequest): UniffiByteArray;
+        };
+        FfiConverterTypeSignInResponse: {
+            read(from: RustBuffer): SignInResponse;
+            write(value: SignInResponse, into: RustBuffer): void;
+            allocationSize(value: SignInResponse): number;
+            lift(value: UniffiByteArray): SignInResponse;
+            lower(value: SignInResponse): UniffiByteArray;
         };
         FfiConverterTypeSignMessageRequest: {
             read(from: RustBuffer): SignMessageRequest;
@@ -17889,6 +20314,7 @@ declare const _default: Readonly<{
             lower(value: StableBalanceToken): UniffiByteArray;
         };
         FfiConverterTypeStorage: FfiConverterObjectWithCallbacks<Storage>;
+        FfiConverterTypeStorageBackend: FfiConverterObject<StorageBackend>;
         FfiConverterTypeStorageError: {
             read(from: RustBuffer): StorageError;
             write(value: StorageError, into: RustBuffer): void;
@@ -17974,6 +20400,27 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): TokenTransactionType;
             lower(value: TokenTransactionType): UniffiByteArray;
         };
+        FfiConverterTypeTransferAuthorization: {
+            read(from: RustBuffer): TransferAuthorization;
+            write(value: TransferAuthorization, into: RustBuffer): void;
+            allocationSize(value: TransferAuthorization): number;
+            lift(value: UniffiByteArray): TransferAuthorization;
+            lower(value: TransferAuthorization): UniffiByteArray;
+        };
+        FfiConverterTypeTurnkeyConfig: {
+            read(from: RustBuffer): TurnkeyConfig;
+            write(value: TurnkeyConfig, into: RustBuffer): void;
+            allocationSize(value: TurnkeyConfig): number;
+            lift(value: UniffiByteArray): TurnkeyConfig;
+            lower(value: TurnkeyConfig): UniffiByteArray;
+        };
+        FfiConverterTypeTurnkeyRetryConfig: {
+            read(from: RustBuffer): TurnkeyRetryConfig;
+            write(value: TurnkeyRetryConfig, into: RustBuffer): void;
+            allocationSize(value: TurnkeyRetryConfig): number;
+            lift(value: UniffiByteArray): TurnkeyRetryConfig;
+            lower(value: TurnkeyRetryConfig): UniffiByteArray;
+        };
         FfiConverterTypeTxStatus: {
             read(from: RustBuffer): TxStatus;
             write(value: TxStatus, into: RustBuffer): void;
@@ -18057,6 +20504,13 @@ declare const _default: Readonly<{
             allocationSize(value: Wallet): number;
             lift(value: UniffiByteArray): Wallet;
             lower(value: Wallet): UniffiByteArray;
+        };
+        FfiConverterTypeWalletSetup: {
+            read(from: RustBuffer): WalletSetup;
+            write(value: WalletSetup, into: RustBuffer): void;
+            allocationSize(value: WalletSetup): number;
+            lift(value: UniffiByteArray): WalletSetup;
+            lower(value: WalletSetup): UniffiByteArray;
         };
         FfiConverterTypeWebhook: {
             read(from: RustBuffer): Webhook;

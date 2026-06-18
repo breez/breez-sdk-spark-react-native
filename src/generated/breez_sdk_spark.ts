@@ -32,13 +32,15 @@ import nativeModule, {
   type UniffiVTableCallbackInterfaceEventListener,
   type UniffiVTableCallbackInterfaceLogger,
   type UniffiVTableCallbackInterfaceBitcoinChainService,
-  type UniffiVTableCallbackInterfaceExternalSigner,
+  type UniffiVTableCallbackInterfaceExternalBreezSigner,
+  type UniffiVTableCallbackInterfaceExternalSparkSigner,
   type UniffiVTableCallbackInterfaceFiatService,
-  type UniffiVTableCallbackInterfacePasskeyPrfProvider,
   type UniffiVTableCallbackInterfacePaymentObserver,
+  type UniffiVTableCallbackInterfacePrfProvider,
   type UniffiVTableCallbackInterfaceRestClient,
-  type UniffiVTableCallbackInterfaceSessionManager,
+  type UniffiVTableCallbackInterfaceSessionStore,
   type UniffiVTableCallbackInterfaceStorage,
+  type UniffiVTableCallbackInterfaceStorageBackend,
 } from './breez_sdk_spark-ffi';
 import {
   type FfiConverter,
@@ -79,7 +81,6 @@ import {
   uniffiTraitInterfaceCall,
   uniffiTraitInterfaceCallAsync,
   uniffiTraitInterfaceCallAsyncWithError,
-  uniffiTraitInterfaceCallWithError,
   uniffiTypeNameSymbol,
   variantOrdinalSymbol,
 } from 'uniffi-bindgen-react-native';
@@ -194,6 +195,70 @@ export async function connectWithSigner(
     throw __error;
   }
 }
+/**
+ * Builds the Turnkey-backed Breez and Spark signers from `config`, sharing one
+ * Turnkey client.
+ *
+ * The Spark signer keeps every signing operation in the Turnkey enclave; the
+ * Breez signer does too, except ECIES and HMAC, which run locally against a
+ * dedicated, non-Spark key exported once here. Exporting a non-Spark key keeps
+ * every Spark key (the identity key included) in the enclave; ECIES/HMAC only
+ * need a stable key, not a Spark one.
+ */
+export async function createTurnkeySigner(
+  config: TurnkeyConfig,
+  asyncOpts_?: { signal: AbortSignal }
+): Promise<ExternalSigners> /*throws*/ {
+  const __stack = uniffiIsDebug ? new Error().stack : undefined;
+  try {
+    return await uniffiRustCallAsync(
+      /*rustCaller:*/ uniffiCaller,
+      /*rustFutureFunc:*/ () => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_create_turnkey_signer(
+          FfiConverterTypeTurnkeyConfig.lower(config)
+        );
+      },
+      /*pollFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+      /*cancelFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+      /*completeFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+      /*freeFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+      /*liftFunc:*/ FfiConverterTypeExternalSigners.lift.bind(
+        FfiConverterTypeExternalSigners
+      ),
+      /*liftString:*/ FfiConverterString.lift,
+      /*asyncOpts:*/ asyncOpts_,
+      /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+        FfiConverterTypeSignerError
+      )
+    );
+  } catch (__error: any) {
+    if (uniffiIsDebug && __error instanceof Error) {
+      __error.stack = __stack;
+    }
+    throw __error;
+  }
+}
+/**
+ * Wraps a caller-supplied [`Storage`] implementation as a [`StorageBackend`].
+ * The tree, token-output and session stores use the in-memory defaults.
+ */
+export function customStorage(storage: Storage): StorageBackend {
+  return FfiConverterTypeStorageBackend.lift(
+    uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_custom_storage(
+          FfiConverterTypeStorage.lower(storage),
+          callStatus
+        );
+      },
+      /*liftString:*/ FfiConverterString.lift
+    )
+  );
+}
 export function defaultConfig(network: Network): Config {
   return FfiConverterTypeConfig.lift(
     uniffiCaller.rustCall(
@@ -208,39 +273,38 @@ export function defaultConfig(network: Network): Config {
   );
 }
 /**
- * Creates a default external signer from a mnemonic.
+ * Creates the default external signers from a mnemonic.
  *
- * This is a convenience factory method for creating a signer that can be used
- * with `connect_with_signer` or `SdkBuilder::new_with_signer`.
+ * This is a convenience factory method for creating the two signer halves
+ * that can be passed to `connect_with_signer` or `SdkBuilder::new_with_signer`.
+ * Key derivation matches the seed-based connect path: an SDK built either way
+ * from the same mnemonic is the same wallet.
  *
  * # Arguments
  *
  * * `mnemonic` - BIP39 mnemonic phrase (12 or 24 words)
  * * `passphrase` - Optional passphrase for the mnemonic
  * * `network` - Network to use (Mainnet or Regtest)
- * * `key_set_config` - Optional key set configuration. If None, uses default configuration.
- *
- * # Returns
- *
- * Result containing the signer as `Arc<dyn ExternalSigner>`
+ * * `account_number` - Account number in the derivation path. Unset uses the
+ * network default: 0 on Regtest, 1 on all other networks.
  */
-export function defaultExternalSigner(
+export function defaultExternalSigners(
   mnemonic: string,
   passphrase: string | undefined,
   network: Network,
-  keySetConfig: KeySetConfig | undefined
-): ExternalSigner /*throws*/ {
-  return FfiConverterTypeExternalSigner.lift(
+  accountNumber: /*u32*/ number | undefined
+): ExternalSigners /*throws*/ {
+  return FfiConverterTypeExternalSigners.lift(
     uniffiCaller.rustCallWithError(
       /*liftError:*/ FfiConverterTypeSdkError.lift.bind(
         FfiConverterTypeSdkError
       ),
       /*caller:*/ (callStatus) => {
-        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_default_external_signer(
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_default_external_signers(
           FfiConverterString.lower(mnemonic),
           FfiConverterOptionalString.lower(passphrase),
           FfiConverterTypeNetwork.lower(network),
-          FfiConverterOptionalTypeKeySetConfig.lower(keySetConfig),
+          FfiConverterOptionalUInt32.lower(accountNumber),
           callStatus
         );
       },
@@ -289,6 +353,24 @@ export function defaultServerConfig(network: Network): Config {
       /*caller:*/ (callStatus) => {
         return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_default_server_config(
           FfiConverterTypeNetwork.lower(network),
+          callStatus
+        );
+      },
+      /*liftString:*/ FfiConverterString.lift
+    )
+  );
+}
+/**
+ * File-based `SQLite` storage rooted at `storage_dir` — the default for
+ * mobile and desktop apps. Each tenant gets its own database file under the
+ * directory.
+ */
+export function defaultStorage(storageDir: string): StorageBackend {
+  return FfiConverterTypeStorageBackend.lift(
+    uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_default_storage(
+          FfiConverterString.lower(storageDir),
           callStatus
         );
       },
@@ -408,10 +490,8 @@ export async function newRestChainService(
 /**
  * Constructs an [`SdkContext`] from a `SdkContextConfig`.
  *
- * The returned `Arc` is cheap to clone and can back many SDK instances.
- * `SdkContextConfig::new(network)` yields an in-memory, single-tenant setup;
- * supply a DB config to back the SDKs with a shared `PostgreSQL` or `MySQL`
- * pool.
+ * The returned `Arc` is cheap to clone and can back many SDK instances,
+ * sharing their HTTP client and operator gRPC channels.
  */
 export async function newSharedSdkContext(
   config: SdkContextConfig,
@@ -773,6 +853,68 @@ const FfiConverterTypeAesSuccessActionDataDecrypted = (() => {
         FfiConverterString.allocationSize(value.description) +
         FfiConverterString.allocationSize(value.plaintext)
       );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Request for [`BreezSdk::authorize_lightning_address_transfer`]. Called by
+ * the *current owner* to authorize handing their registered username over to
+ * `transferee_pubkey`.
+ */
+export type AuthorizeTransferRequest = {
+  /**
+   * The new owner's identity public key.
+   */
+  transfereePubkey: string;
+};
+
+/**
+ * Generated factory for {@link AuthorizeTransferRequest} record objects.
+ */
+export const AuthorizeTransferRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      AuthorizeTransferRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link AuthorizeTransferRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link AuthorizeTransferRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<AuthorizeTransferRequest>,
+  });
+})();
+
+const FfiConverterTypeAuthorizeTransferRequest = (() => {
+  type TypeName = AuthorizeTransferRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        transfereePubkey: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.transfereePubkey, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterString.allocationSize(value.transfereePubkey);
     }
   }
   return new FFIConverter();
@@ -2158,6 +2300,78 @@ const FfiConverterTypeClaimHtlcPaymentResponse = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * Request for [`BreezSdk::claim_lightning_address_transfer`]. Called by the
+ * *new owner* to complete the takeover using the authorization produced by
+ * the current owner.
+ */
+export type ClaimTransferRequest = {
+  /**
+   * Authorization produced by the current owner via
+   * [`BreezSdk::authorize_lightning_address_transfer`].
+   */
+  authorization: TransferAuthorization;
+  /**
+   * Description for the address. Defaults to `"Pay to {username}@{domain}"`.
+   */
+  description: string | undefined;
+};
+
+/**
+ * Generated factory for {@link ClaimTransferRequest} record objects.
+ */
+export const ClaimTransferRequest = (() => {
+  const defaults = () => ({ description: undefined });
+  const create = (() => {
+    return uniffiCreateRecord<
+      ClaimTransferRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ClaimTransferRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ClaimTransferRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ClaimTransferRequest>,
+  });
+})();
+
+const FfiConverterTypeClaimTransferRequest = (() => {
+  type TypeName = ClaimTransferRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        authorization: FfiConverterTypeTransferAuthorization.read(from),
+        description: FfiConverterOptionalString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeTransferAuthorization.write(value.authorization, into);
+      FfiConverterOptionalString.write(value.description, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeTransferAuthorization.allocationSize(
+          value.authorization
+        ) + FfiConverterOptionalString.allocationSize(value.description)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type Config = {
   apiKey: string | undefined;
   network: Network;
@@ -2452,13 +2666,186 @@ const FfiConverterTypeConnectRequest = (() => {
 })();
 
 /**
+ * Request shape for [`PasskeyClient::connect_with_passkey`].
+ */
+export type ConnectWithPasskeyRequest = {
+  /**
+   * Wallet label. Defaults to the configured default label when
+   * `None`. Used both for the silent sign-in attempt and, if it
+   * fast-fails, for the fallback registration.
+   */
+  label: string | undefined;
+  /**
+   * Optional credential IDs to restrict the silent sign-in
+   * attempt to (reauthentication path). See
+   * [`SignInRequest::allow_credentials`]. Ignored on the fallback
+   * registration path.
+   */
+  allowCredentials: Array<ArrayBuffer> | undefined;
+  /**
+   * Optional already-registered credential IDs to surface
+   * duplicates on the fallback registration path. See
+   * [`RegisterRequest::exclude_credentials`]. Ignored on the
+   * silent sign-in attempt.
+   */
+  excludeCredentials: Array<ArrayBuffer> | undefined;
+};
+
+/**
+ * Generated factory for {@link ConnectWithPasskeyRequest} record objects.
+ */
+export const ConnectWithPasskeyRequest = (() => {
+  const defaults = () => ({
+    label: undefined,
+    allowCredentials: undefined,
+    excludeCredentials: undefined,
+  });
+  const create = (() => {
+    return uniffiCreateRecord<
+      ConnectWithPasskeyRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ConnectWithPasskeyRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ConnectWithPasskeyRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ConnectWithPasskeyRequest>,
+  });
+})();
+
+const FfiConverterTypeConnectWithPasskeyRequest = (() => {
+  type TypeName = ConnectWithPasskeyRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        label: FfiConverterOptionalString.read(from),
+        allowCredentials: FfiConverterOptionalArrayArrayBuffer.read(from),
+        excludeCredentials: FfiConverterOptionalArrayArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalString.write(value.label, into);
+      FfiConverterOptionalArrayArrayBuffer.write(value.allowCredentials, into);
+      FfiConverterOptionalArrayArrayBuffer.write(
+        value.excludeCredentials,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalString.allocationSize(value.label) +
+        FfiConverterOptionalArrayArrayBuffer.allocationSize(
+          value.allowCredentials
+        ) +
+        FfiConverterOptionalArrayArrayBuffer.allocationSize(
+          value.excludeCredentials
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Response from [`PasskeyClient::connect_with_passkey`].
+ *
+ * `credential` carries whichever credential signed in or was
+ * registered, when the provider surfaces it. The register path also
+ * populates the attestation fields (`aaguid`, `backup_eligible`); the
+ * sign-in path sets only `credential_id`.
+ */
+export type ConnectWithPasskeyResponse = {
+  wallet: Wallet;
+  credential: PasskeyCredential | undefined;
+};
+
+/**
+ * Generated factory for {@link ConnectWithPasskeyResponse} record objects.
+ */
+export const ConnectWithPasskeyResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ConnectWithPasskeyResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ConnectWithPasskeyResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ConnectWithPasskeyResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ConnectWithPasskeyResponse>,
+  });
+})();
+
+const FfiConverterTypeConnectWithPasskeyResponse = (() => {
+  type TypeName = ConnectWithPasskeyResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        wallet: FfiConverterTypeWallet.read(from),
+        credential: FfiConverterOptionalTypePasskeyCredential.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeWallet.write(value.wallet, into);
+      FfiConverterOptionalTypePasskeyCredential.write(value.credential, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeWallet.allocationSize(value.wallet) +
+        FfiConverterOptionalTypePasskeyCredential.allocationSize(
+          value.credential
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
  * Request object for connecting to the Spark network using an external signer.
  *
  * This allows using a custom signer implementation instead of providing a seed directly.
  */
 export type ConnectWithSignerRequest = {
   config: Config;
-  signer: ExternalSigner;
+  /**
+   * External signer for non-Spark SDK signing (LNURL-auth, sync, message
+   * signing, ECIES).
+   */
+  breezSigner: ExternalBreezSigner;
+  /**
+   * External high-level Spark signer for the Spark wallet flows.
+   */
+  sparkSigner: ExternalSparkSigner;
   storageDir: string;
 };
 
@@ -2500,19 +2887,22 @@ const FfiConverterTypeConnectWithSignerRequest = (() => {
     read(from: RustBuffer): TypeName {
       return {
         config: FfiConverterTypeConfig.read(from),
-        signer: FfiConverterTypeExternalSigner.read(from),
+        breezSigner: FfiConverterTypeExternalBreezSigner.read(from),
+        sparkSigner: FfiConverterTypeExternalSparkSigner.read(from),
         storageDir: FfiConverterString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterTypeConfig.write(value.config, into);
-      FfiConverterTypeExternalSigner.write(value.signer, into);
+      FfiConverterTypeExternalBreezSigner.write(value.breezSigner, into);
+      FfiConverterTypeExternalSparkSigner.write(value.sparkSigner, into);
       FfiConverterString.write(value.storageDir, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterTypeConfig.allocationSize(value.config) +
-        FfiConverterTypeExternalSigner.allocationSize(value.signer) +
+        FfiConverterTypeExternalBreezSigner.allocationSize(value.breezSigner) +
+        FfiConverterTypeExternalSparkSigner.allocationSize(value.sparkSigner) +
         FfiConverterString.allocationSize(value.storageDir)
       );
     }
@@ -3354,6 +3744,165 @@ const FfiConverterTypeDepositInfo = (() => {
 })();
 
 /**
+ * Derived seeds plus the credential observed in the same assertion.
+ */
+export type DeriveSeedsOutput = {
+  seeds: Array<ArrayBuffer>;
+  /**
+   * Absent when the provider does not surface it.
+   */
+  credentialId: ArrayBuffer | undefined;
+};
+
+/**
+ * Generated factory for {@link DeriveSeedsOutput} record objects.
+ */
+export const DeriveSeedsOutput = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<DeriveSeedsOutput, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link DeriveSeedsOutput}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link DeriveSeedsOutput}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<DeriveSeedsOutput>,
+  });
+})();
+
+const FfiConverterTypeDeriveSeedsOutput = (() => {
+  type TypeName = DeriveSeedsOutput;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        seeds: FfiConverterArrayArrayBuffer.read(from),
+        credentialId: FfiConverterOptionalArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayArrayBuffer.write(value.seeds, into);
+      FfiConverterOptionalArrayBuffer.write(value.credentialId, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayArrayBuffer.allocationSize(value.seeds) +
+        FfiConverterOptionalArrayBuffer.allocationSize(value.credentialId)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Per-call inputs for [`PrfProvider::derive_seeds`]. Hosts that
+ * don't need per-ceremony overrides fall back to [`Default`]
+ * (`salts` only, all overrides empty / `None`).
+ */
+export type DeriveSeedsRequest = {
+  /**
+   * Salt strings in caller order. One 32-byte PRF output is
+   * returned per salt, in the same order.
+   */
+  salts: Array<string>;
+  /**
+   * Credential IDs the assertion is restricted to. The main use is
+   * reauthenticating a known user: if a listed credential is on the
+   * device the OS unlocks straight away (no account picker); otherwise
+   * it asks for another device (paired phone, security key) holding one.
+   * Empty falls through to the provider's configured default.
+   */
+  allowCredentials: Array<ArrayBuffer>;
+  /**
+   * Restrict the assertion to credentials already present on this
+   * device. When `true`, the OS skips the cross-device picker (iOS
+   * QR, Android hybrid, web `mediation: undefined`) and surfaces a
+   * missing local credential as `CredentialNotFound` immediately.
+   * When `false`, the OS picker is shown as usual. Unset uses the
+   * provider's default (`true` for built-in providers).
+   */
+  preferImmediatelyAvailableCredentials: boolean | undefined;
+};
+
+/**
+ * Generated factory for {@link DeriveSeedsRequest} record objects.
+ */
+export const DeriveSeedsRequest = (() => {
+  const defaults = () => ({
+    allowCredentials: [],
+    preferImmediatelyAvailableCredentials: undefined,
+  });
+  const create = (() => {
+    return uniffiCreateRecord<DeriveSeedsRequest, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link DeriveSeedsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link DeriveSeedsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<DeriveSeedsRequest>,
+  });
+})();
+
+const FfiConverterTypeDeriveSeedsRequest = (() => {
+  type TypeName = DeriveSeedsRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        salts: FfiConverterArrayString.read(from),
+        allowCredentials: FfiConverterArrayArrayBuffer.read(from),
+        preferImmediatelyAvailableCredentials:
+          FfiConverterOptionalBool.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayString.write(value.salts, into);
+      FfiConverterArrayArrayBuffer.write(value.allowCredentials, into);
+      FfiConverterOptionalBool.write(
+        value.preferImmediatelyAvailableCredentials,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayString.allocationSize(value.salts) +
+        FfiConverterArrayArrayBuffer.allocationSize(value.allowCredentials) +
+        FfiConverterOptionalBool.allocationSize(
+          value.preferImmediatelyAvailableCredentials
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
  * FFI-safe representation of an ECDSA signature (64 bytes)
  */
 export type EcdsaSignatureBytes = {
@@ -3409,67 +3958,34 @@ const FfiConverterTypeEcdsaSignatureBytes = (() => {
 })();
 
 /**
- * FFI-safe representation of `spark_wallet::AggregateFrostRequest`
+ * FFI-safe representation of `spark_wallet::ClaimLeafInput`.
  */
-export type ExternalAggregateFrostRequest = {
-  /**
-   * The message that was signed
-   */
-  message: ArrayBuffer;
-  /**
-   * Statechain signatures as a list of identifier-signature pairs
-   */
-  statechainSignatures: Array<IdentifierSignaturePair>;
-  /**
-   * Statechain public keys as a list of identifier-publickey pairs
-   */
-  statechainPublicKeys: Array<IdentifierPublicKeyPair>;
-  /**
-   * The verifying key (33 bytes compressed)
-   */
-  verifyingKey: ArrayBuffer;
-  /**
-   * Statechain commitments as a list of identifier-commitment pairs
-   */
-  statechainCommitments: Array<IdentifierCommitmentPair>;
-  /**
-   * The self commitment
-   */
-  selfCommitment: ExternalSigningCommitments;
-  /**
-   * The public key (33 bytes compressed)
-   */
-  publicKey: ArrayBuffer;
-  /**
-   * The self signature share
-   */
-  selfSignature: ExternalFrostSignatureShare;
-  /**
-   * Optional adaptor public key (33 bytes compressed)
-   */
-  adaptorPublicKey: ArrayBuffer | undefined;
+export type ExternalClaimLeafInput = {
+  nodeId: ExternalTreeNodeId;
+  senderSignature: ArrayBuffer;
+  leafKeyCiphertext: ArrayBuffer;
 };
 
 /**
- * Generated factory for {@link ExternalAggregateFrostRequest} record objects.
+ * Generated factory for {@link ExternalClaimLeafInput} record objects.
  */
-export const ExternalAggregateFrostRequest = (() => {
+export const ExternalClaimLeafInput = (() => {
   const defaults = () => ({});
   const create = (() => {
     return uniffiCreateRecord<
-      ExternalAggregateFrostRequest,
+      ExternalClaimLeafInput,
       ReturnType<typeof defaults>
     >(defaults);
   })();
   return Object.freeze({
     /**
-     * Create a frozen instance of {@link ExternalAggregateFrostRequest}, with defaults specified
+     * Create a frozen instance of {@link ExternalClaimLeafInput}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     create,
 
     /**
-     * Create a frozen instance of {@link ExternalAggregateFrostRequest}, with defaults specified
+     * Create a frozen instance of {@link ExternalClaimLeafInput}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     new: create,
@@ -3478,137 +3994,31 @@ export const ExternalAggregateFrostRequest = (() => {
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () =>
-      Object.freeze(defaults()) as Partial<ExternalAggregateFrostRequest>,
+      Object.freeze(defaults()) as Partial<ExternalClaimLeafInput>,
   });
 })();
 
-const FfiConverterTypeExternalAggregateFrostRequest = (() => {
-  type TypeName = ExternalAggregateFrostRequest;
+const FfiConverterTypeExternalClaimLeafInput = (() => {
+  type TypeName = ExternalClaimLeafInput;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
-        message: FfiConverterArrayBuffer.read(from),
-        statechainSignatures:
-          FfiConverterArrayTypeIdentifierSignaturePair.read(from),
-        statechainPublicKeys:
-          FfiConverterArrayTypeIdentifierPublicKeyPair.read(from),
-        verifyingKey: FfiConverterArrayBuffer.read(from),
-        statechainCommitments:
-          FfiConverterArrayTypeIdentifierCommitmentPair.read(from),
-        selfCommitment: FfiConverterTypeExternalSigningCommitments.read(from),
-        publicKey: FfiConverterArrayBuffer.read(from),
-        selfSignature: FfiConverterTypeExternalFrostSignatureShare.read(from),
-        adaptorPublicKey: FfiConverterOptionalArrayBuffer.read(from),
+        nodeId: FfiConverterTypeExternalTreeNodeId.read(from),
+        senderSignature: FfiConverterArrayBuffer.read(from),
+        leafKeyCiphertext: FfiConverterArrayBuffer.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
-      FfiConverterArrayBuffer.write(value.message, into);
-      FfiConverterArrayTypeIdentifierSignaturePair.write(
-        value.statechainSignatures,
-        into
-      );
-      FfiConverterArrayTypeIdentifierPublicKeyPair.write(
-        value.statechainPublicKeys,
-        into
-      );
-      FfiConverterArrayBuffer.write(value.verifyingKey, into);
-      FfiConverterArrayTypeIdentifierCommitmentPair.write(
-        value.statechainCommitments,
-        into
-      );
-      FfiConverterTypeExternalSigningCommitments.write(
-        value.selfCommitment,
-        into
-      );
-      FfiConverterArrayBuffer.write(value.publicKey, into);
-      FfiConverterTypeExternalFrostSignatureShare.write(
-        value.selfSignature,
-        into
-      );
-      FfiConverterOptionalArrayBuffer.write(value.adaptorPublicKey, into);
+      FfiConverterTypeExternalTreeNodeId.write(value.nodeId, into);
+      FfiConverterArrayBuffer.write(value.senderSignature, into);
+      FfiConverterArrayBuffer.write(value.leafKeyCiphertext, into);
     }
     allocationSize(value: TypeName): number {
       return (
-        FfiConverterArrayBuffer.allocationSize(value.message) +
-        FfiConverterArrayTypeIdentifierSignaturePair.allocationSize(
-          value.statechainSignatures
-        ) +
-        FfiConverterArrayTypeIdentifierPublicKeyPair.allocationSize(
-          value.statechainPublicKeys
-        ) +
-        FfiConverterArrayBuffer.allocationSize(value.verifyingKey) +
-        FfiConverterArrayTypeIdentifierCommitmentPair.allocationSize(
-          value.statechainCommitments
-        ) +
-        FfiConverterTypeExternalSigningCommitments.allocationSize(
-          value.selfCommitment
-        ) +
-        FfiConverterArrayBuffer.allocationSize(value.publicKey) +
-        FfiConverterTypeExternalFrostSignatureShare.allocationSize(
-          value.selfSignature
-        ) +
-        FfiConverterOptionalArrayBuffer.allocationSize(value.adaptorPublicKey)
+        FfiConverterTypeExternalTreeNodeId.allocationSize(value.nodeId) +
+        FfiConverterArrayBuffer.allocationSize(value.senderSignature) +
+        FfiConverterArrayBuffer.allocationSize(value.leafKeyCiphertext)
       );
-    }
-  }
-  return new FFIConverter();
-})();
-
-/**
- * FFI-safe representation of `spark_wallet::EncryptedSecret`
- */
-export type ExternalEncryptedSecret = {
-  /**
-   * The encrypted ciphertext
-   */
-  ciphertext: ArrayBuffer;
-};
-
-/**
- * Generated factory for {@link ExternalEncryptedSecret} record objects.
- */
-export const ExternalEncryptedSecret = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<
-      ExternalEncryptedSecret,
-      ReturnType<typeof defaults>
-    >(defaults);
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link ExternalEncryptedSecret}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link ExternalEncryptedSecret}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () =>
-      Object.freeze(defaults()) as Partial<ExternalEncryptedSecret>,
-  });
-})();
-
-const FfiConverterTypeExternalEncryptedSecret = (() => {
-  type TypeName = ExternalEncryptedSecret;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        ciphertext: FfiConverterArrayBuffer.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterArrayBuffer.write(value.ciphertext, into);
-    }
-    allocationSize(value: TypeName): number {
-      return FfiConverterArrayBuffer.allocationSize(value.ciphertext);
     }
   }
   return new FFIConverter();
@@ -3684,6 +4094,178 @@ const FfiConverterTypeExternalFrostCommitments = (() => {
         FfiConverterArrayBuffer.allocationSize(value.hidingCommitment) +
         FfiConverterArrayBuffer.allocationSize(value.bindingCommitment) +
         FfiConverterArrayBuffer.allocationSize(value.noncesCiphertext)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::FrostJob`.
+ */
+export type ExternalFrostJob = {
+  /**
+   * Which key to sign with.
+   */
+  derivation: ExternalFrostDerivation;
+  /**
+   * 32-byte BIP-341 sighash to sign.
+   */
+  sighash: ArrayBuffer;
+  /**
+   * FROST group verifying key (33 bytes compressed).
+   */
+  verifyingKey: ArrayBuffer;
+  /**
+   * Per-operator round-1 commitments.
+   */
+  operatorCommitments: Array<IdentifierCommitmentPair>;
+  /**
+   * Optional adaptor public key (33 bytes compressed).
+   */
+  adaptorPublicKey: ArrayBuffer | undefined;
+};
+
+/**
+ * Generated factory for {@link ExternalFrostJob} record objects.
+ */
+export const ExternalFrostJob = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<ExternalFrostJob, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalFrostJob}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalFrostJob}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ExternalFrostJob>,
+  });
+})();
+
+const FfiConverterTypeExternalFrostJob = (() => {
+  type TypeName = ExternalFrostJob;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        derivation: FfiConverterTypeExternalFrostDerivation.read(from),
+        sighash: FfiConverterArrayBuffer.read(from),
+        verifyingKey: FfiConverterArrayBuffer.read(from),
+        operatorCommitments:
+          FfiConverterArrayTypeIdentifierCommitmentPair.read(from),
+        adaptorPublicKey: FfiConverterOptionalArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeExternalFrostDerivation.write(value.derivation, into);
+      FfiConverterArrayBuffer.write(value.sighash, into);
+      FfiConverterArrayBuffer.write(value.verifyingKey, into);
+      FfiConverterArrayTypeIdentifierCommitmentPair.write(
+        value.operatorCommitments,
+        into
+      );
+      FfiConverterOptionalArrayBuffer.write(value.adaptorPublicKey, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeExternalFrostDerivation.allocationSize(
+          value.derivation
+        ) +
+        FfiConverterArrayBuffer.allocationSize(value.sighash) +
+        FfiConverterArrayBuffer.allocationSize(value.verifyingKey) +
+        FfiConverterArrayTypeIdentifierCommitmentPair.allocationSize(
+          value.operatorCommitments
+        ) +
+        FfiConverterOptionalArrayBuffer.allocationSize(value.adaptorPublicKey)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::FrostShareResult`.
+ */
+export type ExternalFrostShareResult = {
+  /**
+   * The user's nonce commitment (round-1 output).
+   */
+  commitment: ExternalFrostCommitments;
+  /**
+   * The user's signature share (round-2 output).
+   */
+  signatureShare: ExternalFrostSignatureShare;
+};
+
+/**
+ * Generated factory for {@link ExternalFrostShareResult} record objects.
+ */
+export const ExternalFrostShareResult = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalFrostShareResult,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalFrostShareResult}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalFrostShareResult}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalFrostShareResult>,
+  });
+})();
+
+const FfiConverterTypeExternalFrostShareResult = (() => {
+  type TypeName = ExternalFrostShareResult;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        commitment: FfiConverterTypeExternalFrostCommitments.read(from),
+        signatureShare: FfiConverterTypeExternalFrostSignatureShare.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeExternalFrostCommitments.write(value.commitment, into);
+      FfiConverterTypeExternalFrostSignatureShare.write(
+        value.signatureShare,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeExternalFrostCommitments.allocationSize(
+          value.commitment
+        ) +
+        FfiConverterTypeExternalFrostSignatureShare.allocationSize(
+          value.signatureShare
+        )
       );
     }
   }
@@ -3944,34 +4526,35 @@ const FfiConverterTypeExternalInputParser = (() => {
 })();
 
 /**
- * FFI-safe representation of `k256::Scalar` (32 bytes)
+ * FFI-safe representation of `spark_wallet::NewLeafKey`.
  */
-export type ExternalScalar = {
+export type ExternalNewLeafKey = {
+  nodeId: ExternalTreeNodeId;
   /**
-   * The 32-byte scalar value
+   * New signing public key (33 bytes compressed).
    */
-  bytes: ArrayBuffer;
+  newSigningPublicKey: ArrayBuffer;
 };
 
 /**
- * Generated factory for {@link ExternalScalar} record objects.
+ * Generated factory for {@link ExternalNewLeafKey} record objects.
  */
-export const ExternalScalar = (() => {
+export const ExternalNewLeafKey = (() => {
   const defaults = () => ({});
   const create = (() => {
-    return uniffiCreateRecord<ExternalScalar, ReturnType<typeof defaults>>(
+    return uniffiCreateRecord<ExternalNewLeafKey, ReturnType<typeof defaults>>(
       defaults
     );
   })();
   return Object.freeze({
     /**
-     * Create a frozen instance of {@link ExternalScalar}, with defaults specified
+     * Create a frozen instance of {@link ExternalNewLeafKey}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     create,
 
     /**
-     * Create a frozen instance of {@link ExternalScalar}, with defaults specified
+     * Create a frozen instance of {@link ExternalNewLeafKey}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     new: create,
@@ -3979,96 +4562,27 @@ export const ExternalScalar = (() => {
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
-    defaults: () => Object.freeze(defaults()) as Partial<ExternalScalar>,
+    defaults: () => Object.freeze(defaults()) as Partial<ExternalNewLeafKey>,
   });
 })();
 
-const FfiConverterTypeExternalScalar = (() => {
-  type TypeName = ExternalScalar;
+const FfiConverterTypeExternalNewLeafKey = (() => {
+  type TypeName = ExternalNewLeafKey;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
-        bytes: FfiConverterArrayBuffer.read(from),
+        nodeId: FfiConverterTypeExternalTreeNodeId.read(from),
+        newSigningPublicKey: FfiConverterArrayBuffer.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
-      FfiConverterArrayBuffer.write(value.bytes, into);
-    }
-    allocationSize(value: TypeName): number {
-      return FfiConverterArrayBuffer.allocationSize(value.bytes);
-    }
-  }
-  return new FFIConverter();
-})();
-
-/**
- * FFI-safe representation of `spark_wallet::SecretShare`
- */
-export type ExternalSecretShare = {
-  /**
-   * Number of shares required to recover the secret
-   */
-  threshold: /*u32*/ number;
-  /**
-   * Index (x-coordinate) of the share as 32 bytes
-   */
-  index: ExternalScalar;
-  /**
-   * Share value (y-coordinate) as 32 bytes
-   */
-  share: ExternalScalar;
-};
-
-/**
- * Generated factory for {@link ExternalSecretShare} record objects.
- */
-export const ExternalSecretShare = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<ExternalSecretShare, ReturnType<typeof defaults>>(
-      defaults
-    );
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link ExternalSecretShare}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link ExternalSecretShare}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Object.freeze(defaults()) as Partial<ExternalSecretShare>,
-  });
-})();
-
-const FfiConverterTypeExternalSecretShare = (() => {
-  type TypeName = ExternalSecretShare;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        threshold: FfiConverterUInt32.read(from),
-        index: FfiConverterTypeExternalScalar.read(from),
-        share: FfiConverterTypeExternalScalar.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterUInt32.write(value.threshold, into);
-      FfiConverterTypeExternalScalar.write(value.index, into);
-      FfiConverterTypeExternalScalar.write(value.share, into);
+      FfiConverterTypeExternalTreeNodeId.write(value.nodeId, into);
+      FfiConverterArrayBuffer.write(value.newSigningPublicKey, into);
     }
     allocationSize(value: TypeName): number {
       return (
-        FfiConverterUInt32.allocationSize(value.threshold) +
-        FfiConverterTypeExternalScalar.allocationSize(value.index) +
-        FfiConverterTypeExternalScalar.allocationSize(value.share)
+        FfiConverterTypeExternalTreeNodeId.allocationSize(value.nodeId) +
+        FfiConverterArrayBuffer.allocationSize(value.newSigningPublicKey)
       );
     }
   }
@@ -4076,59 +4590,39 @@ const FfiConverterTypeExternalSecretShare = (() => {
 })();
 
 /**
- * FFI-safe representation of `spark_wallet::SignFrostRequest`
+ * FFI-safe representation of `spark_wallet::OperatorPackage`.
  */
-export type ExternalSignFrostRequest = {
+export type ExternalOperatorPackage = {
   /**
-   * The message to sign
+   * The operator this package is encrypted for.
    */
-  message: ArrayBuffer;
+  operatorIdentifier: ExternalIdentifier;
   /**
-   * The public key (33 bytes compressed)
+   * The ECIES-encrypted package bytes.
    */
-  publicKey: ArrayBuffer;
-  /**
-   * The private key source
-   */
-  secret: ExternalSecretSource;
-  /**
-   * The verifying key (33 bytes compressed)
-   */
-  verifyingKey: ArrayBuffer;
-  /**
-   * The self nonce commitment
-   */
-  selfNonceCommitment: ExternalFrostCommitments;
-  /**
-   * Statechain commitments as a list of identifier-commitment pairs
-   */
-  statechainCommitments: Array<IdentifierCommitmentPair>;
-  /**
-   * Optional adaptor public key (33 bytes compressed)
-   */
-  adaptorPublicKey: ArrayBuffer | undefined;
+  encryptedPackage: ArrayBuffer;
 };
 
 /**
- * Generated factory for {@link ExternalSignFrostRequest} record objects.
+ * Generated factory for {@link ExternalOperatorPackage} record objects.
  */
-export const ExternalSignFrostRequest = (() => {
+export const ExternalOperatorPackage = (() => {
   const defaults = () => ({});
   const create = (() => {
     return uniffiCreateRecord<
-      ExternalSignFrostRequest,
+      ExternalOperatorPackage,
       ReturnType<typeof defaults>
     >(defaults);
   })();
   return Object.freeze({
     /**
-     * Create a frozen instance of {@link ExternalSignFrostRequest}, with defaults specified
+     * Create a frozen instance of {@link ExternalOperatorPackage}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     create,
 
     /**
-     * Create a frozen instance of {@link ExternalSignFrostRequest}, with defaults specified
+     * Create a frozen instance of {@link ExternalOperatorPackage}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     new: create,
@@ -4137,54 +4631,1256 @@ export const ExternalSignFrostRequest = (() => {
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () =>
-      Object.freeze(defaults()) as Partial<ExternalSignFrostRequest>,
+      Object.freeze(defaults()) as Partial<ExternalOperatorPackage>,
   });
 })();
 
-const FfiConverterTypeExternalSignFrostRequest = (() => {
-  type TypeName = ExternalSignFrostRequest;
+const FfiConverterTypeExternalOperatorPackage = (() => {
+  type TypeName = ExternalOperatorPackage;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
-        message: FfiConverterArrayBuffer.read(from),
-        publicKey: FfiConverterArrayBuffer.read(from),
-        secret: FfiConverterTypeExternalSecretSource.read(from),
-        verifyingKey: FfiConverterArrayBuffer.read(from),
-        selfNonceCommitment:
-          FfiConverterTypeExternalFrostCommitments.read(from),
-        statechainCommitments:
-          FfiConverterArrayTypeIdentifierCommitmentPair.read(from),
-        adaptorPublicKey: FfiConverterOptionalArrayBuffer.read(from),
+        operatorIdentifier: FfiConverterTypeExternalIdentifier.read(from),
+        encryptedPackage: FfiConverterArrayBuffer.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
-      FfiConverterArrayBuffer.write(value.message, into);
+      FfiConverterTypeExternalIdentifier.write(value.operatorIdentifier, into);
+      FfiConverterArrayBuffer.write(value.encryptedPackage, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeExternalIdentifier.allocationSize(
+          value.operatorIdentifier
+        ) + FfiConverterArrayBuffer.allocationSize(value.encryptedPackage)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::OperatorRecipient`.
+ */
+export type ExternalOperatorRecipient = {
+  /**
+   * Numeric operator id (determines the Feldman share index).
+   */
+  id: /*u64*/ bigint;
+  /**
+   * FROST identifier.
+   */
+  identifier: ExternalIdentifier;
+  /**
+   * The operator's ECIES / identity public key (33 bytes compressed).
+   */
+  publicKey: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link ExternalOperatorRecipient} record objects.
+ */
+export const ExternalOperatorRecipient = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalOperatorRecipient,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalOperatorRecipient}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalOperatorRecipient}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalOperatorRecipient>,
+  });
+})();
+
+const FfiConverterTypeExternalOperatorRecipient = (() => {
+  type TypeName = ExternalOperatorRecipient;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        id: FfiConverterUInt64.read(from),
+        identifier: FfiConverterTypeExternalIdentifier.read(from),
+        publicKey: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterUInt64.write(value.id, into);
+      FfiConverterTypeExternalIdentifier.write(value.identifier, into);
       FfiConverterArrayBuffer.write(value.publicKey, into);
-      FfiConverterTypeExternalSecretSource.write(value.secret, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterUInt64.allocationSize(value.id) +
+        FfiConverterTypeExternalIdentifier.allocationSize(value.identifier) +
+        FfiConverterArrayBuffer.allocationSize(value.publicKey)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::PrepareClaimRequest`.
+ */
+export type ExternalPrepareClaimRequest = {
+  transferId: string;
+  /**
+   * Sender identity public key (33 bytes compressed).
+   */
+  senderIdentityPublicKey: ArrayBuffer;
+  leaves: Array<ExternalClaimLeafInput>;
+  operatorRecipients: Array<ExternalOperatorRecipient>;
+  threshold: /*u32*/ number;
+};
+
+/**
+ * Generated factory for {@link ExternalPrepareClaimRequest} record objects.
+ */
+export const ExternalPrepareClaimRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalPrepareClaimRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalPrepareClaimRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalPrepareClaimRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalPrepareClaimRequest>,
+  });
+})();
+
+const FfiConverterTypeExternalPrepareClaimRequest = (() => {
+  type TypeName = ExternalPrepareClaimRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        transferId: FfiConverterString.read(from),
+        senderIdentityPublicKey: FfiConverterArrayBuffer.read(from),
+        leaves: FfiConverterArrayTypeExternalClaimLeafInput.read(from),
+        operatorRecipients:
+          FfiConverterArrayTypeExternalOperatorRecipient.read(from),
+        threshold: FfiConverterUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.transferId, into);
+      FfiConverterArrayBuffer.write(value.senderIdentityPublicKey, into);
+      FfiConverterArrayTypeExternalClaimLeafInput.write(value.leaves, into);
+      FfiConverterArrayTypeExternalOperatorRecipient.write(
+        value.operatorRecipients,
+        into
+      );
+      FfiConverterUInt32.write(value.threshold, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.transferId) +
+        FfiConverterArrayBuffer.allocationSize(value.senderIdentityPublicKey) +
+        FfiConverterArrayTypeExternalClaimLeafInput.allocationSize(
+          value.leaves
+        ) +
+        FfiConverterArrayTypeExternalOperatorRecipient.allocationSize(
+          value.operatorRecipients
+        ) +
+        FfiConverterUInt32.allocationSize(value.threshold)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::PrepareLightningReceiveRequest`.
+ */
+export type ExternalPrepareLightningReceiveRequest = {
+  operatorRecipients: Array<ExternalOperatorRecipient>;
+  threshold: /*u32*/ number;
+};
+
+/**
+ * Generated factory for {@link ExternalPrepareLightningReceiveRequest} record objects.
+ */
+export const ExternalPrepareLightningReceiveRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalPrepareLightningReceiveRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalPrepareLightningReceiveRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalPrepareLightningReceiveRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(
+        defaults()
+      ) as Partial<ExternalPrepareLightningReceiveRequest>,
+  });
+})();
+
+const FfiConverterTypeExternalPrepareLightningReceiveRequest = (() => {
+  type TypeName = ExternalPrepareLightningReceiveRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        operatorRecipients:
+          FfiConverterArrayTypeExternalOperatorRecipient.read(from),
+        threshold: FfiConverterUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayTypeExternalOperatorRecipient.write(
+        value.operatorRecipients,
+        into
+      );
+      FfiConverterUInt32.write(value.threshold, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayTypeExternalOperatorRecipient.allocationSize(
+          value.operatorRecipients
+        ) + FfiConverterUInt32.allocationSize(value.threshold)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::PrepareStaticDepositClaimRequest`.
+ */
+export type ExternalPrepareStaticDepositClaimRequest = {
+  index: /*u32*/ number;
+  userStatement: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link ExternalPrepareStaticDepositClaimRequest} record objects.
+ */
+export const ExternalPrepareStaticDepositClaimRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalPrepareStaticDepositClaimRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalPrepareStaticDepositClaimRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalPrepareStaticDepositClaimRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(
+        defaults()
+      ) as Partial<ExternalPrepareStaticDepositClaimRequest>,
+  });
+})();
+
+const FfiConverterTypeExternalPrepareStaticDepositClaimRequest = (() => {
+  type TypeName = ExternalPrepareStaticDepositClaimRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        index: FfiConverterUInt32.read(from),
+        userStatement: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterUInt32.write(value.index, into);
+      FfiConverterArrayBuffer.write(value.userStatement, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterUInt32.allocationSize(value.index) +
+        FfiConverterArrayBuffer.allocationSize(value.userStatement)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::PrepareStaticDepositRequest`.
+ */
+export type ExternalPrepareStaticDepositRequest = {
+  index: /*u32*/ number;
+  /**
+   * SSP public key (33 bytes compressed).
+   */
+  sspPublicKey: ArrayBuffer;
+  frostJobs: Array<ExternalFrostJob>;
+};
+
+/**
+ * Generated factory for {@link ExternalPrepareStaticDepositRequest} record objects.
+ */
+export const ExternalPrepareStaticDepositRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalPrepareStaticDepositRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalPrepareStaticDepositRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalPrepareStaticDepositRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalPrepareStaticDepositRequest>,
+  });
+})();
+
+const FfiConverterTypeExternalPrepareStaticDepositRequest = (() => {
+  type TypeName = ExternalPrepareStaticDepositRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        index: FfiConverterUInt32.read(from),
+        sspPublicKey: FfiConverterArrayBuffer.read(from),
+        frostJobs: FfiConverterArrayTypeExternalFrostJob.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterUInt32.write(value.index, into);
+      FfiConverterArrayBuffer.write(value.sspPublicKey, into);
+      FfiConverterArrayTypeExternalFrostJob.write(value.frostJobs, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterUInt32.allocationSize(value.index) +
+        FfiConverterArrayBuffer.allocationSize(value.sspPublicKey) +
+        FfiConverterArrayTypeExternalFrostJob.allocationSize(value.frostJobs)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::PrepareTokenTransactionRequest`.
+ */
+export type ExternalPrepareTokenTransactionRequest = {
+  kind: ExternalTokenTransactionKind;
+  digest: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link ExternalPrepareTokenTransactionRequest} record objects.
+ */
+export const ExternalPrepareTokenTransactionRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalPrepareTokenTransactionRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalPrepareTokenTransactionRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalPrepareTokenTransactionRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(
+        defaults()
+      ) as Partial<ExternalPrepareTokenTransactionRequest>,
+  });
+})();
+
+const FfiConverterTypeExternalPrepareTokenTransactionRequest = (() => {
+  type TypeName = ExternalPrepareTokenTransactionRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        kind: FfiConverterTypeExternalTokenTransactionKind.read(from),
+        digest: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeExternalTokenTransactionKind.write(value.kind, into);
+      FfiConverterArrayBuffer.write(value.digest, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeExternalTokenTransactionKind.allocationSize(
+          value.kind
+        ) + FfiConverterArrayBuffer.allocationSize(value.digest)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::PrepareTransferRequest`.
+ */
+export type ExternalPrepareTransferRequest = {
+  transferId: string;
+  /**
+   * Receiver public key (33 bytes compressed).
+   */
+  receiverPublicKey: ArrayBuffer;
+  leaves: Array<ExternalTransferLeafInput>;
+  operatorRecipients: Array<ExternalOperatorRecipient>;
+  threshold: /*u32*/ number;
+};
+
+/**
+ * Generated factory for {@link ExternalPrepareTransferRequest} record objects.
+ */
+export const ExternalPrepareTransferRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalPrepareTransferRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalPrepareTransferRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalPrepareTransferRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalPrepareTransferRequest>,
+  });
+})();
+
+const FfiConverterTypeExternalPrepareTransferRequest = (() => {
+  type TypeName = ExternalPrepareTransferRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        transferId: FfiConverterString.read(from),
+        receiverPublicKey: FfiConverterArrayBuffer.read(from),
+        leaves: FfiConverterArrayTypeExternalTransferLeafInput.read(from),
+        operatorRecipients:
+          FfiConverterArrayTypeExternalOperatorRecipient.read(from),
+        threshold: FfiConverterUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.transferId, into);
+      FfiConverterArrayBuffer.write(value.receiverPublicKey, into);
+      FfiConverterArrayTypeExternalTransferLeafInput.write(value.leaves, into);
+      FfiConverterArrayTypeExternalOperatorRecipient.write(
+        value.operatorRecipients,
+        into
+      );
+      FfiConverterUInt32.write(value.threshold, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.transferId) +
+        FfiConverterArrayBuffer.allocationSize(value.receiverPublicKey) +
+        FfiConverterArrayTypeExternalTransferLeafInput.allocationSize(
+          value.leaves
+        ) +
+        FfiConverterArrayTypeExternalOperatorRecipient.allocationSize(
+          value.operatorRecipients
+        ) +
+        FfiConverterUInt32.allocationSize(value.threshold)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::PreparedClaim`.
+ */
+export type ExternalPreparedClaim = {
+  operatorPackages: Array<ExternalOperatorPackage>;
+};
+
+/**
+ * Generated factory for {@link ExternalPreparedClaim} record objects.
+ */
+export const ExternalPreparedClaim = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalPreparedClaim,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalPreparedClaim}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalPreparedClaim}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ExternalPreparedClaim>,
+  });
+})();
+
+const FfiConverterTypeExternalPreparedClaim = (() => {
+  type TypeName = ExternalPreparedClaim;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        operatorPackages:
+          FfiConverterArrayTypeExternalOperatorPackage.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayTypeExternalOperatorPackage.write(
+        value.operatorPackages,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayTypeExternalOperatorPackage.allocationSize(
+        value.operatorPackages
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::PreparedLightningReceive`.
+ */
+export type ExternalPreparedLightningReceive = {
+  /**
+   * SHA256 of the in-enclave preimage (32 bytes).
+   */
+  paymentHash: ArrayBuffer;
+  operatorPreimagePackages: Array<ExternalOperatorPackage>;
+};
+
+/**
+ * Generated factory for {@link ExternalPreparedLightningReceive} record objects.
+ */
+export const ExternalPreparedLightningReceive = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalPreparedLightningReceive,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalPreparedLightningReceive}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalPreparedLightningReceive}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalPreparedLightningReceive>,
+  });
+})();
+
+const FfiConverterTypeExternalPreparedLightningReceive = (() => {
+  type TypeName = ExternalPreparedLightningReceive;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        paymentHash: FfiConverterArrayBuffer.read(from),
+        operatorPreimagePackages:
+          FfiConverterArrayTypeExternalOperatorPackage.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.paymentHash, into);
+      FfiConverterArrayTypeExternalOperatorPackage.write(
+        value.operatorPreimagePackages,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayBuffer.allocationSize(value.paymentHash) +
+        FfiConverterArrayTypeExternalOperatorPackage.allocationSize(
+          value.operatorPreimagePackages
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::PreparedStaticDeposit`.
+ */
+export type ExternalPreparedStaticDeposit = {
+  exportedSecret: ArrayBuffer;
+  frostShares: Array<ExternalFrostShareResult>;
+};
+
+/**
+ * Generated factory for {@link ExternalPreparedStaticDeposit} record objects.
+ */
+export const ExternalPreparedStaticDeposit = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalPreparedStaticDeposit,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalPreparedStaticDeposit}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalPreparedStaticDeposit}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalPreparedStaticDeposit>,
+  });
+})();
+
+const FfiConverterTypeExternalPreparedStaticDeposit = (() => {
+  type TypeName = ExternalPreparedStaticDeposit;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        exportedSecret: FfiConverterArrayBuffer.read(from),
+        frostShares: FfiConverterArrayTypeExternalFrostShareResult.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.exportedSecret, into);
+      FfiConverterArrayTypeExternalFrostShareResult.write(
+        value.frostShares,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayBuffer.allocationSize(value.exportedSecret) +
+        FfiConverterArrayTypeExternalFrostShareResult.allocationSize(
+          value.frostShares
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::PreparedStaticDepositClaim`.
+ */
+export type ExternalPreparedStaticDepositClaim = {
+  /**
+   * The static-deposit secret key, exported in the clear for the SSP.
+   */
+  depositSecretKey: SecretBytes;
+  userSignature: EcdsaSignatureBytes;
+};
+
+/**
+ * Generated factory for {@link ExternalPreparedStaticDepositClaim} record objects.
+ */
+export const ExternalPreparedStaticDepositClaim = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalPreparedStaticDepositClaim,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalPreparedStaticDepositClaim}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalPreparedStaticDepositClaim}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalPreparedStaticDepositClaim>,
+  });
+})();
+
+const FfiConverterTypeExternalPreparedStaticDepositClaim = (() => {
+  type TypeName = ExternalPreparedStaticDepositClaim;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        depositSecretKey: FfiConverterTypeSecretBytes.read(from),
+        userSignature: FfiConverterTypeEcdsaSignatureBytes.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeSecretBytes.write(value.depositSecretKey, into);
+      FfiConverterTypeEcdsaSignatureBytes.write(value.userSignature, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeSecretBytes.allocationSize(value.depositSecretKey) +
+        FfiConverterTypeEcdsaSignatureBytes.allocationSize(value.userSignature)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::PreparedTokenTransaction`.
+ */
+export type ExternalPreparedTokenTransaction = {
+  signature: SchnorrSignatureBytes;
+};
+
+/**
+ * Generated factory for {@link ExternalPreparedTokenTransaction} record objects.
+ */
+export const ExternalPreparedTokenTransaction = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalPreparedTokenTransaction,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalPreparedTokenTransaction}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalPreparedTokenTransaction}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalPreparedTokenTransaction>,
+  });
+})();
+
+const FfiConverterTypeExternalPreparedTokenTransaction = (() => {
+  type TypeName = ExternalPreparedTokenTransaction;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        signature: FfiConverterTypeSchnorrSignatureBytes.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeSchnorrSignatureBytes.write(value.signature, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterTypeSchnorrSignatureBytes.allocationSize(
+        value.signature
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::PreparedTransfer`.
+ */
+export type ExternalPreparedTransfer = {
+  operatorPackages: Array<ExternalOperatorPackage>;
+  newLeafKeys: Array<ExternalNewLeafKey>;
+  transferUserSignature: EcdsaSignatureBytes;
+};
+
+/**
+ * Generated factory for {@link ExternalPreparedTransfer} record objects.
+ */
+export const ExternalPreparedTransfer = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalPreparedTransfer,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalPreparedTransfer}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalPreparedTransfer}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalPreparedTransfer>,
+  });
+})();
+
+const FfiConverterTypeExternalPreparedTransfer = (() => {
+  type TypeName = ExternalPreparedTransfer;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        operatorPackages:
+          FfiConverterArrayTypeExternalOperatorPackage.read(from),
+        newLeafKeys: FfiConverterArrayTypeExternalNewLeafKey.read(from),
+        transferUserSignature: FfiConverterTypeEcdsaSignatureBytes.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayTypeExternalOperatorPackage.write(
+        value.operatorPackages,
+        into
+      );
+      FfiConverterArrayTypeExternalNewLeafKey.write(value.newLeafKeys, into);
+      FfiConverterTypeEcdsaSignatureBytes.write(
+        value.transferUserSignature,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayTypeExternalOperatorPackage.allocationSize(
+          value.operatorPackages
+        ) +
+        FfiConverterArrayTypeExternalNewLeafKey.allocationSize(
+          value.newLeafKeys
+        ) +
+        FfiConverterTypeEcdsaSignatureBytes.allocationSize(
+          value.transferUserSignature
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::SignSparkInvoiceRequest`.
+ */
+export type ExternalSignSparkInvoiceRequest = {
+  kind: ExternalSparkInvoiceKind;
+  invoiceHash: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link ExternalSignSparkInvoiceRequest} record objects.
+ */
+export const ExternalSignSparkInvoiceRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalSignSparkInvoiceRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalSignSparkInvoiceRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalSignSparkInvoiceRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalSignSparkInvoiceRequest>,
+  });
+})();
+
+const FfiConverterTypeExternalSignSparkInvoiceRequest = (() => {
+  type TypeName = ExternalSignSparkInvoiceRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        kind: FfiConverterTypeExternalSparkInvoiceKind.read(from),
+        invoiceHash: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeExternalSparkInvoiceKind.write(value.kind, into);
+      FfiConverterArrayBuffer.write(value.invoiceHash, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeExternalSparkInvoiceKind.allocationSize(value.kind) +
+        FfiConverterArrayBuffer.allocationSize(value.invoiceHash)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::SignStaticDepositRefundRequest`.
+ */
+export type ExternalSignStaticDepositRefundRequest = {
+  index: /*u32*/ number;
+  sighash: ArrayBuffer;
+  /**
+   * FROST group verifying key (33 bytes compressed).
+   */
+  verifyingKey: ArrayBuffer;
+  nonceCommitment: ExternalFrostCommitments;
+  statechainCommitments: Array<IdentifierCommitmentPair>;
+  statechainSignatures: Array<IdentifierSignaturePair>;
+  statechainPublicKeys: Array<IdentifierPublicKeyPair>;
+};
+
+/**
+ * Generated factory for {@link ExternalSignStaticDepositRefundRequest} record objects.
+ */
+export const ExternalSignStaticDepositRefundRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalSignStaticDepositRefundRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalSignStaticDepositRefundRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalSignStaticDepositRefundRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(
+        defaults()
+      ) as Partial<ExternalSignStaticDepositRefundRequest>,
+  });
+})();
+
+const FfiConverterTypeExternalSignStaticDepositRefundRequest = (() => {
+  type TypeName = ExternalSignStaticDepositRefundRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        index: FfiConverterUInt32.read(from),
+        sighash: FfiConverterArrayBuffer.read(from),
+        verifyingKey: FfiConverterArrayBuffer.read(from),
+        nonceCommitment: FfiConverterTypeExternalFrostCommitments.read(from),
+        statechainCommitments:
+          FfiConverterArrayTypeIdentifierCommitmentPair.read(from),
+        statechainSignatures:
+          FfiConverterArrayTypeIdentifierSignaturePair.read(from),
+        statechainPublicKeys:
+          FfiConverterArrayTypeIdentifierPublicKeyPair.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterUInt32.write(value.index, into);
+      FfiConverterArrayBuffer.write(value.sighash, into);
       FfiConverterArrayBuffer.write(value.verifyingKey, into);
       FfiConverterTypeExternalFrostCommitments.write(
-        value.selfNonceCommitment,
+        value.nonceCommitment,
         into
       );
       FfiConverterArrayTypeIdentifierCommitmentPair.write(
         value.statechainCommitments,
         into
       );
-      FfiConverterOptionalArrayBuffer.write(value.adaptorPublicKey, into);
+      FfiConverterArrayTypeIdentifierSignaturePair.write(
+        value.statechainSignatures,
+        into
+      );
+      FfiConverterArrayTypeIdentifierPublicKeyPair.write(
+        value.statechainPublicKeys,
+        into
+      );
     }
     allocationSize(value: TypeName): number {
       return (
-        FfiConverterArrayBuffer.allocationSize(value.message) +
-        FfiConverterArrayBuffer.allocationSize(value.publicKey) +
-        FfiConverterTypeExternalSecretSource.allocationSize(value.secret) +
+        FfiConverterUInt32.allocationSize(value.index) +
+        FfiConverterArrayBuffer.allocationSize(value.sighash) +
         FfiConverterArrayBuffer.allocationSize(value.verifyingKey) +
         FfiConverterTypeExternalFrostCommitments.allocationSize(
-          value.selfNonceCommitment
+          value.nonceCommitment
         ) +
         FfiConverterArrayTypeIdentifierCommitmentPair.allocationSize(
           value.statechainCommitments
         ) +
-        FfiConverterOptionalArrayBuffer.allocationSize(value.adaptorPublicKey)
+        FfiConverterArrayTypeIdentifierSignaturePair.allocationSize(
+          value.statechainSignatures
+        ) +
+        FfiConverterArrayTypeIdentifierPublicKeyPair.allocationSize(
+          value.statechainPublicKeys
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::SignedSparkInvoice`.
+ */
+export type ExternalSignedSparkInvoice = {
+  signature: SchnorrSignatureBytes;
+};
+
+/**
+ * Generated factory for {@link ExternalSignedSparkInvoice} record objects.
+ */
+export const ExternalSignedSparkInvoice = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalSignedSparkInvoice,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalSignedSparkInvoice}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalSignedSparkInvoice}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalSignedSparkInvoice>,
+  });
+})();
+
+const FfiConverterTypeExternalSignedSparkInvoice = (() => {
+  type TypeName = ExternalSignedSparkInvoice;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        signature: FfiConverterTypeSchnorrSignatureBytes.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeSchnorrSignatureBytes.write(value.signature, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterTypeSchnorrSignatureBytes.allocationSize(
+        value.signature
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * The two default external signers created from one mnemonic by
+ * [`default_external_signers`].
+ */
+export type ExternalSigners = {
+  /**
+   * External signer for non-Spark SDK signing (LNURL-auth, sync, message
+   * signing, ECIES).
+   */
+  breezSigner: ExternalBreezSigner;
+  /**
+   * External high-level Spark signer for the Spark wallet flows.
+   */
+  sparkSigner: ExternalSparkSigner;
+};
+
+/**
+ * Generated factory for {@link ExternalSigners} record objects.
+ */
+export const ExternalSigners = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<ExternalSigners, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalSigners}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalSigners}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ExternalSigners>,
+  });
+})();
+
+const FfiConverterTypeExternalSigners = (() => {
+  type TypeName = ExternalSigners;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        breezSigner: FfiConverterTypeExternalBreezSigner.read(from),
+        sparkSigner: FfiConverterTypeExternalSparkSigner.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeExternalBreezSigner.write(value.breezSigner, into);
+      FfiConverterTypeExternalSparkSigner.write(value.sparkSigner, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeExternalBreezSigner.allocationSize(value.breezSigner) +
+        FfiConverterTypeExternalSparkSigner.allocationSize(value.sparkSigner)
       );
     }
   }
@@ -4261,6 +5957,210 @@ const FfiConverterTypeExternalSigningCommitments = (() => {
 })();
 
 /**
+ * FFI-safe representation of `spark_wallet::StartStaticDepositRefundRequest`.
+ */
+export type ExternalStartStaticDepositRefundRequest = {
+  index: /*u32*/ number;
+  userStatement: ArrayBuffer;
+};
+
+/**
+ * Generated factory for {@link ExternalStartStaticDepositRefundRequest} record objects.
+ */
+export const ExternalStartStaticDepositRefundRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalStartStaticDepositRefundRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalStartStaticDepositRefundRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalStartStaticDepositRefundRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(
+        defaults()
+      ) as Partial<ExternalStartStaticDepositRefundRequest>,
+  });
+})();
+
+const FfiConverterTypeExternalStartStaticDepositRefundRequest = (() => {
+  type TypeName = ExternalStartStaticDepositRefundRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        index: FfiConverterUInt32.read(from),
+        userStatement: FfiConverterArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterUInt32.write(value.index, into);
+      FfiConverterArrayBuffer.write(value.userStatement, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterUInt32.allocationSize(value.index) +
+        FfiConverterArrayBuffer.allocationSize(value.userStatement)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::StartedStaticDepositRefund`.
+ */
+export type ExternalStartedStaticDepositRefund = {
+  /**
+   * Static-deposit signing public key (33 bytes compressed).
+   */
+  signingPublicKey: ArrayBuffer;
+  nonceCommitment: ExternalFrostCommitments;
+  userSignature: EcdsaSignatureBytes;
+};
+
+/**
+ * Generated factory for {@link ExternalStartedStaticDepositRefund} record objects.
+ */
+export const ExternalStartedStaticDepositRefund = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalStartedStaticDepositRefund,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalStartedStaticDepositRefund}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalStartedStaticDepositRefund}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalStartedStaticDepositRefund>,
+  });
+})();
+
+const FfiConverterTypeExternalStartedStaticDepositRefund = (() => {
+  type TypeName = ExternalStartedStaticDepositRefund;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        signingPublicKey: FfiConverterArrayBuffer.read(from),
+        nonceCommitment: FfiConverterTypeExternalFrostCommitments.read(from),
+        userSignature: FfiConverterTypeEcdsaSignatureBytes.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.signingPublicKey, into);
+      FfiConverterTypeExternalFrostCommitments.write(
+        value.nonceCommitment,
+        into
+      );
+      FfiConverterTypeEcdsaSignatureBytes.write(value.userSignature, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayBuffer.allocationSize(value.signingPublicKey) +
+        FfiConverterTypeExternalFrostCommitments.allocationSize(
+          value.nonceCommitment
+        ) +
+        FfiConverterTypeEcdsaSignatureBytes.allocationSize(value.userSignature)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::TransferLeafInput`. Conveys the old
+ * leaf id and the new (post-transfer) leaf id; the signer derives keys from them.
+ */
+export type ExternalTransferLeafInput = {
+  nodeId: ExternalTreeNodeId;
+  newLeafId: ExternalTreeNodeId;
+};
+
+/**
+ * Generated factory for {@link ExternalTransferLeafInput} record objects.
+ */
+export const ExternalTransferLeafInput = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExternalTransferLeafInput,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExternalTransferLeafInput}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExternalTransferLeafInput}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExternalTransferLeafInput>,
+  });
+})();
+
+const FfiConverterTypeExternalTransferLeafInput = (() => {
+  type TypeName = ExternalTransferLeafInput;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        nodeId: FfiConverterTypeExternalTreeNodeId.read(from),
+        newLeafId: FfiConverterTypeExternalTreeNodeId.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeExternalTreeNodeId.write(value.nodeId, into);
+      FfiConverterTypeExternalTreeNodeId.write(value.newLeafId, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeExternalTreeNodeId.allocationSize(value.nodeId) +
+        FfiConverterTypeExternalTreeNodeId.allocationSize(value.newLeafId)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
  * FFI-safe representation of `spark_wallet::TreeNodeId`
  */
 export type ExternalTreeNodeId = {
@@ -4313,75 +6213,6 @@ const FfiConverterTypeExternalTreeNodeId = (() => {
     }
     allocationSize(value: TypeName): number {
       return FfiConverterString.allocationSize(value.id);
-    }
-  }
-  return new FFIConverter();
-})();
-
-/**
- * FFI-safe representation of `spark_wallet::VerifiableSecretShare`
- */
-export type ExternalVerifiableSecretShare = {
-  /**
-   * Base secret share containing threshold, index, and share value
-   */
-  secretShare: ExternalSecretShare;
-  /**
-   * Cryptographic proofs for share verification (each proof is 33 bytes compressed public key)
-   */
-  proofs: Array<ArrayBuffer>;
-};
-
-/**
- * Generated factory for {@link ExternalVerifiableSecretShare} record objects.
- */
-export const ExternalVerifiableSecretShare = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<
-      ExternalVerifiableSecretShare,
-      ReturnType<typeof defaults>
-    >(defaults);
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link ExternalVerifiableSecretShare}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link ExternalVerifiableSecretShare}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () =>
-      Object.freeze(defaults()) as Partial<ExternalVerifiableSecretShare>,
-  });
-})();
-
-const FfiConverterTypeExternalVerifiableSecretShare = (() => {
-  type TypeName = ExternalVerifiableSecretShare;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        secretShare: FfiConverterTypeExternalSecretShare.read(from),
-        proofs: FfiConverterArrayArrayBuffer.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterTypeExternalSecretShare.write(value.secretShare, into);
-      FfiConverterArrayArrayBuffer.write(value.proofs, into);
-    }
-    allocationSize(value: TypeName): number {
-      return (
-        FfiConverterTypeExternalSecretShare.allocationSize(value.secretShare) +
-        FfiConverterArrayArrayBuffer.allocationSize(value.proofs)
-      );
     }
   }
   return new FFIConverter();
@@ -5346,82 +7177,6 @@ const FfiConverterTypeIncomingChange = (() => {
       return (
         FfiConverterTypeRecord.allocationSize(value.newState) +
         FfiConverterOptionalTypeRecord.allocationSize(value.oldState)
-      );
-    }
-  }
-  return new FFIConverter();
-})();
-
-/**
- * Configuration for key set derivation.
- *
- * This struct encapsulates the parameters needed for BIP32 key derivation.
- */
-export type KeySetConfig = {
-  /**
-   * The key set type which determines the derivation path
-   */
-  keySetType: KeySetType;
-  /**
-   * Controls the structure of the BIP derivation path
-   */
-  useAddressIndex: boolean;
-  /**
-   * Optional account number for key derivation
-   */
-  accountNumber: /*u32*/ number | undefined;
-};
-
-/**
- * Generated factory for {@link KeySetConfig} record objects.
- */
-export const KeySetConfig = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<KeySetConfig, ReturnType<typeof defaults>>(
-      defaults
-    );
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link KeySetConfig}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link KeySetConfig}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Object.freeze(defaults()) as Partial<KeySetConfig>,
-  });
-})();
-
-const FfiConverterTypeKeySetConfig = (() => {
-  type TypeName = KeySetConfig;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        keySetType: FfiConverterTypeKeySetType.read(from),
-        useAddressIndex: FfiConverterBool.read(from),
-        accountNumber: FfiConverterOptionalUInt32.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterTypeKeySetType.write(value.keySetType, into);
-      FfiConverterBool.write(value.useAddressIndex, into);
-      FfiConverterOptionalUInt32.write(value.accountNumber, into);
-    }
-    allocationSize(value: TypeName): number {
-      return (
-        FfiConverterTypeKeySetType.allocationSize(value.keySetType) +
-        FfiConverterBool.allocationSize(value.useAddressIndex) +
-        FfiConverterOptionalUInt32.allocationSize(value.accountNumber)
       );
     }
   }
@@ -7332,103 +9087,36 @@ const FfiConverterTypeMintIssuerTokenRequest = (() => {
 })();
 
 /**
- * Configuration for Nostr relay connections used in `Passkey`.
- *
- * Relay URLs are managed internally by the client:
- * - Public relays are always included
- * - Breez relay is added when `breez_api_key` is provided (enables NIP-42 auth)
+ * Request for [`BreezSdk::optimize_leaves`]. Defaults to
+ * [`OptimizationMode::Full`].
  */
-export type NostrRelayConfig = {
+export type OptimizeLeavesRequest = {
   /**
-   * Optional Breez API key for authenticated access to the Breez relay.
-   * When provided, the Breez relay is added and NIP-42 authentication is enabled.
+   * Controls how much work the call performs before returning.
    */
-  breezApiKey: string | undefined;
-  /**
-   * Connection timeout in seconds. Defaults to 30 when `None`.
-   */
-  timeoutSecs: /*u32*/ number | undefined;
+  mode: OptimizationMode;
 };
 
 /**
- * Generated factory for {@link NostrRelayConfig} record objects.
+ * Generated factory for {@link OptimizeLeavesRequest} record objects.
  */
-export const NostrRelayConfig = (() => {
-  const defaults = () => ({ breezApiKey: undefined, timeoutSecs: undefined });
-  const create = (() => {
-    return uniffiCreateRecord<NostrRelayConfig, ReturnType<typeof defaults>>(
-      defaults
-    );
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link NostrRelayConfig}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link NostrRelayConfig}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Object.freeze(defaults()) as Partial<NostrRelayConfig>,
-  });
-})();
-
-const FfiConverterTypeNostrRelayConfig = (() => {
-  type TypeName = NostrRelayConfig;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        breezApiKey: FfiConverterOptionalString.read(from),
-        timeoutSecs: FfiConverterOptionalUInt32.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterOptionalString.write(value.breezApiKey, into);
-      FfiConverterOptionalUInt32.write(value.timeoutSecs, into);
-    }
-    allocationSize(value: TypeName): number {
-      return (
-        FfiConverterOptionalString.allocationSize(value.breezApiKey) +
-        FfiConverterOptionalUInt32.allocationSize(value.timeoutSecs)
-      );
-    }
-  }
-  return new FFIConverter();
-})();
-
-export type OptimizationProgress = {
-  isRunning: boolean;
-  currentRound: /*u32*/ number;
-  totalRounds: /*u32*/ number;
-};
-
-/**
- * Generated factory for {@link OptimizationProgress} record objects.
- */
-export const OptimizationProgress = (() => {
+export const OptimizeLeavesRequest = (() => {
   const defaults = () => ({});
   const create = (() => {
     return uniffiCreateRecord<
-      OptimizationProgress,
+      OptimizeLeavesRequest,
       ReturnType<typeof defaults>
     >(defaults);
   })();
   return Object.freeze({
     /**
-     * Create a frozen instance of {@link OptimizationProgress}, with defaults specified
+     * Create a frozen instance of {@link OptimizeLeavesRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     create,
 
     /**
-     * Create a frozen instance of {@link OptimizationProgress}, with defaults specified
+     * Create a frozen instance of {@link OptimizeLeavesRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     new: create,
@@ -7436,31 +9124,83 @@ export const OptimizationProgress = (() => {
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
-    defaults: () => Object.freeze(defaults()) as Partial<OptimizationProgress>,
+    defaults: () => Object.freeze(defaults()) as Partial<OptimizeLeavesRequest>,
   });
 })();
 
-const FfiConverterTypeOptimizationProgress = (() => {
-  type TypeName = OptimizationProgress;
+const FfiConverterTypeOptimizeLeavesRequest = (() => {
+  type TypeName = OptimizeLeavesRequest;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
-        isRunning: FfiConverterBool.read(from),
-        currentRound: FfiConverterUInt32.read(from),
-        totalRounds: FfiConverterUInt32.read(from),
+        mode: FfiConverterTypeOptimizationMode.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
-      FfiConverterBool.write(value.isRunning, into);
-      FfiConverterUInt32.write(value.currentRound, into);
-      FfiConverterUInt32.write(value.totalRounds, into);
+      FfiConverterTypeOptimizationMode.write(value.mode, into);
     }
     allocationSize(value: TypeName): number {
-      return (
-        FfiConverterBool.allocationSize(value.isRunning) +
-        FfiConverterUInt32.allocationSize(value.currentRound) +
-        FfiConverterUInt32.allocationSize(value.totalRounds)
-      );
+      return FfiConverterTypeOptimizationMode.allocationSize(value.mode);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Response from a [`BreezSdk::optimize_leaves`] call.
+ */
+export type OptimizeLeavesResponse = {
+  /**
+   * The outcome of the optimization run.
+   */
+  outcome: OptimizationOutcome;
+};
+
+/**
+ * Generated factory for {@link OptimizeLeavesResponse} record objects.
+ */
+export const OptimizeLeavesResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      OptimizeLeavesResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link OptimizeLeavesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link OptimizeLeavesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<OptimizeLeavesResponse>,
+  });
+})();
+
+const FfiConverterTypeOptimizeLeavesResponse = (() => {
+  type TypeName = OptimizeLeavesResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        outcome: FfiConverterTypeOptimizationOutcome.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeOptimizationOutcome.write(value.outcome, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterTypeOptimizationOutcome.allocationSize(value.outcome);
     }
   }
   return new FFIConverter();
@@ -7518,6 +9258,271 @@ const FfiConverterTypeOutgoingChange = (() => {
       return (
         FfiConverterTypeRecordChange.allocationSize(value.change) +
         FfiConverterOptionalTypeRecord.allocationSize(value.parent)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Configuration for the passkey client.
+ */
+export type PasskeyConfig = {
+  /**
+   * Default wallet label when a call provides none. Unset uses
+   * `"Default"`.
+   */
+  defaultLabel: string | undefined;
+  /**
+   * Relying Party and user identity for the built-in provider, used
+   * on the zero-config path. Ignored when you inject your own
+   * provider.
+   */
+  providerOptions: PasskeyProviderOptions | undefined;
+};
+
+/**
+ * Generated factory for {@link PasskeyConfig} record objects.
+ */
+export const PasskeyConfig = (() => {
+  const defaults = () => ({
+    defaultLabel: undefined,
+    providerOptions: undefined,
+  });
+  const create = (() => {
+    return uniffiCreateRecord<PasskeyConfig, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PasskeyConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PasskeyConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<PasskeyConfig>,
+  });
+})();
+
+const FfiConverterTypePasskeyConfig = (() => {
+  type TypeName = PasskeyConfig;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        defaultLabel: FfiConverterOptionalString.read(from),
+        providerOptions:
+          FfiConverterOptionalTypePasskeyProviderOptions.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalString.write(value.defaultLabel, into);
+      FfiConverterOptionalTypePasskeyProviderOptions.write(
+        value.providerOptions,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalString.allocationSize(value.defaultLabel) +
+        FfiConverterOptionalTypePasskeyProviderOptions.allocationSize(
+          value.providerOptions
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * A passkey credential from a register or sign-in ceremony.
+ * `credential_id` is always set; the attestation fields are
+ * populated on registration and absent on sign-in (an assertion
+ * carries no attestation). Persist `credential_id` to drive
+ * `exclude_credentials` / `allow_credentials` on later calls.
+ */
+export type PasskeyCredential = {
+  /**
+   * The credential used on sign-in or created on registration.
+   */
+  credentialId: ArrayBuffer;
+  /**
+   * `WebAuthn` user handle, provider-minted at registration.
+   * Absent on sign-in.
+   */
+  userId: ArrayBuffer | undefined;
+  /**
+   * Authenticator AAGUID. A display hint only: the attestation is
+   * unverified. Absent on sign-in.
+   */
+  aaguid: ArrayBuffer | undefined;
+  /**
+   * Whether the credential is eligible for cloud backup / sync.
+   * Absent on sign-in.
+   */
+  backupEligible: boolean | undefined;
+};
+
+/**
+ * Generated factory for {@link PasskeyCredential} record objects.
+ */
+export const PasskeyCredential = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<PasskeyCredential, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PasskeyCredential}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PasskeyCredential}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<PasskeyCredential>,
+  });
+})();
+
+const FfiConverterTypePasskeyCredential = (() => {
+  type TypeName = PasskeyCredential;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        credentialId: FfiConverterArrayBuffer.read(from),
+        userId: FfiConverterOptionalArrayBuffer.read(from),
+        aaguid: FfiConverterOptionalArrayBuffer.read(from),
+        backupEligible: FfiConverterOptionalBool.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayBuffer.write(value.credentialId, into);
+      FfiConverterOptionalArrayBuffer.write(value.userId, into);
+      FfiConverterOptionalArrayBuffer.write(value.aaguid, into);
+      FfiConverterOptionalBool.write(value.backupEligible, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayBuffer.allocationSize(value.credentialId) +
+        FfiConverterOptionalArrayBuffer.allocationSize(value.userId) +
+        FfiConverterOptionalArrayBuffer.allocationSize(value.aaguid) +
+        FfiConverterOptionalBool.allocationSize(value.backupEligible)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Relying Party and user identity for the built-in passkey provider.
+ * Applies only when a binding builds the provider for you (the
+ * zero-config path); a provider you construct yourself owns these and
+ * ignores them.
+ */
+export type PasskeyProviderOptions = {
+  /**
+   * Relying Party ID. Unset uses the Breez shared RP
+   * (`keys.breez.technology`).
+   */
+  rpId: string | undefined;
+  /**
+   * Relying Party name. Unset uses `"Breez"`.
+   */
+  rpName: string | undefined;
+  /**
+   * `WebAuthn` `user.name`: the account identifier the OS sign-in
+   * picker shows beneath the display name, typically an email or
+   * handle (e.g. `john@doe.com`). Set a stable per-user
+   * value to keep each registration a distinct entry. Unset uses
+   * `rp_name`.
+   */
+  userName: string | undefined;
+  /**
+   * `WebAuthn` `user.display_name`: the human-friendly name the
+   * picker shows most prominently (e.g. `John Doe`). Unset uses
+   * `user_name`.
+   */
+  userDisplayName: string | undefined;
+};
+
+/**
+ * Generated factory for {@link PasskeyProviderOptions} record objects.
+ */
+export const PasskeyProviderOptions = (() => {
+  const defaults = () => ({
+    rpId: undefined,
+    rpName: undefined,
+    userName: undefined,
+    userDisplayName: undefined,
+  });
+  const create = (() => {
+    return uniffiCreateRecord<
+      PasskeyProviderOptions,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PasskeyProviderOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PasskeyProviderOptions}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<PasskeyProviderOptions>,
+  });
+})();
+
+const FfiConverterTypePasskeyProviderOptions = (() => {
+  type TypeName = PasskeyProviderOptions;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        rpId: FfiConverterOptionalString.read(from),
+        rpName: FfiConverterOptionalString.read(from),
+        userName: FfiConverterOptionalString.read(from),
+        userDisplayName: FfiConverterOptionalString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalString.write(value.rpId, into);
+      FfiConverterOptionalString.write(value.rpName, into);
+      FfiConverterOptionalString.write(value.userName, into);
+      FfiConverterOptionalString.write(value.userDisplayName, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalString.allocationSize(value.rpId) +
+        FfiConverterOptionalString.allocationSize(value.rpName) +
+        FfiConverterOptionalString.allocationSize(value.userName) +
+        FfiConverterOptionalString.allocationSize(value.userDisplayName)
       );
     }
   }
@@ -7638,6 +9643,70 @@ const FfiConverterTypePayment = (() => {
         FfiConverterOptionalTypeConversionDetails.allocationSize(
           value.conversionDetails
         )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type PaymentIdUpdate = {
+  /**
+   * Provisional payment id reported by `before_send`, in the form `{partial_tx_id}:{index}`
+   */
+  provisionalPaymentId: string;
+  /**
+   * Final payment id once the transaction is broadcast, in the form `{final_tx_id}:{vout}`
+   */
+  finalPaymentId: string;
+};
+
+/**
+ * Generated factory for {@link PaymentIdUpdate} record objects.
+ */
+export const PaymentIdUpdate = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<PaymentIdUpdate, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PaymentIdUpdate}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PaymentIdUpdate}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<PaymentIdUpdate>,
+  });
+})();
+
+const FfiConverterTypePaymentIdUpdate = (() => {
+  type TypeName = PaymentIdUpdate;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        provisionalPaymentId: FfiConverterString.read(from),
+        finalPaymentId: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.provisionalPaymentId, into);
+      FfiConverterString.write(value.finalPaymentId, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.provisionalPaymentId) +
+        FfiConverterString.allocationSize(value.finalPaymentId)
       );
     }
   }
@@ -9010,6 +11079,157 @@ const FfiConverterTypeRegisterLightningAddressRequest = (() => {
 })();
 
 /**
+ * Request shape for [`PasskeyClient::register`].
+ */
+export type RegisterRequest = {
+  /**
+   * User-chosen label for the new wallet. Defaults to the configured
+   * default label when `None`. Always published to the label
+   * store as part of registration.
+   */
+  label: string | undefined;
+  /**
+   * Optional list of already-registered credential IDs. Prevents
+   * registering the same device twice: when any entry matches a
+   * credential already on the device, the platform raises
+   * [`crate::passkey::PrfProviderError::CredentialAlreadyExists`]
+   * so the host can flip the user to the sign-in path. Unset is
+   * treated as empty. Forwarded to [`PrfProvider::create_passkey`].
+   */
+  excludeCredentials: Array<ArrayBuffer> | undefined;
+};
+
+/**
+ * Generated factory for {@link RegisterRequest} record objects.
+ */
+export const RegisterRequest = (() => {
+  const defaults = () => ({ label: undefined, excludeCredentials: undefined });
+  const create = (() => {
+    return uniffiCreateRecord<RegisterRequest, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link RegisterRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link RegisterRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<RegisterRequest>,
+  });
+})();
+
+const FfiConverterTypeRegisterRequest = (() => {
+  type TypeName = RegisterRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        label: FfiConverterOptionalString.read(from),
+        excludeCredentials: FfiConverterOptionalArrayArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalString.write(value.label, into);
+      FfiConverterOptionalArrayArrayBuffer.write(
+        value.excludeCredentials,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalString.allocationSize(value.label) +
+        FfiConverterOptionalArrayArrayBuffer.allocationSize(
+          value.excludeCredentials
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Response from [`PasskeyClient::register`].
+ */
+export type RegisterResponse = {
+  /**
+   * The newly-derived wallet for [`RegisterRequest::label`].
+   */
+  wallet: Wallet;
+  /**
+   * The credential the platform just registered. Persist
+   * [`PasskeyCredential::credential_id`] to populate
+   * `exclude_credentials` on future [`PasskeyClient::register`]
+   * calls. Always set on the register path.
+   */
+  credential: PasskeyCredential | undefined;
+};
+
+/**
+ * Generated factory for {@link RegisterResponse} record objects.
+ */
+export const RegisterResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<RegisterResponse, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link RegisterResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link RegisterResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<RegisterResponse>,
+  });
+})();
+
+const FfiConverterTypeRegisterResponse = (() => {
+  type TypeName = RegisterResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        wallet: FfiConverterTypeWallet.read(from),
+        credential: FfiConverterOptionalTypePasskeyCredential.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeWallet.write(value.wallet, into);
+      FfiConverterOptionalTypePasskeyCredential.write(value.credential, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeWallet.allocationSize(value.wallet) +
+        FfiConverterOptionalTypePasskeyCredential.allocationSize(
+          value.credential
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
  * Request to register a new webhook.
  */
 export type RegisterWebhookRequest = {
@@ -9283,6 +11503,16 @@ export type SdkContextConfig = {
    * requests across them.
    */
   connectionsPerOperator: /*u32*/ number | undefined;
+  /**
+   * Shared storage backend for SDKs built from this context. When set,
+   * every SDK built from the context reuses it (and its database
+   * connection pool). Construct via
+   * [`default_storage`](crate::default_storage),
+   * [`postgres_storage`](crate::postgres_storage),
+   * [`mysql_storage`](crate::mysql_storage) or
+   * [`custom_storage`](crate::custom_storage).
+   */
+  storage: StorageBackend | undefined;
 };
 
 /**
@@ -9292,6 +11522,7 @@ export const SdkContextConfig = (() => {
   const defaults = () => ({
     apiKey: undefined,
     connectionsPerOperator: undefined,
+    storage: undefined,
   });
   const create = (() => {
     return uniffiCreateRecord<SdkContextConfig, ReturnType<typeof defaults>>(
@@ -9326,18 +11557,23 @@ const FfiConverterTypeSdkContextConfig = (() => {
         network: FfiConverterTypeNetwork.read(from),
         apiKey: FfiConverterOptionalString.read(from),
         connectionsPerOperator: FfiConverterOptionalUInt32.read(from),
+        storage: FfiConverterOptionalTypeStorageBackend.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterTypeNetwork.write(value.network, into);
       FfiConverterOptionalString.write(value.apiKey, into);
       FfiConverterOptionalUInt32.write(value.connectionsPerOperator, into);
+      FfiConverterOptionalTypeStorageBackend.write(value.storage, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterTypeNetwork.allocationSize(value.network) +
         FfiConverterOptionalString.allocationSize(value.apiKey) +
-        FfiConverterOptionalUInt32.allocationSize(value.connectionsPerOperator)
+        FfiConverterOptionalUInt32.allocationSize(
+          value.connectionsPerOperator
+        ) +
+        FfiConverterOptionalTypeStorageBackend.allocationSize(value.storage)
       );
     }
   }
@@ -9780,6 +12016,272 @@ const FfiConverterTypeSetLnurlMetadataItem = (() => {
         FfiConverterOptionalString.allocationSize(value.senderComment) +
         FfiConverterOptionalString.allocationSize(value.nostrZapRequest) +
         FfiConverterOptionalString.allocationSize(value.nostrZapReceipt)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Request for [`crate::passkey::Passkey::setup_wallet`].
+ */
+export type SetupWalletRequest = {
+  /**
+   * Wallet label. Unset uses the configured default label.
+   */
+  label: string | undefined;
+  /**
+   * Publish the label to Nostr after deriving. Leave false for
+   * speculative derivations (cold restore).
+   */
+  publishLabel: boolean;
+  /**
+   * Restrict the assertion to these credential IDs. Useful for
+   * server-driven flows that resolve the credential set out-of-band.
+   */
+  allowCredentials: Array<ArrayBuffer>;
+  /**
+   * Prefer credentials already on this device over the cross-device
+   * picker. Unset uses the platform default.
+   */
+  preferImmediatelyAvailableCredentials: boolean | undefined;
+};
+
+/**
+ * Generated factory for {@link SetupWalletRequest} record objects.
+ */
+export const SetupWalletRequest = (() => {
+  const defaults = () => ({
+    label: undefined,
+    publishLabel: false,
+    allowCredentials: [],
+    preferImmediatelyAvailableCredentials: undefined,
+  });
+  const create = (() => {
+    return uniffiCreateRecord<SetupWalletRequest, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SetupWalletRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SetupWalletRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<SetupWalletRequest>,
+  });
+})();
+
+const FfiConverterTypeSetupWalletRequest = (() => {
+  type TypeName = SetupWalletRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        label: FfiConverterOptionalString.read(from),
+        publishLabel: FfiConverterBool.read(from),
+        allowCredentials: FfiConverterArrayArrayBuffer.read(from),
+        preferImmediatelyAvailableCredentials:
+          FfiConverterOptionalBool.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalString.write(value.label, into);
+      FfiConverterBool.write(value.publishLabel, into);
+      FfiConverterArrayArrayBuffer.write(value.allowCredentials, into);
+      FfiConverterOptionalBool.write(
+        value.preferImmediatelyAvailableCredentials,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalString.allocationSize(value.label) +
+        FfiConverterBool.allocationSize(value.publishLabel) +
+        FfiConverterArrayArrayBuffer.allocationSize(value.allowCredentials) +
+        FfiConverterOptionalBool.allocationSize(
+          value.preferImmediatelyAvailableCredentials
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Request shape for [`PasskeyClient::sign_in`].
+ */
+export type SignInRequest = {
+  /**
+   * When present, the fast path: one ceremony, no label-store
+   * query. When absent, triggers discovery: derives the configured
+   * default label and also returns the user's full label set in
+   * [`SignInResponse::labels`].
+   */
+  label: string | undefined;
+  /**
+   * Optional credential IDs the assertion is restricted to
+   * (reauthentication of a known user). Unset or empty lets the OS
+   * pick any matching credential for this RP. Forwarded to
+   * [`crate::passkey::DeriveSeedsRequest::allow_credentials`].
+   */
+  allowCredentials: Array<ArrayBuffer> | undefined;
+  /**
+   * Forwarded to
+   * [`crate::passkey::DeriveSeedsRequest::prefer_immediately_available_credentials`].
+   */
+  preferImmediatelyAvailableCredentials: boolean | undefined;
+};
+
+/**
+ * Generated factory for {@link SignInRequest} record objects.
+ */
+export const SignInRequest = (() => {
+  const defaults = () => ({
+    label: undefined,
+    allowCredentials: undefined,
+    preferImmediatelyAvailableCredentials: undefined,
+  });
+  const create = (() => {
+    return uniffiCreateRecord<SignInRequest, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SignInRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SignInRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<SignInRequest>,
+  });
+})();
+
+const FfiConverterTypeSignInRequest = (() => {
+  type TypeName = SignInRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        label: FfiConverterOptionalString.read(from),
+        allowCredentials: FfiConverterOptionalArrayArrayBuffer.read(from),
+        preferImmediatelyAvailableCredentials:
+          FfiConverterOptionalBool.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalString.write(value.label, into);
+      FfiConverterOptionalArrayArrayBuffer.write(value.allowCredentials, into);
+      FfiConverterOptionalBool.write(
+        value.preferImmediatelyAvailableCredentials,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalString.allocationSize(value.label) +
+        FfiConverterOptionalArrayArrayBuffer.allocationSize(
+          value.allowCredentials
+        ) +
+        FfiConverterOptionalBool.allocationSize(
+          value.preferImmediatelyAvailableCredentials
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Response from [`PasskeyClient::sign_in`].
+ */
+export type SignInResponse = {
+  wallet: Wallet;
+  /**
+   * Empty on the fast path. Populated on discovery (or empty if
+   * the label store was unreachable).
+   */
+  labels: Array<string>;
+  /**
+   * The credential the user signed in with, when the underlying
+   * [`PrfProvider`] surfaces it. `None` for providers that don't
+   * expose this signal (CLI / file-backed / hardware). Only
+   * `credential_id` is set: a sign-in assertion carries no
+   * attestation.
+   */
+  credential: PasskeyCredential | undefined;
+};
+
+/**
+ * Generated factory for {@link SignInResponse} record objects.
+ */
+export const SignInResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<SignInResponse, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SignInResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SignInResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<SignInResponse>,
+  });
+})();
+
+const FfiConverterTypeSignInResponse = (() => {
+  type TypeName = SignInResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        wallet: FfiConverterTypeWallet.read(from),
+        labels: FfiConverterArrayString.read(from),
+        credential: FfiConverterOptionalTypePasskeyCredential.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeWallet.write(value.wallet, into);
+      FfiConverterArrayString.write(value.labels, into);
+      FfiConverterOptionalTypePasskeyCredential.write(value.credential, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeWallet.allocationSize(value.wallet) +
+        FfiConverterArrayString.allocationSize(value.labels) +
+        FfiConverterOptionalTypePasskeyCredential.allocationSize(
+          value.credential
+        )
       );
     }
   }
@@ -11388,6 +13890,288 @@ const FfiConverterTypeTokenOptimizationConfig = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * Authorization from the current owner granting a specific new owner the
+ * right to take over a username. Produced by
+ * [`BreezSdk::authorize_lightning_address_transfer`] and handed to the new
+ * owner, who passes it to [`BreezSdk::claim_lightning_address_transfer`]. It
+ * fully describes the transfer, so the new owner needs nothing else to claim.
+ */
+export type TransferAuthorization = {
+  /**
+   * The username being handed over.
+   */
+  username: string;
+  /**
+   * The current owner's public key.
+   */
+  pubkey: string;
+  /**
+   * The current owner's signature authorizing the transfer.
+   */
+  signature: string;
+};
+
+/**
+ * Generated factory for {@link TransferAuthorization} record objects.
+ */
+export const TransferAuthorization = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      TransferAuthorization,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link TransferAuthorization}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link TransferAuthorization}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<TransferAuthorization>,
+  });
+})();
+
+const FfiConverterTypeTransferAuthorization = (() => {
+  type TypeName = TransferAuthorization;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        username: FfiConverterString.read(from),
+        pubkey: FfiConverterString.read(from),
+        signature: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.username, into);
+      FfiConverterString.write(value.pubkey, into);
+      FfiConverterString.write(value.signature, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.username) +
+        FfiConverterString.allocationSize(value.pubkey) +
+        FfiConverterString.allocationSize(value.signature)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type TurnkeyConfig = {
+  /**
+   * Turnkey API base URL. Unset uses `https://api.turnkey.com`.
+   */
+  baseUrl: string | undefined;
+  /**
+   * Organization (or sub-organization) id that owns the wallet.
+   */
+  organizationId: string;
+  /**
+   * API public key (compressed, hex), registered with the organization.
+   */
+  apiPublicKey: string;
+  /**
+   * API private key (hex) used to stamp requests.
+   */
+  apiPrivateKey: string;
+  /**
+   * Id of the Spark wallet to sign with.
+   */
+  walletId: string;
+  /**
+   * Network the wallet operates on; selects the Spark address format
+   * (mainnet or regtest) used for Spark-protocol and Schnorr signing.
+   */
+  network: Network;
+  /**
+   * Spark account number: the `{account}` in every derivation path
+   * (`m/8797555'/{account}'/...`). Unset uses the network default, matching
+   * the seed-based signer, so the same wallet seed derives the same keys on
+   * either backend.
+   */
+  accountNumber: /*u32*/ number | undefined;
+  /**
+   * Retry policy for Turnkey requests. Unset uses the default policy.
+   */
+  retry: TurnkeyRetryConfig | undefined;
+};
+
+/**
+ * Generated factory for {@link TurnkeyConfig} record objects.
+ */
+export const TurnkeyConfig = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<TurnkeyConfig, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link TurnkeyConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link TurnkeyConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<TurnkeyConfig>,
+  });
+})();
+
+const FfiConverterTypeTurnkeyConfig = (() => {
+  type TypeName = TurnkeyConfig;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        baseUrl: FfiConverterOptionalString.read(from),
+        organizationId: FfiConverterString.read(from),
+        apiPublicKey: FfiConverterString.read(from),
+        apiPrivateKey: FfiConverterString.read(from),
+        walletId: FfiConverterString.read(from),
+        network: FfiConverterTypeNetwork.read(from),
+        accountNumber: FfiConverterOptionalUInt32.read(from),
+        retry: FfiConverterOptionalTypeTurnkeyRetryConfig.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalString.write(value.baseUrl, into);
+      FfiConverterString.write(value.organizationId, into);
+      FfiConverterString.write(value.apiPublicKey, into);
+      FfiConverterString.write(value.apiPrivateKey, into);
+      FfiConverterString.write(value.walletId, into);
+      FfiConverterTypeNetwork.write(value.network, into);
+      FfiConverterOptionalUInt32.write(value.accountNumber, into);
+      FfiConverterOptionalTypeTurnkeyRetryConfig.write(value.retry, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalString.allocationSize(value.baseUrl) +
+        FfiConverterString.allocationSize(value.organizationId) +
+        FfiConverterString.allocationSize(value.apiPublicKey) +
+        FfiConverterString.allocationSize(value.apiPrivateKey) +
+        FfiConverterString.allocationSize(value.walletId) +
+        FfiConverterTypeNetwork.allocationSize(value.network) +
+        FfiConverterOptionalUInt32.allocationSize(value.accountNumber) +
+        FfiConverterOptionalTypeTurnkeyRetryConfig.allocationSize(value.retry)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Retry policy for Turnkey API requests (used while polling a pending
+ * activity). Mirrors `turnkey_client`'s `RetryConfig` with FFI-friendly
+ * millisecond fields.
+ */
+export type TurnkeyRetryConfig = {
+  /**
+   * Delay before the first retry, in milliseconds.
+   */
+  initialDelayMs: /*u64*/ bigint;
+  /**
+   * Multiplier applied to the delay after each attempt.
+   */
+  multiplier: /*f64*/ number;
+  /**
+   * Upper bound on the delay between retries, in milliseconds.
+   */
+  maxDelayMs: /*u64*/ bigint;
+  /**
+   * Maximum number of retries (0 disables retrying).
+   */
+  maxRetries: /*u32*/ number;
+  /**
+   * Total time budget for one API request including its retries and waits,
+   * in milliseconds. No retry begins past this deadline: when the next wait
+   * (server-requested or backoff) would end after it, the request fails with
+   * the last error instead of stalling.
+   */
+  requestTimeoutMs: /*u64*/ bigint;
+};
+
+/**
+ * Generated factory for {@link TurnkeyRetryConfig} record objects.
+ */
+export const TurnkeyRetryConfig = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<TurnkeyRetryConfig, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link TurnkeyRetryConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link TurnkeyRetryConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<TurnkeyRetryConfig>,
+  });
+})();
+
+const FfiConverterTypeTurnkeyRetryConfig = (() => {
+  type TypeName = TurnkeyRetryConfig;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        initialDelayMs: FfiConverterUInt64.read(from),
+        multiplier: FfiConverterFloat64.read(from),
+        maxDelayMs: FfiConverterUInt64.read(from),
+        maxRetries: FfiConverterUInt32.read(from),
+        requestTimeoutMs: FfiConverterUInt64.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterUInt64.write(value.initialDelayMs, into);
+      FfiConverterFloat64.write(value.multiplier, into);
+      FfiConverterUInt64.write(value.maxDelayMs, into);
+      FfiConverterUInt32.write(value.maxRetries, into);
+      FfiConverterUInt64.write(value.requestTimeoutMs, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterUInt64.allocationSize(value.initialDelayMs) +
+        FfiConverterFloat64.allocationSize(value.multiplier) +
+        FfiConverterUInt64.allocationSize(value.maxDelayMs) +
+        FfiConverterUInt32.allocationSize(value.maxRetries) +
+        FfiConverterUInt64.allocationSize(value.requestTimeoutMs)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type TxStatus = {
   confirmed: boolean;
   blockHeight: /*u32*/ number | undefined;
@@ -12027,16 +14811,11 @@ const FfiConverterTypeUtxo = (() => {
 
 /**
  * A wallet derived from a passkey.
- *
- * Contains the derived seed and the label used during derivation.
  */
 export type Wallet = {
-  /**
-   * The derived seed.
-   */
   seed: Seed;
   /**
-   * The label used for derivation (either user-provided or the default).
+   * Label used for derivation: user-provided or the default.
    */
   label: string;
 };
@@ -12086,6 +14865,71 @@ const FfiConverterTypeWallet = (() => {
       return (
         FfiConverterTypeSeed.allocationSize(value.seed) +
         FfiConverterString.allocationSize(value.label)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Response from [`crate::passkey::Passkey::setup_wallet`].
+ */
+export type WalletSetup = {
+  wallet: Wallet;
+  /**
+   * Credential that derived this wallet. Absent when the provider
+   * does not surface it.
+   */
+  credentialId: ArrayBuffer | undefined;
+};
+
+/**
+ * Generated factory for {@link WalletSetup} record objects.
+ */
+export const WalletSetup = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<WalletSetup, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link WalletSetup}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link WalletSetup}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<WalletSetup>,
+  });
+})();
+
+const FfiConverterTypeWalletSetup = (() => {
+  type TypeName = WalletSetup;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        wallet: FfiConverterTypeWallet.read(from),
+        credentialId: FfiConverterOptionalArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeWallet.write(value.wallet, into);
+      FfiConverterOptionalArrayBuffer.write(value.credentialId, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeWallet.allocationSize(value.wallet) +
+        FfiConverterOptionalArrayBuffer.allocationSize(value.credentialId)
       );
     }
   }
@@ -12716,6 +15560,330 @@ const FfiConverterTypeAssetFilter = (() => {
             inner.tokenIdentifier
           );
           return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: AutoOptimizationEvent
+export enum AutoOptimizationEvent_Tags {
+  Started = 'Started',
+  RoundCompleted = 'RoundCompleted',
+  Completed = 'Completed',
+  Cancelled = 'Cancelled',
+  Failed = 'Failed',
+  Skipped = 'Skipped',
+}
+export const AutoOptimizationEvent = (() => {
+  type Started__interface = {
+    tag: AutoOptimizationEvent_Tags.Started;
+    inner: Readonly<{ totalRounds: /*u32*/ number }>;
+  };
+
+  /**
+   * Optimization has started with the given number of rounds.
+   */
+  class Started_ extends UniffiEnum implements Started__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'AutoOptimizationEvent';
+    readonly tag = AutoOptimizationEvent_Tags.Started;
+    readonly inner: Readonly<{ totalRounds: /*u32*/ number }>;
+    constructor(inner: { totalRounds: /*u32*/ number }) {
+      super('AutoOptimizationEvent', 'Started');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { totalRounds: /*u32*/ number }): Started_ {
+      return new Started_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Started_ {
+      return obj.tag === AutoOptimizationEvent_Tags.Started;
+    }
+  }
+
+  type RoundCompleted__interface = {
+    tag: AutoOptimizationEvent_Tags.RoundCompleted;
+    inner: Readonly<{
+      currentRound: /*u32*/ number;
+      totalRounds: /*u32*/ number;
+    }>;
+  };
+
+  /**
+   * A round has completed.
+   */
+  class RoundCompleted_
+    extends UniffiEnum
+    implements RoundCompleted__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'AutoOptimizationEvent';
+    readonly tag = AutoOptimizationEvent_Tags.RoundCompleted;
+    readonly inner: Readonly<{
+      currentRound: /*u32*/ number;
+      totalRounds: /*u32*/ number;
+    }>;
+    constructor(inner: {
+      currentRound: /*u32*/ number;
+      totalRounds: /*u32*/ number;
+    }) {
+      super('AutoOptimizationEvent', 'RoundCompleted');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      currentRound: /*u32*/ number;
+      totalRounds: /*u32*/ number;
+    }): RoundCompleted_ {
+      return new RoundCompleted_(inner);
+    }
+
+    static instanceOf(obj: any): obj is RoundCompleted_ {
+      return obj.tag === AutoOptimizationEvent_Tags.RoundCompleted;
+    }
+  }
+
+  type Completed__interface = {
+    tag: AutoOptimizationEvent_Tags.Completed;
+  };
+
+  /**
+   * Optimization completed successfully.
+   */
+  class Completed_ extends UniffiEnum implements Completed__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'AutoOptimizationEvent';
+    readonly tag = AutoOptimizationEvent_Tags.Completed;
+    constructor() {
+      super('AutoOptimizationEvent', 'Completed');
+    }
+
+    static new(): Completed_ {
+      return new Completed_();
+    }
+
+    static instanceOf(obj: any): obj is Completed_ {
+      return obj.tag === AutoOptimizationEvent_Tags.Completed;
+    }
+  }
+
+  type Cancelled__interface = {
+    tag: AutoOptimizationEvent_Tags.Cancelled;
+  };
+
+  /**
+   * Optimization was cancelled.
+   */
+  class Cancelled_ extends UniffiEnum implements Cancelled__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'AutoOptimizationEvent';
+    readonly tag = AutoOptimizationEvent_Tags.Cancelled;
+    constructor() {
+      super('AutoOptimizationEvent', 'Cancelled');
+    }
+
+    static new(): Cancelled_ {
+      return new Cancelled_();
+    }
+
+    static instanceOf(obj: any): obj is Cancelled_ {
+      return obj.tag === AutoOptimizationEvent_Tags.Cancelled;
+    }
+  }
+
+  type Failed__interface = {
+    tag: AutoOptimizationEvent_Tags.Failed;
+    inner: Readonly<{ error: string }>;
+  };
+
+  /**
+   * Optimization failed with an error.
+   */
+  class Failed_ extends UniffiEnum implements Failed__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'AutoOptimizationEvent';
+    readonly tag = AutoOptimizationEvent_Tags.Failed;
+    readonly inner: Readonly<{ error: string }>;
+    constructor(inner: { error: string }) {
+      super('AutoOptimizationEvent', 'Failed');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { error: string }): Failed_ {
+      return new Failed_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Failed_ {
+      return obj.tag === AutoOptimizationEvent_Tags.Failed;
+    }
+  }
+
+  type Skipped__interface = {
+    tag: AutoOptimizationEvent_Tags.Skipped;
+  };
+
+  /**
+   * Optimization was skipped because leaves are already optimal.
+   */
+  class Skipped_ extends UniffiEnum implements Skipped__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'AutoOptimizationEvent';
+    readonly tag = AutoOptimizationEvent_Tags.Skipped;
+    constructor() {
+      super('AutoOptimizationEvent', 'Skipped');
+    }
+
+    static new(): Skipped_ {
+      return new Skipped_();
+    }
+
+    static instanceOf(obj: any): obj is Skipped_ {
+      return obj.tag === AutoOptimizationEvent_Tags.Skipped;
+    }
+  }
+
+  function instanceOf(obj: any): obj is AutoOptimizationEvent {
+    return obj[uniffiTypeNameSymbol] === 'AutoOptimizationEvent';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Started: Started_,
+    RoundCompleted: RoundCompleted_,
+    Completed: Completed_,
+    Cancelled: Cancelled_,
+    Failed: Failed_,
+    Skipped: Skipped_,
+  });
+})();
+
+export type AutoOptimizationEvent = InstanceType<
+  (typeof AutoOptimizationEvent)[keyof Omit<
+    typeof AutoOptimizationEvent,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum AutoOptimizationEvent
+const FfiConverterTypeAutoOptimizationEvent = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = AutoOptimizationEvent;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new AutoOptimizationEvent.Started({
+            totalRounds: FfiConverterUInt32.read(from),
+          });
+        case 2:
+          return new AutoOptimizationEvent.RoundCompleted({
+            currentRound: FfiConverterUInt32.read(from),
+            totalRounds: FfiConverterUInt32.read(from),
+          });
+        case 3:
+          return new AutoOptimizationEvent.Completed();
+        case 4:
+          return new AutoOptimizationEvent.Cancelled();
+        case 5:
+          return new AutoOptimizationEvent.Failed({
+            error: FfiConverterString.read(from),
+          });
+        case 6:
+          return new AutoOptimizationEvent.Skipped();
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case AutoOptimizationEvent_Tags.Started: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterUInt32.write(inner.totalRounds, into);
+          return;
+        }
+        case AutoOptimizationEvent_Tags.RoundCompleted: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterUInt32.write(inner.currentRound, into);
+          FfiConverterUInt32.write(inner.totalRounds, into);
+          return;
+        }
+        case AutoOptimizationEvent_Tags.Completed: {
+          ordinalConverter.write(3, into);
+          return;
+        }
+        case AutoOptimizationEvent_Tags.Cancelled: {
+          ordinalConverter.write(4, into);
+          return;
+        }
+        case AutoOptimizationEvent_Tags.Failed: {
+          ordinalConverter.write(5, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.error, into);
+          return;
+        }
+        case AutoOptimizationEvent_Tags.Skipped: {
+          ordinalConverter.write(6, into);
+          return;
+        }
+        default:
+          // Throwing from here means that AutoOptimizationEvent_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case AutoOptimizationEvent_Tags.Started: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterUInt32.allocationSize(inner.totalRounds);
+          return size;
+        }
+        case AutoOptimizationEvent_Tags.RoundCompleted: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterUInt32.allocationSize(inner.currentRound);
+          size += FfiConverterUInt32.allocationSize(inner.totalRounds);
+          return size;
+        }
+        case AutoOptimizationEvent_Tags.Completed: {
+          return ordinalConverter.allocationSize(3);
+        }
+        case AutoOptimizationEvent_Tags.Cancelled: {
+          return ordinalConverter.allocationSize(4);
+        }
+        case AutoOptimizationEvent_Tags.Failed: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(5);
+          size += FfiConverterString.allocationSize(inner.error);
+          return size;
+        }
+        case AutoOptimizationEvent_Tags.Skipped: {
+          return ordinalConverter.allocationSize(6);
         }
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -13831,111 +16999,149 @@ const FfiConverterTypeDepositClaimError = (() => {
   return new FFIConverter();
 })();
 
-// Enum: ExternalSecretSource
-export enum ExternalSecretSource_Tags {
-  Derived = 'Derived',
-  Encrypted = 'Encrypted',
+// Enum: DomainAssociation
+export enum DomainAssociation_Tags {
+  Associated = 'Associated',
+  NotAssociated = 'NotAssociated',
+  Skipped = 'Skipped',
 }
 /**
- * FFI-safe representation of `spark_wallet::SecretSource`
+ * Result of [`PrfProvider::check_domain_association`]. The platform's
+ * out-of-band verification (AASA / assetlinks) gates passkey
+ * ceremonies but its failures collapse into opaque platform errors;
+ * this gives callers a definitive signal they can gate UX on.
  */
-export const ExternalSecretSource = (() => {
-  type Derived__interface = {
-    tag: ExternalSecretSource_Tags.Derived;
-    inner: Readonly<{ nodeId: ExternalTreeNodeId }>;
+export const DomainAssociation = (() => {
+  type Associated__interface = {
+    tag: DomainAssociation_Tags.Associated;
   };
 
   /**
-   * Private key derived from a tree node
+   * Configuration verified; safe to proceed.
    */
-  class Derived_ extends UniffiEnum implements Derived__interface {
+  class Associated_ extends UniffiEnum implements Associated__interface {
     /**
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
-    readonly [uniffiTypeNameSymbol] = 'ExternalSecretSource';
-    readonly tag = ExternalSecretSource_Tags.Derived;
-    readonly inner: Readonly<{ nodeId: ExternalTreeNodeId }>;
-    constructor(inner: { nodeId: ExternalTreeNodeId }) {
-      super('ExternalSecretSource', 'Derived');
-      this.inner = Object.freeze(inner);
+    readonly [uniffiTypeNameSymbol] = 'DomainAssociation';
+    readonly tag = DomainAssociation_Tags.Associated;
+    constructor() {
+      super('DomainAssociation', 'Associated');
     }
 
-    static new(inner: { nodeId: ExternalTreeNodeId }): Derived_ {
-      return new Derived_(inner);
+    static new(): Associated_ {
+      return new Associated_();
     }
 
-    static instanceOf(obj: any): obj is Derived_ {
-      return obj.tag === ExternalSecretSource_Tags.Derived;
+    static instanceOf(obj: any): obj is Associated_ {
+      return obj.tag === DomainAssociation_Tags.Associated;
     }
   }
 
-  type Encrypted__interface = {
-    tag: ExternalSecretSource_Tags.Encrypted;
-    inner: Readonly<{ key: ExternalEncryptedSecret }>;
+  type NotAssociated__interface = {
+    tag: DomainAssociation_Tags.NotAssociated;
+    inner: Readonly<{ source: string; reason: string }>;
   };
 
   /**
-   * Encrypted private key
+   * Configuration is broken; subsequent ceremonies will fail.
+   * `source` names the verification origin (e.g. `"Apple AASA CDN"`)
+   * for diagnostic UIs; `reason` explains what was missing.
    */
-  class Encrypted_ extends UniffiEnum implements Encrypted__interface {
+  class NotAssociated_ extends UniffiEnum implements NotAssociated__interface {
     /**
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
-    readonly [uniffiTypeNameSymbol] = 'ExternalSecretSource';
-    readonly tag = ExternalSecretSource_Tags.Encrypted;
-    readonly inner: Readonly<{ key: ExternalEncryptedSecret }>;
-    constructor(inner: { key: ExternalEncryptedSecret }) {
-      super('ExternalSecretSource', 'Encrypted');
+    readonly [uniffiTypeNameSymbol] = 'DomainAssociation';
+    readonly tag = DomainAssociation_Tags.NotAssociated;
+    readonly inner: Readonly<{ source: string; reason: string }>;
+    constructor(inner: { source: string; reason: string }) {
+      super('DomainAssociation', 'NotAssociated');
       this.inner = Object.freeze(inner);
     }
 
-    static new(inner: { key: ExternalEncryptedSecret }): Encrypted_ {
-      return new Encrypted_(inner);
+    static new(inner: { source: string; reason: string }): NotAssociated_ {
+      return new NotAssociated_(inner);
     }
 
-    static instanceOf(obj: any): obj is Encrypted_ {
-      return obj.tag === ExternalSecretSource_Tags.Encrypted;
+    static instanceOf(obj: any): obj is NotAssociated_ {
+      return obj.tag === DomainAssociation_Tags.NotAssociated;
     }
   }
 
-  function instanceOf(obj: any): obj is ExternalSecretSource {
-    return obj[uniffiTypeNameSymbol] === 'ExternalSecretSource';
+  type Skipped__interface = {
+    tag: DomainAssociation_Tags.Skipped;
+    inner: Readonly<{ reason: string }>;
+  };
+
+  /**
+   * Check was not performed (provider has no verification source,
+   * or the check itself could not complete). Not a negative signal.
+   */
+  class Skipped_ extends UniffiEnum implements Skipped__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'DomainAssociation';
+    readonly tag = DomainAssociation_Tags.Skipped;
+    readonly inner: Readonly<{ reason: string }>;
+    constructor(inner: { reason: string }) {
+      super('DomainAssociation', 'Skipped');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { reason: string }): Skipped_ {
+      return new Skipped_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Skipped_ {
+      return obj.tag === DomainAssociation_Tags.Skipped;
+    }
+  }
+
+  function instanceOf(obj: any): obj is DomainAssociation {
+    return obj[uniffiTypeNameSymbol] === 'DomainAssociation';
   }
 
   return Object.freeze({
     instanceOf,
-    Derived: Derived_,
-    Encrypted: Encrypted_,
+    Associated: Associated_,
+    NotAssociated: NotAssociated_,
+    Skipped: Skipped_,
   });
 })();
 
 /**
- * FFI-safe representation of `spark_wallet::SecretSource`
+ * Result of [`PrfProvider::check_domain_association`]. The platform's
+ * out-of-band verification (AASA / assetlinks) gates passkey
+ * ceremonies but its failures collapse into opaque platform errors;
+ * this gives callers a definitive signal they can gate UX on.
  */
 
-export type ExternalSecretSource = InstanceType<
-  (typeof ExternalSecretSource)[keyof Omit<
-    typeof ExternalSecretSource,
-    'instanceOf'
-  >]
+export type DomainAssociation = InstanceType<
+  (typeof DomainAssociation)[keyof Omit<typeof DomainAssociation, 'instanceOf'>]
 >;
 
-// FfiConverter for enum ExternalSecretSource
-const FfiConverterTypeExternalSecretSource = (() => {
+// FfiConverter for enum DomainAssociation
+const FfiConverterTypeDomainAssociation = (() => {
   const ordinalConverter = FfiConverterInt32;
-  type TypeName = ExternalSecretSource;
+  type TypeName = DomainAssociation;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       switch (ordinalConverter.read(from)) {
         case 1:
-          return new ExternalSecretSource.Derived({
-            nodeId: FfiConverterTypeExternalTreeNodeId.read(from),
-          });
+          return new DomainAssociation.Associated();
         case 2:
-          return new ExternalSecretSource.Encrypted({
-            key: FfiConverterTypeExternalEncryptedSecret.read(from),
+          return new DomainAssociation.NotAssociated({
+            source: FfiConverterString.read(from),
+            reason: FfiConverterString.read(from),
+          });
+        case 3:
+          return new DomainAssociation.Skipped({
+            reason: FfiConverterString.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -13943,39 +17149,44 @@ const FfiConverterTypeExternalSecretSource = (() => {
     }
     write(value: TypeName, into: RustBuffer): void {
       switch (value.tag) {
-        case ExternalSecretSource_Tags.Derived: {
+        case DomainAssociation_Tags.Associated: {
           ordinalConverter.write(1, into);
-          const inner = value.inner;
-          FfiConverterTypeExternalTreeNodeId.write(inner.nodeId, into);
           return;
         }
-        case ExternalSecretSource_Tags.Encrypted: {
+        case DomainAssociation_Tags.NotAssociated: {
           ordinalConverter.write(2, into);
           const inner = value.inner;
-          FfiConverterTypeExternalEncryptedSecret.write(inner.key, into);
+          FfiConverterString.write(inner.source, into);
+          FfiConverterString.write(inner.reason, into);
+          return;
+        }
+        case DomainAssociation_Tags.Skipped: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.reason, into);
           return;
         }
         default:
-          // Throwing from here means that ExternalSecretSource_Tags hasn't matched an ordinal.
+          // Throwing from here means that DomainAssociation_Tags hasn't matched an ordinal.
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
     }
     allocationSize(value: TypeName): number {
       switch (value.tag) {
-        case ExternalSecretSource_Tags.Derived: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(1);
-          size += FfiConverterTypeExternalTreeNodeId.allocationSize(
-            inner.nodeId
-          );
-          return size;
+        case DomainAssociation_Tags.Associated: {
+          return ordinalConverter.allocationSize(1);
         }
-        case ExternalSecretSource_Tags.Encrypted: {
+        case DomainAssociation_Tags.NotAssociated: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
-          size += FfiConverterTypeExternalEncryptedSecret.allocationSize(
-            inner.key
-          );
+          size += FfiConverterString.allocationSize(inner.source);
+          size += FfiConverterString.allocationSize(inner.reason);
+          return size;
+        }
+        case DomainAssociation_Tags.Skipped: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterString.allocationSize(inner.reason);
           return size;
         }
         default:
@@ -13986,154 +17197,414 @@ const FfiConverterTypeExternalSecretSource = (() => {
   return new FFIConverter();
 })();
 
-// Enum: ExternalSecretToSplit
-export enum ExternalSecretToSplit_Tags {
-  SecretSource = 'SecretSource',
-  Preimage = 'Preimage',
+/**
+ * Coarse classification of a passkey error by the UX reaction it
+ * warrants. The variant names the action to take, not the cause.
+ */
+export enum ErrorKind {
+  /**
+   * User dismissed the prompt. Do not auto-retry.
+   */
+  Cancel,
+  /**
+   * No matching credential on this device. Offer to register one.
+   */
+  NoCredential,
+  /**
+   * Authenticator lacks the PRF extension. Fall back to a non-passkey
+   * flow or guide the user to another credential provider.
+   */
+  PrfUnsupported,
+  /**
+   * PRF is supported but evaluation failed. Often transient: retrying
+   * the ceremony may succeed.
+   */
+  PrfFailed,
+  /**
+   * Platform / app setup is wrong (entitlement, assetlinks, rpId
+   * scope). Not retryable until the integrator fixes it.
+   */
+  Configuration,
+  /**
+   * An existing credential matched. Route the user to sign-in.
+   */
+  AlreadyExists,
+  /**
+   * The prompt closed on the platform inactivity timeout with no user
+   * action. Unlike `Cancel`, safe to auto-retry or re-prompt.
+   */
+  Timeout,
+  /**
+   * The ceremony failed for a security or state reason. Offer a retry;
+   * if it persists, the credential or RP setup may be at fault.
+   */
+  AuthFailure,
+  /**
+   * Failure the caller can't act on. Show a generic "try again".
+   */
+  Internal,
 }
-/**
- * FFI-safe representation of `spark_wallet::SecretToSplit`
- */
-export const ExternalSecretToSplit = (() => {
-  type SecretSource__interface = {
-    tag: ExternalSecretToSplit_Tags.SecretSource;
-    inner: Readonly<{ source: ExternalSecretSource }>;
-  };
 
-  /**
-   * A secret source to split
-   */
-  class SecretSource_ extends UniffiEnum implements SecretSource__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'ExternalSecretToSplit';
-    readonly tag = ExternalSecretToSplit_Tags.SecretSource;
-    readonly inner: Readonly<{ source: ExternalSecretSource }>;
-    constructor(inner: { source: ExternalSecretSource }) {
-      super('ExternalSecretToSplit', 'SecretSource');
-      this.inner = Object.freeze(inner);
-    }
-
-    static new(inner: { source: ExternalSecretSource }): SecretSource_ {
-      return new SecretSource_(inner);
-    }
-
-    static instanceOf(obj: any): obj is SecretSource_ {
-      return obj.tag === ExternalSecretToSplit_Tags.SecretSource;
-    }
-  }
-
-  type Preimage__interface = {
-    tag: ExternalSecretToSplit_Tags.Preimage;
-    inner: Readonly<{ data: ArrayBuffer }>;
-  };
-
-  /**
-   * A preimage to split (32 bytes)
-   */
-  class Preimage_ extends UniffiEnum implements Preimage__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'ExternalSecretToSplit';
-    readonly tag = ExternalSecretToSplit_Tags.Preimage;
-    readonly inner: Readonly<{ data: ArrayBuffer }>;
-    constructor(inner: { data: ArrayBuffer }) {
-      super('ExternalSecretToSplit', 'Preimage');
-      this.inner = Object.freeze(inner);
-    }
-
-    static new(inner: { data: ArrayBuffer }): Preimage_ {
-      return new Preimage_(inner);
-    }
-
-    static instanceOf(obj: any): obj is Preimage_ {
-      return obj.tag === ExternalSecretToSplit_Tags.Preimage;
-    }
-  }
-
-  function instanceOf(obj: any): obj is ExternalSecretToSplit {
-    return obj[uniffiTypeNameSymbol] === 'ExternalSecretToSplit';
-  }
-
-  return Object.freeze({
-    instanceOf,
-    SecretSource: SecretSource_,
-    Preimage: Preimage_,
-  });
-})();
-
-/**
- * FFI-safe representation of `spark_wallet::SecretToSplit`
- */
-
-export type ExternalSecretToSplit = InstanceType<
-  (typeof ExternalSecretToSplit)[keyof Omit<
-    typeof ExternalSecretToSplit,
-    'instanceOf'
-  >]
->;
-
-// FfiConverter for enum ExternalSecretToSplit
-const FfiConverterTypeExternalSecretToSplit = (() => {
+const FfiConverterTypeErrorKind = (() => {
   const ordinalConverter = FfiConverterInt32;
-  type TypeName = ExternalSecretToSplit;
+  type TypeName = ErrorKind;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       switch (ordinalConverter.read(from)) {
         case 1:
-          return new ExternalSecretToSplit.SecretSource({
-            source: FfiConverterTypeExternalSecretSource.read(from),
+          return ErrorKind.Cancel;
+        case 2:
+          return ErrorKind.NoCredential;
+        case 3:
+          return ErrorKind.PrfUnsupported;
+        case 4:
+          return ErrorKind.PrfFailed;
+        case 5:
+          return ErrorKind.Configuration;
+        case 6:
+          return ErrorKind.AlreadyExists;
+        case 7:
+          return ErrorKind.Timeout;
+        case 8:
+          return ErrorKind.AuthFailure;
+        case 9:
+          return ErrorKind.Internal;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case ErrorKind.Cancel:
+          return ordinalConverter.write(1, into);
+        case ErrorKind.NoCredential:
+          return ordinalConverter.write(2, into);
+        case ErrorKind.PrfUnsupported:
+          return ordinalConverter.write(3, into);
+        case ErrorKind.PrfFailed:
+          return ordinalConverter.write(4, into);
+        case ErrorKind.Configuration:
+          return ordinalConverter.write(5, into);
+        case ErrorKind.AlreadyExists:
+          return ordinalConverter.write(6, into);
+        case ErrorKind.Timeout:
+          return ordinalConverter.write(7, into);
+        case ErrorKind.AuthFailure:
+          return ordinalConverter.write(8, into);
+        case ErrorKind.Internal:
+          return ordinalConverter.write(9, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: ExternalFrostDerivation
+export enum ExternalFrostDerivation_Tags {
+  SigningLeaf = 'SigningLeaf',
+  StaticDeposit = 'StaticDeposit',
+  HtlcPreimage = 'HtlcPreimage',
+  Identity = 'Identity',
+}
+/**
+ * FFI-safe representation of `spark_wallet::FrostDerivation`.
+ */
+export const ExternalFrostDerivation = (() => {
+  type SigningLeaf__interface = {
+    tag: ExternalFrostDerivation_Tags.SigningLeaf;
+    inner: Readonly<{ leafId: ExternalTreeNodeId }>;
+  };
+
+  /**
+   * The signing key for a tree leaf.
+   */
+  class SigningLeaf_ extends UniffiEnum implements SigningLeaf__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ExternalFrostDerivation';
+    readonly tag = ExternalFrostDerivation_Tags.SigningLeaf;
+    readonly inner: Readonly<{ leafId: ExternalTreeNodeId }>;
+    constructor(inner: { leafId: ExternalTreeNodeId }) {
+      super('ExternalFrostDerivation', 'SigningLeaf');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { leafId: ExternalTreeNodeId }): SigningLeaf_ {
+      return new SigningLeaf_(inner);
+    }
+
+    static instanceOf(obj: any): obj is SigningLeaf_ {
+      return obj.tag === ExternalFrostDerivation_Tags.SigningLeaf;
+    }
+  }
+
+  type StaticDeposit__interface = {
+    tag: ExternalFrostDerivation_Tags.StaticDeposit;
+    inner: Readonly<{ index: /*u32*/ number }>;
+  };
+
+  /**
+   * The static-deposit key at `index`.
+   */
+  class StaticDeposit_ extends UniffiEnum implements StaticDeposit__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ExternalFrostDerivation';
+    readonly tag = ExternalFrostDerivation_Tags.StaticDeposit;
+    readonly inner: Readonly<{ index: /*u32*/ number }>;
+    constructor(inner: { index: /*u32*/ number }) {
+      super('ExternalFrostDerivation', 'StaticDeposit');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { index: /*u32*/ number }): StaticDeposit_ {
+      return new StaticDeposit_(inner);
+    }
+
+    static instanceOf(obj: any): obj is StaticDeposit_ {
+      return obj.tag === ExternalFrostDerivation_Tags.StaticDeposit;
+    }
+  }
+
+  type HtlcPreimage__interface = {
+    tag: ExternalFrostDerivation_Tags.HtlcPreimage;
+  };
+
+  /**
+   * The HTLC-preimage key.
+   */
+  class HtlcPreimage_ extends UniffiEnum implements HtlcPreimage__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ExternalFrostDerivation';
+    readonly tag = ExternalFrostDerivation_Tags.HtlcPreimage;
+    constructor() {
+      super('ExternalFrostDerivation', 'HtlcPreimage');
+    }
+
+    static new(): HtlcPreimage_ {
+      return new HtlcPreimage_();
+    }
+
+    static instanceOf(obj: any): obj is HtlcPreimage_ {
+      return obj.tag === ExternalFrostDerivation_Tags.HtlcPreimage;
+    }
+  }
+
+  type Identity__interface = {
+    tag: ExternalFrostDerivation_Tags.Identity;
+  };
+
+  /**
+   * The wallet identity key.
+   */
+  class Identity_ extends UniffiEnum implements Identity__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ExternalFrostDerivation';
+    readonly tag = ExternalFrostDerivation_Tags.Identity;
+    constructor() {
+      super('ExternalFrostDerivation', 'Identity');
+    }
+
+    static new(): Identity_ {
+      return new Identity_();
+    }
+
+    static instanceOf(obj: any): obj is Identity_ {
+      return obj.tag === ExternalFrostDerivation_Tags.Identity;
+    }
+  }
+
+  function instanceOf(obj: any): obj is ExternalFrostDerivation {
+    return obj[uniffiTypeNameSymbol] === 'ExternalFrostDerivation';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    SigningLeaf: SigningLeaf_,
+    StaticDeposit: StaticDeposit_,
+    HtlcPreimage: HtlcPreimage_,
+    Identity: Identity_,
+  });
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::FrostDerivation`.
+ */
+
+export type ExternalFrostDerivation = InstanceType<
+  (typeof ExternalFrostDerivation)[keyof Omit<
+    typeof ExternalFrostDerivation,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum ExternalFrostDerivation
+const FfiConverterTypeExternalFrostDerivation = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ExternalFrostDerivation;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new ExternalFrostDerivation.SigningLeaf({
+            leafId: FfiConverterTypeExternalTreeNodeId.read(from),
           });
         case 2:
-          return new ExternalSecretToSplit.Preimage({
-            data: FfiConverterArrayBuffer.read(from),
+          return new ExternalFrostDerivation.StaticDeposit({
+            index: FfiConverterUInt32.read(from),
           });
+        case 3:
+          return new ExternalFrostDerivation.HtlcPreimage();
+        case 4:
+          return new ExternalFrostDerivation.Identity();
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
     }
     write(value: TypeName, into: RustBuffer): void {
       switch (value.tag) {
-        case ExternalSecretToSplit_Tags.SecretSource: {
+        case ExternalFrostDerivation_Tags.SigningLeaf: {
           ordinalConverter.write(1, into);
           const inner = value.inner;
-          FfiConverterTypeExternalSecretSource.write(inner.source, into);
+          FfiConverterTypeExternalTreeNodeId.write(inner.leafId, into);
           return;
         }
-        case ExternalSecretToSplit_Tags.Preimage: {
+        case ExternalFrostDerivation_Tags.StaticDeposit: {
           ordinalConverter.write(2, into);
           const inner = value.inner;
-          FfiConverterArrayBuffer.write(inner.data, into);
+          FfiConverterUInt32.write(inner.index, into);
+          return;
+        }
+        case ExternalFrostDerivation_Tags.HtlcPreimage: {
+          ordinalConverter.write(3, into);
+          return;
+        }
+        case ExternalFrostDerivation_Tags.Identity: {
+          ordinalConverter.write(4, into);
           return;
         }
         default:
-          // Throwing from here means that ExternalSecretToSplit_Tags hasn't matched an ordinal.
+          // Throwing from here means that ExternalFrostDerivation_Tags hasn't matched an ordinal.
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
     }
     allocationSize(value: TypeName): number {
       switch (value.tag) {
-        case ExternalSecretToSplit_Tags.SecretSource: {
+        case ExternalFrostDerivation_Tags.SigningLeaf: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(1);
-          size += FfiConverterTypeExternalSecretSource.allocationSize(
-            inner.source
+          size += FfiConverterTypeExternalTreeNodeId.allocationSize(
+            inner.leafId
           );
           return size;
         }
-        case ExternalSecretToSplit_Tags.Preimage: {
+        case ExternalFrostDerivation_Tags.StaticDeposit: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
-          size += FfiConverterArrayBuffer.allocationSize(inner.data);
+          size += FfiConverterUInt32.allocationSize(inner.index);
           return size;
+        }
+        case ExternalFrostDerivation_Tags.HtlcPreimage: {
+          return ordinalConverter.allocationSize(3);
+        }
+        case ExternalFrostDerivation_Tags.Identity: {
+          return ordinalConverter.allocationSize(4);
         }
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::SparkInvoiceKind`.
+ */
+export enum ExternalSparkInvoiceKind {
+  Sats,
+  Tokens,
+}
+
+const FfiConverterTypeExternalSparkInvoiceKind = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ExternalSparkInvoiceKind;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return ExternalSparkInvoiceKind.Sats;
+        case 2:
+          return ExternalSparkInvoiceKind.Tokens;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case ExternalSparkInvoiceKind.Sats:
+          return ordinalConverter.write(1, into);
+        case ExternalSparkInvoiceKind.Tokens:
+          return ordinalConverter.write(2, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * FFI-safe representation of `spark_wallet::TokenTransactionKind`.
+ */
+export enum ExternalTokenTransactionKind {
+  Freeze,
+  Partial,
+  Final,
+}
+
+const FfiConverterTypeExternalTokenTransactionKind = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ExternalTokenTransactionKind;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return ExternalTokenTransactionKind.Freeze;
+        case 2:
+          return ExternalTokenTransactionKind.Partial;
+        case 3:
+          return ExternalTokenTransactionKind.Final;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case ExternalTokenTransactionKind.Freeze:
+          return ordinalConverter.write(1, into);
+        case ExternalTokenTransactionKind.Partial:
+          return ordinalConverter.write(2, into);
+        case ExternalTokenTransactionKind.Final:
+          return ordinalConverter.write(3, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
     }
   }
   return new FFIConverter();
@@ -15012,55 +18483,6 @@ const FfiConverterTypeInputType = (() => {
   return new FFIConverter();
 })();
 
-export enum KeySetType {
-  Default,
-  Taproot,
-  NativeSegwit,
-  WrappedSegwit,
-  Legacy,
-}
-
-const FfiConverterTypeKeySetType = (() => {
-  const ordinalConverter = FfiConverterInt32;
-  type TypeName = KeySetType;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      switch (ordinalConverter.read(from)) {
-        case 1:
-          return KeySetType.Default;
-        case 2:
-          return KeySetType.Taproot;
-        case 3:
-          return KeySetType.NativeSegwit;
-        case 4:
-          return KeySetType.WrappedSegwit;
-        case 5:
-          return KeySetType.Legacy;
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      switch (value) {
-        case KeySetType.Default:
-          return ordinalConverter.write(1, into);
-        case KeySetType.Taproot:
-          return ordinalConverter.write(2, into);
-        case KeySetType.NativeSegwit:
-          return ordinalConverter.write(3, into);
-        case KeySetType.WrappedSegwit:
-          return ordinalConverter.write(4, into);
-        case KeySetType.Legacy:
-          return ordinalConverter.write(5, into);
-      }
-    }
-    allocationSize(value: TypeName): number {
-      return ordinalConverter.allocationSize(0);
-    }
-  }
-  return new FFIConverter();
-})();
-
 // Enum: LnurlCallbackStatus
 export enum LnurlCallbackStatus_Tags {
   Ok = 'Ok',
@@ -15460,318 +18882,478 @@ const FfiConverterTypeOnchainConfirmationSpeed = (() => {
   return new FFIConverter();
 })();
 
-// Enum: OptimizationEvent
-export enum OptimizationEvent_Tags {
-  Started = 'Started',
-  RoundCompleted = 'RoundCompleted',
-  Completed = 'Completed',
-  Cancelled = 'Cancelled',
-  Failed = 'Failed',
-  Skipped = 'Skipped',
+/**
+ * Mode of a manually-triggered optimization run.
+ */
+export enum OptimizationMode {
+  /**
+   * Run until no further optimization is productive.
+   */
+  Full,
+  /**
+   * Execute a single round and return so the caller can drive progress.
+   */
+  SingleRound,
 }
-export const OptimizationEvent = (() => {
-  type Started__interface = {
-    tag: OptimizationEvent_Tags.Started;
-    inner: Readonly<{ totalRounds: /*u32*/ number }>;
-  };
 
-  /**
-   * Optimization has started with the given number of rounds.
-   */
-  class Started_ extends UniffiEnum implements Started__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'OptimizationEvent';
-    readonly tag = OptimizationEvent_Tags.Started;
-    readonly inner: Readonly<{ totalRounds: /*u32*/ number }>;
-    constructor(inner: { totalRounds: /*u32*/ number }) {
-      super('OptimizationEvent', 'Started');
-      this.inner = Object.freeze(inner);
+const FfiConverterTypeOptimizationMode = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = OptimizationMode;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return OptimizationMode.Full;
+        case 2:
+          return OptimizationMode.SingleRound;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
     }
-
-    static new(inner: { totalRounds: /*u32*/ number }): Started_ {
-      return new Started_(inner);
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case OptimizationMode.Full:
+          return ordinalConverter.write(1, into);
+        case OptimizationMode.SingleRound:
+          return ordinalConverter.write(2, into);
+      }
     }
-
-    static instanceOf(obj: any): obj is Started_ {
-      return obj.tag === OptimizationEvent_Tags.Started;
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
     }
   }
+  return new FFIConverter();
+})();
 
-  type RoundCompleted__interface = {
-    tag: OptimizationEvent_Tags.RoundCompleted;
-    inner: Readonly<{
-      currentRound: /*u32*/ number;
-      totalRounds: /*u32*/ number;
-    }>;
-  };
-
-  /**
-   * A round has completed.
-   */
-  class RoundCompleted_
-    extends UniffiEnum
-    implements RoundCompleted__interface
-  {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'OptimizationEvent';
-    readonly tag = OptimizationEvent_Tags.RoundCompleted;
-    readonly inner: Readonly<{
-      currentRound: /*u32*/ number;
-      totalRounds: /*u32*/ number;
-    }>;
-    constructor(inner: {
-      currentRound: /*u32*/ number;
-      totalRounds: /*u32*/ number;
-    }) {
-      super('OptimizationEvent', 'RoundCompleted');
-      this.inner = Object.freeze(inner);
-    }
-
-    static new(inner: {
-      currentRound: /*u32*/ number;
-      totalRounds: /*u32*/ number;
-    }): RoundCompleted_ {
-      return new RoundCompleted_(inner);
-    }
-
-    static instanceOf(obj: any): obj is RoundCompleted_ {
-      return obj.tag === OptimizationEvent_Tags.RoundCompleted;
-    }
-  }
-
+// Enum: OptimizationOutcome
+export enum OptimizationOutcome_Tags {
+  Completed = 'Completed',
+  InProgress = 'InProgress',
+}
+/**
+ * Outcome of a [`BreezSdk::optimize_leaves`] call.
+ *
+ * `rounds_executed` on `Completed` refers to rounds run by *this call*.
+ * The SDK holds no cross-call state — callers driving a `SingleRound`
+ * loop maintain their own cumulative counter if they need one.
+ *
+ * A `Completed { rounds_executed: 0 }` outcome means the wallet was
+ * already optimal at call time (no swap was needed).
+ *
+ * **`SingleRound` loop pattern**: terminate on anything that isn't
+ * `InProgress`. `Completed` covers both the final swap of a productive
+ * run and the "already optimal" no-op case (the latter as
+ * `rounds_executed: 0`).
+ *
+ * ```ignore
+ * loop {
+ * let request = OptimizeLeavesRequest { mode: OptimizationMode::SingleRound };
+ * match sdk.optimize_leaves(request).await?.outcome {
+ * OptimizationOutcome::InProgress => continue,
+ * OptimizationOutcome::Completed { .. } => break,
+ * }
+ * }
+ * ```
+ */
+export const OptimizationOutcome = (() => {
   type Completed__interface = {
-    tag: OptimizationEvent_Tags.Completed;
+    tag: OptimizationOutcome_Tags.Completed;
+    inner: Readonly<{ roundsExecuted: /*u32*/ number }>;
   };
 
   /**
-   * Optimization completed successfully.
+   * All planned optimization work was executed in this call.
+   * Returned by `Full` runs on success, and by `SingleRound` runs
+   * whose swap was the final one needed (the planner produced a
+   * single-swap plan with a convergence guarantee).
+   * `rounds_executed == 0` means the wallet was already optimal —
+   * no work was performed.
    */
   class Completed_ extends UniffiEnum implements Completed__interface {
     /**
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
-    readonly [uniffiTypeNameSymbol] = 'OptimizationEvent';
-    readonly tag = OptimizationEvent_Tags.Completed;
-    constructor() {
-      super('OptimizationEvent', 'Completed');
-    }
-
-    static new(): Completed_ {
-      return new Completed_();
-    }
-
-    static instanceOf(obj: any): obj is Completed_ {
-      return obj.tag === OptimizationEvent_Tags.Completed;
-    }
-  }
-
-  type Cancelled__interface = {
-    tag: OptimizationEvent_Tags.Cancelled;
-  };
-
-  /**
-   * Optimization was cancelled.
-   */
-  class Cancelled_ extends UniffiEnum implements Cancelled__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'OptimizationEvent';
-    readonly tag = OptimizationEvent_Tags.Cancelled;
-    constructor() {
-      super('OptimizationEvent', 'Cancelled');
-    }
-
-    static new(): Cancelled_ {
-      return new Cancelled_();
-    }
-
-    static instanceOf(obj: any): obj is Cancelled_ {
-      return obj.tag === OptimizationEvent_Tags.Cancelled;
-    }
-  }
-
-  type Failed__interface = {
-    tag: OptimizationEvent_Tags.Failed;
-    inner: Readonly<{ error: string }>;
-  };
-
-  /**
-   * Optimization failed with an error.
-   */
-  class Failed_ extends UniffiEnum implements Failed__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'OptimizationEvent';
-    readonly tag = OptimizationEvent_Tags.Failed;
-    readonly inner: Readonly<{ error: string }>;
-    constructor(inner: { error: string }) {
-      super('OptimizationEvent', 'Failed');
+    readonly [uniffiTypeNameSymbol] = 'OptimizationOutcome';
+    readonly tag = OptimizationOutcome_Tags.Completed;
+    readonly inner: Readonly<{ roundsExecuted: /*u32*/ number }>;
+    constructor(inner: { roundsExecuted: /*u32*/ number }) {
+      super('OptimizationOutcome', 'Completed');
       this.inner = Object.freeze(inner);
     }
 
-    static new(inner: { error: string }): Failed_ {
-      return new Failed_(inner);
+    static new(inner: { roundsExecuted: /*u32*/ number }): Completed_ {
+      return new Completed_(inner);
     }
 
-    static instanceOf(obj: any): obj is Failed_ {
-      return obj.tag === OptimizationEvent_Tags.Failed;
+    static instanceOf(obj: any): obj is Completed_ {
+      return obj.tag === OptimizationOutcome_Tags.Completed;
     }
   }
 
-  type Skipped__interface = {
-    tag: OptimizationEvent_Tags.Skipped;
+  type InProgress__interface = {
+    tag: OptimizationOutcome_Tags.InProgress;
   };
 
   /**
-   * Optimization was skipped because leaves are already optimal.
+   * `SingleRound` only: a round ran but the planner could not
+   * guarantee it was the last. The caller should invoke
+   * `optimize_leaves` again.
    */
-  class Skipped_ extends UniffiEnum implements Skipped__interface {
+  class InProgress_ extends UniffiEnum implements InProgress__interface {
     /**
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
-    readonly [uniffiTypeNameSymbol] = 'OptimizationEvent';
-    readonly tag = OptimizationEvent_Tags.Skipped;
+    readonly [uniffiTypeNameSymbol] = 'OptimizationOutcome';
+    readonly tag = OptimizationOutcome_Tags.InProgress;
     constructor() {
-      super('OptimizationEvent', 'Skipped');
+      super('OptimizationOutcome', 'InProgress');
     }
 
-    static new(): Skipped_ {
-      return new Skipped_();
+    static new(): InProgress_ {
+      return new InProgress_();
     }
 
-    static instanceOf(obj: any): obj is Skipped_ {
-      return obj.tag === OptimizationEvent_Tags.Skipped;
+    static instanceOf(obj: any): obj is InProgress_ {
+      return obj.tag === OptimizationOutcome_Tags.InProgress;
     }
   }
 
-  function instanceOf(obj: any): obj is OptimizationEvent {
-    return obj[uniffiTypeNameSymbol] === 'OptimizationEvent';
+  function instanceOf(obj: any): obj is OptimizationOutcome {
+    return obj[uniffiTypeNameSymbol] === 'OptimizationOutcome';
   }
 
   return Object.freeze({
     instanceOf,
-    Started: Started_,
-    RoundCompleted: RoundCompleted_,
     Completed: Completed_,
-    Cancelled: Cancelled_,
-    Failed: Failed_,
-    Skipped: Skipped_,
+    InProgress: InProgress_,
   });
 })();
 
-export type OptimizationEvent = InstanceType<
-  (typeof OptimizationEvent)[keyof Omit<typeof OptimizationEvent, 'instanceOf'>]
+/**
+ * Outcome of a [`BreezSdk::optimize_leaves`] call.
+ *
+ * `rounds_executed` on `Completed` refers to rounds run by *this call*.
+ * The SDK holds no cross-call state — callers driving a `SingleRound`
+ * loop maintain their own cumulative counter if they need one.
+ *
+ * A `Completed { rounds_executed: 0 }` outcome means the wallet was
+ * already optimal at call time (no swap was needed).
+ *
+ * **`SingleRound` loop pattern**: terminate on anything that isn't
+ * `InProgress`. `Completed` covers both the final swap of a productive
+ * run and the "already optimal" no-op case (the latter as
+ * `rounds_executed: 0`).
+ *
+ * ```ignore
+ * loop {
+ * let request = OptimizeLeavesRequest { mode: OptimizationMode::SingleRound };
+ * match sdk.optimize_leaves(request).await?.outcome {
+ * OptimizationOutcome::InProgress => continue,
+ * OptimizationOutcome::Completed { .. } => break,
+ * }
+ * }
+ * ```
+ */
+
+export type OptimizationOutcome = InstanceType<
+  (typeof OptimizationOutcome)[keyof Omit<
+    typeof OptimizationOutcome,
+    'instanceOf'
+  >]
 >;
 
-// FfiConverter for enum OptimizationEvent
-const FfiConverterTypeOptimizationEvent = (() => {
+// FfiConverter for enum OptimizationOutcome
+const FfiConverterTypeOptimizationOutcome = (() => {
   const ordinalConverter = FfiConverterInt32;
-  type TypeName = OptimizationEvent;
+  type TypeName = OptimizationOutcome;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       switch (ordinalConverter.read(from)) {
         case 1:
-          return new OptimizationEvent.Started({
-            totalRounds: FfiConverterUInt32.read(from),
+          return new OptimizationOutcome.Completed({
+            roundsExecuted: FfiConverterUInt32.read(from),
           });
         case 2:
-          return new OptimizationEvent.RoundCompleted({
-            currentRound: FfiConverterUInt32.read(from),
-            totalRounds: FfiConverterUInt32.read(from),
-          });
-        case 3:
-          return new OptimizationEvent.Completed();
-        case 4:
-          return new OptimizationEvent.Cancelled();
-        case 5:
-          return new OptimizationEvent.Failed({
-            error: FfiConverterString.read(from),
-          });
-        case 6:
-          return new OptimizationEvent.Skipped();
+          return new OptimizationOutcome.InProgress();
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
     }
     write(value: TypeName, into: RustBuffer): void {
       switch (value.tag) {
-        case OptimizationEvent_Tags.Started: {
+        case OptimizationOutcome_Tags.Completed: {
           ordinalConverter.write(1, into);
           const inner = value.inner;
-          FfiConverterUInt32.write(inner.totalRounds, into);
+          FfiConverterUInt32.write(inner.roundsExecuted, into);
           return;
         }
-        case OptimizationEvent_Tags.RoundCompleted: {
+        case OptimizationOutcome_Tags.InProgress: {
           ordinalConverter.write(2, into);
-          const inner = value.inner;
-          FfiConverterUInt32.write(inner.currentRound, into);
-          FfiConverterUInt32.write(inner.totalRounds, into);
-          return;
-        }
-        case OptimizationEvent_Tags.Completed: {
-          ordinalConverter.write(3, into);
-          return;
-        }
-        case OptimizationEvent_Tags.Cancelled: {
-          ordinalConverter.write(4, into);
-          return;
-        }
-        case OptimizationEvent_Tags.Failed: {
-          ordinalConverter.write(5, into);
-          const inner = value.inner;
-          FfiConverterString.write(inner.error, into);
-          return;
-        }
-        case OptimizationEvent_Tags.Skipped: {
-          ordinalConverter.write(6, into);
           return;
         }
         default:
-          // Throwing from here means that OptimizationEvent_Tags hasn't matched an ordinal.
+          // Throwing from here means that OptimizationOutcome_Tags hasn't matched an ordinal.
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
     }
     allocationSize(value: TypeName): number {
       switch (value.tag) {
-        case OptimizationEvent_Tags.Started: {
+        case OptimizationOutcome_Tags.Completed: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(1);
-          size += FfiConverterUInt32.allocationSize(inner.totalRounds);
+          size += FfiConverterUInt32.allocationSize(inner.roundsExecuted);
           return size;
         }
-        case OptimizationEvent_Tags.RoundCompleted: {
+        case OptimizationOutcome_Tags.InProgress: {
+          return ordinalConverter.allocationSize(2);
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: PasskeyAvailability
+export enum PasskeyAvailability_Tags {
+  Available = 'Available',
+  PrfUnsupported = 'PrfUnsupported',
+  NotAssociated = 'NotAssociated',
+  Skipped = 'Skipped',
+}
+/**
+ * Single-value result of [`PasskeyClient::check_availability`].
+ * Collapses [`PrfProvider::is_supported`] +
+ * [`PrfProvider::check_domain_association`] into one variant per
+ * distinct host UX reaction.
+ */
+export const PasskeyAvailability = (() => {
+  type Available__interface = {
+    tag: PasskeyAvailability_Tags.Available;
+  };
+
+  /**
+   * PRF is supported and the platform's domain-association check
+   * (when present) passed. Safe to proceed with register / sign-in.
+   */
+  class Available_ extends UniffiEnum implements Available__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PasskeyAvailability';
+    readonly tag = PasskeyAvailability_Tags.Available;
+    constructor() {
+      super('PasskeyAvailability', 'Available');
+    }
+
+    static new(): Available_ {
+      return new Available_();
+    }
+
+    static instanceOf(obj: any): obj is Available_ {
+      return obj.tag === PasskeyAvailability_Tags.Available;
+    }
+  }
+
+  type PrfUnsupported__interface = {
+    tag: PasskeyAvailability_Tags.PrfUnsupported;
+  };
+
+  /**
+   * The authenticator does not implement the `WebAuthn` PRF
+   * extension. Hosts gate the passkey UX path off this value.
+   */
+  class PrfUnsupported_
+    extends UniffiEnum
+    implements PrfUnsupported__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PasskeyAvailability';
+    readonly tag = PasskeyAvailability_Tags.PrfUnsupported;
+    constructor() {
+      super('PasskeyAvailability', 'PrfUnsupported');
+    }
+
+    static new(): PrfUnsupported_ {
+      return new PrfUnsupported_();
+    }
+
+    static instanceOf(obj: any): obj is PrfUnsupported_ {
+      return obj.tag === PasskeyAvailability_Tags.PrfUnsupported;
+    }
+  }
+
+  type NotAssociated__interface = {
+    tag: PasskeyAvailability_Tags.NotAssociated;
+    inner: Readonly<{ source: string; reason: string }>;
+  };
+
+  /**
+   * PRF is supported but the platform's out-of-band verification
+   * (iOS AASA / Android assetlinks / browser `rpId` scope) reports a
+   * configuration mismatch. The strings carry the verification
+   * origin and the concrete reason for diagnostic UI.
+   */
+  class NotAssociated_ extends UniffiEnum implements NotAssociated__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PasskeyAvailability';
+    readonly tag = PasskeyAvailability_Tags.NotAssociated;
+    readonly inner: Readonly<{ source: string; reason: string }>;
+    constructor(inner: { source: string; reason: string }) {
+      super('PasskeyAvailability', 'NotAssociated');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { source: string; reason: string }): NotAssociated_ {
+      return new NotAssociated_(inner);
+    }
+
+    static instanceOf(obj: any): obj is NotAssociated_ {
+      return obj.tag === PasskeyAvailability_Tags.NotAssociated;
+    }
+  }
+
+  type Skipped__interface = {
+    tag: PasskeyAvailability_Tags.Skipped;
+    inner: Readonly<{ reason: string }>;
+  };
+
+  /**
+   * Domain-association verification was not performed (no source,
+   * SSR context, etc.). Not a negative signal; passkey flows are
+   * still safe to attempt.
+   */
+  class Skipped_ extends UniffiEnum implements Skipped__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PasskeyAvailability';
+    readonly tag = PasskeyAvailability_Tags.Skipped;
+    readonly inner: Readonly<{ reason: string }>;
+    constructor(inner: { reason: string }) {
+      super('PasskeyAvailability', 'Skipped');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { reason: string }): Skipped_ {
+      return new Skipped_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Skipped_ {
+      return obj.tag === PasskeyAvailability_Tags.Skipped;
+    }
+  }
+
+  function instanceOf(obj: any): obj is PasskeyAvailability {
+    return obj[uniffiTypeNameSymbol] === 'PasskeyAvailability';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Available: Available_,
+    PrfUnsupported: PrfUnsupported_,
+    NotAssociated: NotAssociated_,
+    Skipped: Skipped_,
+  });
+})();
+
+/**
+ * Single-value result of [`PasskeyClient::check_availability`].
+ * Collapses [`PrfProvider::is_supported`] +
+ * [`PrfProvider::check_domain_association`] into one variant per
+ * distinct host UX reaction.
+ */
+
+export type PasskeyAvailability = InstanceType<
+  (typeof PasskeyAvailability)[keyof Omit<
+    typeof PasskeyAvailability,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum PasskeyAvailability
+const FfiConverterTypePasskeyAvailability = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = PasskeyAvailability;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new PasskeyAvailability.Available();
+        case 2:
+          return new PasskeyAvailability.PrfUnsupported();
+        case 3:
+          return new PasskeyAvailability.NotAssociated({
+            source: FfiConverterString.read(from),
+            reason: FfiConverterString.read(from),
+          });
+        case 4:
+          return new PasskeyAvailability.Skipped({
+            reason: FfiConverterString.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case PasskeyAvailability_Tags.Available: {
+          ordinalConverter.write(1, into);
+          return;
+        }
+        case PasskeyAvailability_Tags.PrfUnsupported: {
+          ordinalConverter.write(2, into);
+          return;
+        }
+        case PasskeyAvailability_Tags.NotAssociated: {
+          ordinalConverter.write(3, into);
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(2);
-          size += FfiConverterUInt32.allocationSize(inner.currentRound);
-          size += FfiConverterUInt32.allocationSize(inner.totalRounds);
-          return size;
+          FfiConverterString.write(inner.source, into);
+          FfiConverterString.write(inner.reason, into);
+          return;
         }
-        case OptimizationEvent_Tags.Completed: {
-          return ordinalConverter.allocationSize(3);
-        }
-        case OptimizationEvent_Tags.Cancelled: {
-          return ordinalConverter.allocationSize(4);
-        }
-        case OptimizationEvent_Tags.Failed: {
+        case PasskeyAvailability_Tags.Skipped: {
+          ordinalConverter.write(4, into);
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(5);
-          size += FfiConverterString.allocationSize(inner.error);
+          FfiConverterString.write(inner.reason, into);
+          return;
+        }
+        default:
+          // Throwing from here means that PasskeyAvailability_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case PasskeyAvailability_Tags.Available: {
+          return ordinalConverter.allocationSize(1);
+        }
+        case PasskeyAvailability_Tags.PrfUnsupported: {
+          return ordinalConverter.allocationSize(2);
+        }
+        case PasskeyAvailability_Tags.NotAssociated: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterString.allocationSize(inner.source);
+          size += FfiConverterString.allocationSize(inner.reason);
           return size;
         }
-        case OptimizationEvent_Tags.Skipped: {
-          return ordinalConverter.allocationSize(6);
+        case PasskeyAvailability_Tags.Skipped: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(4);
+          size += FfiConverterString.allocationSize(inner.reason);
+          return size;
         }
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -15785,7 +19367,7 @@ const FfiConverterTypeOptimizationEvent = (() => {
 
 // Enum: PasskeyError
 export enum PasskeyError_Tags {
-  PrfError = 'PrfError',
+  Prf = 'Prf',
   RelayConnectionFailed = 'RelayConnectionFailed',
   NostrWriteFailed = 'NostrWriteFailed',
   NostrReadFailed = 'NostrReadFailed',
@@ -15799,40 +19381,40 @@ export enum PasskeyError_Tags {
  * Error type for passkey operations.
  */
 export const PasskeyError = (() => {
-  type PrfError__interface = {
-    tag: PasskeyError_Tags.PrfError;
-    inner: Readonly<[PasskeyPrfError]>;
+  type Prf__interface = {
+    tag: PasskeyError_Tags.Prf;
+    inner: Readonly<[PrfProviderError]>;
   };
 
   /**
-   * Passkey PRF provider error
+   * Raised by the underlying [`crate::passkey::PrfProvider`].
    */
-  class PrfError_ extends UniffiError implements PrfError__interface {
+  class Prf_ extends UniffiError implements Prf__interface {
     /**
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
     readonly [uniffiTypeNameSymbol] = 'PasskeyError';
-    readonly tag = PasskeyError_Tags.PrfError;
-    readonly inner: Readonly<[PasskeyPrfError]>;
-    constructor(v0: PasskeyPrfError) {
-      super('PasskeyError', 'PrfError');
+    readonly tag = PasskeyError_Tags.Prf;
+    readonly inner: Readonly<[PrfProviderError]>;
+    constructor(v0: PrfProviderError) {
+      super('PasskeyError', 'Prf');
       this.inner = Object.freeze([v0]);
     }
 
-    static new(v0: PasskeyPrfError): PrfError_ {
-      return new PrfError_(v0);
+    static new(v0: PrfProviderError): Prf_ {
+      return new Prf_(v0);
     }
 
-    static instanceOf(obj: any): obj is PrfError_ {
-      return obj.tag === PasskeyError_Tags.PrfError;
+    static instanceOf(obj: any): obj is Prf_ {
+      return obj.tag === PasskeyError_Tags.Prf;
     }
 
-    static hasInner(obj: any): obj is PrfError_ {
-      return PrfError_.instanceOf(obj);
+    static hasInner(obj: any): obj is Prf_ {
+      return Prf_.instanceOf(obj);
     }
 
-    static getInner(obj: PrfError_): Readonly<[PasskeyPrfError]> {
+    static getInner(obj: Prf_): Readonly<[PrfProviderError]> {
       return obj.inner;
     }
   }
@@ -15842,9 +19424,6 @@ export const PasskeyError = (() => {
     inner: Readonly<[string]>;
   };
 
-  /**
-   * Nostr relay connection failed
-   */
   class RelayConnectionFailed_
     extends UniffiError
     implements RelayConnectionFailed__interface
@@ -15883,9 +19462,6 @@ export const PasskeyError = (() => {
     inner: Readonly<[string]>;
   };
 
-  /**
-   * Failed to publish to Nostr
-   */
   class NostrWriteFailed_
     extends UniffiError
     implements NostrWriteFailed__interface
@@ -15924,9 +19500,6 @@ export const PasskeyError = (() => {
     inner: Readonly<[string]>;
   };
 
-  /**
-   * Failed to query from Nostr
-   */
   class NostrReadFailed_
     extends UniffiError
     implements NostrReadFailed__interface
@@ -15965,9 +19538,6 @@ export const PasskeyError = (() => {
     inner: Readonly<[string]>;
   };
 
-  /**
-   * Key derivation error
-   */
   class KeyDerivationError_
     extends UniffiError
     implements KeyDerivationError__interface
@@ -16007,7 +19577,7 @@ export const PasskeyError = (() => {
   };
 
   /**
-   * Invalid PRF output (wrong size, etc.)
+   * PRF output was unusable (e.g. wrong size).
    */
   class InvalidPrfOutput_
     extends UniffiError
@@ -16047,9 +19617,6 @@ export const PasskeyError = (() => {
     inner: Readonly<[string]>;
   };
 
-  /**
-   * BIP39 mnemonic generation error
-   */
   class MnemonicError_ extends UniffiError implements MnemonicError__interface {
     /**
      * @private
@@ -16085,9 +19652,6 @@ export const PasskeyError = (() => {
     inner: Readonly<[string]>;
   };
 
-  /**
-   * Invalid salt input
-   */
   class InvalidSalt_ extends UniffiError implements InvalidSalt__interface {
     /**
      * @private
@@ -16123,9 +19687,6 @@ export const PasskeyError = (() => {
     inner: Readonly<[string]>;
   };
 
-  /**
-   * Generic error
-   */
   class Generic_ extends UniffiError implements Generic__interface {
     /**
      * @private
@@ -16162,7 +19723,7 @@ export const PasskeyError = (() => {
 
   return Object.freeze({
     instanceOf,
-    PrfError: PrfError_,
+    Prf: Prf_,
     RelayConnectionFailed: RelayConnectionFailed_,
     NostrWriteFailed: NostrWriteFailed_,
     NostrReadFailed: NostrReadFailed_,
@@ -16190,8 +19751,8 @@ const FfiConverterTypePasskeyError = (() => {
     read(from: RustBuffer): TypeName {
       switch (ordinalConverter.read(from)) {
         case 1:
-          return new PasskeyError.PrfError(
-            FfiConverterTypePasskeyPrfError.read(from)
+          return new PasskeyError.Prf(
+            FfiConverterTypePrfProviderError.read(from)
           );
         case 2:
           return new PasskeyError.RelayConnectionFailed(
@@ -16225,10 +19786,10 @@ const FfiConverterTypePasskeyError = (() => {
     }
     write(value: TypeName, into: RustBuffer): void {
       switch (value.tag) {
-        case PasskeyError_Tags.PrfError: {
+        case PasskeyError_Tags.Prf: {
           ordinalConverter.write(1, into);
           const inner = value.inner;
-          FfiConverterTypePasskeyPrfError.write(inner[0], into);
+          FfiConverterTypePrfProviderError.write(inner[0], into);
           return;
         }
         case PasskeyError_Tags.RelayConnectionFailed: {
@@ -16286,10 +19847,10 @@ const FfiConverterTypePasskeyError = (() => {
     }
     allocationSize(value: TypeName): number {
       switch (value.tag) {
-        case PasskeyError_Tags.PrfError: {
+        case PasskeyError_Tags.Prf: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(1);
-          size += FfiConverterTypePasskeyPrfError.allocationSize(inner[0]);
+          size += FfiConverterTypePrfProviderError.allocationSize(inner[0]);
           return size;
         }
         case PasskeyError_Tags.RelayConnectionFailed: {
@@ -16337,366 +19898,6 @@ const FfiConverterTypePasskeyError = (() => {
         case PasskeyError_Tags.Generic: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(9);
-          size += FfiConverterString.allocationSize(inner[0]);
-          return size;
-        }
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-  }
-  return new FFIConverter();
-})();
-
-// Error type: PasskeyPrfError
-
-// Enum: PasskeyPrfError
-export enum PasskeyPrfError_Tags {
-  PrfNotSupported = 'PrfNotSupported',
-  UserCancelled = 'UserCancelled',
-  CredentialNotFound = 'CredentialNotFound',
-  AuthenticationFailed = 'AuthenticationFailed',
-  PrfEvaluationFailed = 'PrfEvaluationFailed',
-  Generic = 'Generic',
-}
-/**
- * Error type for passkey PRF operations.
- * Platforms implement `PasskeyPrfProvider` and return this error type.
- */
-export const PasskeyPrfError = (() => {
-  type PrfNotSupported__interface = {
-    tag: PasskeyPrfError_Tags.PrfNotSupported;
-  };
-
-  /**
-   * PRF extension is not supported by the authenticator
-   */
-  class PrfNotSupported_
-    extends UniffiError
-    implements PrfNotSupported__interface
-  {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'PasskeyPrfError';
-    readonly tag = PasskeyPrfError_Tags.PrfNotSupported;
-    constructor() {
-      super('PasskeyPrfError', 'PrfNotSupported');
-    }
-
-    static new(): PrfNotSupported_ {
-      return new PrfNotSupported_();
-    }
-
-    static instanceOf(obj: any): obj is PrfNotSupported_ {
-      return obj.tag === PasskeyPrfError_Tags.PrfNotSupported;
-    }
-
-    static hasInner(obj: any): obj is PrfNotSupported_ {
-      return false;
-    }
-  }
-
-  type UserCancelled__interface = {
-    tag: PasskeyPrfError_Tags.UserCancelled;
-  };
-
-  /**
-   * User cancelled the authentication
-   */
-  class UserCancelled_ extends UniffiError implements UserCancelled__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'PasskeyPrfError';
-    readonly tag = PasskeyPrfError_Tags.UserCancelled;
-    constructor() {
-      super('PasskeyPrfError', 'UserCancelled');
-    }
-
-    static new(): UserCancelled_ {
-      return new UserCancelled_();
-    }
-
-    static instanceOf(obj: any): obj is UserCancelled_ {
-      return obj.tag === PasskeyPrfError_Tags.UserCancelled;
-    }
-
-    static hasInner(obj: any): obj is UserCancelled_ {
-      return false;
-    }
-  }
-
-  type CredentialNotFound__interface = {
-    tag: PasskeyPrfError_Tags.CredentialNotFound;
-  };
-
-  /**
-   * No credential found
-   */
-  class CredentialNotFound_
-    extends UniffiError
-    implements CredentialNotFound__interface
-  {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'PasskeyPrfError';
-    readonly tag = PasskeyPrfError_Tags.CredentialNotFound;
-    constructor() {
-      super('PasskeyPrfError', 'CredentialNotFound');
-    }
-
-    static new(): CredentialNotFound_ {
-      return new CredentialNotFound_();
-    }
-
-    static instanceOf(obj: any): obj is CredentialNotFound_ {
-      return obj.tag === PasskeyPrfError_Tags.CredentialNotFound;
-    }
-
-    static hasInner(obj: any): obj is CredentialNotFound_ {
-      return false;
-    }
-  }
-
-  type AuthenticationFailed__interface = {
-    tag: PasskeyPrfError_Tags.AuthenticationFailed;
-    inner: Readonly<[string]>;
-  };
-
-  /**
-   * Authentication failed
-   */
-  class AuthenticationFailed_
-    extends UniffiError
-    implements AuthenticationFailed__interface
-  {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'PasskeyPrfError';
-    readonly tag = PasskeyPrfError_Tags.AuthenticationFailed;
-    readonly inner: Readonly<[string]>;
-    constructor(v0: string) {
-      super('PasskeyPrfError', 'AuthenticationFailed');
-      this.inner = Object.freeze([v0]);
-    }
-
-    static new(v0: string): AuthenticationFailed_ {
-      return new AuthenticationFailed_(v0);
-    }
-
-    static instanceOf(obj: any): obj is AuthenticationFailed_ {
-      return obj.tag === PasskeyPrfError_Tags.AuthenticationFailed;
-    }
-
-    static hasInner(obj: any): obj is AuthenticationFailed_ {
-      return AuthenticationFailed_.instanceOf(obj);
-    }
-
-    static getInner(obj: AuthenticationFailed_): Readonly<[string]> {
-      return obj.inner;
-    }
-  }
-
-  type PrfEvaluationFailed__interface = {
-    tag: PasskeyPrfError_Tags.PrfEvaluationFailed;
-    inner: Readonly<[string]>;
-  };
-
-  /**
-   * PRF evaluation failed
-   */
-  class PrfEvaluationFailed_
-    extends UniffiError
-    implements PrfEvaluationFailed__interface
-  {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'PasskeyPrfError';
-    readonly tag = PasskeyPrfError_Tags.PrfEvaluationFailed;
-    readonly inner: Readonly<[string]>;
-    constructor(v0: string) {
-      super('PasskeyPrfError', 'PrfEvaluationFailed');
-      this.inner = Object.freeze([v0]);
-    }
-
-    static new(v0: string): PrfEvaluationFailed_ {
-      return new PrfEvaluationFailed_(v0);
-    }
-
-    static instanceOf(obj: any): obj is PrfEvaluationFailed_ {
-      return obj.tag === PasskeyPrfError_Tags.PrfEvaluationFailed;
-    }
-
-    static hasInner(obj: any): obj is PrfEvaluationFailed_ {
-      return PrfEvaluationFailed_.instanceOf(obj);
-    }
-
-    static getInner(obj: PrfEvaluationFailed_): Readonly<[string]> {
-      return obj.inner;
-    }
-  }
-
-  type Generic__interface = {
-    tag: PasskeyPrfError_Tags.Generic;
-    inner: Readonly<[string]>;
-  };
-
-  /**
-   * Generic error
-   */
-  class Generic_ extends UniffiError implements Generic__interface {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'PasskeyPrfError';
-    readonly tag = PasskeyPrfError_Tags.Generic;
-    readonly inner: Readonly<[string]>;
-    constructor(v0: string) {
-      super('PasskeyPrfError', 'Generic');
-      this.inner = Object.freeze([v0]);
-    }
-
-    static new(v0: string): Generic_ {
-      return new Generic_(v0);
-    }
-
-    static instanceOf(obj: any): obj is Generic_ {
-      return obj.tag === PasskeyPrfError_Tags.Generic;
-    }
-
-    static hasInner(obj: any): obj is Generic_ {
-      return Generic_.instanceOf(obj);
-    }
-
-    static getInner(obj: Generic_): Readonly<[string]> {
-      return obj.inner;
-    }
-  }
-
-  function instanceOf(obj: any): obj is PasskeyPrfError {
-    return obj[uniffiTypeNameSymbol] === 'PasskeyPrfError';
-  }
-
-  return Object.freeze({
-    instanceOf,
-    PrfNotSupported: PrfNotSupported_,
-    UserCancelled: UserCancelled_,
-    CredentialNotFound: CredentialNotFound_,
-    AuthenticationFailed: AuthenticationFailed_,
-    PrfEvaluationFailed: PrfEvaluationFailed_,
-    Generic: Generic_,
-  });
-})();
-
-/**
- * Error type for passkey PRF operations.
- * Platforms implement `PasskeyPrfProvider` and return this error type.
- */
-
-export type PasskeyPrfError = InstanceType<
-  (typeof PasskeyPrfError)[keyof Omit<typeof PasskeyPrfError, 'instanceOf'>]
->;
-
-// FfiConverter for enum PasskeyPrfError
-const FfiConverterTypePasskeyPrfError = (() => {
-  const ordinalConverter = FfiConverterInt32;
-  type TypeName = PasskeyPrfError;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      switch (ordinalConverter.read(from)) {
-        case 1:
-          return new PasskeyPrfError.PrfNotSupported();
-        case 2:
-          return new PasskeyPrfError.UserCancelled();
-        case 3:
-          return new PasskeyPrfError.CredentialNotFound();
-        case 4:
-          return new PasskeyPrfError.AuthenticationFailed(
-            FfiConverterString.read(from)
-          );
-        case 5:
-          return new PasskeyPrfError.PrfEvaluationFailed(
-            FfiConverterString.read(from)
-          );
-        case 6:
-          return new PasskeyPrfError.Generic(FfiConverterString.read(from));
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      switch (value.tag) {
-        case PasskeyPrfError_Tags.PrfNotSupported: {
-          ordinalConverter.write(1, into);
-          return;
-        }
-        case PasskeyPrfError_Tags.UserCancelled: {
-          ordinalConverter.write(2, into);
-          return;
-        }
-        case PasskeyPrfError_Tags.CredentialNotFound: {
-          ordinalConverter.write(3, into);
-          return;
-        }
-        case PasskeyPrfError_Tags.AuthenticationFailed: {
-          ordinalConverter.write(4, into);
-          const inner = value.inner;
-          FfiConverterString.write(inner[0], into);
-          return;
-        }
-        case PasskeyPrfError_Tags.PrfEvaluationFailed: {
-          ordinalConverter.write(5, into);
-          const inner = value.inner;
-          FfiConverterString.write(inner[0], into);
-          return;
-        }
-        case PasskeyPrfError_Tags.Generic: {
-          ordinalConverter.write(6, into);
-          const inner = value.inner;
-          FfiConverterString.write(inner[0], into);
-          return;
-        }
-        default:
-          // Throwing from here means that PasskeyPrfError_Tags hasn't matched an ordinal.
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    allocationSize(value: TypeName): number {
-      switch (value.tag) {
-        case PasskeyPrfError_Tags.PrfNotSupported: {
-          return ordinalConverter.allocationSize(1);
-        }
-        case PasskeyPrfError_Tags.UserCancelled: {
-          return ordinalConverter.allocationSize(2);
-        }
-        case PasskeyPrfError_Tags.CredentialNotFound: {
-          return ordinalConverter.allocationSize(3);
-        }
-        case PasskeyPrfError_Tags.AuthenticationFailed: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(4);
-          size += FfiConverterString.allocationSize(inner[0]);
-          return size;
-        }
-        case PasskeyPrfError_Tags.PrfEvaluationFailed: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(5);
-          size += FfiConverterString.allocationSize(inner[0]);
-          return size;
-        }
-        case PasskeyPrfError_Tags.Generic: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(6);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
@@ -16951,7 +20152,7 @@ export const PaymentDetails = (() => {
 
   type Deposit__interface = {
     tag: PaymentDetails_Tags.Deposit;
-    inner: Readonly<{ txId: string }>;
+    inner: Readonly<{ txId: string; vout: /*u32*/ number }>;
   };
 
   class Deposit_ extends UniffiEnum implements Deposit__interface {
@@ -16961,13 +20162,13 @@ export const PaymentDetails = (() => {
      */
     readonly [uniffiTypeNameSymbol] = 'PaymentDetails';
     readonly tag = PaymentDetails_Tags.Deposit;
-    readonly inner: Readonly<{ txId: string }>;
-    constructor(inner: { txId: string }) {
+    readonly inner: Readonly<{ txId: string; vout: /*u32*/ number }>;
+    constructor(inner: { txId: string; vout: /*u32*/ number }) {
       super('PaymentDetails', 'Deposit');
       this.inner = Object.freeze(inner);
     }
 
-    static new(inner: { txId: string }): Deposit_ {
+    static new(inner: { txId: string; vout: /*u32*/ number }): Deposit_ {
       return new Deposit_(inner);
     }
 
@@ -17036,6 +20237,7 @@ const FfiConverterTypePaymentDetails = (() => {
         case 5:
           return new PaymentDetails.Deposit({
             txId: FfiConverterString.read(from),
+            vout: FfiConverterUInt32.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -17104,6 +20306,7 @@ const FfiConverterTypePaymentDetails = (() => {
           ordinalConverter.write(5, into);
           const inner = value.inner;
           FfiConverterString.write(inner.txId, into);
+          FfiConverterUInt32.write(inner.vout, into);
           return;
         }
         default:
@@ -17175,6 +20378,7 @@ const FfiConverterTypePaymentDetails = (() => {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(5);
           size += FfiConverterString.allocationSize(inner.txId);
+          size += FfiConverterUInt32.allocationSize(inner.vout);
           return size;
         }
         default:
@@ -17756,6 +20960,523 @@ const FfiConverterTypePaymentType = (() => {
     }
     allocationSize(value: TypeName): number {
       return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Error type: PrfProviderError
+
+// Enum: PrfProviderError
+export enum PrfProviderError_Tags {
+  PrfNotSupported = 'PrfNotSupported',
+  UserCancelled = 'UserCancelled',
+  UserTimedOut = 'UserTimedOut',
+  CredentialNotFound = 'CredentialNotFound',
+  AuthenticationFailed = 'AuthenticationFailed',
+  PrfEvaluationFailed = 'PrfEvaluationFailed',
+  Configuration = 'Configuration',
+  CredentialAlreadyExists = 'CredentialAlreadyExists',
+  Generic = 'Generic',
+}
+/**
+ * Failures from a passkey PRF operation. Each platform normalizes its
+ * native errors into these variants so callers match one taxonomy
+ * everywhere; anything unclassifiable becomes [`Generic`](Self::Generic).
+ */
+export const PrfProviderError = (() => {
+  type PrfNotSupported__interface = {
+    tag: PrfProviderError_Tags.PrfNotSupported;
+  };
+
+  class PrfNotSupported_
+    extends UniffiError
+    implements PrfNotSupported__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PrfProviderError';
+    readonly tag = PrfProviderError_Tags.PrfNotSupported;
+    constructor() {
+      super('PrfProviderError', 'PrfNotSupported');
+    }
+
+    static new(): PrfNotSupported_ {
+      return new PrfNotSupported_();
+    }
+
+    static instanceOf(obj: any): obj is PrfNotSupported_ {
+      return obj.tag === PrfProviderError_Tags.PrfNotSupported;
+    }
+
+    static hasInner(obj: any): obj is PrfNotSupported_ {
+      return false;
+    }
+  }
+
+  type UserCancelled__interface = {
+    tag: PrfProviderError_Tags.UserCancelled;
+  };
+
+  class UserCancelled_ extends UniffiError implements UserCancelled__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PrfProviderError';
+    readonly tag = PrfProviderError_Tags.UserCancelled;
+    constructor() {
+      super('PrfProviderError', 'UserCancelled');
+    }
+
+    static new(): UserCancelled_ {
+      return new UserCancelled_();
+    }
+
+    static instanceOf(obj: any): obj is UserCancelled_ {
+      return obj.tag === PrfProviderError_Tags.UserCancelled;
+    }
+
+    static hasInner(obj: any): obj is UserCancelled_ {
+      return false;
+    }
+  }
+
+  type UserTimedOut__interface = {
+    tag: PrfProviderError_Tags.UserTimedOut;
+  };
+
+  /**
+   * The prompt closed on the platform inactivity timeout, with no
+   * user action. Unlike `UserCancelled`, safe to auto-retry.
+   */
+  class UserTimedOut_ extends UniffiError implements UserTimedOut__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PrfProviderError';
+    readonly tag = PrfProviderError_Tags.UserTimedOut;
+    constructor() {
+      super('PrfProviderError', 'UserTimedOut');
+    }
+
+    static new(): UserTimedOut_ {
+      return new UserTimedOut_();
+    }
+
+    static instanceOf(obj: any): obj is UserTimedOut_ {
+      return obj.tag === PrfProviderError_Tags.UserTimedOut;
+    }
+
+    static hasInner(obj: any): obj is UserTimedOut_ {
+      return false;
+    }
+  }
+
+  type CredentialNotFound__interface = {
+    tag: PrfProviderError_Tags.CredentialNotFound;
+    inner: Readonly<[string]>;
+  };
+
+  class CredentialNotFound_
+    extends UniffiError
+    implements CredentialNotFound__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PrfProviderError';
+    readonly tag = PrfProviderError_Tags.CredentialNotFound;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('PrfProviderError', 'CredentialNotFound');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): CredentialNotFound_ {
+      return new CredentialNotFound_(v0);
+    }
+
+    static instanceOf(obj: any): obj is CredentialNotFound_ {
+      return obj.tag === PrfProviderError_Tags.CredentialNotFound;
+    }
+
+    static hasInner(obj: any): obj is CredentialNotFound_ {
+      return CredentialNotFound_.instanceOf(obj);
+    }
+
+    static getInner(obj: CredentialNotFound_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  type AuthenticationFailed__interface = {
+    tag: PrfProviderError_Tags.AuthenticationFailed;
+    inner: Readonly<[string]>;
+  };
+
+  class AuthenticationFailed_
+    extends UniffiError
+    implements AuthenticationFailed__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PrfProviderError';
+    readonly tag = PrfProviderError_Tags.AuthenticationFailed;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('PrfProviderError', 'AuthenticationFailed');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): AuthenticationFailed_ {
+      return new AuthenticationFailed_(v0);
+    }
+
+    static instanceOf(obj: any): obj is AuthenticationFailed_ {
+      return obj.tag === PrfProviderError_Tags.AuthenticationFailed;
+    }
+
+    static hasInner(obj: any): obj is AuthenticationFailed_ {
+      return AuthenticationFailed_.instanceOf(obj);
+    }
+
+    static getInner(obj: AuthenticationFailed_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  type PrfEvaluationFailed__interface = {
+    tag: PrfProviderError_Tags.PrfEvaluationFailed;
+    inner: Readonly<[string]>;
+  };
+
+  class PrfEvaluationFailed_
+    extends UniffiError
+    implements PrfEvaluationFailed__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PrfProviderError';
+    readonly tag = PrfProviderError_Tags.PrfEvaluationFailed;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('PrfProviderError', 'PrfEvaluationFailed');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): PrfEvaluationFailed_ {
+      return new PrfEvaluationFailed_(v0);
+    }
+
+    static instanceOf(obj: any): obj is PrfEvaluationFailed_ {
+      return obj.tag === PrfProviderError_Tags.PrfEvaluationFailed;
+    }
+
+    static hasInner(obj: any): obj is PrfEvaluationFailed_ {
+      return PrfEvaluationFailed_.instanceOf(obj);
+    }
+
+    static getInner(obj: PrfEvaluationFailed_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  type Configuration__interface = {
+    tag: PrfProviderError_Tags.Configuration;
+    inner: Readonly<[string]>;
+  };
+
+  /**
+   * Platform / app setup is wrong: missing AASA entitlement, invalid
+   * assetlinks.json, or misconfigured RP ID.
+   */
+  class Configuration_ extends UniffiError implements Configuration__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PrfProviderError';
+    readonly tag = PrfProviderError_Tags.Configuration;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('PrfProviderError', 'Configuration');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): Configuration_ {
+      return new Configuration_(v0);
+    }
+
+    static instanceOf(obj: any): obj is Configuration_ {
+      return obj.tag === PrfProviderError_Tags.Configuration;
+    }
+
+    static hasInner(obj: any): obj is Configuration_ {
+      return Configuration_.instanceOf(obj);
+    }
+
+    static getInner(obj: Configuration_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  type CredentialAlreadyExists__interface = {
+    tag: PrfProviderError_Tags.CredentialAlreadyExists;
+    inner: Readonly<[string]>;
+  };
+
+  /**
+   * An existing credential matched. Route the user to sign-in.
+   */
+  class CredentialAlreadyExists_
+    extends UniffiError
+    implements CredentialAlreadyExists__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PrfProviderError';
+    readonly tag = PrfProviderError_Tags.CredentialAlreadyExists;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('PrfProviderError', 'CredentialAlreadyExists');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): CredentialAlreadyExists_ {
+      return new CredentialAlreadyExists_(v0);
+    }
+
+    static instanceOf(obj: any): obj is CredentialAlreadyExists_ {
+      return obj.tag === PrfProviderError_Tags.CredentialAlreadyExists;
+    }
+
+    static hasInner(obj: any): obj is CredentialAlreadyExists_ {
+      return CredentialAlreadyExists_.instanceOf(obj);
+    }
+
+    static getInner(obj: CredentialAlreadyExists_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  type Generic__interface = {
+    tag: PrfProviderError_Tags.Generic;
+    inner: Readonly<[string]>;
+  };
+
+  class Generic_ extends UniffiError implements Generic__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PrfProviderError';
+    readonly tag = PrfProviderError_Tags.Generic;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('PrfProviderError', 'Generic');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): Generic_ {
+      return new Generic_(v0);
+    }
+
+    static instanceOf(obj: any): obj is Generic_ {
+      return obj.tag === PrfProviderError_Tags.Generic;
+    }
+
+    static hasInner(obj: any): obj is Generic_ {
+      return Generic_.instanceOf(obj);
+    }
+
+    static getInner(obj: Generic_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
+  function instanceOf(obj: any): obj is PrfProviderError {
+    return obj[uniffiTypeNameSymbol] === 'PrfProviderError';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    PrfNotSupported: PrfNotSupported_,
+    UserCancelled: UserCancelled_,
+    UserTimedOut: UserTimedOut_,
+    CredentialNotFound: CredentialNotFound_,
+    AuthenticationFailed: AuthenticationFailed_,
+    PrfEvaluationFailed: PrfEvaluationFailed_,
+    Configuration: Configuration_,
+    CredentialAlreadyExists: CredentialAlreadyExists_,
+    Generic: Generic_,
+  });
+})();
+
+/**
+ * Failures from a passkey PRF operation. Each platform normalizes its
+ * native errors into these variants so callers match one taxonomy
+ * everywhere; anything unclassifiable becomes [`Generic`](Self::Generic).
+ */
+
+export type PrfProviderError = InstanceType<
+  (typeof PrfProviderError)[keyof Omit<typeof PrfProviderError, 'instanceOf'>]
+>;
+
+// FfiConverter for enum PrfProviderError
+const FfiConverterTypePrfProviderError = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = PrfProviderError;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new PrfProviderError.PrfNotSupported();
+        case 2:
+          return new PrfProviderError.UserCancelled();
+        case 3:
+          return new PrfProviderError.UserTimedOut();
+        case 4:
+          return new PrfProviderError.CredentialNotFound(
+            FfiConverterString.read(from)
+          );
+        case 5:
+          return new PrfProviderError.AuthenticationFailed(
+            FfiConverterString.read(from)
+          );
+        case 6:
+          return new PrfProviderError.PrfEvaluationFailed(
+            FfiConverterString.read(from)
+          );
+        case 7:
+          return new PrfProviderError.Configuration(
+            FfiConverterString.read(from)
+          );
+        case 8:
+          return new PrfProviderError.CredentialAlreadyExists(
+            FfiConverterString.read(from)
+          );
+        case 9:
+          return new PrfProviderError.Generic(FfiConverterString.read(from));
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case PrfProviderError_Tags.PrfNotSupported: {
+          ordinalConverter.write(1, into);
+          return;
+        }
+        case PrfProviderError_Tags.UserCancelled: {
+          ordinalConverter.write(2, into);
+          return;
+        }
+        case PrfProviderError_Tags.UserTimedOut: {
+          ordinalConverter.write(3, into);
+          return;
+        }
+        case PrfProviderError_Tags.CredentialNotFound: {
+          ordinalConverter.write(4, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case PrfProviderError_Tags.AuthenticationFailed: {
+          ordinalConverter.write(5, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case PrfProviderError_Tags.PrfEvaluationFailed: {
+          ordinalConverter.write(6, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case PrfProviderError_Tags.Configuration: {
+          ordinalConverter.write(7, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case PrfProviderError_Tags.CredentialAlreadyExists: {
+          ordinalConverter.write(8, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case PrfProviderError_Tags.Generic: {
+          ordinalConverter.write(9, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        default:
+          // Throwing from here means that PrfProviderError_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case PrfProviderError_Tags.PrfNotSupported: {
+          return ordinalConverter.allocationSize(1);
+        }
+        case PrfProviderError_Tags.UserCancelled: {
+          return ordinalConverter.allocationSize(2);
+        }
+        case PrfProviderError_Tags.UserTimedOut: {
+          return ordinalConverter.allocationSize(3);
+        }
+        case PrfProviderError_Tags.CredentialNotFound: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(4);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case PrfProviderError_Tags.AuthenticationFailed: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(5);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case PrfProviderError_Tags.PrfEvaluationFailed: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(6);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case PrfProviderError_Tags.Configuration: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(7);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case PrfProviderError_Tags.CredentialAlreadyExists: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(8);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case PrfProviderError_Tags.Generic: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(9);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
     }
   }
   return new FFIConverter();
@@ -18381,6 +22102,8 @@ export enum SdkError_Tags {
   MissingUtxo = 'MissingUtxo',
   LnurlError = 'LnurlError',
   Signer = 'Signer',
+  OptimizationAlreadyRunning = 'OptimizationAlreadyRunning',
+  OptimizationCancelled = 'OptimizationCancelled',
   Generic = 'Generic',
 }
 /**
@@ -18817,6 +22540,76 @@ export const SdkError = (() => {
     }
   }
 
+  type OptimizationAlreadyRunning__interface = {
+    tag: SdkError_Tags.OptimizationAlreadyRunning;
+  };
+
+  /**
+   * `optimize_leaves` was called while another optimization run (auto or
+   * manual) was already in flight.
+   */
+  class OptimizationAlreadyRunning_
+    extends UniffiError
+    implements OptimizationAlreadyRunning__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SdkError';
+    readonly tag = SdkError_Tags.OptimizationAlreadyRunning;
+    constructor() {
+      super('SdkError', 'OptimizationAlreadyRunning');
+    }
+
+    static new(): OptimizationAlreadyRunning_ {
+      return new OptimizationAlreadyRunning_();
+    }
+
+    static instanceOf(obj: any): obj is OptimizationAlreadyRunning_ {
+      return obj.tag === SdkError_Tags.OptimizationAlreadyRunning;
+    }
+
+    static hasInner(obj: any): obj is OptimizationAlreadyRunning_ {
+      return false;
+    }
+  }
+
+  type OptimizationCancelled__interface = {
+    tag: SdkError_Tags.OptimizationCancelled;
+  };
+
+  /**
+   * `optimize_leaves` was preempted by the SDK to free leaves for a
+   * higher-priority operation (typically a payment).
+   */
+  class OptimizationCancelled_
+    extends UniffiError
+    implements OptimizationCancelled__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SdkError';
+    readonly tag = SdkError_Tags.OptimizationCancelled;
+    constructor() {
+      super('SdkError', 'OptimizationCancelled');
+    }
+
+    static new(): OptimizationCancelled_ {
+      return new OptimizationCancelled_();
+    }
+
+    static instanceOf(obj: any): obj is OptimizationCancelled_ {
+      return obj.tag === SdkError_Tags.OptimizationCancelled;
+    }
+
+    static hasInner(obj: any): obj is OptimizationCancelled_ {
+      return false;
+    }
+  }
+
   type Generic__interface = {
     tag: SdkError_Tags.Generic;
     inner: Readonly<[string]>;
@@ -18869,6 +22662,8 @@ export const SdkError = (() => {
     MissingUtxo: MissingUtxo_,
     LnurlError: LnurlError_,
     Signer: Signer_,
+    OptimizationAlreadyRunning: OptimizationAlreadyRunning_,
+    OptimizationCancelled: OptimizationCancelled_,
     Generic: Generic_,
   });
 })();
@@ -18920,6 +22715,10 @@ const FfiConverterTypeSdkError = (() => {
         case 11:
           return new SdkError.Signer(FfiConverterString.read(from));
         case 12:
+          return new SdkError.OptimizationAlreadyRunning();
+        case 13:
+          return new SdkError.OptimizationCancelled();
+        case 14:
           return new SdkError.Generic(FfiConverterString.read(from));
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -18996,8 +22795,16 @@ const FfiConverterTypeSdkError = (() => {
           FfiConverterString.write(inner[0], into);
           return;
         }
-        case SdkError_Tags.Generic: {
+        case SdkError_Tags.OptimizationAlreadyRunning: {
           ordinalConverter.write(12, into);
+          return;
+        }
+        case SdkError_Tags.OptimizationCancelled: {
+          ordinalConverter.write(13, into);
+          return;
+        }
+        case SdkError_Tags.Generic: {
+          ordinalConverter.write(14, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
@@ -19079,9 +22886,15 @@ const FfiConverterTypeSdkError = (() => {
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
+        case SdkError_Tags.OptimizationAlreadyRunning: {
+          return ordinalConverter.allocationSize(12);
+        }
+        case SdkError_Tags.OptimizationCancelled: {
+          return ordinalConverter.allocationSize(13);
+        }
         case SdkError_Tags.Generic: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(12);
+          let size = ordinalConverter.allocationSize(14);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
@@ -19101,7 +22914,7 @@ export enum SdkEvent_Tags {
   PaymentSucceeded = 'PaymentSucceeded',
   PaymentPending = 'PaymentPending',
   PaymentFailed = 'PaymentFailed',
-  Optimization = 'Optimization',
+  AutoOptimization = 'AutoOptimization',
   LightningAddressChanged = 'LightningAddressChanged',
   NewDeposits = 'NewDeposits',
 }
@@ -19290,30 +23103,43 @@ export const SdkEvent = (() => {
     }
   }
 
-  type Optimization__interface = {
-    tag: SdkEvent_Tags.Optimization;
-    inner: Readonly<{ optimizationEvent: OptimizationEvent }>;
+  type AutoOptimization__interface = {
+    tag: SdkEvent_Tags.AutoOptimization;
+    inner: Readonly<{ optimizationEvent: AutoOptimizationEvent }>;
   };
 
-  class Optimization_ extends UniffiEnum implements Optimization__interface {
+  /**
+   * Emitted while the background auto-optimizer is running.
+   *
+   * Only fired from the auto path (enabled via
+   * `LeafOptimizationConfig::auto_enabled`). Manually-triggered runs
+   * via `BreezSdk::optimize_leaves` do not emit events — they return an
+   * `OptimizationOutcome` instead.
+   */
+  class AutoOptimization_
+    extends UniffiEnum
+    implements AutoOptimization__interface
+  {
     /**
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
     readonly [uniffiTypeNameSymbol] = 'SdkEvent';
-    readonly tag = SdkEvent_Tags.Optimization;
-    readonly inner: Readonly<{ optimizationEvent: OptimizationEvent }>;
-    constructor(inner: { optimizationEvent: OptimizationEvent }) {
-      super('SdkEvent', 'Optimization');
+    readonly tag = SdkEvent_Tags.AutoOptimization;
+    readonly inner: Readonly<{ optimizationEvent: AutoOptimizationEvent }>;
+    constructor(inner: { optimizationEvent: AutoOptimizationEvent }) {
+      super('SdkEvent', 'AutoOptimization');
       this.inner = Object.freeze(inner);
     }
 
-    static new(inner: { optimizationEvent: OptimizationEvent }): Optimization_ {
-      return new Optimization_(inner);
+    static new(inner: {
+      optimizationEvent: AutoOptimizationEvent;
+    }): AutoOptimization_ {
+      return new AutoOptimization_(inner);
     }
 
-    static instanceOf(obj: any): obj is Optimization_ {
-      return obj.tag === SdkEvent_Tags.Optimization;
+    static instanceOf(obj: any): obj is AutoOptimization_ {
+      return obj.tag === SdkEvent_Tags.AutoOptimization;
     }
   }
 
@@ -19390,7 +23216,7 @@ export const SdkEvent = (() => {
     PaymentSucceeded: PaymentSucceeded_,
     PaymentPending: PaymentPending_,
     PaymentFailed: PaymentFailed_,
-    Optimization: Optimization_,
+    AutoOptimization: AutoOptimization_,
     LightningAddressChanged: LightningAddressChanged_,
     NewDeposits: NewDeposits_,
   });
@@ -19434,8 +23260,8 @@ const FfiConverterTypeSdkEvent = (() => {
             payment: FfiConverterTypePayment.read(from),
           });
         case 7:
-          return new SdkEvent.Optimization({
-            optimizationEvent: FfiConverterTypeOptimizationEvent.read(from),
+          return new SdkEvent.AutoOptimization({
+            optimizationEvent: FfiConverterTypeAutoOptimizationEvent.read(from),
           });
         case 8:
           return new SdkEvent.LightningAddressChanged({
@@ -19486,10 +23312,10 @@ const FfiConverterTypeSdkEvent = (() => {
           FfiConverterTypePayment.write(inner.payment, into);
           return;
         }
-        case SdkEvent_Tags.Optimization: {
+        case SdkEvent_Tags.AutoOptimization: {
           ordinalConverter.write(7, into);
           const inner = value.inner;
-          FfiConverterTypeOptimizationEvent.write(
+          FfiConverterTypeAutoOptimizationEvent.write(
             inner.optimizationEvent,
             into
           );
@@ -19554,10 +23380,10 @@ const FfiConverterTypeSdkEvent = (() => {
           size += FfiConverterTypePayment.allocationSize(inner.payment);
           return size;
         }
-        case SdkEvent_Tags.Optimization: {
+        case SdkEvent_Tags.AutoOptimization: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(7);
-          size += FfiConverterTypeOptimizationEvent.allocationSize(
+          size += FfiConverterTypeAutoOptimizationEvent.allocationSize(
             inner.optimizationEvent
           );
           return size;
@@ -20997,16 +24823,16 @@ const FfiConverterTypeServiceStatus = (() => {
   return new FFIConverter();
 })();
 
-// Error type: SessionManagerError
+// Error type: SessionStoreError
 
-// Enum: SessionManagerError
-export enum SessionManagerError_Tags {
+// Enum: SessionStoreError
+export enum SessionStoreError_Tags {
   NotFound = 'NotFound',
   Generic = 'Generic',
 }
-export const SessionManagerError = (() => {
+export const SessionStoreError = (() => {
   type NotFound__interface = {
-    tag: SessionManagerError_Tags.NotFound;
+    tag: SessionStoreError_Tags.NotFound;
   };
 
   class NotFound_ extends UniffiError implements NotFound__interface {
@@ -21014,10 +24840,10 @@ export const SessionManagerError = (() => {
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
-    readonly [uniffiTypeNameSymbol] = 'SessionManagerError';
-    readonly tag = SessionManagerError_Tags.NotFound;
+    readonly [uniffiTypeNameSymbol] = 'SessionStoreError';
+    readonly tag = SessionStoreError_Tags.NotFound;
     constructor() {
-      super('SessionManagerError', 'NotFound');
+      super('SessionStoreError', 'NotFound');
     }
 
     static new(): NotFound_ {
@@ -21025,7 +24851,7 @@ export const SessionManagerError = (() => {
     }
 
     static instanceOf(obj: any): obj is NotFound_ {
-      return obj.tag === SessionManagerError_Tags.NotFound;
+      return obj.tag === SessionStoreError_Tags.NotFound;
     }
 
     static hasInner(obj: any): obj is NotFound_ {
@@ -21034,7 +24860,7 @@ export const SessionManagerError = (() => {
   }
 
   type Generic__interface = {
-    tag: SessionManagerError_Tags.Generic;
+    tag: SessionStoreError_Tags.Generic;
     inner: Readonly<[string]>;
   };
 
@@ -21043,11 +24869,11 @@ export const SessionManagerError = (() => {
      * @private
      * This field is private and should not be used, use `tag` instead.
      */
-    readonly [uniffiTypeNameSymbol] = 'SessionManagerError';
-    readonly tag = SessionManagerError_Tags.Generic;
+    readonly [uniffiTypeNameSymbol] = 'SessionStoreError';
+    readonly tag = SessionStoreError_Tags.Generic;
     readonly inner: Readonly<[string]>;
     constructor(v0: string) {
-      super('SessionManagerError', 'Generic');
+      super('SessionStoreError', 'Generic');
       this.inner = Object.freeze([v0]);
     }
 
@@ -21056,7 +24882,7 @@ export const SessionManagerError = (() => {
     }
 
     static instanceOf(obj: any): obj is Generic_ {
-      return obj.tag === SessionManagerError_Tags.Generic;
+      return obj.tag === SessionStoreError_Tags.Generic;
     }
 
     static hasInner(obj: any): obj is Generic_ {
@@ -21068,8 +24894,8 @@ export const SessionManagerError = (() => {
     }
   }
 
-  function instanceOf(obj: any): obj is SessionManagerError {
-    return obj[uniffiTypeNameSymbol] === 'SessionManagerError';
+  function instanceOf(obj: any): obj is SessionStoreError {
+    return obj[uniffiTypeNameSymbol] === 'SessionStoreError';
   }
 
   return Object.freeze({
@@ -21079,51 +24905,48 @@ export const SessionManagerError = (() => {
   });
 })();
 
-export type SessionManagerError = InstanceType<
-  (typeof SessionManagerError)[keyof Omit<
-    typeof SessionManagerError,
-    'instanceOf'
-  >]
+export type SessionStoreError = InstanceType<
+  (typeof SessionStoreError)[keyof Omit<typeof SessionStoreError, 'instanceOf'>]
 >;
 
-// FfiConverter for enum SessionManagerError
-const FfiConverterTypeSessionManagerError = (() => {
+// FfiConverter for enum SessionStoreError
+const FfiConverterTypeSessionStoreError = (() => {
   const ordinalConverter = FfiConverterInt32;
-  type TypeName = SessionManagerError;
+  type TypeName = SessionStoreError;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       switch (ordinalConverter.read(from)) {
         case 1:
-          return new SessionManagerError.NotFound();
+          return new SessionStoreError.NotFound();
         case 2:
-          return new SessionManagerError.Generic(FfiConverterString.read(from));
+          return new SessionStoreError.Generic(FfiConverterString.read(from));
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
     }
     write(value: TypeName, into: RustBuffer): void {
       switch (value.tag) {
-        case SessionManagerError_Tags.NotFound: {
+        case SessionStoreError_Tags.NotFound: {
           ordinalConverter.write(1, into);
           return;
         }
-        case SessionManagerError_Tags.Generic: {
+        case SessionStoreError_Tags.Generic: {
           ordinalConverter.write(2, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
         }
         default:
-          // Throwing from here means that SessionManagerError_Tags hasn't matched an ordinal.
+          // Throwing from here means that SessionStoreError_Tags hasn't matched an ordinal.
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
     }
     allocationSize(value: TypeName): number {
       switch (value.tag) {
-        case SessionManagerError_Tags.NotFound: {
+        case SessionStoreError_Tags.NotFound: {
           return ordinalConverter.allocationSize(1);
         }
-        case SessionManagerError_Tags.Generic: {
+        case SessionStoreError_Tags.Generic: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
           size += FfiConverterString.allocationSize(inner[0]);
@@ -23764,6 +27587,11 @@ export interface BreezSdkInterface {
   /**
    * Registers a listener to receive SDK events
    *
+   * The SDK holds the listener until it is removed with
+   * `remove_event_listener` or until `disconnect` unregisters all
+   * listeners. A held listener that references the SDK instance keeps
+   * that instance alive.
+   *
    * # Arguments
    *
    * * `listener` - An implementation of the `EventListener` trait
@@ -23777,6 +27605,17 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<string>;
   /**
+   * Authorize transferring the current owner's registered lightning address
+   * username to `request.transferee_pubkey`. Returns a
+   * [`TransferAuthorization`] to hand to the new owner, who
+   * claims it via [`BreezSdk::claim_lightning_address_transfer`].
+   * Errors if the current owner has no lightning address registered.
+   */
+  authorizeLightningAddressTransfer(
+    request: AuthorizeTransferRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<TransferAuthorization>;
+  /**
    * Initiates a Bitcoin purchase flow via an external provider.
    *
    * Returns a URL the user should open to complete the purchase.
@@ -23789,19 +27628,6 @@ export interface BreezSdkInterface {
     request: BuyBitcoinRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<BuyBitcoinResponse>;
-  /**
-   * Cancels the ongoing leaf optimization.
-   *
-   * This method cancels the ongoing optimization and waits for it to fully stop.
-   * The current round will complete before stopping. This method blocks
-   * until the optimization has fully stopped and leaves reserved for optimization
-   * are available again.
-   *
-   * If no optimization is running, this method returns immediately.
-   */
-  cancelLeafOptimization(asyncOpts_?: {
-    signal: AbortSignal;
-  }): /*throws*/ Promise<void>;
   checkLightningAddressAvailable(
     req: CheckLightningAddressRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -23823,6 +27649,16 @@ export interface BreezSdkInterface {
     request: ClaimHtlcPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<ClaimHtlcPaymentResponse>;
+  /**
+   * Claim a lightning address username handed over by its current owner,
+   * using the [`TransferAuthorization`] from
+   * [`BreezSdk::authorize_lightning_address_transfer`]. Completes the
+   * takeover and returns the newly-owned address.
+   */
+  claimLightningAddressTransfer(
+    request: ClaimTransferRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<LightningAddressInfo>;
   /**
    * Deletes a contact by its ID.
    *
@@ -23847,6 +27683,9 @@ export interface BreezSdkInterface {
    * This method stops the background tasks started by the `start()` method.
    * It should be called before your application terminates to ensure proper cleanup.
    *
+   * It also unregisters all event listeners, so listeners that reference
+   * the SDK no longer keep it alive after this call.
+   *
    * # Returns
    *
    * Result containing either success or an `SdkError` if the background task couldn't be stopped
@@ -23863,10 +27702,6 @@ export interface BreezSdkInterface {
     request: GetInfoRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<GetInfoResponse>;
-  /**
-   * Returns the current optimization progress snapshot.
-   */
-  getLeafOptimizationProgress(): OptimizationProgress;
   getLightningAddress(asyncOpts_?: {
     signal: AbortSignal;
   }): /*throws*/ Promise<LightningAddressInfo | undefined>;
@@ -24005,6 +27840,29 @@ export interface BreezSdkInterface {
     request: LnurlWithdrawRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<LnurlWithdrawResponse>;
+  /**
+   * Manually drives leaf optimization, blocking until the requested work
+   * is done.
+   *
+   * With [`OptimizationMode::Full`] (the default) the call runs the entire
+   * optimization in a single invocation. With
+   * [`OptimizationMode::SingleRound`] it executes one round and returns —
+   * the caller drives the loop by inspecting the
+   * [`OptimizeLeavesResponse::outcome`] and calling again until
+   * `InProgress` no longer appears.
+   *
+   * Returns an error if another optimization run (auto or manual) is
+   * already in flight ([`SdkError::OptimizationAlreadyRunning`]), or if
+   * the SDK preempted this run to free leaves for a payment
+   * ([`SdkError::OptimizationCancelled`]).
+   *
+   * Manual runs do not emit events; events ([`SdkEvent::AutoOptimization`])
+   * are reserved for the background auto-optimizer.
+   */
+  optimizeLeaves(
+    request: OptimizeLeavesRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<OptimizeLeavesResponse>;
   parse(
     input: string,
     asyncOpts_?: { signal: AbortSignal }
@@ -24096,14 +27954,6 @@ export interface BreezSdkInterface {
     request: SignMessageRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<SignMessageResponse>;
-  /**
-   * Starts leaf optimization in the background.
-   *
-   * This method spawns the optimization work in a background task and returns
-   * immediately. Progress is reported via events.
-   * If optimization is already running, no new task will be started.
-   */
-  startLeafOptimization(asyncOpts_?: { signal: AbortSignal }): Promise<void>;
   /**
    * Synchronizes the wallet with the Spark network
    */
@@ -24223,6 +28073,11 @@ export class BreezSdk
   /**
    * Registers a listener to receive SDK events
    *
+   * The SDK holds the listener until it is removed with
+   * `remove_event_listener` or until `disconnect` unregisters all
+   * listeners. A held listener that references the SDK instance keeps
+   * that instance alive.
+   *
    * # Arguments
    *
    * * `listener` - An implementation of the `EventListener` trait
@@ -24266,6 +28121,52 @@ export class BreezSdk
   }
 
   /**
+   * Authorize transferring the current owner's registered lightning address
+   * username to `request.transferee_pubkey`. Returns a
+   * [`TransferAuthorization`] to hand to the new owner, who
+   * claims it via [`BreezSdk::claim_lightning_address_transfer`].
+   * Errors if the current owner has no lightning address registered.
+   */
+  public async authorizeLightningAddressTransfer(
+    request: AuthorizeTransferRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<TransferAuthorization> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_authorize_lightning_address_transfer(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeAuthorizeTransferRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeTransferAuthorization.lift.bind(
+          FfiConverterTypeTransferAuthorization
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
    * Initiates a Bitcoin purchase flow via an external provider.
    *
    * Returns a URL the user should open to complete the purchase.
@@ -24299,51 +28200,6 @@ export class BreezSdk
         /*liftFunc:*/ FfiConverterTypeBuyBitcoinResponse.lift.bind(
           FfiConverterTypeBuyBitcoinResponse
         ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
-          FfiConverterTypeSdkError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Cancels the ongoing leaf optimization.
-   *
-   * This method cancels the ongoing optimization and waits for it to fully stop.
-   * The current round will complete before stopping. This method blocks
-   * until the optimization has fully stopped and leaves reserved for optimization
-   * are available again.
-   *
-   * If no optimization is running, this method returns immediately.
-   */
-  public async cancelLeafOptimization(asyncOpts_?: {
-    signal: AbortSignal;
-  }): Promise<void> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_cancel_leaf_optimization(
-            uniffiTypeBreezSdkObjectFactory.clonePointer(this)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
-        /*liftFunc:*/ (_v) => {},
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
         /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
@@ -24518,6 +28374,51 @@ export class BreezSdk
   }
 
   /**
+   * Claim a lightning address username handed over by its current owner,
+   * using the [`TransferAuthorization`] from
+   * [`BreezSdk::authorize_lightning_address_transfer`]. Completes the
+   * takeover and returns the newly-owned address.
+   */
+  public async claimLightningAddressTransfer(
+    request: ClaimTransferRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<LightningAddressInfo> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_claim_lightning_address_transfer(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeClaimTransferRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeLightningAddressInfo.lift.bind(
+          FfiConverterTypeLightningAddressInfo
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
    * Deletes a contact by its ID.
    *
    * # Arguments
@@ -24605,6 +28506,9 @@ export class BreezSdk
    *
    * This method stops the background tasks started by the `start()` method.
    * It should be called before your application terminates to ensure proper cleanup.
+   *
+   * It also unregisters all event listeners, so listeners that reference
+   * the SDK no longer keep it alive after this call.
    *
    * # Returns
    *
@@ -24724,23 +28628,6 @@ export class BreezSdk
       }
       throw __error;
     }
-  }
-
-  /**
-   * Returns the current optimization progress snapshot.
-   */
-  public getLeafOptimizationProgress(): OptimizationProgress {
-    return FfiConverterTypeOptimizationProgress.lift(
-      uniffiCaller.rustCall(
-        /*caller:*/ (callStatus) => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_leaf_optimization_progress(
-            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
-            callStatus
-          );
-        },
-        /*liftString:*/ FfiConverterString.lift
-      )
-    );
   }
 
   public async getLightningAddress(asyncOpts_?: {
@@ -25344,6 +29231,64 @@ export class BreezSdk
     }
   }
 
+  /**
+   * Manually drives leaf optimization, blocking until the requested work
+   * is done.
+   *
+   * With [`OptimizationMode::Full`] (the default) the call runs the entire
+   * optimization in a single invocation. With
+   * [`OptimizationMode::SingleRound`] it executes one round and returns —
+   * the caller drives the loop by inspecting the
+   * [`OptimizeLeavesResponse::outcome`] and calling again until
+   * `InProgress` no longer appears.
+   *
+   * Returns an error if another optimization run (auto or manual) is
+   * already in flight ([`SdkError::OptimizationAlreadyRunning`]), or if
+   * the SDK preempted this run to free leaves for a payment
+   * ([`SdkError::OptimizationCancelled`]).
+   *
+   * Manual runs do not emit events; events ([`SdkEvent::AutoOptimization`])
+   * are reserved for the background auto-optimizer.
+   */
+  public async optimizeLeaves(
+    request: OptimizeLeavesRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<OptimizeLeavesResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_optimize_leaves(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeOptimizeLeavesRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeOptimizeLeavesResponse.lift.bind(
+          FfiConverterTypeOptimizeLeavesResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
   public async parse(
     input: string,
     asyncOpts_?: { signal: AbortSignal }
@@ -25847,45 +29792,6 @@ export class BreezSdk
   }
 
   /**
-   * Starts leaf optimization in the background.
-   *
-   * This method spawns the optimization work in a background task and returns
-   * immediately. Progress is reported via events.
-   * If optimization is already running, no new task will be started.
-   */
-  public async startLeafOptimization(asyncOpts_?: {
-    signal: AbortSignal;
-  }): Promise<void> {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_start_leaf_optimization(
-            uniffiTypeBreezSdkObjectFactory.clonePointer(this)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
-        /*liftFunc:*/ (_v) => {},
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
    * Synchronizes the wallet with the Spark network
    */
   public async syncWallet(
@@ -26165,13 +30071,7 @@ const FfiConverterTypeBreezSdk = new FfiConverterObject(
  *
  * Errors are returned as `SignerError` for FFI compatibility.
  */
-export interface ExternalSigner {
-  /**
-   * Returns the identity public key as 33 bytes (compressed secp256k1 key).
-   *
-   * See also: [JavaScript `getIdentityPublicKey`](https://docs.spark.money/wallets/spark-signer#get-identity-public-key)
-   */
-  identityPublicKey(): /*throws*/ PublicKeyBytes;
+export interface ExternalBreezSigner {
   /**
    * Derives a public key for the given BIP32 derivation path.
    *
@@ -26285,196 +30185,6 @@ export interface ExternalSigner {
     path: string,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<HashedMessageBytes>;
-  /**
-   * Generates Frost signing commitments for multi-party signing.
-   *
-   * # Returns
-   * Frost commitments with nonces, or a `SignerError`
-   *
-   * See also: [JavaScript `getRandomSigningCommitment`](https://docs.spark.money/wallets/spark-signer#get-random-signing-commitment)
-   */
-  generateRandomSigningCommitment(asyncOpts_?: {
-    signal: AbortSignal;
-  }): /*throws*/ Promise<ExternalFrostCommitments>;
-  /**
-   * Gets the public key for a specific tree node in the Spark wallet.
-   *
-   * # Arguments
-   * * `id` - The tree node identifier
-   *
-   * # Returns
-   * The public key for the node, or a `SignerError`
-   */
-  getPublicKeyForNode(
-    id: ExternalTreeNodeId,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<PublicKeyBytes>;
-  /**
-   * Generates a random secret that is encrypted and known only to the signer.
-   *
-   * This method creates a new random secret and returns it in encrypted form.
-   * The plaintext secret never leaves the signer boundary, providing a secure way
-   * to create secrets that can be referenced in subsequent operations without
-   * exposing them.
-   *
-   * This is conceptually similar to Spark's key derivation system where secrets
-   * are represented by opaque references (like tree node IDs or Random) rather than raw values.
-   * The encrypted secret can be passed to other signer methods that need to operate
-   * on it, while keeping the actual secret material protected within the signer.
-   *
-   * # Returns
-   * An encrypted secret that can be used in subsequent signer operations,
-   * or a `SignerError` if generation fails.
-   *
-   * See also: [Key Derivation System](https://docs.spark.money/wallets/spark-signer#the-keyderivation-system)
-   */
-  generateRandomSecret(asyncOpts_?: {
-    signal: AbortSignal;
-  }): /*throws*/ Promise<ExternalEncryptedSecret>;
-  /**
-   * Gets an encrypted static deposit secret by index.
-   *
-   * # Arguments
-   * * `index` - The index of the static deposit secret
-   *
-   * # Returns
-   * The encrypted secret, or a `SignerError`
-   *
-   * This is the encrypted version of: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
-   */
-  staticDepositSecretEncrypted(
-    index: /*u32*/ number,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<ExternalSecretSource>;
-  /**
-   * Gets a static deposit secret by index.
-   *
-   * # Arguments
-   * * `index` - The index of the static deposit secret
-   *
-   * # Returns
-   * The 32-byte secret, or a `SignerError`
-   *
-   * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
-   */
-  staticDepositSecret(
-    index: /*u32*/ number,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<SecretBytes>;
-  /**
-   * Gets a static deposit signing public key by index.
-   *
-   * # Arguments
-   * * `index` - The index of the static deposit public signing key
-   *
-   * # Returns
-   * The 33-byte public key, or a `SignerError`
-   *
-   * See also: [JavaScript `getStaticDepositSigningKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-signing-key)
-   */
-  staticDepositSigningKey(
-    index: /*u32*/ number,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<PublicKeyBytes>;
-  /**
-   * Subtracts one secret from another.
-   *
-   * This is a lower-level primitive used as part of key tweaking operations.
-   *
-   * # Arguments
-   * * `signing_key` - The first secret
-   * * `new_signing_key` - The second secret to subtract
-   *
-   * # Returns
-   * The resulting secret, or a `SignerError`
-   *
-   * See also: [JavaScript `subtractSplitAndEncrypt`](https://docs.spark.money/wallets/spark-signer#subtract,-split,-and-encrypt)
-   * (this method provides the subtraction step of that higher-level operation)
-   */
-  subtractSecrets(
-    signingKey: ExternalSecretSource,
-    newSigningKey: ExternalSecretSource,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<ExternalSecretSource>;
-  /**
-   * Splits a secret with proofs using Shamir's Secret Sharing.
-   *
-   * # Arguments
-   * * `secret` - The secret to split
-   * * `threshold` - Minimum number of shares needed to reconstruct
-   * * `num_shares` - Total number of shares to create
-   *
-   * # Returns
-   * Vector of verifiable secret shares, or a `SignerError`
-   *
-   * See also: [JavaScript `splitSecretWithProofs`](https://docs.spark.money/wallets/spark-signer#split-secret-with-proofs)
-   */
-  splitSecretWithProofs(
-    secret: ExternalSecretToSplit,
-    threshold: /*u32*/ number,
-    numShares: /*u32*/ number,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<Array<ExternalVerifiableSecretShare>>;
-  /**
-   * Encrypts a secret for a specific receiver's public key.
-   *
-   * # Arguments
-   * * `encrypted_secret` - The encrypted secret to re-encrypt
-   * * `receiver_public_key` - The receiver's 33-byte public key
-   *
-   * # Returns
-   * Encrypted data for the receiver, or a `SignerError`
-   */
-  encryptSecretForReceiver(
-    encryptedSecret: ExternalEncryptedSecret,
-    receiverPublicKey: PublicKeyBytes,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<ArrayBuffer>;
-  /**
-   * Gets the public key from a secret.
-   *
-   * # Arguments
-   * * `secret` - The secret
-   *
-   * # Returns
-   * The corresponding 33-byte public key, or a `SignerError`
-   *
-   * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
-   */
-  publicKeyFromSecret(
-    secret: ExternalSecretSource,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<PublicKeyBytes>;
-  /**
-   * Signs using Frost protocol (multi-party signing).
-   *
-   * # Arguments
-   * * `request` - The Frost signing request
-   *
-   * # Returns
-   * A signature share, or a `SignerError`
-   *
-   * See also: [JavaScript `signFrost`](https://docs.spark.money/wallets/spark-signer#frost-signing)
-   */
-  signFrost(
-    request: ExternalSignFrostRequest,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<ExternalFrostSignatureShare>;
-  /**
-   * Aggregates Frost signature shares into a final signature.
-   *
-   * # Arguments
-   * * `request` - The Frost aggregation request
-   *
-   * # Returns
-   * The aggregated Frost signature, or a `SignerError`
-   *
-   * See also: [JavaScript `aggregateFrost`](https://docs.spark.money/wallets/spark-signer#aggregate-frost-signatures)
-   */
-  aggregateFrost(
-    request: ExternalAggregateFrostRequest,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<ExternalFrostSignature>;
 }
 
 /**
@@ -26490,11 +30200,11 @@ export interface ExternalSigner {
  *
  * Errors are returned as `SignerError` for FFI compatibility.
  */
-export class ExternalSignerImpl
+export class ExternalBreezSignerImpl
   extends UniffiAbstractObject
-  implements ExternalSigner
+  implements ExternalBreezSigner
 {
-  readonly [uniffiTypeNameSymbol] = 'ExternalSignerImpl';
+  readonly [uniffiTypeNameSymbol] = 'ExternalBreezSignerImpl';
   readonly [destructorGuardSymbol]: UniffiRustArcPtr;
   readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
   // No primary constructor declared for this class.
@@ -26502,29 +30212,7 @@ export class ExternalSignerImpl
     super();
     this[pointerLiteralSymbol] = pointer;
     this[destructorGuardSymbol] =
-      uniffiTypeExternalSignerImplObjectFactory.bless(pointer);
-  }
-
-  /**
-   * Returns the identity public key as 33 bytes (compressed secp256k1 key).
-   *
-   * See also: [JavaScript `getIdentityPublicKey`](https://docs.spark.money/wallets/spark-signer#get-identity-public-key)
-   */
-  public identityPublicKey(): PublicKeyBytes /*throws*/ {
-    return FfiConverterTypePublicKeyBytes.lift(
-      uniffiCaller.rustCallWithError(
-        /*liftError:*/ FfiConverterTypeSignerError.lift.bind(
-          FfiConverterTypeSignerError
-        ),
-        /*caller:*/ (callStatus) => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_identity_public_key(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            callStatus
-          );
-        },
-        /*liftString:*/ FfiConverterString.lift
-      )
-    );
+      uniffiTypeExternalBreezSignerImplObjectFactory.bless(pointer);
   }
 
   /**
@@ -26547,8 +30235,8 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_derive_public_key(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_derive_public_key(
+            uniffiTypeExternalBreezSignerImplObjectFactory.clonePointer(this),
             FfiConverterString.lower(path)
           );
         },
@@ -26599,8 +30287,8 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_ecdsa(
+            uniffiTypeExternalBreezSignerImplObjectFactory.clonePointer(this),
             FfiConverterTypeMessageBytes.lower(message),
             FfiConverterString.lower(path)
           );
@@ -26652,8 +30340,8 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_ecdsa_recoverable(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_ecdsa_recoverable(
+            uniffiTypeExternalBreezSignerImplObjectFactory.clonePointer(this),
             FfiConverterTypeMessageBytes.lower(message),
             FfiConverterString.lower(path)
           );
@@ -26703,8 +30391,8 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_ecies(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_encrypt_ecies(
+            uniffiTypeExternalBreezSignerImplObjectFactory.clonePointer(this),
             FfiConverterArrayBuffer.lower(message),
             FfiConverterString.lower(path)
           );
@@ -26756,8 +30444,8 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_decrypt_ecies(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_decrypt_ecies(
+            uniffiTypeExternalBreezSignerImplObjectFactory.clonePointer(this),
             FfiConverterArrayBuffer.lower(message),
             FfiConverterString.lower(path)
           );
@@ -26807,8 +30495,8 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_hash_schnorr(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_sign_hash_schnorr(
+            uniffiTypeExternalBreezSignerImplObjectFactory.clonePointer(this),
             FfiConverterArrayBuffer.lower(hash),
             FfiConverterString.lower(path)
           );
@@ -26860,8 +30548,8 @@ export class ExternalSignerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_hmac_sha256(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalbreezsigner_hmac_sha256(
+            uniffiTypeExternalBreezSignerImplObjectFactory.clonePointer(this),
             FfiConverterArrayBuffer.lower(message),
             FfiConverterString.lower(path)
           );
@@ -26892,650 +30580,39 @@ export class ExternalSignerImpl
   }
 
   /**
-   * Generates Frost signing commitments for multi-party signing.
-   *
-   * # Returns
-   * Frost commitments with nonces, or a `SignerError`
-   *
-   * See also: [JavaScript `getRandomSigningCommitment`](https://docs.spark.money/wallets/spark-signer#get-random-signing-commitment)
-   */
-  public async generateRandomSigningCommitment(asyncOpts_?: {
-    signal: AbortSignal;
-  }): Promise<ExternalFrostCommitments> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_signing_commitment(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeExternalFrostCommitments.lift.bind(
-          FfiConverterTypeExternalFrostCommitments
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
-          FfiConverterTypeSignerError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Gets the public key for a specific tree node in the Spark wallet.
-   *
-   * # Arguments
-   * * `id` - The tree node identifier
-   *
-   * # Returns
-   * The public key for the node, or a `SignerError`
-   */
-  public async getPublicKeyForNode(
-    id: ExternalTreeNodeId,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<PublicKeyBytes> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_get_public_key_for_node(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterTypeExternalTreeNodeId.lower(id)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypePublicKeyBytes.lift.bind(
-          FfiConverterTypePublicKeyBytes
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
-          FfiConverterTypeSignerError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Generates a random secret that is encrypted and known only to the signer.
-   *
-   * This method creates a new random secret and returns it in encrypted form.
-   * The plaintext secret never leaves the signer boundary, providing a secure way
-   * to create secrets that can be referenced in subsequent operations without
-   * exposing them.
-   *
-   * This is conceptually similar to Spark's key derivation system where secrets
-   * are represented by opaque references (like tree node IDs or Random) rather than raw values.
-   * The encrypted secret can be passed to other signer methods that need to operate
-   * on it, while keeping the actual secret material protected within the signer.
-   *
-   * # Returns
-   * An encrypted secret that can be used in subsequent signer operations,
-   * or a `SignerError` if generation fails.
-   *
-   * See also: [Key Derivation System](https://docs.spark.money/wallets/spark-signer#the-keyderivation-system)
-   */
-  public async generateRandomSecret(asyncOpts_?: {
-    signal: AbortSignal;
-  }): Promise<ExternalEncryptedSecret> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_generate_random_secret(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeExternalEncryptedSecret.lift.bind(
-          FfiConverterTypeExternalEncryptedSecret
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
-          FfiConverterTypeSignerError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Gets an encrypted static deposit secret by index.
-   *
-   * # Arguments
-   * * `index` - The index of the static deposit secret
-   *
-   * # Returns
-   * The encrypted secret, or a `SignerError`
-   *
-   * This is the encrypted version of: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
-   */
-  public async staticDepositSecretEncrypted(
-    index: /*u32*/ number,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<ExternalSecretSource> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret_encrypted(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterUInt32.lower(index)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeExternalSecretSource.lift.bind(
-          FfiConverterTypeExternalSecretSource
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
-          FfiConverterTypeSignerError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Gets a static deposit secret by index.
-   *
-   * # Arguments
-   * * `index` - The index of the static deposit secret
-   *
-   * # Returns
-   * The 32-byte secret, or a `SignerError`
-   *
-   * See also: [JavaScript `getStaticDepositSecretKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-secret-key)
-   */
-  public async staticDepositSecret(
-    index: /*u32*/ number,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<SecretBytes> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_secret(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterUInt32.lower(index)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeSecretBytes.lift.bind(
-          FfiConverterTypeSecretBytes
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
-          FfiConverterTypeSignerError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Gets a static deposit signing public key by index.
-   *
-   * # Arguments
-   * * `index` - The index of the static deposit public signing key
-   *
-   * # Returns
-   * The 33-byte public key, or a `SignerError`
-   *
-   * See also: [JavaScript `getStaticDepositSigningKey`](https://docs.spark.money/wallets/spark-signer#get-static-deposit-signing-key)
-   */
-  public async staticDepositSigningKey(
-    index: /*u32*/ number,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<PublicKeyBytes> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_static_deposit_signing_key(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterUInt32.lower(index)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypePublicKeyBytes.lift.bind(
-          FfiConverterTypePublicKeyBytes
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
-          FfiConverterTypeSignerError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Subtracts one secret from another.
-   *
-   * This is a lower-level primitive used as part of key tweaking operations.
-   *
-   * # Arguments
-   * * `signing_key` - The first secret
-   * * `new_signing_key` - The second secret to subtract
-   *
-   * # Returns
-   * The resulting secret, or a `SignerError`
-   *
-   * See also: [JavaScript `subtractSplitAndEncrypt`](https://docs.spark.money/wallets/spark-signer#subtract,-split,-and-encrypt)
-   * (this method provides the subtraction step of that higher-level operation)
-   */
-  public async subtractSecrets(
-    signingKey: ExternalSecretSource,
-    newSigningKey: ExternalSecretSource,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<ExternalSecretSource> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_subtract_secrets(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterTypeExternalSecretSource.lower(signingKey),
-            FfiConverterTypeExternalSecretSource.lower(newSigningKey)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeExternalSecretSource.lift.bind(
-          FfiConverterTypeExternalSecretSource
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
-          FfiConverterTypeSignerError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Splits a secret with proofs using Shamir's Secret Sharing.
-   *
-   * # Arguments
-   * * `secret` - The secret to split
-   * * `threshold` - Minimum number of shares needed to reconstruct
-   * * `num_shares` - Total number of shares to create
-   *
-   * # Returns
-   * Vector of verifiable secret shares, or a `SignerError`
-   *
-   * See also: [JavaScript `splitSecretWithProofs`](https://docs.spark.money/wallets/spark-signer#split-secret-with-proofs)
-   */
-  public async splitSecretWithProofs(
-    secret: ExternalSecretToSplit,
-    threshold: /*u32*/ number,
-    numShares: /*u32*/ number,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<Array<ExternalVerifiableSecretShare>> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_split_secret_with_proofs(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterTypeExternalSecretToSplit.lower(secret),
-            FfiConverterUInt32.lower(threshold),
-            FfiConverterUInt32.lower(numShares)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterArrayTypeExternalVerifiableSecretShare.lift.bind(
-          FfiConverterArrayTypeExternalVerifiableSecretShare
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
-          FfiConverterTypeSignerError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Encrypts a secret for a specific receiver's public key.
-   *
-   * # Arguments
-   * * `encrypted_secret` - The encrypted secret to re-encrypt
-   * * `receiver_public_key` - The receiver's 33-byte public key
-   *
-   * # Returns
-   * Encrypted data for the receiver, or a `SignerError`
-   */
-  public async encryptSecretForReceiver(
-    encryptedSecret: ExternalEncryptedSecret,
-    receiverPublicKey: PublicKeyBytes,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<ArrayBuffer> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_encrypt_secret_for_receiver(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterTypeExternalEncryptedSecret.lower(encryptedSecret),
-            FfiConverterTypePublicKeyBytes.lower(receiverPublicKey)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterArrayBuffer.lift.bind(
-          FfiConverterArrayBuffer
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
-          FfiConverterTypeSignerError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Gets the public key from a secret.
-   *
-   * # Arguments
-   * * `secret` - The secret
-   *
-   * # Returns
-   * The corresponding 33-byte public key, or a `SignerError`
-   *
-   * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
-   */
-  public async publicKeyFromSecret(
-    secret: ExternalSecretSource,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<PublicKeyBytes> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_public_key_from_secret(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterTypeExternalSecretSource.lower(secret)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypePublicKeyBytes.lift.bind(
-          FfiConverterTypePublicKeyBytes
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
-          FfiConverterTypeSignerError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Signs using Frost protocol (multi-party signing).
-   *
-   * # Arguments
-   * * `request` - The Frost signing request
-   *
-   * # Returns
-   * A signature share, or a `SignerError`
-   *
-   * See also: [JavaScript `signFrost`](https://docs.spark.money/wallets/spark-signer#frost-signing)
-   */
-  public async signFrost(
-    request: ExternalSignFrostRequest,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<ExternalFrostSignatureShare> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_sign_frost(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterTypeExternalSignFrostRequest.lower(request)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeExternalFrostSignatureShare.lift.bind(
-          FfiConverterTypeExternalFrostSignatureShare
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
-          FfiConverterTypeSignerError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Aggregates Frost signature shares into a final signature.
-   *
-   * # Arguments
-   * * `request` - The Frost aggregation request
-   *
-   * # Returns
-   * The aggregated Frost signature, or a `SignerError`
-   *
-   * See also: [JavaScript `aggregateFrost`](https://docs.spark.money/wallets/spark-signer#aggregate-frost-signatures)
-   */
-  public async aggregateFrost(
-    request: ExternalAggregateFrostRequest,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<ExternalFrostSignature> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigner_aggregate_frost(
-            uniffiTypeExternalSignerImplObjectFactory.clonePointer(this),
-            FfiConverterTypeExternalAggregateFrostRequest.lower(request)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeExternalFrostSignature.lift.bind(
-          FfiConverterTypeExternalFrostSignature
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
-          FfiConverterTypeSignerError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
    * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
    */
   uniffiDestroy(): void {
     const ptr = (this as any)[destructorGuardSymbol];
     if (ptr !== undefined) {
-      const pointer = uniffiTypeExternalSignerImplObjectFactory.pointer(this);
-      uniffiTypeExternalSignerImplObjectFactory.freePointer(pointer);
-      uniffiTypeExternalSignerImplObjectFactory.unbless(ptr);
+      const pointer =
+        uniffiTypeExternalBreezSignerImplObjectFactory.pointer(this);
+      uniffiTypeExternalBreezSignerImplObjectFactory.freePointer(pointer);
+      uniffiTypeExternalBreezSignerImplObjectFactory.unbless(ptr);
       delete (this as any)[destructorGuardSymbol];
     }
   }
 
-  static instanceOf(obj: any): obj is ExternalSignerImpl {
-    return uniffiTypeExternalSignerImplObjectFactory.isConcreteType(obj);
+  static instanceOf(obj: any): obj is ExternalBreezSignerImpl {
+    return uniffiTypeExternalBreezSignerImplObjectFactory.isConcreteType(obj);
   }
 }
 
-const uniffiTypeExternalSignerImplObjectFactory: UniffiObjectFactory<ExternalSigner> =
+const uniffiTypeExternalBreezSignerImplObjectFactory: UniffiObjectFactory<ExternalBreezSigner> =
   (() => {
     return {
-      create(pointer: UnsafeMutableRawPointer): ExternalSigner {
-        const instance = Object.create(ExternalSignerImpl.prototype);
+      create(pointer: UnsafeMutableRawPointer): ExternalBreezSigner {
+        const instance = Object.create(ExternalBreezSignerImpl.prototype);
         instance[pointerLiteralSymbol] = pointer;
         instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'ExternalSignerImpl';
+        instance[uniffiTypeNameSymbol] = 'ExternalBreezSignerImpl';
         return instance;
       },
 
       bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
         return uniffiCaller.rustCall(
           /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_externalsigner_ffi__bless_pointer(
+            nativeModule().ubrn_uniffi_internal_fn_method_externalbreezsigner_ffi__bless_pointer(
               p,
               status
             ),
@@ -27547,18 +30624,18 @@ const uniffiTypeExternalSignerImplObjectFactory: UniffiObjectFactory<ExternalSig
         ptr.markDestroyed();
       },
 
-      pointer(obj: ExternalSigner): UnsafeMutableRawPointer {
+      pointer(obj: ExternalBreezSigner): UnsafeMutableRawPointer {
         if ((obj as any)[destructorGuardSymbol] === undefined) {
           throw new UniffiInternalError.UnexpectedNullPointer();
         }
         return (obj as any)[pointerLiteralSymbol];
       },
 
-      clonePointer(obj: ExternalSigner): UnsafeMutableRawPointer {
+      clonePointer(obj: ExternalBreezSigner): UnsafeMutableRawPointer {
         const pointer = this.pointer(obj);
         return uniffiCaller.rustCall(
           /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_externalsigner(
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_externalbreezsigner(
               pointer,
               callStatus
             ),
@@ -27569,7 +30646,7 @@ const uniffiTypeExternalSignerImplObjectFactory: UniffiObjectFactory<ExternalSig
       freePointer(pointer: UnsafeMutableRawPointer): void {
         uniffiCaller.rustCall(
           /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_externalsigner(
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_externalbreezsigner(
               pointer,
               callStatus
             ),
@@ -27577,56 +30654,29 @@ const uniffiTypeExternalSignerImplObjectFactory: UniffiObjectFactory<ExternalSig
         );
       },
 
-      isConcreteType(obj: any): obj is ExternalSigner {
+      isConcreteType(obj: any): obj is ExternalBreezSigner {
         return (
           obj[destructorGuardSymbol] &&
-          obj[uniffiTypeNameSymbol] === 'ExternalSignerImpl'
+          obj[uniffiTypeNameSymbol] === 'ExternalBreezSignerImpl'
         );
       },
     };
   })();
-// FfiConverter for ExternalSigner
-const FfiConverterTypeExternalSigner = new FfiConverterObjectWithCallbacks(
-  uniffiTypeExternalSignerImplObjectFactory
+// FfiConverter for ExternalBreezSigner
+const FfiConverterTypeExternalBreezSigner = new FfiConverterObjectWithCallbacks(
+  uniffiTypeExternalBreezSignerImplObjectFactory
 );
 
-// Add a vtavble for the callbacks that go in ExternalSigner.
+// Add a vtavble for the callbacks that go in ExternalBreezSigner.
 
 // Put the implementation in a struct so we don't pollute the top-level namespace
-const uniffiCallbackInterfaceExternalSigner: {
-  vtable: UniffiVTableCallbackInterfaceExternalSigner;
+const uniffiCallbackInterfaceExternalBreezSigner: {
+  vtable: UniffiVTableCallbackInterfaceExternalBreezSigner;
   register: () => void;
 } = {
   // Create the VTable using a series of closures.
   // ts automatically converts these into C callback functions.
   vtable: {
-    identityPublicKey: (uniffiHandle: bigint) => {
-      const uniffiMakeCall = (): PublicKeyBytes => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return jsCallback.identityPublicKey();
-      };
-      const uniffiResult = UniffiResult.ready<Uint8Array>();
-      const uniffiHandleSuccess = (obj: any) => {
-        UniffiResult.writeSuccess(
-          uniffiResult,
-          FfiConverterTypePublicKeyBytes.lower(obj)
-        );
-      };
-      const uniffiHandleError = (code: number, errBuf: UniffiByteArray) => {
-        UniffiResult.writeError(uniffiResult, code, errBuf);
-      };
-      uniffiTraitInterfaceCallWithError(
-        /*makeCall:*/ uniffiMakeCall,
-        /*handleSuccess:*/ uniffiHandleSuccess,
-        /*handleError:*/ uniffiHandleError,
-        /*isErrorType:*/ SignerError.instanceOf,
-        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
-          FfiConverterTypeSignerError
-        ),
-        /*lowerString:*/ FfiConverterString.lower
-      );
-      return uniffiResult;
-    },
     derivePublicKey: (
       uniffiHandle: bigint,
       path: Uint8Array,
@@ -27636,7 +30686,8 @@ const uniffiCallbackInterfaceExternalSigner: {
       const uniffiMakeCall = async (
         signal: AbortSignal
       ): Promise<PublicKeyBytes> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        const jsCallback =
+          FfiConverterTypeExternalBreezSigner.lift(uniffiHandle);
         return await jsCallback.derivePublicKey(FfiConverterString.lift(path), {
           signal,
         });
@@ -27684,7 +30735,8 @@ const uniffiCallbackInterfaceExternalSigner: {
       const uniffiMakeCall = async (
         signal: AbortSignal
       ): Promise<EcdsaSignatureBytes> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        const jsCallback =
+          FfiConverterTypeExternalBreezSigner.lift(uniffiHandle);
         return await jsCallback.signEcdsa(
           FfiConverterTypeMessageBytes.lift(message),
           FfiConverterString.lift(path),
@@ -27734,7 +30786,8 @@ const uniffiCallbackInterfaceExternalSigner: {
       const uniffiMakeCall = async (
         signal: AbortSignal
       ): Promise<RecoverableEcdsaSignatureBytes> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        const jsCallback =
+          FfiConverterTypeExternalBreezSigner.lift(uniffiHandle);
         return await jsCallback.signEcdsaRecoverable(
           FfiConverterTypeMessageBytes.lift(message),
           FfiConverterString.lift(path),
@@ -27787,7 +30840,8 @@ const uniffiCallbackInterfaceExternalSigner: {
       const uniffiMakeCall = async (
         signal: AbortSignal
       ): Promise<ArrayBuffer> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        const jsCallback =
+          FfiConverterTypeExternalBreezSigner.lift(uniffiHandle);
         return await jsCallback.encryptEcies(
           FfiConverterArrayBuffer.lift(message),
           FfiConverterString.lift(path),
@@ -27837,7 +30891,8 @@ const uniffiCallbackInterfaceExternalSigner: {
       const uniffiMakeCall = async (
         signal: AbortSignal
       ): Promise<ArrayBuffer> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        const jsCallback =
+          FfiConverterTypeExternalBreezSigner.lift(uniffiHandle);
         return await jsCallback.decryptEcies(
           FfiConverterArrayBuffer.lift(message),
           FfiConverterString.lift(path),
@@ -27887,7 +30942,8 @@ const uniffiCallbackInterfaceExternalSigner: {
       const uniffiMakeCall = async (
         signal: AbortSignal
       ): Promise<SchnorrSignatureBytes> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        const jsCallback =
+          FfiConverterTypeExternalBreezSigner.lift(uniffiHandle);
         return await jsCallback.signHashSchnorr(
           FfiConverterArrayBuffer.lift(hash),
           FfiConverterString.lift(path),
@@ -27938,7 +30994,8 @@ const uniffiCallbackInterfaceExternalSigner: {
       const uniffiMakeCall = async (
         signal: AbortSignal
       ): Promise<HashedMessageBytes> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+        const jsCallback =
+          FfiConverterTypeExternalBreezSigner.lift(uniffiHandle);
         return await jsCallback.hmacSha256(
           FfiConverterArrayBuffer.lift(message),
           FfiConverterString.lift(path),
@@ -27978,24 +31035,900 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return uniffiForeignFuture;
     },
-    generateRandomSigningCommitment: (
+    uniffiFree: (uniffiHandle: UniffiHandle): void => {
+      // ExternalBreezSigner: this will throw a stale handle error if the handle isn't found.
+      FfiConverterTypeExternalBreezSigner.drop(uniffiHandle);
+    },
+  },
+  register: () => {
+    nativeModule().ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalbreezsigner(
+      uniffiCallbackInterfaceExternalBreezSigner.vtable
+    );
+  },
+};
+
+/**
+ * FFI-compatible mirror of `spark_wallet::SparkSigner`.
+ */
+export interface ExternalSparkSigner {
+  /**
+   * The wallet identity public key (33 bytes compressed).
+   */
+  getIdentityPublicKey(asyncOpts_?: {
+    signal: AbortSignal;
+  }): /*throws*/ Promise<PublicKeyBytes>;
+  /**
+   * The signing public key for a tree leaf.
+   */
+  getPublicKeyForLeaf(
+    leafId: ExternalTreeNodeId,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<PublicKeyBytes>;
+  /**
+   * The static-deposit signing public key at `index`.
+   */
+  getStaticDepositPublicKey(
+    index: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<PublicKeyBytes>;
+  /**
+   * ECDSA-sign a server authentication challenge with the identity key.
+   */
+  signAuthenticationChallenge(
+    challenge: ArrayBuffer,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<EcdsaSignatureBytes>;
+  /**
+   * ECDSA-sign an arbitrary user message with the identity key.
+   */
+  signMessage(
+    message: ArrayBuffer,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<EcdsaSignatureBytes>;
+  /**
+   * Produce FROST shares for a batch of jobs.
+   */
+  signFrost(
+    jobs: Array<ExternalFrostJob>,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<Array<ExternalFrostShareResult>>;
+  /**
+   * Prepare an outbound transfer (key-tweak + packages + payload signature).
+   */
+  prepareTransfer(
+    request: ExternalPrepareTransferRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ExternalPreparedTransfer>;
+  /**
+   * Claim an inbound transfer (key-tweak step).
+   */
+  prepareClaim(
+    request: ExternalPrepareClaimRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ExternalPreparedClaim>;
+  /**
+   * Prepare a Lightning receive (in-enclave preimage + Feldman split).
+   */
+  prepareLightningReceive(
+    request: ExternalPrepareLightningReceiveRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ExternalPreparedLightningReceive>;
+  /**
+   * Prepare a static deposit (export secret to SSP + FROST-sign tree txs).
+   */
+  prepareStaticDeposit(
+    request: ExternalPrepareStaticDepositRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ExternalPreparedStaticDeposit>;
+  /**
+   * Begin a static-deposit refund (user-commits-first).
+   */
+  startStaticDepositRefund(
+    request: ExternalStartStaticDepositRefundRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ExternalStartedStaticDepositRefund>;
+  /**
+   * Finish a static-deposit refund (aggregate into the final signature).
+   */
+  signStaticDepositRefund(
+    request: ExternalSignStaticDepositRefundRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ExternalFrostSignature>;
+  /**
+   * Schnorr-sign a Spark invoice (sats or tokens) with the identity key.
+   */
+  signSparkInvoice(
+    request: ExternalSignSparkInvoiceRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ExternalSignedSparkInvoice>;
+  /**
+   * Schnorr-sign a token-transaction digest with the identity key.
+   */
+  prepareTokenTransaction(
+    request: ExternalPrepareTokenTransactionRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ExternalPreparedTokenTransaction>;
+  /**
+   * Prepare a static-deposit claim (export secret in the clear + sign).
+   */
+  prepareStaticDepositClaim(
+    request: ExternalPrepareStaticDepositClaimRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ExternalPreparedStaticDepositClaim>;
+}
+
+/**
+ * FFI-compatible mirror of `spark_wallet::SparkSigner`.
+ */
+export class ExternalSparkSignerImpl
+  extends UniffiAbstractObject
+  implements ExternalSparkSigner
+{
+  readonly [uniffiTypeNameSymbol] = 'ExternalSparkSignerImpl';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypeExternalSparkSignerImplObjectFactory.bless(pointer);
+  }
+
+  /**
+   * The wallet identity public key (33 bytes compressed).
+   */
+  public async getIdentityPublicKey(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<PublicKeyBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_identity_public_key(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePublicKeyBytes.lift.bind(
+          FfiConverterTypePublicKeyBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * The signing public key for a tree leaf.
+   */
+  public async getPublicKeyForLeaf(
+    leafId: ExternalTreeNodeId,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<PublicKeyBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_public_key_for_leaf(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalTreeNodeId.lower(leafId)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePublicKeyBytes.lift.bind(
+          FfiConverterTypePublicKeyBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * The static-deposit signing public key at `index`.
+   */
+  public async getStaticDepositPublicKey(
+    index: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<PublicKeyBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_get_static_deposit_public_key(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterUInt32.lower(index)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePublicKeyBytes.lift.bind(
+          FfiConverterTypePublicKeyBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * ECDSA-sign a server authentication challenge with the identity key.
+   */
+  public async signAuthenticationChallenge(
+    challenge: ArrayBuffer,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<EcdsaSignatureBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_authentication_challenge(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterArrayBuffer.lower(challenge)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeEcdsaSignatureBytes.lift.bind(
+          FfiConverterTypeEcdsaSignatureBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * ECDSA-sign an arbitrary user message with the identity key.
+   */
+  public async signMessage(
+    message: ArrayBuffer,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<EcdsaSignatureBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_message(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterArrayBuffer.lower(message)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeEcdsaSignatureBytes.lift.bind(
+          FfiConverterTypeEcdsaSignatureBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Produce FROST shares for a batch of jobs.
+   */
+  public async signFrost(
+    jobs: Array<ExternalFrostJob>,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<Array<ExternalFrostShareResult>> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_frost(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterArrayTypeExternalFrostJob.lower(jobs)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterArrayTypeExternalFrostShareResult.lift.bind(
+          FfiConverterArrayTypeExternalFrostShareResult
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Prepare an outbound transfer (key-tweak + packages + payload signature).
+   */
+  public async prepareTransfer(
+    request: ExternalPrepareTransferRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ExternalPreparedTransfer> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_transfer(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalPrepareTransferRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalPreparedTransfer.lift.bind(
+          FfiConverterTypeExternalPreparedTransfer
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Claim an inbound transfer (key-tweak step).
+   */
+  public async prepareClaim(
+    request: ExternalPrepareClaimRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ExternalPreparedClaim> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_claim(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalPrepareClaimRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalPreparedClaim.lift.bind(
+          FfiConverterTypeExternalPreparedClaim
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Prepare a Lightning receive (in-enclave preimage + Feldman split).
+   */
+  public async prepareLightningReceive(
+    request: ExternalPrepareLightningReceiveRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ExternalPreparedLightningReceive> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_lightning_receive(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalPrepareLightningReceiveRequest.lower(
+              request
+            )
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalPreparedLightningReceive.lift.bind(
+          FfiConverterTypeExternalPreparedLightningReceive
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Prepare a static deposit (export secret to SSP + FROST-sign tree txs).
+   */
+  public async prepareStaticDeposit(
+    request: ExternalPrepareStaticDepositRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ExternalPreparedStaticDeposit> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_static_deposit(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalPrepareStaticDepositRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalPreparedStaticDeposit.lift.bind(
+          FfiConverterTypeExternalPreparedStaticDeposit
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Begin a static-deposit refund (user-commits-first).
+   */
+  public async startStaticDepositRefund(
+    request: ExternalStartStaticDepositRefundRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ExternalStartedStaticDepositRefund> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_start_static_deposit_refund(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalStartStaticDepositRefundRequest.lower(
+              request
+            )
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalStartedStaticDepositRefund.lift.bind(
+          FfiConverterTypeExternalStartedStaticDepositRefund
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Finish a static-deposit refund (aggregate into the final signature).
+   */
+  public async signStaticDepositRefund(
+    request: ExternalSignStaticDepositRefundRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ExternalFrostSignature> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_static_deposit_refund(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalSignStaticDepositRefundRequest.lower(
+              request
+            )
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalFrostSignature.lift.bind(
+          FfiConverterTypeExternalFrostSignature
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Schnorr-sign a Spark invoice (sats or tokens) with the identity key.
+   */
+  public async signSparkInvoice(
+    request: ExternalSignSparkInvoiceRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ExternalSignedSparkInvoice> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_spark_invoice(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalSignSparkInvoiceRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalSignedSparkInvoice.lift.bind(
+          FfiConverterTypeExternalSignedSparkInvoice
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Schnorr-sign a token-transaction digest with the identity key.
+   */
+  public async prepareTokenTransaction(
+    request: ExternalPrepareTokenTransactionRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ExternalPreparedTokenTransaction> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_token_transaction(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalPrepareTokenTransactionRequest.lower(
+              request
+            )
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalPreparedTokenTransaction.lift.bind(
+          FfiConverterTypeExternalPreparedTokenTransaction
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Prepare a static-deposit claim (export secret in the clear + sign).
+   */
+  public async prepareStaticDepositClaim(
+    request: ExternalPrepareStaticDepositClaimRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ExternalPreparedStaticDepositClaim> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_prepare_static_deposit_claim(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalPrepareStaticDepositClaimRequest.lower(
+              request
+            )
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExternalPreparedStaticDepositClaim.lift.bind(
+          FfiConverterTypeExternalPreparedStaticDepositClaim
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer =
+        uniffiTypeExternalSparkSignerImplObjectFactory.pointer(this);
+      uniffiTypeExternalSparkSignerImplObjectFactory.freePointer(pointer);
+      uniffiTypeExternalSparkSignerImplObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is ExternalSparkSignerImpl {
+    return uniffiTypeExternalSparkSignerImplObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypeExternalSparkSignerImplObjectFactory: UniffiObjectFactory<ExternalSparkSigner> =
+  (() => {
+    return {
+      create(pointer: UnsafeMutableRawPointer): ExternalSparkSigner {
+        const instance = Object.create(ExternalSparkSignerImpl.prototype);
+        instance[pointerLiteralSymbol] = pointer;
+        instance[destructorGuardSymbol] = this.bless(pointer);
+        instance[uniffiTypeNameSymbol] = 'ExternalSparkSignerImpl';
+        return instance;
+      },
+
+      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+        return uniffiCaller.rustCall(
+          /*caller:*/ (status) =>
+            nativeModule().ubrn_uniffi_internal_fn_method_externalsparksigner_ffi__bless_pointer(
+              p,
+              status
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      unbless(ptr: UniffiRustArcPtr) {
+        ptr.markDestroyed();
+      },
+
+      pointer(obj: ExternalSparkSigner): UnsafeMutableRawPointer {
+        if ((obj as any)[destructorGuardSymbol] === undefined) {
+          throw new UniffiInternalError.UnexpectedNullPointer();
+        }
+        return (obj as any)[pointerLiteralSymbol];
+      },
+
+      clonePointer(obj: ExternalSparkSigner): UnsafeMutableRawPointer {
+        const pointer = this.pointer(obj);
+        return uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_externalsparksigner(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      freePointer(pointer: UnsafeMutableRawPointer): void {
+        uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_externalsparksigner(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      isConcreteType(obj: any): obj is ExternalSparkSigner {
+        return (
+          obj[destructorGuardSymbol] &&
+          obj[uniffiTypeNameSymbol] === 'ExternalSparkSignerImpl'
+        );
+      },
+    };
+  })();
+// FfiConverter for ExternalSparkSigner
+const FfiConverterTypeExternalSparkSigner = new FfiConverterObjectWithCallbacks(
+  uniffiTypeExternalSparkSignerImplObjectFactory
+);
+
+// Add a vtavble for the callbacks that go in ExternalSparkSigner.
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+const uniffiCallbackInterfaceExternalSparkSigner: {
+  vtable: UniffiVTableCallbackInterfaceExternalSparkSigner;
+  register: () => void;
+} = {
+  // Create the VTable using a series of closures.
+  // ts automatically converts these into C callback functions.
+  vtable: {
+    getIdentityPublicKey: (
       uniffiHandle: bigint,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
       uniffiCallbackData: bigint
     ) => {
       const uniffiMakeCall = async (
         signal: AbortSignal
-      ): Promise<ExternalFrostCommitments> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.generateRandomSigningCommitment({ signal });
+      ): Promise<PublicKeyBytes> => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.getIdentityPublicKey({ signal });
       };
-      const uniffiHandleSuccess = (returnValue: ExternalFrostCommitments) => {
+      const uniffiHandleSuccess = (returnValue: PublicKeyBytes) => {
         uniffiFutureCallback.call(
           uniffiFutureCallback,
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue:
-              FfiConverterTypeExternalFrostCommitments.lower(returnValue),
+            returnValue: FfiConverterTypePublicKeyBytes.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -28023,18 +31956,19 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return uniffiForeignFuture;
     },
-    getPublicKeyForNode: (
+    getPublicKeyForLeaf: (
       uniffiHandle: bigint,
-      id: Uint8Array,
+      leafId: Uint8Array,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
       uniffiCallbackData: bigint
     ) => {
       const uniffiMakeCall = async (
         signal: AbortSignal
       ): Promise<PublicKeyBytes> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.getPublicKeyForNode(
-          FfiConverterTypeExternalTreeNodeId.lift(id),
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.getPublicKeyForLeaf(
+          FfiConverterTypeExternalTreeNodeId.lift(leafId),
           { signal }
         );
       };
@@ -28071,149 +32005,7 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return uniffiForeignFuture;
     },
-    generateRandomSecret: (
-      uniffiHandle: bigint,
-      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
-      uniffiCallbackData: bigint
-    ) => {
-      const uniffiMakeCall = async (
-        signal: AbortSignal
-      ): Promise<ExternalEncryptedSecret> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.generateRandomSecret({ signal });
-      };
-      const uniffiHandleSuccess = (returnValue: ExternalEncryptedSecret) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue:
-              FfiConverterTypeExternalEncryptedSecret.lower(returnValue),
-            callStatus: uniffiCaller.createCallStatus(),
-          }
-        );
-      };
-      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue: /*empty*/ new Uint8Array(0),
-            // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
-          }
-        );
-      };
-      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
-        /*makeCall:*/ uniffiMakeCall,
-        /*handleSuccess:*/ uniffiHandleSuccess,
-        /*handleError:*/ uniffiHandleError,
-        /*isErrorType:*/ SignerError.instanceOf,
-        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
-          FfiConverterTypeSignerError
-        ),
-        /*lowerString:*/ FfiConverterString.lower
-      );
-      return uniffiForeignFuture;
-    },
-    staticDepositSecretEncrypted: (
-      uniffiHandle: bigint,
-      index: number,
-      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
-      uniffiCallbackData: bigint
-    ) => {
-      const uniffiMakeCall = async (
-        signal: AbortSignal
-      ): Promise<ExternalSecretSource> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.staticDepositSecretEncrypted(
-          FfiConverterUInt32.lift(index),
-          { signal }
-        );
-      };
-      const uniffiHandleSuccess = (returnValue: ExternalSecretSource) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue:
-              FfiConverterTypeExternalSecretSource.lower(returnValue),
-            callStatus: uniffiCaller.createCallStatus(),
-          }
-        );
-      };
-      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue: /*empty*/ new Uint8Array(0),
-            // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
-          }
-        );
-      };
-      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
-        /*makeCall:*/ uniffiMakeCall,
-        /*handleSuccess:*/ uniffiHandleSuccess,
-        /*handleError:*/ uniffiHandleError,
-        /*isErrorType:*/ SignerError.instanceOf,
-        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
-          FfiConverterTypeSignerError
-        ),
-        /*lowerString:*/ FfiConverterString.lower
-      );
-      return uniffiForeignFuture;
-    },
-    staticDepositSecret: (
-      uniffiHandle: bigint,
-      index: number,
-      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
-      uniffiCallbackData: bigint
-    ) => {
-      const uniffiMakeCall = async (
-        signal: AbortSignal
-      ): Promise<SecretBytes> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.staticDepositSecret(
-          FfiConverterUInt32.lift(index),
-          { signal }
-        );
-      };
-      const uniffiHandleSuccess = (returnValue: SecretBytes) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue: FfiConverterTypeSecretBytes.lower(returnValue),
-            callStatus: uniffiCaller.createCallStatus(),
-          }
-        );
-      };
-      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue: /*empty*/ new Uint8Array(0),
-            // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
-          }
-        );
-      };
-      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
-        /*makeCall:*/ uniffiMakeCall,
-        /*handleSuccess:*/ uniffiHandleSuccess,
-        /*handleError:*/ uniffiHandleError,
-        /*isErrorType:*/ SignerError.instanceOf,
-        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
-          FfiConverterTypeSignerError
-        ),
-        /*lowerString:*/ FfiConverterString.lower
-      );
-      return uniffiForeignFuture;
-    },
-    staticDepositSigningKey: (
+    getStaticDepositPublicKey: (
       uniffiHandle: bigint,
       index: number,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
@@ -28222,8 +32014,9 @@ const uniffiCallbackInterfaceExternalSigner: {
       const uniffiMakeCall = async (
         signal: AbortSignal
       ): Promise<PublicKeyBytes> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.staticDepositSigningKey(
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.getStaticDepositPublicKey(
           FfiConverterUInt32.lift(index),
           { signal }
         );
@@ -28261,30 +32054,28 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return uniffiForeignFuture;
     },
-    subtractSecrets: (
+    signAuthenticationChallenge: (
       uniffiHandle: bigint,
-      signingKey: Uint8Array,
-      newSigningKey: Uint8Array,
+      challenge: Uint8Array,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
       uniffiCallbackData: bigint
     ) => {
       const uniffiMakeCall = async (
         signal: AbortSignal
-      ): Promise<ExternalSecretSource> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.subtractSecrets(
-          FfiConverterTypeExternalSecretSource.lift(signingKey),
-          FfiConverterTypeExternalSecretSource.lift(newSigningKey),
+      ): Promise<EcdsaSignatureBytes> => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.signAuthenticationChallenge(
+          FfiConverterArrayBuffer.lift(challenge),
           { signal }
         );
       };
-      const uniffiHandleSuccess = (returnValue: ExternalSecretSource) => {
+      const uniffiHandleSuccess = (returnValue: EcdsaSignatureBytes) => {
         uniffiFutureCallback.call(
           uniffiFutureCallback,
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue:
-              FfiConverterTypeExternalSecretSource.lower(returnValue),
+            returnValue: FfiConverterTypeEcdsaSignatureBytes.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -28312,134 +32103,28 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return uniffiForeignFuture;
     },
-    splitSecretWithProofs: (
+    signMessage: (
       uniffiHandle: bigint,
-      secret: Uint8Array,
-      threshold: number,
-      numShares: number,
+      message: Uint8Array,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
       uniffiCallbackData: bigint
     ) => {
       const uniffiMakeCall = async (
         signal: AbortSignal
-      ): Promise<Array<ExternalVerifiableSecretShare>> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.splitSecretWithProofs(
-          FfiConverterTypeExternalSecretToSplit.lift(secret),
-          FfiConverterUInt32.lift(threshold),
-          FfiConverterUInt32.lift(numShares),
+      ): Promise<EcdsaSignatureBytes> => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.signMessage(
+          FfiConverterArrayBuffer.lift(message),
           { signal }
         );
       };
-      const uniffiHandleSuccess = (
-        returnValue: Array<ExternalVerifiableSecretShare>
-      ) => {
+      const uniffiHandleSuccess = (returnValue: EcdsaSignatureBytes) => {
         uniffiFutureCallback.call(
           uniffiFutureCallback,
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue:
-              FfiConverterArrayTypeExternalVerifiableSecretShare.lower(
-                returnValue
-              ),
-            callStatus: uniffiCaller.createCallStatus(),
-          }
-        );
-      };
-      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue: /*empty*/ new Uint8Array(0),
-            // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
-          }
-        );
-      };
-      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
-        /*makeCall:*/ uniffiMakeCall,
-        /*handleSuccess:*/ uniffiHandleSuccess,
-        /*handleError:*/ uniffiHandleError,
-        /*isErrorType:*/ SignerError.instanceOf,
-        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
-          FfiConverterTypeSignerError
-        ),
-        /*lowerString:*/ FfiConverterString.lower
-      );
-      return uniffiForeignFuture;
-    },
-    encryptSecretForReceiver: (
-      uniffiHandle: bigint,
-      encryptedSecret: Uint8Array,
-      receiverPublicKey: Uint8Array,
-      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
-      uniffiCallbackData: bigint
-    ) => {
-      const uniffiMakeCall = async (
-        signal: AbortSignal
-      ): Promise<ArrayBuffer> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.encryptSecretForReceiver(
-          FfiConverterTypeExternalEncryptedSecret.lift(encryptedSecret),
-          FfiConverterTypePublicKeyBytes.lift(receiverPublicKey),
-          { signal }
-        );
-      };
-      const uniffiHandleSuccess = (returnValue: ArrayBuffer) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue: FfiConverterArrayBuffer.lower(returnValue),
-            callStatus: uniffiCaller.createCallStatus(),
-          }
-        );
-      };
-      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue: /*empty*/ new Uint8Array(0),
-            // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
-          }
-        );
-      };
-      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
-        /*makeCall:*/ uniffiMakeCall,
-        /*handleSuccess:*/ uniffiHandleSuccess,
-        /*handleError:*/ uniffiHandleError,
-        /*isErrorType:*/ SignerError.instanceOf,
-        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
-          FfiConverterTypeSignerError
-        ),
-        /*lowerString:*/ FfiConverterString.lower
-      );
-      return uniffiForeignFuture;
-    },
-    publicKeyFromSecret: (
-      uniffiHandle: bigint,
-      secret: Uint8Array,
-      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
-      uniffiCallbackData: bigint
-    ) => {
-      const uniffiMakeCall = async (
-        signal: AbortSignal
-      ): Promise<PublicKeyBytes> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.publicKeyFromSecret(
-          FfiConverterTypeExternalSecretSource.lift(secret),
-          { signal }
-        );
-      };
-      const uniffiHandleSuccess = (returnValue: PublicKeyBytes) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue: FfiConverterTypePublicKeyBytes.lower(returnValue),
+            returnValue: FfiConverterTypeEcdsaSignatureBytes.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -28469,28 +32154,29 @@ const uniffiCallbackInterfaceExternalSigner: {
     },
     signFrost: (
       uniffiHandle: bigint,
-      request: Uint8Array,
+      jobs: Uint8Array,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
       uniffiCallbackData: bigint
     ) => {
       const uniffiMakeCall = async (
         signal: AbortSignal
-      ): Promise<ExternalFrostSignatureShare> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
+      ): Promise<Array<ExternalFrostShareResult>> => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
         return await jsCallback.signFrost(
-          FfiConverterTypeExternalSignFrostRequest.lift(request),
+          FfiConverterArrayTypeExternalFrostJob.lift(jobs),
           { signal }
         );
       };
       const uniffiHandleSuccess = (
-        returnValue: ExternalFrostSignatureShare
+        returnValue: Array<ExternalFrostShareResult>
       ) => {
         uniffiFutureCallback.call(
           uniffiFutureCallback,
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue:
-              FfiConverterTypeExternalFrostSignatureShare.lower(returnValue),
+              FfiConverterArrayTypeExternalFrostShareResult.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -28518,7 +32204,267 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return uniffiForeignFuture;
     },
-    aggregateFrost: (
+    prepareTransfer: (
+      uniffiHandle: bigint,
+      request: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalPreparedTransfer> => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.prepareTransfer(
+          FfiConverterTypeExternalPrepareTransferRequest.lift(request),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: ExternalPreparedTransfer) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalPreparedTransfer.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    prepareClaim: (
+      uniffiHandle: bigint,
+      request: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalPreparedClaim> => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.prepareClaim(
+          FfiConverterTypeExternalPrepareClaimRequest.lift(request),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: ExternalPreparedClaim) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalPreparedClaim.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    prepareLightningReceive: (
+      uniffiHandle: bigint,
+      request: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalPreparedLightningReceive> => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.prepareLightningReceive(
+          FfiConverterTypeExternalPrepareLightningReceiveRequest.lift(request),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (
+        returnValue: ExternalPreparedLightningReceive
+      ) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalPreparedLightningReceive.lower(
+                returnValue
+              ),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    prepareStaticDeposit: (
+      uniffiHandle: bigint,
+      request: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalPreparedStaticDeposit> => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.prepareStaticDeposit(
+          FfiConverterTypeExternalPrepareStaticDepositRequest.lift(request),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (
+        returnValue: ExternalPreparedStaticDeposit
+      ) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalPreparedStaticDeposit.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    startStaticDepositRefund: (
+      uniffiHandle: bigint,
+      request: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalStartedStaticDepositRefund> => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.startStaticDepositRefund(
+          FfiConverterTypeExternalStartStaticDepositRefundRequest.lift(request),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (
+        returnValue: ExternalStartedStaticDepositRefund
+      ) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalStartedStaticDepositRefund.lower(
+                returnValue
+              ),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    signStaticDepositRefund: (
       uniffiHandle: bigint,
       request: Uint8Array,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
@@ -28527,9 +32473,10 @@ const uniffiCallbackInterfaceExternalSigner: {
       const uniffiMakeCall = async (
         signal: AbortSignal
       ): Promise<ExternalFrostSignature> => {
-        const jsCallback = FfiConverterTypeExternalSigner.lift(uniffiHandle);
-        return await jsCallback.aggregateFrost(
-          FfiConverterTypeExternalAggregateFrostRequest.lift(request),
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.signStaticDepositRefund(
+          FfiConverterTypeExternalSignStaticDepositRefundRequest.lift(request),
           { signal }
         );
       };
@@ -28567,14 +32514,174 @@ const uniffiCallbackInterfaceExternalSigner: {
       );
       return uniffiForeignFuture;
     },
+    signSparkInvoice: (
+      uniffiHandle: bigint,
+      request: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalSignedSparkInvoice> => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.signSparkInvoice(
+          FfiConverterTypeExternalSignSparkInvoiceRequest.lift(request),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: ExternalSignedSparkInvoice) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalSignedSparkInvoice.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    prepareTokenTransaction: (
+      uniffiHandle: bigint,
+      request: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalPreparedTokenTransaction> => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.prepareTokenTransaction(
+          FfiConverterTypeExternalPrepareTokenTransactionRequest.lift(request),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (
+        returnValue: ExternalPreparedTokenTransaction
+      ) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalPreparedTokenTransaction.lower(
+                returnValue
+              ),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    prepareStaticDepositClaim: (
+      uniffiHandle: bigint,
+      request: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ExternalPreparedStaticDepositClaim> => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.prepareStaticDepositClaim(
+          FfiConverterTypeExternalPrepareStaticDepositClaimRequest.lift(
+            request
+          ),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (
+        returnValue: ExternalPreparedStaticDepositClaim
+      ) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeExternalPreparedStaticDepositClaim.lower(
+                returnValue
+              ),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
-      // ExternalSigner: this will throw a stale handle error if the handle isn't found.
-      FfiConverterTypeExternalSigner.drop(uniffiHandle);
+      // ExternalSparkSigner: this will throw a stale handle error if the handle isn't found.
+      FfiConverterTypeExternalSparkSigner.drop(uniffiHandle);
     },
   },
   register: () => {
-    nativeModule().ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsigner(
-      uniffiCallbackInterfaceExternalSigner.vtable
+    nativeModule().ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsparksigner(
+      uniffiCallbackInterfaceExternalSparkSigner.vtable
     );
   },
 };
@@ -28893,126 +33000,146 @@ const uniffiCallbackInterfaceFiatService: {
 };
 
 /**
- * Orchestrates passkey-based wallet creation and restore operations.
+ * High-level orchestration over a [`PrfProvider`] and the internal
+ * Nostr-backed label store. Two named flows match the real onboarding
+ * states:
  *
- * This struct coordinates between the platform's passkey PRF provider and
- * Nostr relays to derive wallet mnemonics and manage labels.
+ * - [`Self::register`]: first-time setup (create credential + derive
+ * wallet + publish label) in one ceremony where the platform
+ * supports dual-salt PRF.
+ * - [`Self::sign_in`]: returning user. Fast path when the host has
+ * the label cached locally; cold-restore-with-discovery when not.
  *
- * The Nostr identity (derived from the passkey's magic salt) is cached after
- * the first derivation so that subsequent calls to [`Passkey::list_labels`]
- * and [`Passkey::store_label`] do not require additional PRF interactions.
+ * Label management hangs off the [`Self::labels`] sub-object.
+ *
+ * The `breez_api_key` is the Breez relay key used for authenticated
+ * (NIP-42) label storage. Hosts that already construct the SDK
+ * [`crate::Config`] can use [`Self::from_config`] to forward it.
  */
-export interface PasskeyInterface {
+export interface PasskeyClientInterface {
   /**
-   * Derive a wallet for a given label.
-   *
-   * Uses the passkey PRF to derive a 12-word BIP39 mnemonic from the label
-   * and returns it as a [`Wallet`] containing the seed and resolved label.
-   * This works for both creating a new wallet and restoring an existing one.
-   *
-   * # Arguments
-   * * `label` - A user-chosen label (e.g., "personal", "business").
-   * If `None`, defaults to [`DEFAULT_LABEL`].
+   * One-shot capability + configuration probe. Collapses
+   * [`PrfProvider::is_supported`] and
+   * [`PrfProvider::check_domain_association`] into a single value
+   * hosts can branch on.
    */
-  getWallet(
-    label: string | undefined,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<Wallet>;
-  /**
-   * Check if passkey PRF is available on this device.
-   *
-   * Delegates to the platform's `PasskeyPrfProvider` implementation.
-   */
-  isAvailable(asyncOpts_?: {
+  checkAvailability(asyncOpts_?: {
     signal: AbortSignal;
-  }): /*throws*/ Promise<boolean>;
+  }): /*throws*/ Promise<PasskeyAvailability>;
   /**
-   * List all labels published to Nostr for this passkey's identity.
+   * Single-CTA onboarding: silent sign-in, falling through to
+   * registration when no credential exists on the device. The returned
+   * [`ConnectFlow`] tells the caller which path ran.
    *
-   * Queries Nostr relays for all labels associated with the Nostr identity
-   * derived from this passkey. Requires 1 PRF call.
+   * The silent sign-in pins `prefer_immediately_available_credentials =
+   * true` regardless of [`SignInRequest`]: the fallback depends on the OS
+   * fast-failing with [`PrfProviderError::CredentialNotFound`] when no
+   * local credential exists. Only `CredentialNotFound` flips to the
+   * register path; every other error (`Cancel`, `Timeout`, ...) propagates
+   * unchanged.
+   *
+   * Mobile-only: meant for iOS 18+ / Android 9+ where
+   * `preferImmediatelyAvailableCredentials` is honored. The web
+   * equivalent (`mediation: 'immediate'`) is not yet stable
+   * cross-browser, so this is not surfaced on WASM; web hosts call
+   * [`Self::sign_in`] and catch `CredentialNotFound` themselves.
    */
-  listLabels(asyncOpts_?: {
-    signal: AbortSignal;
-  }): /*throws*/ Promise<Array<string>>;
-  /**
-   * Publish a label to Nostr relays for this passkey's identity.
-   *
-   * Idempotent: if the label already exists, it is not published again.
-   * Requires 1 PRF call.
-   *
-   * # Arguments
-   * * `label` - A user-chosen label (e.g., "personal", "business")
-   */
-  storeLabel(
-    label: string,
+  connectWithPasskey(
+    request: ConnectWithPasskeyRequest,
     asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<void>;
+  ): /*throws*/ Promise<ConnectWithPasskeyResponse>;
+  /**
+   * Label sub-object. List or publish labels for this passkey's
+   * identity.
+   */
+  labels(): PasskeyLabelsInterface;
+  /**
+   * First-time setup. Drives [`PrfProvider::create_passkey`] (one
+   * ceremony) followed by the wallet-derivation flow that backs
+   * [`Passkey::setup_wallet`] (one ceremony, dual-salt where
+   * supported). The label is always published on success.
+   */
+  register(
+    request: RegisterRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<RegisterResponse>;
+  /**
+   * Returning-user sign-in. Fast path (`label` set) skips the
+   * label-store query; discovery path (`label = None`) derives
+   * the configured default label and lists the user's labels in
+   * the same ceremony. Never re-publishes the label.
+   */
+  signIn(
+    request: SignInRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<SignInResponse>;
 }
 
 /**
- * Orchestrates passkey-based wallet creation and restore operations.
+ * High-level orchestration over a [`PrfProvider`] and the internal
+ * Nostr-backed label store. Two named flows match the real onboarding
+ * states:
  *
- * This struct coordinates between the platform's passkey PRF provider and
- * Nostr relays to derive wallet mnemonics and manage labels.
+ * - [`Self::register`]: first-time setup (create credential + derive
+ * wallet + publish label) in one ceremony where the platform
+ * supports dual-salt PRF.
+ * - [`Self::sign_in`]: returning user. Fast path when the host has
+ * the label cached locally; cold-restore-with-discovery when not.
  *
- * The Nostr identity (derived from the passkey's magic salt) is cached after
- * the first derivation so that subsequent calls to [`Passkey::list_labels`]
- * and [`Passkey::store_label`] do not require additional PRF interactions.
+ * Label management hangs off the [`Self::labels`] sub-object.
+ *
+ * The `breez_api_key` is the Breez relay key used for authenticated
+ * (NIP-42) label storage. Hosts that already construct the SDK
+ * [`crate::Config`] can use [`Self::from_config`] to forward it.
  */
-export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
-  readonly [uniffiTypeNameSymbol] = 'Passkey';
+export class PasskeyClient
+  extends UniffiAbstractObject
+  implements PasskeyClientInterface
+{
+  readonly [uniffiTypeNameSymbol] = 'PasskeyClient';
   readonly [destructorGuardSymbol]: UniffiRustArcPtr;
   readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
   /**
-   * Create a new `Passkey` instance.
-   *
-   * # Arguments
-   * * `prf_provider` - Platform implementation of passkey PRF operations
-   * * `relay_config` - Optional configuration for Nostr relay connections (uses default if None)
+   * Construct with the default Nostr-backed label store.
    */
   constructor(
-    prfProvider: PasskeyPrfProvider,
-    relayConfig: NostrRelayConfig | undefined
+    prfProvider: PrfProvider,
+    breezApiKey: string | undefined,
+    config: PasskeyConfig | undefined
   ) {
     super();
     const pointer = uniffiCaller.rustCall(
       /*caller:*/ (callStatus) => {
-        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_constructor_passkey_new(
-          FfiConverterTypePasskeyPrfProvider.lower(prfProvider),
-          FfiConverterOptionalTypeNostrRelayConfig.lower(relayConfig),
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_constructor_passkeyclient_new(
+          FfiConverterTypePrfProvider.lower(prfProvider),
+          FfiConverterOptionalString.lower(breezApiKey),
+          FfiConverterOptionalTypePasskeyConfig.lower(config),
           callStatus
         );
       },
       /*liftString:*/ FfiConverterString.lift
     );
     this[pointerLiteralSymbol] = pointer;
-    this[destructorGuardSymbol] = uniffiTypePasskeyObjectFactory.bless(pointer);
+    this[destructorGuardSymbol] =
+      uniffiTypePasskeyClientObjectFactory.bless(pointer);
   }
 
   /**
-   * Derive a wallet for a given label.
-   *
-   * Uses the passkey PRF to derive a 12-word BIP39 mnemonic from the label
-   * and returns it as a [`Wallet`] containing the seed and resolved label.
-   * This works for both creating a new wallet and restoring an existing one.
-   *
-   * # Arguments
-   * * `label` - A user-chosen label (e.g., "personal", "business").
-   * If `None`, defaults to [`DEFAULT_LABEL`].
+   * One-shot capability + configuration probe. Collapses
+   * [`PrfProvider::is_supported`] and
+   * [`PrfProvider::check_domain_association`] into a single value
+   * hosts can branch on.
    */
-  public async getWallet(
-    label: string | undefined,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<Wallet> /*throws*/ {
+  public async checkAvailability(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<PasskeyAvailability> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
     try {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkey_get_wallet(
-            uniffiTypePasskeyObjectFactory.clonePointer(this),
-            FfiConverterOptionalString.lower(label)
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkeyclient_check_availability(
+            uniffiTypePasskeyClientObjectFactory.clonePointer(this)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -29023,7 +33150,9 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
           .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
         /*freeFunc:*/ nativeModule()
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypeWallet.lift.bind(FfiConverterTypeWallet),
+        /*liftFunc:*/ FfiConverterTypePasskeyAvailability.lift.bind(
+          FfiConverterTypePasskeyAvailability
+        ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
         /*errorHandler:*/ FfiConverterTypePasskeyError.lift.bind(
@@ -29039,31 +33168,48 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
   }
 
   /**
-   * Check if passkey PRF is available on this device.
+   * Single-CTA onboarding: silent sign-in, falling through to
+   * registration when no credential exists on the device. The returned
+   * [`ConnectFlow`] tells the caller which path ran.
    *
-   * Delegates to the platform's `PasskeyPrfProvider` implementation.
+   * The silent sign-in pins `prefer_immediately_available_credentials =
+   * true` regardless of [`SignInRequest`]: the fallback depends on the OS
+   * fast-failing with [`PrfProviderError::CredentialNotFound`] when no
+   * local credential exists. Only `CredentialNotFound` flips to the
+   * register path; every other error (`Cancel`, `Timeout`, ...) propagates
+   * unchanged.
+   *
+   * Mobile-only: meant for iOS 18+ / Android 9+ where
+   * `preferImmediatelyAvailableCredentials` is honored. The web
+   * equivalent (`mediation: 'immediate'`) is not yet stable
+   * cross-browser, so this is not surfaced on WASM; web hosts call
+   * [`Self::sign_in`] and catch `CredentialNotFound` themselves.
    */
-  public async isAvailable(asyncOpts_?: {
-    signal: AbortSignal;
-  }): Promise<boolean> /*throws*/ {
+  public async connectWithPasskey(
+    request: ConnectWithPasskeyRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ConnectWithPasskeyResponse> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
     try {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkey_is_available(
-            uniffiTypePasskeyObjectFactory.clonePointer(this)
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkeyclient_connect_with_passkey(
+            uniffiTypePasskeyClientObjectFactory.clonePointer(this),
+            FfiConverterTypeConnectWithPasskeyRequest.lower(request)
           );
         },
         /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_i8,
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
         /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_i8,
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
         /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_i8,
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
         /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_i8,
-        /*liftFunc:*/ FfiConverterBool.lift.bind(FfiConverterBool),
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeConnectWithPasskeyResponse.lift.bind(
+          FfiConverterTypeConnectWithPasskeyResponse
+        ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
         /*errorHandler:*/ FfiConverterTypePasskeyError.lift.bind(
@@ -29079,12 +33225,241 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
   }
 
   /**
-   * List all labels published to Nostr for this passkey's identity.
-   *
-   * Queries Nostr relays for all labels associated with the Nostr identity
-   * derived from this passkey. Requires 1 PRF call.
+   * Label sub-object. List or publish labels for this passkey's
+   * identity.
    */
-  public async listLabels(asyncOpts_?: {
+  public labels(): PasskeyLabelsInterface {
+    return FfiConverterTypePasskeyLabels.lift(
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkeyclient_labels(
+            uniffiTypePasskeyClientObjectFactory.clonePointer(this),
+            callStatus
+          );
+        },
+        /*liftString:*/ FfiConverterString.lift
+      )
+    );
+  }
+
+  /**
+   * First-time setup. Drives [`PrfProvider::create_passkey`] (one
+   * ceremony) followed by the wallet-derivation flow that backs
+   * [`Passkey::setup_wallet`] (one ceremony, dual-salt where
+   * supported). The label is always published on success.
+   */
+  public async register(
+    request: RegisterRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<RegisterResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkeyclient_register(
+            uniffiTypePasskeyClientObjectFactory.clonePointer(this),
+            FfiConverterTypeRegisterRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeRegisterResponse.lift.bind(
+          FfiConverterTypeRegisterResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypePasskeyError.lift.bind(
+          FfiConverterTypePasskeyError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Returning-user sign-in. Fast path (`label` set) skips the
+   * label-store query; discovery path (`label = None`) derives
+   * the configured default label and lists the user's labels in
+   * the same ceremony. Never re-publishes the label.
+   */
+  public async signIn(
+    request: SignInRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<SignInResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkeyclient_sign_in(
+            uniffiTypePasskeyClientObjectFactory.clonePointer(this),
+            FfiConverterTypeSignInRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeSignInResponse.lift.bind(
+          FfiConverterTypeSignInResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypePasskeyError.lift.bind(
+          FfiConverterTypePasskeyError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer = uniffiTypePasskeyClientObjectFactory.pointer(this);
+      uniffiTypePasskeyClientObjectFactory.freePointer(pointer);
+      uniffiTypePasskeyClientObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is PasskeyClient {
+    return uniffiTypePasskeyClientObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypePasskeyClientObjectFactory: UniffiObjectFactory<PasskeyClientInterface> =
+  (() => {
+    return {
+      create(pointer: UnsafeMutableRawPointer): PasskeyClientInterface {
+        const instance = Object.create(PasskeyClient.prototype);
+        instance[pointerLiteralSymbol] = pointer;
+        instance[destructorGuardSymbol] = this.bless(pointer);
+        instance[uniffiTypeNameSymbol] = 'PasskeyClient';
+        return instance;
+      },
+
+      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+        return uniffiCaller.rustCall(
+          /*caller:*/ (status) =>
+            nativeModule().ubrn_uniffi_internal_fn_method_passkeyclient_ffi__bless_pointer(
+              p,
+              status
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      unbless(ptr: UniffiRustArcPtr) {
+        ptr.markDestroyed();
+      },
+
+      pointer(obj: PasskeyClientInterface): UnsafeMutableRawPointer {
+        if ((obj as any)[destructorGuardSymbol] === undefined) {
+          throw new UniffiInternalError.UnexpectedNullPointer();
+        }
+        return (obj as any)[pointerLiteralSymbol];
+      },
+
+      clonePointer(obj: PasskeyClientInterface): UnsafeMutableRawPointer {
+        const pointer = this.pointer(obj);
+        return uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_passkeyclient(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      freePointer(pointer: UnsafeMutableRawPointer): void {
+        uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_passkeyclient(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      isConcreteType(obj: any): obj is PasskeyClientInterface {
+        return (
+          obj[destructorGuardSymbol] &&
+          obj[uniffiTypeNameSymbol] === 'PasskeyClient'
+        );
+      },
+    };
+  })();
+// FfiConverter for PasskeyClientInterface
+const FfiConverterTypePasskeyClient = new FfiConverterObject(
+  uniffiTypePasskeyClientObjectFactory
+);
+
+/**
+ * Label sub-object surfaced from [`PasskeyClient::labels`]. Holds a
+ * clone of the parent [`Passkey`] so calls re-use its cached identity.
+ */
+export interface PasskeyLabelsInterface {
+  /**
+   * List labels published for this passkey's identity.
+   */
+  list(asyncOpts_?: { signal: AbortSignal }): /*throws*/ Promise<Array<string>>;
+  /**
+   * Idempotently publish `label` for this passkey's identity.
+   */
+  store(
+    label: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<void>;
+}
+
+/**
+ * Label sub-object surfaced from [`PasskeyClient::labels`]. Holds a
+ * clone of the parent [`Passkey`] so calls re-use its cached identity.
+ */
+export class PasskeyLabels
+  extends UniffiAbstractObject
+  implements PasskeyLabelsInterface
+{
+  readonly [uniffiTypeNameSymbol] = 'PasskeyLabels';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypePasskeyLabelsObjectFactory.bless(pointer);
+  }
+
+  /**
+   * List labels published for this passkey's identity.
+   */
+  public async list(asyncOpts_?: {
     signal: AbortSignal;
   }): Promise<Array<string>> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
@@ -29092,8 +33467,8 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkey_list_labels(
-            uniffiTypePasskeyObjectFactory.clonePointer(this)
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkeylabels_list(
+            uniffiTypePasskeyLabelsObjectFactory.clonePointer(this)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -29122,15 +33497,9 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
   }
 
   /**
-   * Publish a label to Nostr relays for this passkey's identity.
-   *
-   * Idempotent: if the label already exists, it is not published again.
-   * Requires 1 PRF call.
-   *
-   * # Arguments
-   * * `label` - A user-chosen label (e.g., "personal", "business")
+   * Idempotently publish `label` for this passkey's identity.
    */
-  public async storeLabel(
+  public async store(
     label: string,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void> /*throws*/ {
@@ -29139,8 +33508,8 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkey_store_label(
-            uniffiTypePasskeyObjectFactory.clonePointer(this),
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkeylabels_store(
+            uniffiTypePasskeyLabelsObjectFactory.clonePointer(this),
             FfiConverterString.lower(label)
           );
         },
@@ -29173,33 +33542,33 @@ export class Passkey extends UniffiAbstractObject implements PasskeyInterface {
   uniffiDestroy(): void {
     const ptr = (this as any)[destructorGuardSymbol];
     if (ptr !== undefined) {
-      const pointer = uniffiTypePasskeyObjectFactory.pointer(this);
-      uniffiTypePasskeyObjectFactory.freePointer(pointer);
-      uniffiTypePasskeyObjectFactory.unbless(ptr);
+      const pointer = uniffiTypePasskeyLabelsObjectFactory.pointer(this);
+      uniffiTypePasskeyLabelsObjectFactory.freePointer(pointer);
+      uniffiTypePasskeyLabelsObjectFactory.unbless(ptr);
       delete (this as any)[destructorGuardSymbol];
     }
   }
 
-  static instanceOf(obj: any): obj is Passkey {
-    return uniffiTypePasskeyObjectFactory.isConcreteType(obj);
+  static instanceOf(obj: any): obj is PasskeyLabels {
+    return uniffiTypePasskeyLabelsObjectFactory.isConcreteType(obj);
   }
 }
 
-const uniffiTypePasskeyObjectFactory: UniffiObjectFactory<PasskeyInterface> =
+const uniffiTypePasskeyLabelsObjectFactory: UniffiObjectFactory<PasskeyLabelsInterface> =
   (() => {
     return {
-      create(pointer: UnsafeMutableRawPointer): PasskeyInterface {
-        const instance = Object.create(Passkey.prototype);
+      create(pointer: UnsafeMutableRawPointer): PasskeyLabelsInterface {
+        const instance = Object.create(PasskeyLabels.prototype);
         instance[pointerLiteralSymbol] = pointer;
         instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'Passkey';
+        instance[uniffiTypeNameSymbol] = 'PasskeyLabels';
         return instance;
       },
 
       bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
         return uniffiCaller.rustCall(
           /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_passkey_ffi__bless_pointer(
+            nativeModule().ubrn_uniffi_internal_fn_method_passkeylabels_ffi__bless_pointer(
               p,
               status
             ),
@@ -29211,18 +33580,18 @@ const uniffiTypePasskeyObjectFactory: UniffiObjectFactory<PasskeyInterface> =
         ptr.markDestroyed();
       },
 
-      pointer(obj: PasskeyInterface): UnsafeMutableRawPointer {
+      pointer(obj: PasskeyLabelsInterface): UnsafeMutableRawPointer {
         if ((obj as any)[destructorGuardSymbol] === undefined) {
           throw new UniffiInternalError.UnexpectedNullPointer();
         }
         return (obj as any)[pointerLiteralSymbol];
       },
 
-      clonePointer(obj: PasskeyInterface): UnsafeMutableRawPointer {
+      clonePointer(obj: PasskeyLabelsInterface): UnsafeMutableRawPointer {
         const pointer = this.pointer(obj);
         return uniffiCaller.rustCall(
           /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_passkey(
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_passkeylabels(
               pointer,
               callStatus
             ),
@@ -29233,7 +33602,7 @@ const uniffiTypePasskeyObjectFactory: UniffiObjectFactory<PasskeyInterface> =
       freePointer(pointer: UnsafeMutableRawPointer): void {
         uniffiCaller.rustCall(
           /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_passkey(
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_passkeylabels(
               pointer,
               callStatus
             ),
@@ -29241,399 +33610,50 @@ const uniffiTypePasskeyObjectFactory: UniffiObjectFactory<PasskeyInterface> =
         );
       },
 
-      isConcreteType(obj: any): obj is PasskeyInterface {
-        return (
-          obj[destructorGuardSymbol] && obj[uniffiTypeNameSymbol] === 'Passkey'
-        );
-      },
-    };
-  })();
-// FfiConverter for PasskeyInterface
-const FfiConverterTypePasskey = new FfiConverterObject(
-  uniffiTypePasskeyObjectFactory
-);
-
-/**
- * Trait for passkey PRF (Pseudo-Random Function) operations.
- *
- * Platforms must implement this trait to provide passkey PRF functionality.
- * The implementation is responsible for:
- * - Authenticating the user via platform-specific passkey APIs (`WebAuthn`, native passkey managers)
- * - Evaluating the PRF extension with the provided salt
- * - Returning the 32-byte PRF output
- */
-export interface PasskeyPrfProvider {
-  /**
-   * Derive a 32-byte seed from passkey PRF with the given salt.
-   *
-   * The platform authenticates the user via passkey and evaluates the PRF extension.
-   * The salt is used as input to the PRF to derive a deterministic output.
-   *
-   * # Arguments
-   * * `salt` - The salt string to use for PRF evaluation
-   *
-   * # Returns
-   * * `Ok(Vec<u8>)` - The 32-byte PRF output
-   * * `Err(PasskeyPrfError)` - If authentication fails or PRF is not supported
-   */
-  derivePrfSeed(
-    salt: string,
-    asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<ArrayBuffer>;
-  /**
-   * Check if a PRF-capable passkey is available on this device.
-   *
-   * This allows applications to gracefully degrade if passkey PRF is not supported.
-   *
-   * # Returns
-   * * `Ok(true)` - PRF-capable passkey is available
-   * * `Ok(false)` - No PRF-capable passkey available
-   * * `Err(PasskeyPrfError)` - If the check fails
-   */
-  isPrfAvailable(asyncOpts_?: {
-    signal: AbortSignal;
-  }): /*throws*/ Promise<boolean>;
-}
-
-/**
- * Trait for passkey PRF (Pseudo-Random Function) operations.
- *
- * Platforms must implement this trait to provide passkey PRF functionality.
- * The implementation is responsible for:
- * - Authenticating the user via platform-specific passkey APIs (`WebAuthn`, native passkey managers)
- * - Evaluating the PRF extension with the provided salt
- * - Returning the 32-byte PRF output
- */
-export class PasskeyPrfProviderImpl
-  extends UniffiAbstractObject
-  implements PasskeyPrfProvider
-{
-  readonly [uniffiTypeNameSymbol] = 'PasskeyPrfProviderImpl';
-  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
-  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
-  // No primary constructor declared for this class.
-  private constructor(pointer: UnsafeMutableRawPointer) {
-    super();
-    this[pointerLiteralSymbol] = pointer;
-    this[destructorGuardSymbol] =
-      uniffiTypePasskeyPrfProviderImplObjectFactory.bless(pointer);
-  }
-
-  /**
-   * Derive a 32-byte seed from passkey PRF with the given salt.
-   *
-   * The platform authenticates the user via passkey and evaluates the PRF extension.
-   * The salt is used as input to the PRF to derive a deterministic output.
-   *
-   * # Arguments
-   * * `salt` - The salt string to use for PRF evaluation
-   *
-   * # Returns
-   * * `Ok(Vec<u8>)` - The 32-byte PRF output
-   * * `Err(PasskeyPrfError)` - If authentication fails or PRF is not supported
-   */
-  public async derivePrfSeed(
-    salt: string,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<ArrayBuffer> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkeyprfprovider_derive_prf_seed(
-            uniffiTypePasskeyPrfProviderImplObjectFactory.clonePointer(this),
-            FfiConverterString.lower(salt)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterArrayBuffer.lift.bind(
-          FfiConverterArrayBuffer
-        ),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypePasskeyPrfError.lift.bind(
-          FfiConverterTypePasskeyPrfError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Check if a PRF-capable passkey is available on this device.
-   *
-   * This allows applications to gracefully degrade if passkey PRF is not supported.
-   *
-   * # Returns
-   * * `Ok(true)` - PRF-capable passkey is available
-   * * `Ok(false)` - No PRF-capable passkey available
-   * * `Err(PasskeyPrfError)` - If the check fails
-   */
-  public async isPrfAvailable(asyncOpts_?: {
-    signal: AbortSignal;
-  }): Promise<boolean> /*throws*/ {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_passkeyprfprovider_is_prf_available(
-            uniffiTypePasskeyPrfProviderImplObjectFactory.clonePointer(this)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_i8,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_i8,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_i8,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_i8,
-        /*liftFunc:*/ FfiConverterBool.lift.bind(FfiConverterBool),
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypePasskeyPrfError.lift.bind(
-          FfiConverterTypePasskeyPrfError
-        )
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
-   */
-  uniffiDestroy(): void {
-    const ptr = (this as any)[destructorGuardSymbol];
-    if (ptr !== undefined) {
-      const pointer =
-        uniffiTypePasskeyPrfProviderImplObjectFactory.pointer(this);
-      uniffiTypePasskeyPrfProviderImplObjectFactory.freePointer(pointer);
-      uniffiTypePasskeyPrfProviderImplObjectFactory.unbless(ptr);
-      delete (this as any)[destructorGuardSymbol];
-    }
-  }
-
-  static instanceOf(obj: any): obj is PasskeyPrfProviderImpl {
-    return uniffiTypePasskeyPrfProviderImplObjectFactory.isConcreteType(obj);
-  }
-}
-
-const uniffiTypePasskeyPrfProviderImplObjectFactory: UniffiObjectFactory<PasskeyPrfProvider> =
-  (() => {
-    return {
-      create(pointer: UnsafeMutableRawPointer): PasskeyPrfProvider {
-        const instance = Object.create(PasskeyPrfProviderImpl.prototype);
-        instance[pointerLiteralSymbol] = pointer;
-        instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'PasskeyPrfProviderImpl';
-        return instance;
-      },
-
-      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
-        return uniffiCaller.rustCall(
-          /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_passkeyprfprovider_ffi__bless_pointer(
-              p,
-              status
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
-
-      unbless(ptr: UniffiRustArcPtr) {
-        ptr.markDestroyed();
-      },
-
-      pointer(obj: PasskeyPrfProvider): UnsafeMutableRawPointer {
-        if ((obj as any)[destructorGuardSymbol] === undefined) {
-          throw new UniffiInternalError.UnexpectedNullPointer();
-        }
-        return (obj as any)[pointerLiteralSymbol];
-      },
-
-      clonePointer(obj: PasskeyPrfProvider): UnsafeMutableRawPointer {
-        const pointer = this.pointer(obj);
-        return uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_passkeyprfprovider(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
-
-      freePointer(pointer: UnsafeMutableRawPointer): void {
-        uniffiCaller.rustCall(
-          /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_passkeyprfprovider(
-              pointer,
-              callStatus
-            ),
-          /*liftString:*/ FfiConverterString.lift
-        );
-      },
-
-      isConcreteType(obj: any): obj is PasskeyPrfProvider {
+      isConcreteType(obj: any): obj is PasskeyLabelsInterface {
         return (
           obj[destructorGuardSymbol] &&
-          obj[uniffiTypeNameSymbol] === 'PasskeyPrfProviderImpl'
+          obj[uniffiTypeNameSymbol] === 'PasskeyLabels'
         );
       },
     };
   })();
-// FfiConverter for PasskeyPrfProvider
-const FfiConverterTypePasskeyPrfProvider = new FfiConverterObjectWithCallbacks(
-  uniffiTypePasskeyPrfProviderImplObjectFactory
+// FfiConverter for PasskeyLabelsInterface
+const FfiConverterTypePasskeyLabels = new FfiConverterObject(
+  uniffiTypePasskeyLabelsObjectFactory
 );
 
-// Add a vtavble for the callbacks that go in PasskeyPrfProvider.
-
-// Put the implementation in a struct so we don't pollute the top-level namespace
-const uniffiCallbackInterfacePasskeyPrfProvider: {
-  vtable: UniffiVTableCallbackInterfacePasskeyPrfProvider;
-  register: () => void;
-} = {
-  // Create the VTable using a series of closures.
-  // ts automatically converts these into C callback functions.
-  vtable: {
-    derivePrfSeed: (
-      uniffiHandle: bigint,
-      salt: Uint8Array,
-      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
-      uniffiCallbackData: bigint
-    ) => {
-      const uniffiMakeCall = async (
-        signal: AbortSignal
-      ): Promise<ArrayBuffer> => {
-        const jsCallback =
-          FfiConverterTypePasskeyPrfProvider.lift(uniffiHandle);
-        return await jsCallback.derivePrfSeed(FfiConverterString.lift(salt), {
-          signal,
-        });
-      };
-      const uniffiHandleSuccess = (returnValue: ArrayBuffer) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue: FfiConverterArrayBuffer.lower(returnValue),
-            callStatus: uniffiCaller.createCallStatus(),
-          }
-        );
-      };
-      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue: /*empty*/ new Uint8Array(0),
-            // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
-          }
-        );
-      };
-      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
-        /*makeCall:*/ uniffiMakeCall,
-        /*handleSuccess:*/ uniffiHandleSuccess,
-        /*handleError:*/ uniffiHandleError,
-        /*isErrorType:*/ PasskeyPrfError.instanceOf,
-        /*lowerError:*/ FfiConverterTypePasskeyPrfError.lower.bind(
-          FfiConverterTypePasskeyPrfError
-        ),
-        /*lowerString:*/ FfiConverterString.lower
-      );
-      return uniffiForeignFuture;
-    },
-    isPrfAvailable: (
-      uniffiHandle: bigint,
-      uniffiFutureCallback: UniffiForeignFutureCompleteI8,
-      uniffiCallbackData: bigint
-    ) => {
-      const uniffiMakeCall = async (signal: AbortSignal): Promise<boolean> => {
-        const jsCallback =
-          FfiConverterTypePasskeyPrfProvider.lift(uniffiHandle);
-        return await jsCallback.isPrfAvailable({ signal });
-      };
-      const uniffiHandleSuccess = (returnValue: boolean) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructI8 */ {
-            returnValue: FfiConverterBool.lower(returnValue),
-            callStatus: uniffiCaller.createCallStatus(),
-          }
-        );
-      };
-      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
-        uniffiFutureCallback.call(
-          uniffiFutureCallback,
-          uniffiCallbackData,
-          /* UniffiForeignFutureStructI8 */ {
-            returnValue: 0,
-            // TODO create callstatus with error.
-            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
-          }
-        );
-      };
-      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
-        /*makeCall:*/ uniffiMakeCall,
-        /*handleSuccess:*/ uniffiHandleSuccess,
-        /*handleError:*/ uniffiHandleError,
-        /*isErrorType:*/ PasskeyPrfError.instanceOf,
-        /*lowerError:*/ FfiConverterTypePasskeyPrfError.lower.bind(
-          FfiConverterTypePasskeyPrfError
-        ),
-        /*lowerString:*/ FfiConverterString.lower
-      );
-      return uniffiForeignFuture;
-    },
-    uniffiFree: (uniffiHandle: UniffiHandle): void => {
-      // PasskeyPrfProvider: this will throw a stale handle error if the handle isn't found.
-      FfiConverterTypePasskeyPrfProvider.drop(uniffiHandle);
-    },
-  },
-  register: () => {
-    nativeModule().ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_passkeyprfprovider(
-      uniffiCallbackInterfacePasskeyPrfProvider.vtable
-    );
-  },
-};
-
 /**
- * This interface is used to observe outgoing payments before Lightning, Spark and onchain Bitcoin payments.
- * If the implementation returns an error, the payment is cancelled.
+ * This interface is used to observe outgoing Lightning, Spark, onchain Bitcoin and token payments.
+ *
+ * `before_send` is called before a payment is made; if the implementation returns an error the
+ * payment is cancelled. `after_send` is called after a token payment has been broadcast to report
+ * its final payment id; it cannot cancel the payment and any error it returns is ignored.
  */
 export interface PaymentObserver {
   /**
-   * Called before Lightning, Spark or onchain Bitcoin payments are made
+   * Called before Lightning, Spark, onchain Bitcoin or token payments are made
    */
   beforeSend(
     payments: Array<ProvisionalPayment>,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<void>;
+  /**
+   * Called after a token payment has been broadcast, mapping each provisional payment id
+   * reported by `before_send` to its final payment id
+   */
+  afterSend(
+    updates: Array<PaymentIdUpdate>,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<void>;
 }
 
 /**
- * This interface is used to observe outgoing payments before Lightning, Spark and onchain Bitcoin payments.
- * If the implementation returns an error, the payment is cancelled.
+ * This interface is used to observe outgoing Lightning, Spark, onchain Bitcoin and token payments.
+ *
+ * `before_send` is called before a payment is made; if the implementation returns an error the
+ * payment is cancelled. `after_send` is called after a token payment has been broadcast to report
+ * its final payment id; it cannot cancel the payment and any error it returns is ignored.
  */
 export class PaymentObserverImpl
   extends UniffiAbstractObject
@@ -29651,7 +33671,7 @@ export class PaymentObserverImpl
   }
 
   /**
-   * Called before Lightning, Spark or onchain Bitcoin payments are made
+   * Called before Lightning, Spark, onchain Bitcoin or token payments are made
    */
   public async beforeSend(
     payments: Array<ProvisionalPayment>,
@@ -29665,6 +33685,47 @@ export class PaymentObserverImpl
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_paymentobserver_before_send(
             uniffiTypePaymentObserverImplObjectFactory.clonePointer(this),
             FfiConverterArrayTypeProvisionalPayment.lower(payments)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypePaymentObserverError.lift.bind(
+          FfiConverterTypePaymentObserverError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Called after a token payment has been broadcast, mapping each provisional payment id
+   * reported by `before_send` to its final payment id
+   */
+  public async afterSend(
+    updates: Array<PaymentIdUpdate>,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_paymentobserver_after_send(
+            uniffiTypePaymentObserverImplObjectFactory.clonePointer(this),
+            FfiConverterArrayTypePaymentIdUpdate.lower(updates)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -29831,6 +33892,50 @@ const uniffiCallbackInterfacePaymentObserver: {
       );
       return uniffiForeignFuture;
     },
+    afterSend: (
+      uniffiHandle: bigint,
+      updates: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<void> => {
+        const jsCallback = FfiConverterTypePaymentObserver.lift(uniffiHandle);
+        return await jsCallback.afterSend(
+          FfiConverterArrayTypePaymentIdUpdate.lift(updates),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: void) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ PaymentObserverError.instanceOf,
+        /*lowerError:*/ FfiConverterTypePaymentObserverError.lower.bind(
+          FfiConverterTypePaymentObserverError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
       // PaymentObserver: this will throw a stale handle error if the handle isn't found.
       FfiConverterTypePaymentObserver.drop(uniffiHandle);
@@ -29842,6 +33947,699 @@ const uniffiCallbackInterfacePaymentObserver: {
     );
   },
 };
+
+/**
+ * Trait for PRF (Pseudo-Random Function) operations backing a
+ * passkey-derived wallet seed.
+ *
+ * Each platform's built-in `PasskeyProvider` implements this by
+ * authenticating with a platform passkey and evaluating the `WebAuthn`
+ * PRF extension. Custom providers (CLI tools backed by `YubiKey`, FIDO2
+ * hmac-secret, on-disk key material, HSMs) implement the same contract:
+ * anything that deterministically derives 32 bytes from a salt qualifies.
+ */
+export interface PrfProvider {
+  /**
+   * Derive 32-byte PRF outputs for `request.salts` in as few
+   * authenticator ceremonies as the platform supports, preserving input
+   * order. Empty `salts` returns an empty vec without prompting. Built-in
+   * providers pair salts via `WebAuthn`'s `prf.eval.first` + `.second`
+   * (halving prompts); custom providers without bulk support loop.
+   *
+   * `request.allow_credentials` and
+   * `request.prefer_immediately_available_credentials` shape this single
+   * ceremony; providers that don't model them (file-backed, `YubiKey`)
+   * ignore them. Returns the seeds plus the credential ID observed in the
+   * same assertion, absent when the provider does not surface it.
+   */
+  deriveSeeds(
+    request: DeriveSeedsRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<DeriveSeedsOutput>;
+  /**
+   * Whether this provider can produce PRF outputs on the current
+   * device. Hosts gate UX on the result.
+   */
+  isSupported(asyncOpts_?: {
+    signal: AbortSignal;
+  }): /*throws*/ Promise<boolean>;
+  /**
+   * Explicit registration. Platform passkey providers override this to
+   * drive the OS create ceremony and surface the credential metadata
+   * hosts need for `exclude_credentials` bookkeeping. CLI / hardware
+   * providers register lazily in [`Self::derive_seeds`] and inherit the
+   * default `PrfNotSupported`.
+   *
+   * `exclude_credentials` lists already-registered IDs and surfaces
+   * duplicates as `CredentialAlreadyExists`. The `user.id` is always
+   * provider-minted and returned on `PasskeyCredential.user_id`.
+   */
+  createPasskey(
+    excludeCredentials: Array<ArrayBuffer>,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<PasskeyCredential>;
+  /**
+   * Advisory check against the platform's out-of-band verification
+   * source (iOS AASA / Android assetlinks / browser rpId scope).
+   * The SDK never gates internally; hosts pick their own policy.
+   *
+   * Built-in providers override:
+   * - **iOS/macOS**: AASA `webcredentials.apps` lookup. May be stale.
+   * - **Android**: Digital Asset Links query. Degrades `NotAssociated`
+   * to `Skipped` because `CredentialManager` runs its own check.
+   * - **Browser**: `rpId` is a registrable suffix of `window.location.hostname`.
+   *
+   * Custom providers without a verification source inherit the
+   * `Skipped` default.
+   */
+  checkDomainAssociation(asyncOpts_?: {
+    signal: AbortSignal;
+  }): /*throws*/ Promise<DomainAssociation>;
+}
+
+/**
+ * Trait for PRF (Pseudo-Random Function) operations backing a
+ * passkey-derived wallet seed.
+ *
+ * Each platform's built-in `PasskeyProvider` implements this by
+ * authenticating with a platform passkey and evaluating the `WebAuthn`
+ * PRF extension. Custom providers (CLI tools backed by `YubiKey`, FIDO2
+ * hmac-secret, on-disk key material, HSMs) implement the same contract:
+ * anything that deterministically derives 32 bytes from a salt qualifies.
+ */
+export class PrfProviderImpl
+  extends UniffiAbstractObject
+  implements PrfProvider
+{
+  readonly [uniffiTypeNameSymbol] = 'PrfProviderImpl';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypePrfProviderImplObjectFactory.bless(pointer);
+  }
+
+  /**
+   * Derive 32-byte PRF outputs for `request.salts` in as few
+   * authenticator ceremonies as the platform supports, preserving input
+   * order. Empty `salts` returns an empty vec without prompting. Built-in
+   * providers pair salts via `WebAuthn`'s `prf.eval.first` + `.second`
+   * (halving prompts); custom providers without bulk support loop.
+   *
+   * `request.allow_credentials` and
+   * `request.prefer_immediately_available_credentials` shape this single
+   * ceremony; providers that don't model them (file-backed, `YubiKey`)
+   * ignore them. Returns the seeds plus the credential ID observed in the
+   * same assertion, absent when the provider does not surface it.
+   */
+  public async deriveSeeds(
+    request: DeriveSeedsRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<DeriveSeedsOutput> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_derive_seeds(
+            uniffiTypePrfProviderImplObjectFactory.clonePointer(this),
+            FfiConverterTypeDeriveSeedsRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeDeriveSeedsOutput.lift.bind(
+          FfiConverterTypeDeriveSeedsOutput
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypePrfProviderError.lift.bind(
+          FfiConverterTypePrfProviderError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Whether this provider can produce PRF outputs on the current
+   * device. Hosts gate UX on the result.
+   */
+  public async isSupported(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<boolean> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_is_supported(
+            uniffiTypePrfProviderImplObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_i8,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_i8,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_i8,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_i8,
+        /*liftFunc:*/ FfiConverterBool.lift.bind(FfiConverterBool),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypePrfProviderError.lift.bind(
+          FfiConverterTypePrfProviderError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Explicit registration. Platform passkey providers override this to
+   * drive the OS create ceremony and surface the credential metadata
+   * hosts need for `exclude_credentials` bookkeeping. CLI / hardware
+   * providers register lazily in [`Self::derive_seeds`] and inherit the
+   * default `PrfNotSupported`.
+   *
+   * `exclude_credentials` lists already-registered IDs and surfaces
+   * duplicates as `CredentialAlreadyExists`. The `user.id` is always
+   * provider-minted and returned on `PasskeyCredential.user_id`.
+   */
+  public async createPasskey(
+    excludeCredentials: Array<ArrayBuffer>,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<PasskeyCredential> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_create_passkey(
+            uniffiTypePrfProviderImplObjectFactory.clonePointer(this),
+            FfiConverterArrayArrayBuffer.lower(excludeCredentials)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePasskeyCredential.lift.bind(
+          FfiConverterTypePasskeyCredential
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypePrfProviderError.lift.bind(
+          FfiConverterTypePrfProviderError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Advisory check against the platform's out-of-band verification
+   * source (iOS AASA / Android assetlinks / browser rpId scope).
+   * The SDK never gates internally; hosts pick their own policy.
+   *
+   * Built-in providers override:
+   * - **iOS/macOS**: AASA `webcredentials.apps` lookup. May be stale.
+   * - **Android**: Digital Asset Links query. Degrades `NotAssociated`
+   * to `Skipped` because `CredentialManager` runs its own check.
+   * - **Browser**: `rpId` is a registrable suffix of `window.location.hostname`.
+   *
+   * Custom providers without a verification source inherit the
+   * `Skipped` default.
+   */
+  public async checkDomainAssociation(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<DomainAssociation> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_check_domain_association(
+            uniffiTypePrfProviderImplObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeDomainAssociation.lift.bind(
+          FfiConverterTypeDomainAssociation
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypePrfProviderError.lift.bind(
+          FfiConverterTypePrfProviderError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer = uniffiTypePrfProviderImplObjectFactory.pointer(this);
+      uniffiTypePrfProviderImplObjectFactory.freePointer(pointer);
+      uniffiTypePrfProviderImplObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is PrfProviderImpl {
+    return uniffiTypePrfProviderImplObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypePrfProviderImplObjectFactory: UniffiObjectFactory<PrfProvider> =
+  (() => {
+    return {
+      create(pointer: UnsafeMutableRawPointer): PrfProvider {
+        const instance = Object.create(PrfProviderImpl.prototype);
+        instance[pointerLiteralSymbol] = pointer;
+        instance[destructorGuardSymbol] = this.bless(pointer);
+        instance[uniffiTypeNameSymbol] = 'PrfProviderImpl';
+        return instance;
+      },
+
+      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+        return uniffiCaller.rustCall(
+          /*caller:*/ (status) =>
+            nativeModule().ubrn_uniffi_internal_fn_method_prfprovider_ffi__bless_pointer(
+              p,
+              status
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      unbless(ptr: UniffiRustArcPtr) {
+        ptr.markDestroyed();
+      },
+
+      pointer(obj: PrfProvider): UnsafeMutableRawPointer {
+        if ((obj as any)[destructorGuardSymbol] === undefined) {
+          throw new UniffiInternalError.UnexpectedNullPointer();
+        }
+        return (obj as any)[pointerLiteralSymbol];
+      },
+
+      clonePointer(obj: PrfProvider): UnsafeMutableRawPointer {
+        const pointer = this.pointer(obj);
+        return uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_prfprovider(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      freePointer(pointer: UnsafeMutableRawPointer): void {
+        uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_prfprovider(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      isConcreteType(obj: any): obj is PrfProvider {
+        return (
+          obj[destructorGuardSymbol] &&
+          obj[uniffiTypeNameSymbol] === 'PrfProviderImpl'
+        );
+      },
+    };
+  })();
+// FfiConverter for PrfProvider
+const FfiConverterTypePrfProvider = new FfiConverterObjectWithCallbacks(
+  uniffiTypePrfProviderImplObjectFactory
+);
+
+// Add a vtavble for the callbacks that go in PrfProvider.
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+const uniffiCallbackInterfacePrfProvider: {
+  vtable: UniffiVTableCallbackInterfacePrfProvider;
+  register: () => void;
+} = {
+  // Create the VTable using a series of closures.
+  // ts automatically converts these into C callback functions.
+  vtable: {
+    deriveSeeds: (
+      uniffiHandle: bigint,
+      request: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<DeriveSeedsOutput> => {
+        const jsCallback = FfiConverterTypePrfProvider.lift(uniffiHandle);
+        return await jsCallback.deriveSeeds(
+          FfiConverterTypeDeriveSeedsRequest.lift(request),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: DeriveSeedsOutput) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypeDeriveSeedsOutput.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ PrfProviderError.instanceOf,
+        /*lowerError:*/ FfiConverterTypePrfProviderError.lower.bind(
+          FfiConverterTypePrfProviderError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    isSupported: (
+      uniffiHandle: bigint,
+      uniffiFutureCallback: UniffiForeignFutureCompleteI8,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<boolean> => {
+        const jsCallback = FfiConverterTypePrfProvider.lift(uniffiHandle);
+        return await jsCallback.isSupported({ signal });
+      };
+      const uniffiHandleSuccess = (returnValue: boolean) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructI8 */ {
+            returnValue: FfiConverterBool.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructI8 */ {
+            returnValue: 0,
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ PrfProviderError.instanceOf,
+        /*lowerError:*/ FfiConverterTypePrfProviderError.lower.bind(
+          FfiConverterTypePrfProviderError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    createPasskey: (
+      uniffiHandle: bigint,
+      excludeCredentials: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<PasskeyCredential> => {
+        const jsCallback = FfiConverterTypePrfProvider.lift(uniffiHandle);
+        return await jsCallback.createPasskey(
+          FfiConverterArrayArrayBuffer.lift(excludeCredentials),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: PasskeyCredential) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypePasskeyCredential.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ PrfProviderError.instanceOf,
+        /*lowerError:*/ FfiConverterTypePrfProviderError.lower.bind(
+          FfiConverterTypePrfProviderError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    checkDomainAssociation: (
+      uniffiHandle: bigint,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<DomainAssociation> => {
+        const jsCallback = FfiConverterTypePrfProvider.lift(uniffiHandle);
+        return await jsCallback.checkDomainAssociation({ signal });
+      };
+      const uniffiHandleSuccess = (returnValue: DomainAssociation) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypeDomainAssociation.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ PrfProviderError.instanceOf,
+        /*lowerError:*/ FfiConverterTypePrfProviderError.lower.bind(
+          FfiConverterTypePrfProviderError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    uniffiFree: (uniffiHandle: UniffiHandle): void => {
+      // PrfProvider: this will throw a stale handle error if the handle isn't found.
+      FfiConverterTypePrfProvider.drop(uniffiHandle);
+    },
+  },
+  register: () => {
+    nativeModule().ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_prfprovider(
+      uniffiCallbackInterfacePrfProvider.vtable
+    );
+  },
+};
+
+/**
+ * The four per-tenant stores produced by a [`StorageBackend`].
+ *
+ * An opaque handle: the SDK reads its stores internally; the fields never
+ * cross the FFI boundary.
+ */
+export interface ResolvedStoresInterface {}
+
+/**
+ * The four per-tenant stores produced by a [`StorageBackend`].
+ *
+ * An opaque handle: the SDK reads its stores internally; the fields never
+ * cross the FFI boundary.
+ */
+export class ResolvedStores
+  extends UniffiAbstractObject
+  implements ResolvedStoresInterface
+{
+  readonly [uniffiTypeNameSymbol] = 'ResolvedStores';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypeResolvedStoresObjectFactory.bless(pointer);
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer = uniffiTypeResolvedStoresObjectFactory.pointer(this);
+      uniffiTypeResolvedStoresObjectFactory.freePointer(pointer);
+      uniffiTypeResolvedStoresObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is ResolvedStores {
+    return uniffiTypeResolvedStoresObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypeResolvedStoresObjectFactory: UniffiObjectFactory<ResolvedStoresInterface> =
+  (() => {
+    return {
+      create(pointer: UnsafeMutableRawPointer): ResolvedStoresInterface {
+        const instance = Object.create(ResolvedStores.prototype);
+        instance[pointerLiteralSymbol] = pointer;
+        instance[destructorGuardSymbol] = this.bless(pointer);
+        instance[uniffiTypeNameSymbol] = 'ResolvedStores';
+        return instance;
+      },
+
+      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+        return uniffiCaller.rustCall(
+          /*caller:*/ (status) =>
+            nativeModule().ubrn_uniffi_internal_fn_method_resolvedstores_ffi__bless_pointer(
+              p,
+              status
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      unbless(ptr: UniffiRustArcPtr) {
+        ptr.markDestroyed();
+      },
+
+      pointer(obj: ResolvedStoresInterface): UnsafeMutableRawPointer {
+        if ((obj as any)[destructorGuardSymbol] === undefined) {
+          throw new UniffiInternalError.UnexpectedNullPointer();
+        }
+        return (obj as any)[pointerLiteralSymbol];
+      },
+
+      clonePointer(obj: ResolvedStoresInterface): UnsafeMutableRawPointer {
+        const pointer = this.pointer(obj);
+        return uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_resolvedstores(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      freePointer(pointer: UnsafeMutableRawPointer): void {
+        uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_resolvedstores(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      isConcreteType(obj: any): obj is ResolvedStoresInterface {
+        return (
+          obj[destructorGuardSymbol] &&
+          obj[uniffiTypeNameSymbol] === 'ResolvedStores'
+        );
+      },
+    };
+  })();
+// FfiConverter for ResolvedStoresInterface
+const FfiConverterTypeResolvedStores = new FfiConverterObject(
+  uniffiTypeResolvedStoresObjectFactory
+);
 
 /**
  * REST client trait for making HTTP requests.
@@ -30330,6 +35128,18 @@ export interface SdkBuilderInterface {
     signal: AbortSignal;
   }): /*throws*/ Promise<BreezSdkInterface>;
   /**
+   * Sets the account number for key derivation. All wallet keys derive from
+   * the seed at `m/8797555'/<account number>'`, so each account number
+   * yields an independent wallet from the same seed. Defaults to 0 on
+   * Regtest and 1 on all other networks when unset.
+   * Arguments:
+   * - `account_number`: The account number in the derivation path.
+   */
+  withAccountNumber(
+    accountNumber: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void>;
+  /**
    * Sets the chain service to be used by the SDK.
    * Arguments:
    * - `chain_service`: The chain service to be used.
@@ -30356,15 +35166,6 @@ export interface SdkBuilderInterface {
    */
   withFiatService(
     fiatService: FiatService,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<void>;
-  /**
-   * Sets the key set type to be used by the SDK.
-   * Arguments:
-   * - `config`: Key set configuration containing the key set type, address index flag, and optional account number.
-   */
-  withKeySet(
-    config: KeySetConfig,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void>;
   withLnurlClient(
@@ -30406,12 +35207,29 @@ export interface SdkBuilderInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void>;
   /**
-   * Sets the storage implementation to be used by the SDK.
+   * **Deprecated.** Use
+   * [`with_storage_backend`](SdkBuilder::with_storage_backend) with
+   * [`custom_storage`](crate::custom_storage).
    * Arguments:
    * - `storage`: The storage implementation to be used.
    */
   withStorage(
     storage: Storage,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void>;
+  /**
+   * Sets the storage backend to be used by the SDK.
+   *
+   * Build the [`StorageBackend`](crate::StorageBackend) via
+   * [`default_storage`](crate::default_storage),
+   * [`postgres_storage`](crate::postgres_storage),
+   * [`mysql_storage`](crate::mysql_storage) or
+   * [`custom_storage`](crate::custom_storage).
+   * Arguments:
+   * - `storage`: The storage backend to be used.
+   */
+  withStorageBackend(
+    storage: StorageBackend,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void>;
 }
@@ -30450,6 +35268,37 @@ export class SdkBuilder
   }
 
   /**
+   * Creates a new `SdkBuilder` with the provided configuration and external
+   * signers (e.g. from `create_turnkey_signer`), so signer-based SDKs can be
+   * composed with any storage backend or shared context, unlike
+   * `connect_with_signer` which is fixed to the default storage.
+   * Arguments:
+   * - `config`: The configuration to be used.
+   * - `breez_signer`: External signer for non-Spark SDK signing (LNURL-auth,
+   * sync, message signing, ECIES).
+   * - `spark_signer`: External high-level Spark signer for the Spark wallet.
+   */
+  public static newWithSigner(
+    config: Config,
+    breezSigner: ExternalBreezSigner,
+    sparkSigner: ExternalSparkSigner
+  ): SdkBuilderInterface {
+    return FfiConverterTypeSdkBuilder.lift(
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new_with_signer(
+            FfiConverterTypeConfig.lower(config),
+            FfiConverterTypeExternalBreezSigner.lower(breezSigner),
+            FfiConverterTypeExternalSparkSigner.lower(sparkSigner),
+            callStatus
+          );
+        },
+        /*liftString:*/ FfiConverterString.lift
+      )
+    );
+  }
+
+  /**
    * Builds the `BreezSdk` instance with the configured components.
    */
   public async build(asyncOpts_?: {
@@ -30480,6 +35329,48 @@ export class SdkBuilder
         /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
           FfiConverterTypeSdkError
         )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Sets the account number for key derivation. All wallet keys derive from
+   * the seed at `m/8797555'/<account number>'`, so each account number
+   * yields an independent wallet from the same seed. Defaults to 0 on
+   * Regtest and 1 on all other networks when unset.
+   * Arguments:
+   * - `account_number`: The account number in the derivation path.
+   */
+  public async withAccountNumber(
+    accountNumber: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_account_number(
+            uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
+            FfiConverterUInt32.lower(accountNumber)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_
       );
     } catch (__error: any) {
       if (uniffiIsDebug && __error instanceof Error) {
@@ -30586,45 +35477,6 @@ export class SdkBuilder
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_fiat_service(
             uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
             FfiConverterTypeFiatService.lower(fiatService)
-          );
-        },
-        /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
-        /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
-        /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
-        /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
-        /*liftFunc:*/ (_v) => {},
-        /*liftString:*/ FfiConverterString.lift,
-        /*asyncOpts:*/ asyncOpts_
-      );
-    } catch (__error: any) {
-      if (uniffiIsDebug && __error instanceof Error) {
-        __error.stack = __stack;
-      }
-      throw __error;
-    }
-  }
-
-  /**
-   * Sets the key set type to be used by the SDK.
-   * Arguments:
-   * - `config`: Key set configuration containing the key set type, address index flag, and optional account number.
-   */
-  public async withKeySet(
-    config: KeySetConfig,
-    asyncOpts_?: { signal: AbortSignal }
-  ): Promise<void> {
-    const __stack = uniffiIsDebug ? new Error().stack : undefined;
-    try {
-      return await uniffiRustCallAsync(
-        /*rustCaller:*/ uniffiCaller,
-        /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_key_set(
-            uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
-            FfiConverterTypeKeySetConfig.lower(config)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -30808,7 +35660,9 @@ export class SdkBuilder
   }
 
   /**
-   * Sets the storage implementation to be used by the SDK.
+   * **Deprecated.** Use
+   * [`with_storage_backend`](SdkBuilder::with_storage_backend) with
+   * [`custom_storage`](crate::custom_storage).
    * Arguments:
    * - `storage`: The storage implementation to be used.
    */
@@ -30824,6 +35678,51 @@ export class SdkBuilder
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_storage(
             uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
             FfiConverterTypeStorage.lower(storage)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Sets the storage backend to be used by the SDK.
+   *
+   * Build the [`StorageBackend`](crate::StorageBackend) via
+   * [`default_storage`](crate::default_storage),
+   * [`postgres_storage`](crate::postgres_storage),
+   * [`mysql_storage`](crate::mysql_storage) or
+   * [`custom_storage`](crate::custom_storage).
+   * Arguments:
+   * - `storage`: The storage backend to be used.
+   */
+  public async withStorageBackend(
+    storage: StorageBackend,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sdkbuilder_with_storage_backend(
+            uniffiTypeSdkBuilderObjectFactory.clonePointer(this),
+            FfiConverterTypeStorageBackend.lower(storage)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -30939,14 +35838,17 @@ const FfiConverterTypeSdkBuilder = new FfiConverterObject(
  * Construct one with [`new_shared_sdk_context`] and pass the same `Arc` to every
  * [`SdkBuilder`](crate::SdkBuilder) whose SDKs should share those resources
  * (a single HTTP client across SSP / chain / LNURL / JWT / etc., a gRPC
- * channel pool to the Spark operators, the Breez backend gRPC client, a
- * database connection pool, …). Useful for multi-tenant servers that load
- * many wallets in one process.
+ * channel pool to the Spark operators, the Breez backend gRPC client, …).
+ * Useful for multi-tenant servers that load many wallets in one process.
+ *
+ * To share a database connection pool across SDKs, pass a
+ * [`StorageBackend`](crate::StorageBackend) as
+ * [`SdkContextConfig::storage`]: every SDK built from the context reuses it.
  *
  * The struct is intentionally opaque — all fields are crate-private. There
  * is no way to inject pre-built sub-components: the factory builds them
- * from settings so callers don't need to know about session managers,
- * connection-manager wiring, or pool plumbing.
+ * from settings so callers don't need to know about session stores or
+ * connection-manager wiring.
  */
 export interface SdkContextInterface {}
 
@@ -30956,14 +35858,17 @@ export interface SdkContextInterface {}
  * Construct one with [`new_shared_sdk_context`] and pass the same `Arc` to every
  * [`SdkBuilder`](crate::SdkBuilder) whose SDKs should share those resources
  * (a single HTTP client across SSP / chain / LNURL / JWT / etc., a gRPC
- * channel pool to the Spark operators, the Breez backend gRPC client, a
- * database connection pool, …). Useful for multi-tenant servers that load
- * many wallets in one process.
+ * channel pool to the Spark operators, the Breez backend gRPC client, …).
+ * Useful for multi-tenant servers that load many wallets in one process.
+ *
+ * To share a database connection pool across SDKs, pass a
+ * [`StorageBackend`](crate::StorageBackend) as
+ * [`SdkContextConfig::storage`]: every SDK built from the context reuses it.
  *
  * The struct is intentionally opaque — all fields are crate-private. There
  * is no way to inject pre-built sub-components: the factory builds them
- * from settings so callers don't need to know about session managers,
- * connection-manager wiring, or pool plumbing.
+ * from settings so callers don't need to know about session stores or
+ * connection-manager wiring.
  */
 export class SdkContext
   extends UniffiAbstractObject
@@ -31073,7 +35978,7 @@ const FfiConverterTypeSdkContext = new FfiConverterObject(
  * backed by an in-memory map (default) or a shared database for cross-pod
  * auth sharing.
  */
-export interface SessionManager {
+export interface SessionStore {
   getSession(
     serviceIdentityKey: PublicKey,
     asyncOpts_?: { signal: AbortSignal }
@@ -31091,11 +35996,11 @@ export interface SessionManager {
  * backed by an in-memory map (default) or a shared database for cross-pod
  * auth sharing.
  */
-export class SessionManagerImpl
+export class SessionStoreImpl
   extends UniffiAbstractObject
-  implements SessionManager
+  implements SessionStore
 {
-  readonly [uniffiTypeNameSymbol] = 'SessionManagerImpl';
+  readonly [uniffiTypeNameSymbol] = 'SessionStoreImpl';
   readonly [destructorGuardSymbol]: UniffiRustArcPtr;
   readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
   // No primary constructor declared for this class.
@@ -31103,7 +36008,7 @@ export class SessionManagerImpl
     super();
     this[pointerLiteralSymbol] = pointer;
     this[destructorGuardSymbol] =
-      uniffiTypeSessionManagerImplObjectFactory.bless(pointer);
+      uniffiTypeSessionStoreImplObjectFactory.bless(pointer);
   }
 
   public async getSession(
@@ -31115,8 +36020,8 @@ export class SessionManagerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sessionmanager_get_session(
-            uniffiTypeSessionManagerImplObjectFactory.clonePointer(this),
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sessionstore_get_session(
+            uniffiTypeSessionStoreImplObjectFactory.clonePointer(this),
             FfiConverterTypePublicKey.lower(serviceIdentityKey)
           );
         },
@@ -31133,8 +36038,8 @@ export class SessionManagerImpl
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSessionManagerError.lift.bind(
-          FfiConverterTypeSessionManagerError
+        /*errorHandler:*/ FfiConverterTypeSessionStoreError.lift.bind(
+          FfiConverterTypeSessionStoreError
         )
       );
     } catch (__error: any) {
@@ -31155,8 +36060,8 @@ export class SessionManagerImpl
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sessionmanager_set_session(
-            uniffiTypeSessionManagerImplObjectFactory.clonePointer(this),
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_sessionstore_set_session(
+            uniffiTypeSessionStoreImplObjectFactory.clonePointer(this),
             FfiConverterTypePublicKey.lower(serviceIdentityKey),
             FfiConverterTypeSession.lower(session)
           );
@@ -31172,8 +36077,8 @@ export class SessionManagerImpl
         /*liftFunc:*/ (_v) => {},
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
-        /*errorHandler:*/ FfiConverterTypeSessionManagerError.lift.bind(
-          FfiConverterTypeSessionManagerError
+        /*errorHandler:*/ FfiConverterTypeSessionStoreError.lift.bind(
+          FfiConverterTypeSessionStoreError
         )
       );
     } catch (__error: any) {
@@ -31190,33 +36095,33 @@ export class SessionManagerImpl
   uniffiDestroy(): void {
     const ptr = (this as any)[destructorGuardSymbol];
     if (ptr !== undefined) {
-      const pointer = uniffiTypeSessionManagerImplObjectFactory.pointer(this);
-      uniffiTypeSessionManagerImplObjectFactory.freePointer(pointer);
-      uniffiTypeSessionManagerImplObjectFactory.unbless(ptr);
+      const pointer = uniffiTypeSessionStoreImplObjectFactory.pointer(this);
+      uniffiTypeSessionStoreImplObjectFactory.freePointer(pointer);
+      uniffiTypeSessionStoreImplObjectFactory.unbless(ptr);
       delete (this as any)[destructorGuardSymbol];
     }
   }
 
-  static instanceOf(obj: any): obj is SessionManagerImpl {
-    return uniffiTypeSessionManagerImplObjectFactory.isConcreteType(obj);
+  static instanceOf(obj: any): obj is SessionStoreImpl {
+    return uniffiTypeSessionStoreImplObjectFactory.isConcreteType(obj);
   }
 }
 
-const uniffiTypeSessionManagerImplObjectFactory: UniffiObjectFactory<SessionManager> =
+const uniffiTypeSessionStoreImplObjectFactory: UniffiObjectFactory<SessionStore> =
   (() => {
     return {
-      create(pointer: UnsafeMutableRawPointer): SessionManager {
-        const instance = Object.create(SessionManagerImpl.prototype);
+      create(pointer: UnsafeMutableRawPointer): SessionStore {
+        const instance = Object.create(SessionStoreImpl.prototype);
         instance[pointerLiteralSymbol] = pointer;
         instance[destructorGuardSymbol] = this.bless(pointer);
-        instance[uniffiTypeNameSymbol] = 'SessionManagerImpl';
+        instance[uniffiTypeNameSymbol] = 'SessionStoreImpl';
         return instance;
       },
 
       bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
         return uniffiCaller.rustCall(
           /*caller:*/ (status) =>
-            nativeModule().ubrn_uniffi_internal_fn_method_sessionmanager_ffi__bless_pointer(
+            nativeModule().ubrn_uniffi_internal_fn_method_sessionstore_ffi__bless_pointer(
               p,
               status
             ),
@@ -31228,18 +36133,18 @@ const uniffiTypeSessionManagerImplObjectFactory: UniffiObjectFactory<SessionMana
         ptr.markDestroyed();
       },
 
-      pointer(obj: SessionManager): UnsafeMutableRawPointer {
+      pointer(obj: SessionStore): UnsafeMutableRawPointer {
         if ((obj as any)[destructorGuardSymbol] === undefined) {
           throw new UniffiInternalError.UnexpectedNullPointer();
         }
         return (obj as any)[pointerLiteralSymbol];
       },
 
-      clonePointer(obj: SessionManager): UnsafeMutableRawPointer {
+      clonePointer(obj: SessionStore): UnsafeMutableRawPointer {
         const pointer = this.pointer(obj);
         return uniffiCaller.rustCall(
           /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_sessionmanager(
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_sessionstore(
               pointer,
               callStatus
             ),
@@ -31250,7 +36155,7 @@ const uniffiTypeSessionManagerImplObjectFactory: UniffiObjectFactory<SessionMana
       freePointer(pointer: UnsafeMutableRawPointer): void {
         uniffiCaller.rustCall(
           /*caller:*/ (callStatus) =>
-            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_sessionmanager(
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_sessionstore(
               pointer,
               callStatus
             ),
@@ -31258,24 +36163,24 @@ const uniffiTypeSessionManagerImplObjectFactory: UniffiObjectFactory<SessionMana
         );
       },
 
-      isConcreteType(obj: any): obj is SessionManager {
+      isConcreteType(obj: any): obj is SessionStore {
         return (
           obj[destructorGuardSymbol] &&
-          obj[uniffiTypeNameSymbol] === 'SessionManagerImpl'
+          obj[uniffiTypeNameSymbol] === 'SessionStoreImpl'
         );
       },
     };
   })();
-// FfiConverter for SessionManager
-const FfiConverterTypeSessionManager = new FfiConverterObjectWithCallbacks(
-  uniffiTypeSessionManagerImplObjectFactory
+// FfiConverter for SessionStore
+const FfiConverterTypeSessionStore = new FfiConverterObjectWithCallbacks(
+  uniffiTypeSessionStoreImplObjectFactory
 );
 
-// Add a vtavble for the callbacks that go in SessionManager.
+// Add a vtavble for the callbacks that go in SessionStore.
 
 // Put the implementation in a struct so we don't pollute the top-level namespace
-const uniffiCallbackInterfaceSessionManager: {
-  vtable: UniffiVTableCallbackInterfaceSessionManager;
+const uniffiCallbackInterfaceSessionStore: {
+  vtable: UniffiVTableCallbackInterfaceSessionStore;
   register: () => void;
 } = {
   // Create the VTable using a series of closures.
@@ -31288,7 +36193,7 @@ const uniffiCallbackInterfaceSessionManager: {
       uniffiCallbackData: bigint
     ) => {
       const uniffiMakeCall = async (signal: AbortSignal): Promise<Session> => {
-        const jsCallback = FfiConverterTypeSessionManager.lift(uniffiHandle);
+        const jsCallback = FfiConverterTypeSessionStore.lift(uniffiHandle);
         return await jsCallback.getSession(
           FfiConverterTypePublicKey.lift(serviceIdentityKey),
           { signal }
@@ -31319,9 +36224,9 @@ const uniffiCallbackInterfaceSessionManager: {
         /*makeCall:*/ uniffiMakeCall,
         /*handleSuccess:*/ uniffiHandleSuccess,
         /*handleError:*/ uniffiHandleError,
-        /*isErrorType:*/ SessionManagerError.instanceOf,
-        /*lowerError:*/ FfiConverterTypeSessionManagerError.lower.bind(
-          FfiConverterTypeSessionManagerError
+        /*isErrorType:*/ SessionStoreError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSessionStoreError.lower.bind(
+          FfiConverterTypeSessionStoreError
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
@@ -31335,7 +36240,7 @@ const uniffiCallbackInterfaceSessionManager: {
       uniffiCallbackData: bigint
     ) => {
       const uniffiMakeCall = async (signal: AbortSignal): Promise<void> => {
-        const jsCallback = FfiConverterTypeSessionManager.lift(uniffiHandle);
+        const jsCallback = FfiConverterTypeSessionStore.lift(uniffiHandle);
         return await jsCallback.setSession(
           FfiConverterTypePublicKey.lift(serviceIdentityKey),
           FfiConverterTypeSession.lift(session),
@@ -31365,22 +36270,22 @@ const uniffiCallbackInterfaceSessionManager: {
         /*makeCall:*/ uniffiMakeCall,
         /*handleSuccess:*/ uniffiHandleSuccess,
         /*handleError:*/ uniffiHandleError,
-        /*isErrorType:*/ SessionManagerError.instanceOf,
-        /*lowerError:*/ FfiConverterTypeSessionManagerError.lower.bind(
-          FfiConverterTypeSessionManagerError
+        /*isErrorType:*/ SessionStoreError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSessionStoreError.lower.bind(
+          FfiConverterTypeSessionStoreError
         ),
         /*lowerString:*/ FfiConverterString.lower
       );
       return uniffiForeignFuture;
     },
     uniffiFree: (uniffiHandle: UniffiHandle): void => {
-      // SessionManager: this will throw a stale handle error if the handle isn't found.
-      FfiConverterTypeSessionManager.drop(uniffiHandle);
+      // SessionStore: this will throw a stale handle error if the handle isn't found.
+      FfiConverterTypeSessionStore.drop(uniffiHandle);
     },
   },
   register: () => {
-    nativeModule().ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionmanager(
-      uniffiCallbackInterfaceSessionManager.vtable
+    nativeModule().ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_sessionstore(
+      uniffiCallbackInterfaceSessionStore.vtable
     );
   },
 };
@@ -31418,20 +36323,19 @@ export interface Storage {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<Array<Payment>>;
   /**
-   * Inserts a payment into storage
+   * Inserts or updates a payment unless it would replace a terminal status.
    *
-   * # Arguments
+   * Same-status updates are still persisted so details can be enriched.
    *
-   * * `payment` - The payment to insert
-   *
-   * # Returns
-   *
-   * Success or a `StorageError`
+   * Returns `true` if the caller should emit a payment event (new payment was
+   * inserted, or status transitioned). Returns `false` for redundant
+   * same-status updates and for rejected updates against a terminal stored
+   * status
    */
-  insertPayment(
+  applyPaymentUpdate(
     payment: Payment,
     asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<void>;
+  ): /*throws*/ Promise<boolean>;
   /**
    * Inserts payment metadata into storage
    *
@@ -31829,39 +36733,38 @@ export class StorageImpl extends UniffiAbstractObject implements Storage {
   }
 
   /**
-   * Inserts a payment into storage
+   * Inserts or updates a payment unless it would replace a terminal status.
    *
-   * # Arguments
+   * Same-status updates are still persisted so details can be enriched.
    *
-   * * `payment` - The payment to insert
-   *
-   * # Returns
-   *
-   * Success or a `StorageError`
+   * Returns `true` if the caller should emit a payment event (new payment was
+   * inserted, or status transitioned). Returns `false` for redundant
+   * same-status updates and for rejected updates against a terminal stored
+   * status
    */
-  public async insertPayment(
+  public async applyPaymentUpdate(
     payment: Payment,
     asyncOpts_?: { signal: AbortSignal }
-  ): Promise<void> /*throws*/ {
+  ): Promise<boolean> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
     try {
       return await uniffiRustCallAsync(
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
-          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_storage_insert_payment(
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_storage_apply_payment_update(
             uniffiTypeStorageImplObjectFactory.clonePointer(this),
             FfiConverterTypePayment.lower(payment)
           );
         },
         /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_i8,
         /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_i8,
         /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_i8,
         /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
-        /*liftFunc:*/ (_v) => {},
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_i8,
+        /*liftFunc:*/ FfiConverterBool.lift.bind(FfiConverterBool),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
         /*errorHandler:*/ FfiConverterTypeStorageError.lift.bind(
@@ -33120,24 +38023,25 @@ const uniffiCallbackInterfaceStorage: {
       );
       return uniffiForeignFuture;
     },
-    insertPayment: (
+    applyPaymentUpdate: (
       uniffiHandle: bigint,
       payment: Uint8Array,
-      uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+      uniffiFutureCallback: UniffiForeignFutureCompleteI8,
       uniffiCallbackData: bigint
     ) => {
-      const uniffiMakeCall = async (signal: AbortSignal): Promise<void> => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<boolean> => {
         const jsCallback = FfiConverterTypeStorage.lift(uniffiHandle);
-        return await jsCallback.insertPayment(
+        return await jsCallback.applyPaymentUpdate(
           FfiConverterTypePayment.lift(payment),
           { signal }
         );
       };
-      const uniffiHandleSuccess = (returnValue: void) => {
+      const uniffiHandleSuccess = (returnValue: boolean) => {
         uniffiFutureCallback.call(
           uniffiFutureCallback,
           uniffiCallbackData,
-          /* UniffiForeignFutureStructVoid */ {
+          /* UniffiForeignFutureStructI8 */ {
+            returnValue: FfiConverterBool.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -33146,7 +38050,8 @@ const uniffiCallbackInterfaceStorage: {
         uniffiFutureCallback.call(
           uniffiFutureCallback,
           uniffiCallbackData,
-          /* UniffiForeignFutureStructVoid */ {
+          /* UniffiForeignFutureStructI8 */ {
+            returnValue: 0,
             // TODO create callstatus with error.
             callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
           }
@@ -34189,6 +39094,173 @@ const uniffiCallbackInterfaceStorage: {
   },
 };
 
+/**
+ * A factory for a tenant's storage.
+ *
+ * A single backend may back many SDK instances; each
+ * [`create_stores`](Self::create_stores) call yields the store set scoped to
+ * one tenant `identity` (a serialized public key). `network` lets file-based
+ * backends segregate tenants by network; database backends ignore it.
+ */
+export interface StorageBackend {
+  createStores(
+    network: Network,
+    identity: ArrayBuffer,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ResolvedStoresInterface>;
+}
+
+/**
+ * A factory for a tenant's storage.
+ *
+ * A single backend may back many SDK instances; each
+ * [`create_stores`](Self::create_stores) call yields the store set scoped to
+ * one tenant `identity` (a serialized public key). `network` lets file-based
+ * backends segregate tenants by network; database backends ignore it.
+ */
+export class StorageBackendImpl
+  extends UniffiAbstractObject
+  implements StorageBackend
+{
+  readonly [uniffiTypeNameSymbol] = 'StorageBackendImpl';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypeStorageBackendImplObjectFactory.bless(pointer);
+  }
+
+  public async createStores(
+    network: Network,
+    identity: ArrayBuffer,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ResolvedStoresInterface> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_storagebackend_create_stores(
+            uniffiTypeStorageBackendImplObjectFactory.clonePointer(this),
+            FfiConverterTypeNetwork.lower(network),
+            FfiConverterArrayBuffer.lower(identity)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_pointer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_pointer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_pointer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_pointer,
+        /*liftFunc:*/ FfiConverterTypeResolvedStores.lift.bind(
+          FfiConverterTypeResolvedStores
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer = uniffiTypeStorageBackendImplObjectFactory.pointer(this);
+      uniffiTypeStorageBackendImplObjectFactory.freePointer(pointer);
+      uniffiTypeStorageBackendImplObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is StorageBackendImpl {
+    return uniffiTypeStorageBackendImplObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypeStorageBackendImplObjectFactory: UniffiObjectFactory<StorageBackend> =
+  (() => {
+    return {
+      create(pointer: UnsafeMutableRawPointer): StorageBackend {
+        const instance = Object.create(StorageBackendImpl.prototype);
+        instance[pointerLiteralSymbol] = pointer;
+        instance[destructorGuardSymbol] = this.bless(pointer);
+        instance[uniffiTypeNameSymbol] = 'StorageBackendImpl';
+        return instance;
+      },
+
+      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+        return uniffiCaller.rustCall(
+          /*caller:*/ (status) =>
+            nativeModule().ubrn_uniffi_internal_fn_method_storagebackend_ffi__bless_pointer(
+              p,
+              status
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      unbless(ptr: UniffiRustArcPtr) {
+        ptr.markDestroyed();
+      },
+
+      pointer(obj: StorageBackend): UnsafeMutableRawPointer {
+        if ((obj as any)[destructorGuardSymbol] === undefined) {
+          throw new UniffiInternalError.UnexpectedNullPointer();
+        }
+        return (obj as any)[pointerLiteralSymbol];
+      },
+
+      clonePointer(obj: StorageBackend): UnsafeMutableRawPointer {
+        const pointer = this.pointer(obj);
+        return uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_storagebackend(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      freePointer(pointer: UnsafeMutableRawPointer): void {
+        uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_storagebackend(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      isConcreteType(obj: any): obj is StorageBackend {
+        return (
+          obj[destructorGuardSymbol] &&
+          obj[uniffiTypeNameSymbol] === 'StorageBackendImpl'
+        );
+      },
+    };
+  })();
+// FfiConverter for StorageBackend
+const FfiConverterTypeStorageBackend = new FfiConverterObject(
+  uniffiTypeStorageBackendImplObjectFactory
+);
+
 export interface TokenIssuerInterface {
   /**
    * Burns supply of the issuer token
@@ -34798,11 +39870,6 @@ const FfiConverterOptionalTypeCredentials = new FfiConverterOptional(
   FfiConverterTypeCredentials
 );
 
-// FfiConverter for KeySetConfig | undefined
-const FfiConverterOptionalTypeKeySetConfig = new FfiConverterOptional(
-  FfiConverterTypeKeySetConfig
-);
-
 // FfiConverter for LightningAddressInfo | undefined
 const FfiConverterOptionalTypeLightningAddressInfo = new FfiConverterOptional(
   FfiConverterTypeLightningAddressInfo
@@ -34823,14 +39890,24 @@ const FfiConverterOptionalTypeLnurlWithdrawInfo = new FfiConverterOptional(
   FfiConverterTypeLnurlWithdrawInfo
 );
 
-// FfiConverter for NostrRelayConfig | undefined
-const FfiConverterOptionalTypeNostrRelayConfig = new FfiConverterOptional(
-  FfiConverterTypeNostrRelayConfig
-);
-
 // FfiConverter for OutgoingChange | undefined
 const FfiConverterOptionalTypeOutgoingChange = new FfiConverterOptional(
   FfiConverterTypeOutgoingChange
+);
+
+// FfiConverter for PasskeyConfig | undefined
+const FfiConverterOptionalTypePasskeyConfig = new FfiConverterOptional(
+  FfiConverterTypePasskeyConfig
+);
+
+// FfiConverter for PasskeyCredential | undefined
+const FfiConverterOptionalTypePasskeyCredential = new FfiConverterOptional(
+  FfiConverterTypePasskeyCredential
+);
+
+// FfiConverter for PasskeyProviderOptions | undefined
+const FfiConverterOptionalTypePasskeyProviderOptions = new FfiConverterOptional(
+  FfiConverterTypePasskeyProviderOptions
 );
 
 // FfiConverter for Payment | undefined
@@ -34877,6 +39954,11 @@ const FfiConverterOptionalTypeTokenMetadata = new FfiConverterOptional(
   FfiConverterTypeTokenMetadata
 );
 
+// FfiConverter for TurnkeyRetryConfig | undefined
+const FfiConverterOptionalTypeTurnkeyRetryConfig = new FfiConverterOptional(
+  FfiConverterTypeTurnkeyRetryConfig
+);
+
 // FfiConverter for string | undefined
 const FfiConverterOptionalString = new FfiConverterOptional(FfiConverterString);
 
@@ -34921,14 +40003,45 @@ const FfiConverterArrayTypeDepositInfo = new FfiConverterArray(
   FfiConverterTypeDepositInfo
 );
 
+// FfiConverter for Array<ExternalClaimLeafInput>
+const FfiConverterArrayTypeExternalClaimLeafInput = new FfiConverterArray(
+  FfiConverterTypeExternalClaimLeafInput
+);
+
+// FfiConverter for Array<ExternalFrostJob>
+const FfiConverterArrayTypeExternalFrostJob = new FfiConverterArray(
+  FfiConverterTypeExternalFrostJob
+);
+
+// FfiConverter for Array<ExternalFrostShareResult>
+const FfiConverterArrayTypeExternalFrostShareResult = new FfiConverterArray(
+  FfiConverterTypeExternalFrostShareResult
+);
+
 // FfiConverter for Array<ExternalInputParser>
 const FfiConverterArrayTypeExternalInputParser = new FfiConverterArray(
   FfiConverterTypeExternalInputParser
 );
 
-// FfiConverter for Array<ExternalVerifiableSecretShare>
-const FfiConverterArrayTypeExternalVerifiableSecretShare =
-  new FfiConverterArray(FfiConverterTypeExternalVerifiableSecretShare);
+// FfiConverter for Array<ExternalNewLeafKey>
+const FfiConverterArrayTypeExternalNewLeafKey = new FfiConverterArray(
+  FfiConverterTypeExternalNewLeafKey
+);
+
+// FfiConverter for Array<ExternalOperatorPackage>
+const FfiConverterArrayTypeExternalOperatorPackage = new FfiConverterArray(
+  FfiConverterTypeExternalOperatorPackage
+);
+
+// FfiConverter for Array<ExternalOperatorRecipient>
+const FfiConverterArrayTypeExternalOperatorRecipient = new FfiConverterArray(
+  FfiConverterTypeExternalOperatorRecipient
+);
+
+// FfiConverter for Array<ExternalTransferLeafInput>
+const FfiConverterArrayTypeExternalTransferLeafInput = new FfiConverterArray(
+  FfiConverterTypeExternalTransferLeafInput
+);
 
 // FfiConverter for Array<FiatCurrency>
 const FfiConverterArrayTypeFiatCurrency = new FfiConverterArray(
@@ -34973,6 +40086,11 @@ const FfiConverterArrayTypeOutgoingChange = new FfiConverterArray(
 // FfiConverter for Array<Payment>
 const FfiConverterArrayTypePayment = new FfiConverterArray(
   FfiConverterTypePayment
+);
+
+// FfiConverter for Array<PaymentIdUpdate>
+const FfiConverterArrayTypePaymentIdUpdate = new FfiConverterArray(
+  FfiConverterTypePaymentIdUpdate
 );
 
 // FfiConverter for Array<ProvisionalPayment>
@@ -35109,6 +40227,16 @@ const FfiConverterOptionalMapStringString = new FfiConverterOptional(
   FfiConverterMapStringString
 );
 
+// FfiConverter for StorageBackend | undefined
+const FfiConverterOptionalTypeStorageBackend = new FfiConverterOptional(
+  FfiConverterTypeStorageBackend
+);
+
+// FfiConverter for Array<ArrayBuffer> | undefined
+const FfiConverterOptionalArrayArrayBuffer = new FfiConverterOptional(
+  FfiConverterArrayArrayBuffer
+);
+
 // FfiConverter for Array<ExternalInputParser> | undefined
 const FfiConverterOptionalArrayTypeExternalInputParser =
   new FfiConverterOptional(FfiConverterArrayTypeExternalInputParser);
@@ -35209,6 +40337,22 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_create_turnkey_signer() !==
+    31659
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_create_turnkey_signer'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_custom_storage() !==
+    18116
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_custom_storage'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_default_config() !==
     62194
   ) {
@@ -35217,11 +40361,11 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_default_external_signer() !==
-    40694
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_default_external_signers() !==
+    58595
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_func_default_external_signer'
+      'uniffi_breez_sdk_spark_checksum_func_default_external_signers'
     );
   }
   if (
@@ -35230,6 +40374,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_func_default_server_config'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_default_storage() !==
+    56226
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_default_storage'
     );
   }
   if (
@@ -35258,7 +40410,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_new_shared_sdk_context() !==
-    28438
+    7027
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_func_new_shared_sdk_context'
@@ -35314,10 +40466,18 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener() !==
-    37737
+    19224
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_authorize_lightning_address_transfer() !==
+    15257
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_authorize_lightning_address_transfer'
     );
   }
   if (
@@ -35326,14 +40486,6 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin'
-    );
-  }
-  if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_optimization() !==
-    56996
-  ) {
-    throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_breezsdk_cancel_leaf_optimization'
     );
   }
   if (
@@ -35369,6 +40521,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_lightning_address_transfer() !==
+    20680
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_lightning_address_transfer'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_contact() !==
     15670
   ) {
@@ -35386,7 +40546,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect() !==
-    330
+    20026
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect'
@@ -35406,14 +40566,6 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info'
-    );
-  }
-  if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress() !==
-    38008
-  ) {
-    throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_breezsdk_get_leaf_optimization_progress'
     );
   }
   if (
@@ -35529,6 +40681,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_optimize_leaves() !==
+    39254
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_optimize_leaves'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_parse() !==
     14285
   ) {
@@ -35625,14 +40785,6 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization() !==
-    44923
-  ) {
-    throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_breezsdk_start_leaf_optimization'
-    );
-  }
-  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet() !==
     30368
   ) {
@@ -35665,163 +40817,179 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_identity_public_key() !==
-    62941
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_derive_public_key() !==
+    26700
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_identity_public_key'
+      'uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_derive_public_key'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_derive_public_key() !==
-    23137
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_ecdsa() !==
+    17969
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_derive_public_key'
+      'uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_ecdsa'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa() !==
-    37648
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_ecdsa_recoverable() !==
+    45907
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa'
+      'uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_ecdsa_recoverable'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa_recoverable() !==
-    3107
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_encrypt_ecies() !==
+    5296
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_ecdsa_recoverable'
+      'uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_encrypt_ecies'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_ecies() !==
-    60224
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_decrypt_ecies() !==
+    6089
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_ecies'
+      'uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_decrypt_ecies'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_decrypt_ecies() !==
-    59601
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_hash_schnorr() !==
+    1766
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_decrypt_ecies'
+      'uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_hash_schnorr'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_hash_schnorr() !==
-    57220
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_hmac_sha256() !==
+    65429
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_hash_schnorr'
+      'uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_hmac_sha256'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_hmac_sha256() !==
-    57517
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_identity_public_key() !==
+    38705
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_hmac_sha256'
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_identity_public_key'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_signing_commitment() !==
-    31862
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_public_key_for_leaf() !==
+    39015
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_signing_commitment'
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_public_key_for_leaf'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node() !==
-    37434
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_static_deposit_public_key() !==
+    11994
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_get_public_key_for_node'
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_static_deposit_public_key'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_secret() !==
-    26114
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_authentication_challenge() !==
+    57313
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_generate_random_secret'
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_authentication_challenge'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_encrypted() !==
-    38925
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_message() !==
+    56093
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret_encrypted'
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_message'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret() !==
-    45280
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_frost() !==
+    44871
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_secret'
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_frost'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_signing_key() !==
-    62519
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_transfer() !==
+    42596
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_static_deposit_signing_key'
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_transfer'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secrets() !==
-    45969
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_claim() !==
+    109
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_subtract_secrets'
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_claim'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret_with_proofs() !==
-    19489
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_lightning_receive() !==
+    49812
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_split_secret_with_proofs'
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_lightning_receive'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_for_receiver() !==
-    51627
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit() !==
+    119
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_encrypt_secret_for_receiver'
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret() !==
-    53055
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_static_deposit_refund() !==
+    22509
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_public_key_from_secret'
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_static_deposit_refund'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost() !==
-    20635
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_static_deposit_refund() !==
+    28885
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_sign_frost'
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_static_deposit_refund'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost() !==
-    53544
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_spark_invoice() !==
+    11535
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_externalsigner_aggregate_frost'
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_spark_invoice'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_token_transaction() !==
+    58955
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_token_transaction'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit_claim() !==
+    64724
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit_claim'
     );
   }
   if (
@@ -35841,59 +41009,107 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_get_wallet() !==
-    28830
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyclient_check_availability() !==
+    35189
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_passkey_get_wallet'
+      'uniffi_breez_sdk_spark_checksum_method_passkeyclient_check_availability'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_is_available() !==
-    31283
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyclient_connect_with_passkey() !==
+    47815
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_passkey_is_available'
+      'uniffi_breez_sdk_spark_checksum_method_passkeyclient_connect_with_passkey'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_list_labels() !==
-    5351
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyclient_labels() !==
+    35849
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_passkey_list_labels'
+      'uniffi_breez_sdk_spark_checksum_method_passkeyclient_labels'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkey_store_label() !==
-    42949
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyclient_register() !==
+    18330
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_passkey_store_label'
+      'uniffi_breez_sdk_spark_checksum_method_passkeyclient_register'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_derive_prf_seed() !==
-    44905
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyclient_sign_in() !==
+    42245
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_derive_prf_seed'
+      'uniffi_breez_sdk_spark_checksum_method_passkeyclient_sign_in'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_is_prf_available() !==
-    33931
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkeylabels_list() !==
+    54877
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_passkeyprfprovider_is_prf_available'
+      'uniffi_breez_sdk_spark_checksum_method_passkeylabels_list'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkeylabels_store() !==
+    58514
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_passkeylabels_store'
     );
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_paymentobserver_before_send() !==
-    30686
+    27806
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_paymentobserver_before_send'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_paymentobserver_after_send() !==
+    31673
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_paymentobserver_after_send'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_prfprovider_derive_seeds() !==
+    18550
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_prfprovider_derive_seeds'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_prfprovider_is_supported() !==
+    46331
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_prfprovider_is_supported'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_prfprovider_create_passkey() !==
+    1967
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_prfprovider_create_passkey'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_prfprovider_check_domain_association() !==
+    18713
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_prfprovider_check_domain_association'
     );
   }
   if (
@@ -35929,6 +41145,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_account_number() !==
+    6550
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_account_number'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_chain_service() !==
     2848
   ) {
@@ -35950,14 +41174,6 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_fiat_service'
-    );
-  }
-  if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set() !==
-    50052
-  ) {
-    throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_key_set'
     );
   }
   if (
@@ -35994,26 +41210,34 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage() !==
-    59400
+    20369
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sessionmanager_get_session() !==
-    64481
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage_backend() !==
+    28545
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_sessionmanager_get_session'
+      'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_storage_backend'
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sessionmanager_set_session() !==
-    55262
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sessionstore_get_session() !==
+    49546
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_sessionmanager_set_session'
+      'uniffi_breez_sdk_spark_checksum_method_sessionstore_get_session'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sessionstore_set_session() !==
+    13629
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_sessionstore_set_session'
     );
   }
   if (
@@ -36049,11 +41273,11 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_insert_payment() !==
-    28075
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_apply_payment_update() !==
+    8631
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_method_storage_insert_payment'
+      'uniffi_breez_sdk_spark_checksum_method_storage_apply_payment_update'
     );
   }
   if (
@@ -36233,6 +41457,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storagebackend_create_stores() !==
+    51497
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_storagebackend_create_stores'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_tokenissuer_burn_issuer_token() !==
     56056
   ) {
@@ -36289,11 +41521,11 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_constructor_passkey_new() !==
-    25404
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_constructor_passkeyclient_new() !==
+    51278
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_constructor_passkey_new'
+      'uniffi_breez_sdk_spark_checksum_constructor_passkeyclient_new'
     );
   }
   if (
@@ -36302,6 +41534,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new_with_signer() !==
+    28871
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new_with_signer'
     );
   }
   if (
@@ -36324,12 +41564,13 @@ function uniffiEnsureInitialized() {
   uniffiCallbackInterfaceEventListener.register();
   uniffiCallbackInterfaceLogger.register();
   uniffiCallbackInterfaceBitcoinChainService.register();
-  uniffiCallbackInterfaceExternalSigner.register();
+  uniffiCallbackInterfaceExternalBreezSigner.register();
+  uniffiCallbackInterfaceExternalSparkSigner.register();
   uniffiCallbackInterfaceFiatService.register();
-  uniffiCallbackInterfacePasskeyPrfProvider.register();
   uniffiCallbackInterfacePaymentObserver.register();
+  uniffiCallbackInterfacePrfProvider.register();
   uniffiCallbackInterfaceRestClient.register();
-  uniffiCallbackInterfaceSessionManager.register();
+  uniffiCallbackInterfaceSessionStore.register();
   uniffiCallbackInterfaceStorage.register();
 }
 
@@ -36343,6 +41584,8 @@ export default Object.freeze({
     FfiConverterTypeAmount,
     FfiConverterTypeAmountAdjustmentReason,
     FfiConverterTypeAssetFilter,
+    FfiConverterTypeAuthorizeTransferRequest,
+    FfiConverterTypeAutoOptimizationEvent,
     FfiConverterTypeBip21Details,
     FfiConverterTypeBip21Extra,
     FfiConverterTypeBitcoinAddressDetails,
@@ -36371,8 +41614,11 @@ export default Object.freeze({
     FfiConverterTypeClaimDepositResponse,
     FfiConverterTypeClaimHtlcPaymentRequest,
     FfiConverterTypeClaimHtlcPaymentResponse,
+    FfiConverterTypeClaimTransferRequest,
     FfiConverterTypeConfig,
     FfiConverterTypeConnectRequest,
+    FfiConverterTypeConnectWithPasskeyRequest,
+    FfiConverterTypeConnectWithPasskeyResponse,
     FfiConverterTypeConnectWithSignerRequest,
     FfiConverterTypeContact,
     FfiConverterTypeConversionDetails,
@@ -36388,23 +41634,48 @@ export default Object.freeze({
     FfiConverterTypeCurrencyInfo,
     FfiConverterTypeDepositClaimError,
     FfiConverterTypeDepositInfo,
+    FfiConverterTypeDeriveSeedsOutput,
+    FfiConverterTypeDeriveSeedsRequest,
+    FfiConverterTypeDomainAssociation,
     FfiConverterTypeEcdsaSignatureBytes,
-    FfiConverterTypeExternalAggregateFrostRequest,
-    FfiConverterTypeExternalEncryptedSecret,
+    FfiConverterTypeErrorKind,
+    FfiConverterTypeExternalBreezSigner,
+    FfiConverterTypeExternalClaimLeafInput,
     FfiConverterTypeExternalFrostCommitments,
+    FfiConverterTypeExternalFrostDerivation,
+    FfiConverterTypeExternalFrostJob,
+    FfiConverterTypeExternalFrostShareResult,
     FfiConverterTypeExternalFrostSignature,
     FfiConverterTypeExternalFrostSignatureShare,
     FfiConverterTypeExternalIdentifier,
     FfiConverterTypeExternalInputParser,
-    FfiConverterTypeExternalScalar,
-    FfiConverterTypeExternalSecretShare,
-    FfiConverterTypeExternalSecretSource,
-    FfiConverterTypeExternalSecretToSplit,
-    FfiConverterTypeExternalSignFrostRequest,
-    FfiConverterTypeExternalSigner,
+    FfiConverterTypeExternalNewLeafKey,
+    FfiConverterTypeExternalOperatorPackage,
+    FfiConverterTypeExternalOperatorRecipient,
+    FfiConverterTypeExternalPrepareClaimRequest,
+    FfiConverterTypeExternalPrepareLightningReceiveRequest,
+    FfiConverterTypeExternalPrepareStaticDepositClaimRequest,
+    FfiConverterTypeExternalPrepareStaticDepositRequest,
+    FfiConverterTypeExternalPrepareTokenTransactionRequest,
+    FfiConverterTypeExternalPrepareTransferRequest,
+    FfiConverterTypeExternalPreparedClaim,
+    FfiConverterTypeExternalPreparedLightningReceive,
+    FfiConverterTypeExternalPreparedStaticDeposit,
+    FfiConverterTypeExternalPreparedStaticDepositClaim,
+    FfiConverterTypeExternalPreparedTokenTransaction,
+    FfiConverterTypeExternalPreparedTransfer,
+    FfiConverterTypeExternalSignSparkInvoiceRequest,
+    FfiConverterTypeExternalSignStaticDepositRefundRequest,
+    FfiConverterTypeExternalSignedSparkInvoice,
+    FfiConverterTypeExternalSigners,
     FfiConverterTypeExternalSigningCommitments,
+    FfiConverterTypeExternalSparkInvoiceKind,
+    FfiConverterTypeExternalSparkSigner,
+    FfiConverterTypeExternalStartStaticDepositRefundRequest,
+    FfiConverterTypeExternalStartedStaticDepositRefund,
+    FfiConverterTypeExternalTokenTransactionKind,
+    FfiConverterTypeExternalTransferLeafInput,
     FfiConverterTypeExternalTreeNodeId,
-    FfiConverterTypeExternalVerifiableSecretShare,
     FfiConverterTypeFee,
     FfiConverterTypeFeePolicy,
     FfiConverterTypeFetchConversionLimitsRequest,
@@ -36425,8 +41696,6 @@ export default Object.freeze({
     FfiConverterTypeIdentifierSignaturePair,
     FfiConverterTypeIncomingChange,
     FfiConverterTypeInputType,
-    FfiConverterTypeKeySetConfig,
-    FfiConverterTypeKeySetType,
     FfiConverterTypeLeafOptimizationConfig,
     FfiConverterTypeLightningAddressDetails,
     FfiConverterTypeLightningAddressInfo,
@@ -36458,18 +41727,23 @@ export default Object.freeze({
     FfiConverterTypeMessageSuccessActionData,
     FfiConverterTypeMintIssuerTokenRequest,
     FfiConverterTypeNetwork,
-    FfiConverterTypeNostrRelayConfig,
     FfiConverterTypeOnchainConfirmationSpeed,
-    FfiConverterTypeOptimizationEvent,
-    FfiConverterTypeOptimizationProgress,
+    FfiConverterTypeOptimizationMode,
+    FfiConverterTypeOptimizationOutcome,
+    FfiConverterTypeOptimizeLeavesRequest,
+    FfiConverterTypeOptimizeLeavesResponse,
     FfiConverterTypeOutgoingChange,
-    FfiConverterTypePasskey,
+    FfiConverterTypePasskeyAvailability,
+    FfiConverterTypePasskeyClient,
+    FfiConverterTypePasskeyConfig,
+    FfiConverterTypePasskeyCredential,
     FfiConverterTypePasskeyError,
-    FfiConverterTypePasskeyPrfError,
-    FfiConverterTypePasskeyPrfProvider,
+    FfiConverterTypePasskeyLabels,
+    FfiConverterTypePasskeyProviderOptions,
     FfiConverterTypePayment,
     FfiConverterTypePaymentDetails,
     FfiConverterTypePaymentDetailsFilter,
+    FfiConverterTypePaymentIdUpdate,
     FfiConverterTypePaymentMetadata,
     FfiConverterTypePaymentMethod,
     FfiConverterTypePaymentObserver,
@@ -36481,6 +41755,8 @@ export default Object.freeze({
     FfiConverterTypePrepareLnurlPayResponse,
     FfiConverterTypePrepareSendPaymentRequest,
     FfiConverterTypePrepareSendPaymentResponse,
+    FfiConverterTypePrfProvider,
+    FfiConverterTypePrfProviderError,
     FfiConverterTypeProvisionalPayment,
     FfiConverterTypeProvisionalPaymentDetails,
     FfiConverterTypePublicKey,
@@ -36497,8 +41773,11 @@ export default Object.freeze({
     FfiConverterTypeRefundDepositRequest,
     FfiConverterTypeRefundDepositResponse,
     FfiConverterTypeRegisterLightningAddressRequest,
+    FfiConverterTypeRegisterRequest,
+    FfiConverterTypeRegisterResponse,
     FfiConverterTypeRegisterWebhookRequest,
     FfiConverterTypeRegisterWebhookResponse,
+    FfiConverterTypeResolvedStores,
     FfiConverterTypeRestClient,
     FfiConverterTypeRestResponse,
     FfiConverterTypeSchnorrSignatureBytes,
@@ -36518,9 +41797,12 @@ export default Object.freeze({
     FfiConverterTypeServiceConnectivityError,
     FfiConverterTypeServiceStatus,
     FfiConverterTypeSession,
-    FfiConverterTypeSessionManager,
-    FfiConverterTypeSessionManagerError,
+    FfiConverterTypeSessionStore,
+    FfiConverterTypeSessionStoreError,
     FfiConverterTypeSetLnurlMetadataItem,
+    FfiConverterTypeSetupWalletRequest,
+    FfiConverterTypeSignInRequest,
+    FfiConverterTypeSignInResponse,
     FfiConverterTypeSignMessageRequest,
     FfiConverterTypeSignMessageResponse,
     FfiConverterTypeSignerError,
@@ -36539,6 +41821,7 @@ export default Object.freeze({
     FfiConverterTypeStableBalanceConfig,
     FfiConverterTypeStableBalanceToken,
     FfiConverterTypeStorage,
+    FfiConverterTypeStorageBackend,
     FfiConverterTypeStorageError,
     FfiConverterTypeStorageListPaymentsRequest,
     FfiConverterTypeStoragePaymentDetailsFilter,
@@ -36552,6 +41835,9 @@ export default Object.freeze({
     FfiConverterTypeTokenMetadata,
     FfiConverterTypeTokenOptimizationConfig,
     FfiConverterTypeTokenTransactionType,
+    FfiConverterTypeTransferAuthorization,
+    FfiConverterTypeTurnkeyConfig,
+    FfiConverterTypeTurnkeyRetryConfig,
     FfiConverterTypeTxStatus,
     FfiConverterTypeUnfreezeIssuerTokenRequest,
     FfiConverterTypeUnfreezeIssuerTokenResponse,
@@ -36564,6 +41850,7 @@ export default Object.freeze({
     FfiConverterTypeUserSettings,
     FfiConverterTypeUtxo,
     FfiConverterTypeWallet,
+    FfiConverterTypeWalletSetup,
     FfiConverterTypeWebhook,
     FfiConverterTypeWebhookEventType,
     FfiConverterTypeu128,
