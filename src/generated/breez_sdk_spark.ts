@@ -322,8 +322,8 @@ export function defaultExternalSigners(
  * explicitly, so an ephemeral SDK instance stays cheap and predictable.
  *
  * Config fields whose background services are gated off are reset to their
- * inactive shape: `real_time_sync_server_url` is set to `None`, and both
- * `leaf_optimization_config.auto_enabled` and
+ * inactive shape: `real_time_sync_server_url` and `cross_chain_config` are
+ * set to `None`, and both `leaf_optimization_config.auto_enabled` and
  * `token_optimization_config.auto_enabled` are set to `false`. The SDK
  * rejects builds where `background_tasks_enabled` is `false` and any of
  * those fields is left in its active shape, so flip the flag via this
@@ -2482,6 +2482,16 @@ export type Config = {
    * `default_server_config` already sets these compatible values.
    */
   backgroundTasksEnabled: boolean;
+  /**
+   * Configuration for cross-chain sends via Orchestra and Boltz.
+   *
+   * `Some(_)` enables cross-chain sends (sats to USDT on external chains).
+   * `None` (default) disables them entirely. Opt in by setting this to
+   * [`CrossChainConfig::default`] (or a customized value): the providers
+   * run background work (e.g. web sockets), so enabling is left to the
+   * caller. Cross-chain sends are only supported on mainnet.
+   */
+  crossChainConfig: CrossChainConfig | undefined;
 };
 
 /**
@@ -2537,6 +2547,7 @@ const FfiConverterTypeConfig = (() => {
         maxConcurrentClaims: FfiConverterUInt32.read(from),
         sparkConfig: FfiConverterOptionalTypeSparkConfig.read(from),
         backgroundTasksEnabled: FfiConverterBool.read(from),
+        crossChainConfig: FfiConverterOptionalTypeCrossChainConfig.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -2568,6 +2579,10 @@ const FfiConverterTypeConfig = (() => {
       FfiConverterUInt32.write(value.maxConcurrentClaims, into);
       FfiConverterOptionalTypeSparkConfig.write(value.sparkConfig, into);
       FfiConverterBool.write(value.backgroundTasksEnabled, into);
+      FfiConverterOptionalTypeCrossChainConfig.write(
+        value.crossChainConfig,
+        into
+      );
     }
     allocationSize(value: TypeName): number {
       return (
@@ -2596,7 +2611,10 @@ const FfiConverterTypeConfig = (() => {
         ) +
         FfiConverterUInt32.allocationSize(value.maxConcurrentClaims) +
         FfiConverterOptionalTypeSparkConfig.allocationSize(value.sparkConfig) +
-        FfiConverterBool.allocationSize(value.backgroundTasksEnabled)
+        FfiConverterBool.allocationSize(value.backgroundTasksEnabled) +
+        FfiConverterOptionalTypeCrossChainConfig.allocationSize(
+          value.crossChainConfig
+        )
       );
     }
   }
@@ -2985,24 +3003,196 @@ const FfiConverterTypeContact = (() => {
 })();
 
 /**
- * Outlines the steps involved in a conversion.
- *
- * Built progressively: `status` is available immediately from payment metadata,
- * while `from`/`to` steps are enriched later from child payments.
+ * A single conversion in a payment's conversion chain.
  */
-export type ConversionDetails = {
+export type Conversion = {
   /**
-   * Current status of the conversion
+   * The provider that performed this conversion
+   */
+  provider: ConversionProvider;
+  /**
+   * Status of this specific conversion step
    */
   status: ConversionStatus;
   /**
-   * The send step of the conversion (e.g., sats sent to Flashnet)
+   * Source side of the conversion
    */
-  from: ConversionStep | undefined;
+  from: ConversionSide;
   /**
-   * The receive step of the conversion (e.g., tokens received from Flashnet)
+   * Destination side of the conversion
    */
-  to: ConversionStep | undefined;
+  to: ConversionSide;
+  /**
+   * Reason the conversion amount was adjusted, if applicable (AMM only)
+   */
+  amountAdjustment: AmountAdjustmentReason | undefined;
+};
+
+/**
+ * Generated factory for {@link Conversion} record objects.
+ */
+export const Conversion = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<Conversion, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link Conversion}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link Conversion}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<Conversion>,
+  });
+})();
+
+const FfiConverterTypeConversion = (() => {
+  type TypeName = Conversion;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        provider: FfiConverterTypeConversionProvider.read(from),
+        status: FfiConverterTypeConversionStatus.read(from),
+        from: FfiConverterTypeConversionSide.read(from),
+        to: FfiConverterTypeConversionSide.read(from),
+        amountAdjustment:
+          FfiConverterOptionalTypeAmountAdjustmentReason.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeConversionProvider.write(value.provider, into);
+      FfiConverterTypeConversionStatus.write(value.status, into);
+      FfiConverterTypeConversionSide.write(value.from, into);
+      FfiConverterTypeConversionSide.write(value.to, into);
+      FfiConverterOptionalTypeAmountAdjustmentReason.write(
+        value.amountAdjustment,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeConversionProvider.allocationSize(value.provider) +
+        FfiConverterTypeConversionStatus.allocationSize(value.status) +
+        FfiConverterTypeConversionSide.allocationSize(value.from) +
+        FfiConverterTypeConversionSide.allocationSize(value.to) +
+        FfiConverterOptionalTypeAmountAdjustmentReason.allocationSize(
+          value.amountAdjustment
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * The asset on a [`ConversionSide`] — groups the ticker, stable identifier,
+ * and decimals that always travel together.
+ */
+export type ConversionAsset = {
+  /**
+   * Ticker (e.g. `"BTC"`, `"USDB"`, `"USDC"`, `"USDT"`). Tickers alone
+   * are ambiguous across chains — pair with [`Self::identifier`] for a
+   * hard match.
+   */
+  ticker: string;
+  /**
+   * Stable identifier: a Spark token identifier for Spark tokens, or a
+   * contract/mint address for cross-chain assets. `None` for BTC/sats.
+   */
+  identifier: string | undefined;
+  /**
+   * Number of decimals for the asset.
+   * `0` for BTC/sats sides (amount is already in the smallest unit,
+   * so no scaling is needed); non-zero for token assets (e.g. `6` for
+   * USDC/USDT/USDB).
+   */
+  decimals: /*u32*/ number;
+};
+
+/**
+ * Generated factory for {@link ConversionAsset} record objects.
+ */
+export const ConversionAsset = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<ConversionAsset, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ConversionAsset}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ConversionAsset}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<ConversionAsset>,
+  });
+})();
+
+const FfiConverterTypeConversionAsset = (() => {
+  type TypeName = ConversionAsset;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        ticker: FfiConverterString.read(from),
+        identifier: FfiConverterOptionalString.read(from),
+        decimals: FfiConverterUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.ticker, into);
+      FfiConverterOptionalString.write(value.identifier, into);
+      FfiConverterUInt32.write(value.decimals, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.ticker) +
+        FfiConverterOptionalString.allocationSize(value.identifier) +
+        FfiConverterUInt32.allocationSize(value.decimals)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Outlines the steps involved in one or more conversions on a payment.
+ *
+ * Built progressively: `status` is available immediately from payment metadata,
+ * while `conversions` are enriched later from child payments and conversion info.
+ */
+export type ConversionDetails = {
+  /**
+   * Overall status of the conversion (persisted in storage)
+   */
+  status: ConversionStatus;
+  /**
+   * Ordered list of conversion steps. For sends: [AMM, cross-chain].
+   * For receives: [cross-chain, AMM]. Rebuilt on retrieval, not persisted.
+   */
+  conversions: Array<Conversion>;
 };
 
 /**
@@ -3041,20 +3231,17 @@ const FfiConverterTypeConversionDetails = (() => {
     read(from: RustBuffer): TypeName {
       return {
         status: FfiConverterTypeConversionStatus.read(from),
-        from: FfiConverterOptionalTypeConversionStep.read(from),
-        to: FfiConverterOptionalTypeConversionStep.read(from),
+        conversions: FfiConverterArrayTypeConversion.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterTypeConversionStatus.write(value.status, into);
-      FfiConverterOptionalTypeConversionStep.write(value.from, into);
-      FfiConverterOptionalTypeConversionStep.write(value.to, into);
+      FfiConverterArrayTypeConversion.write(value.conversions, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterTypeConversionStatus.allocationSize(value.status) +
-        FfiConverterOptionalTypeConversionStep.allocationSize(value.from) +
-        FfiConverterOptionalTypeConversionStep.allocationSize(value.to)
+        FfiConverterArrayTypeConversion.allocationSize(value.conversions)
       );
     }
   }
@@ -3160,107 +3347,6 @@ const FfiConverterTypeConversionEstimate = (() => {
   return new FFIConverter();
 })();
 
-export type ConversionInfo = {
-  /**
-   * The pool id associated with the conversion
-   */
-  poolId: string;
-  /**
-   * The conversion id shared by both sides of the conversion
-   */
-  conversionId: string;
-  /**
-   * The status of the conversion
-   */
-  status: ConversionStatus;
-  /**
-   * The fee paid for the conversion
-   * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
-   */
-  fee: U128 | undefined;
-  /**
-   * The purpose of the conversion
-   */
-  purpose: ConversionPurpose | undefined;
-  /**
-   * The reason the conversion amount was adjusted, if applicable.
-   */
-  amountAdjustment: AmountAdjustmentReason | undefined;
-};
-
-/**
- * Generated factory for {@link ConversionInfo} record objects.
- */
-export const ConversionInfo = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<ConversionInfo, ReturnType<typeof defaults>>(
-      defaults
-    );
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link ConversionInfo}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link ConversionInfo}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Object.freeze(defaults()) as Partial<ConversionInfo>,
-  });
-})();
-
-const FfiConverterTypeConversionInfo = (() => {
-  type TypeName = ConversionInfo;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        poolId: FfiConverterString.read(from),
-        conversionId: FfiConverterString.read(from),
-        status: FfiConverterTypeConversionStatus.read(from),
-        fee: FfiConverterOptionalTypeu128.read(from),
-        purpose: FfiConverterOptionalTypeConversionPurpose.read(from),
-        amountAdjustment:
-          FfiConverterOptionalTypeAmountAdjustmentReason.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterString.write(value.poolId, into);
-      FfiConverterString.write(value.conversionId, into);
-      FfiConverterTypeConversionStatus.write(value.status, into);
-      FfiConverterOptionalTypeu128.write(value.fee, into);
-      FfiConverterOptionalTypeConversionPurpose.write(value.purpose, into);
-      FfiConverterOptionalTypeAmountAdjustmentReason.write(
-        value.amountAdjustment,
-        into
-      );
-    }
-    allocationSize(value: TypeName): number {
-      return (
-        FfiConverterString.allocationSize(value.poolId) +
-        FfiConverterString.allocationSize(value.conversionId) +
-        FfiConverterTypeConversionStatus.allocationSize(value.status) +
-        FfiConverterOptionalTypeu128.allocationSize(value.fee) +
-        FfiConverterOptionalTypeConversionPurpose.allocationSize(
-          value.purpose
-        ) +
-        FfiConverterOptionalTypeAmountAdjustmentReason.allocationSize(
-          value.amountAdjustment
-        )
-      );
-    }
-  }
-  return new FFIConverter();
-})();
-
 /**
  * Options for conversion when fulfilling a payment. When set, the SDK will
  * perform a conversion before fulfilling the payment. If not set, the payment
@@ -3347,55 +3433,46 @@ const FfiConverterTypeConversionOptions = (() => {
 })();
 
 /**
- * A single step in a conversion
+ * One side (source or destination) of a conversion.
  */
-export type ConversionStep = {
+export type ConversionSide = {
   /**
-   * The underlying payment id of the conversion step
+   * The chain or network for this side.
    */
-  paymentId: string;
+  chain: ConversionChain;
   /**
-   * Payment amount in satoshis or token base units
+   * The asset being converted on this side.
+   */
+  asset: ConversionAsset;
+  /**
+   * Amount in base units (satoshis or token base units)
    */
   amount: U128;
   /**
-   * Fee paid in satoshis or token base units
-   * This represents the payment fee + the conversion fee
+   * Fee in the same base units
    */
   fee: U128;
-  /**
-   * Method of payment
-   */
-  method: PaymentMethod;
-  /**
-   * Token metadata if a token is used for payment
-   */
-  tokenMetadata: TokenMetadata | undefined;
-  /**
-   * The reason the conversion amount was adjusted, if applicable.
-   */
-  amountAdjustment: AmountAdjustmentReason | undefined;
 };
 
 /**
- * Generated factory for {@link ConversionStep} record objects.
+ * Generated factory for {@link ConversionSide} record objects.
  */
-export const ConversionStep = (() => {
+export const ConversionSide = (() => {
   const defaults = () => ({});
   const create = (() => {
-    return uniffiCreateRecord<ConversionStep, ReturnType<typeof defaults>>(
+    return uniffiCreateRecord<ConversionSide, ReturnType<typeof defaults>>(
       defaults
     );
   })();
   return Object.freeze({
     /**
-     * Create a frozen instance of {@link ConversionStep}, with defaults specified
+     * Create a frozen instance of {@link ConversionSide}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     create,
 
     /**
-     * Create a frozen instance of {@link ConversionStep}, with defaults specified
+     * Create a frozen instance of {@link ConversionSide}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
     new: create,
@@ -3403,47 +3480,33 @@ export const ConversionStep = (() => {
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
-    defaults: () => Object.freeze(defaults()) as Partial<ConversionStep>,
+    defaults: () => Object.freeze(defaults()) as Partial<ConversionSide>,
   });
 })();
 
-const FfiConverterTypeConversionStep = (() => {
-  type TypeName = ConversionStep;
+const FfiConverterTypeConversionSide = (() => {
+  type TypeName = ConversionSide;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
-        paymentId: FfiConverterString.read(from),
+        chain: FfiConverterTypeConversionChain.read(from),
+        asset: FfiConverterTypeConversionAsset.read(from),
         amount: FfiConverterTypeu128.read(from),
         fee: FfiConverterTypeu128.read(from),
-        method: FfiConverterTypePaymentMethod.read(from),
-        tokenMetadata: FfiConverterOptionalTypeTokenMetadata.read(from),
-        amountAdjustment:
-          FfiConverterOptionalTypeAmountAdjustmentReason.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
-      FfiConverterString.write(value.paymentId, into);
+      FfiConverterTypeConversionChain.write(value.chain, into);
+      FfiConverterTypeConversionAsset.write(value.asset, into);
       FfiConverterTypeu128.write(value.amount, into);
       FfiConverterTypeu128.write(value.fee, into);
-      FfiConverterTypePaymentMethod.write(value.method, into);
-      FfiConverterOptionalTypeTokenMetadata.write(value.tokenMetadata, into);
-      FfiConverterOptionalTypeAmountAdjustmentReason.write(
-        value.amountAdjustment,
-        into
-      );
     }
     allocationSize(value: TypeName): number {
       return (
-        FfiConverterString.allocationSize(value.paymentId) +
+        FfiConverterTypeConversionChain.allocationSize(value.chain) +
+        FfiConverterTypeConversionAsset.allocationSize(value.asset) +
         FfiConverterTypeu128.allocationSize(value.amount) +
-        FfiConverterTypeu128.allocationSize(value.fee) +
-        FfiConverterTypePaymentMethod.allocationSize(value.method) +
-        FfiConverterOptionalTypeTokenMetadata.allocationSize(
-          value.tokenMetadata
-        ) +
-        FfiConverterOptionalTypeAmountAdjustmentReason.allocationSize(
-          value.amountAdjustment
-        )
+        FfiConverterTypeu128.allocationSize(value.fee)
       );
     }
   }
@@ -3574,6 +3637,276 @@ const FfiConverterTypeCredentials = (() => {
       return (
         FfiConverterString.allocationSize(value.username) +
         FfiConverterString.allocationSize(value.password)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type CrossChainAddressDetails = {
+  address: string;
+  addressFamily: CrossChainAddressFamily;
+  contractAddress: string | undefined;
+  chainId: /*u64*/ bigint | undefined;
+  amount: U128 | undefined;
+};
+
+/**
+ * Generated factory for {@link CrossChainAddressDetails} record objects.
+ */
+export const CrossChainAddressDetails = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      CrossChainAddressDetails,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link CrossChainAddressDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link CrossChainAddressDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<CrossChainAddressDetails>,
+  });
+})();
+
+const FfiConverterTypeCrossChainAddressDetails = (() => {
+  type TypeName = CrossChainAddressDetails;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        address: FfiConverterString.read(from),
+        addressFamily: FfiConverterTypeCrossChainAddressFamily.read(from),
+        contractAddress: FfiConverterOptionalString.read(from),
+        chainId: FfiConverterOptionalUInt64.read(from),
+        amount: FfiConverterOptionalTypeu128.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.address, into);
+      FfiConverterTypeCrossChainAddressFamily.write(value.addressFamily, into);
+      FfiConverterOptionalString.write(value.contractAddress, into);
+      FfiConverterOptionalUInt64.write(value.chainId, into);
+      FfiConverterOptionalTypeu128.write(value.amount, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.address) +
+        FfiConverterTypeCrossChainAddressFamily.allocationSize(
+          value.addressFamily
+        ) +
+        FfiConverterOptionalString.allocationSize(value.contractAddress) +
+        FfiConverterOptionalUInt64.allocationSize(value.chainId) +
+        FfiConverterOptionalTypeu128.allocationSize(value.amount)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Configuration for cross-chain sends.
+ *
+ * The presence of this struct on [`Config::cross_chain_config`] enables
+ * cross-chain providers; `None` disables them.
+ */
+export type CrossChainConfig = {
+  /**
+   * Default maximum slippage in basis points used when
+   * [`PaymentRequest::CrossChain::max_slippage_bps`] is not set on the
+   * prepare request. Must be in `10..=500`. Falls back to 100 bps (1%)
+   * when this field is `None`.
+   */
+  defaultSlippageBps: /*u32*/ number | undefined;
+  /**
+   * Default target-overpay pad in basis points applied to the user's
+   * destination amount on `FeesExcluded` conversion sends. Bumps the
+   * target upward before quoting so the recipient lands at or above the
+   * requested amount despite provider slippage. Must be in `0..=500`.
+   * Falls back to 15 bps when `None`.
+   */
+  defaultTargetOverpayBps: /*u32*/ number | undefined;
+};
+
+/**
+ * Generated factory for {@link CrossChainConfig} record objects.
+ */
+export const CrossChainConfig = (() => {
+  const defaults = () => ({
+    defaultSlippageBps: undefined,
+    defaultTargetOverpayBps: undefined,
+  });
+  const create = (() => {
+    return uniffiCreateRecord<CrossChainConfig, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link CrossChainConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link CrossChainConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<CrossChainConfig>,
+  });
+})();
+
+const FfiConverterTypeCrossChainConfig = (() => {
+  type TypeName = CrossChainConfig;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        defaultSlippageBps: FfiConverterOptionalUInt32.read(from),
+        defaultTargetOverpayBps: FfiConverterOptionalUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalUInt32.write(value.defaultSlippageBps, into);
+      FfiConverterOptionalUInt32.write(value.defaultTargetOverpayBps, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalUInt32.allocationSize(value.defaultSlippageBps) +
+        FfiConverterOptionalUInt32.allocationSize(value.defaultTargetOverpayBps)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * A single route available for cross-chain transfers, tagged with the provider
+ * that offers it. Returned by `get_cross_chain_routes()`.
+ */
+export type CrossChainRoutePair = {
+  /**
+   * Which provider offers this route.
+   */
+  provider: CrossChainProvider;
+  /**
+   * Destination blockchain (e.g. `"base"`, `"solana"`, `"tron"`).
+   */
+  chain: string;
+  /**
+   * Stable chain identifier (e.g. EVM `chainId` as a decimal string).
+   * `None` for non-EVM chains that don't expose one, or when the
+   * provider doesn't surface it.
+   */
+  chainId: string | undefined;
+  /**
+   * Destination asset symbol (e.g. `"USDC"`, `"USDT"`).
+   */
+  asset: string;
+  /**
+   * Token contract / mint address on the destination chain.
+   */
+  contractAddress: string | undefined;
+  /**
+   * Decimal places for the destination asset.
+   */
+  decimals: /*u8*/ number;
+  /**
+   * Whether the route supports exact-out mode.
+   */
+  exactOutEligible: boolean;
+  /**
+   * The source assets this route accepts on the Spark side.
+   *
+   * Boltz routes accept `[SourceAsset::Bitcoin]`. Orchestra routes accept
+   * one or more of `Bitcoin` / `Token(...)` (a given destination endpoint
+   * may be fronted by multiple source variants on Orchestra).
+   */
+  supportedSources: Array<SourceAsset>;
+};
+
+/**
+ * Generated factory for {@link CrossChainRoutePair} record objects.
+ */
+export const CrossChainRoutePair = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<CrossChainRoutePair, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link CrossChainRoutePair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link CrossChainRoutePair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<CrossChainRoutePair>,
+  });
+})();
+
+const FfiConverterTypeCrossChainRoutePair = (() => {
+  type TypeName = CrossChainRoutePair;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        provider: FfiConverterTypeCrossChainProvider.read(from),
+        chain: FfiConverterString.read(from),
+        chainId: FfiConverterOptionalString.read(from),
+        asset: FfiConverterString.read(from),
+        contractAddress: FfiConverterOptionalString.read(from),
+        decimals: FfiConverterUInt8.read(from),
+        exactOutEligible: FfiConverterBool.read(from),
+        supportedSources: FfiConverterArrayTypeSourceAsset.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeCrossChainProvider.write(value.provider, into);
+      FfiConverterString.write(value.chain, into);
+      FfiConverterOptionalString.write(value.chainId, into);
+      FfiConverterString.write(value.asset, into);
+      FfiConverterOptionalString.write(value.contractAddress, into);
+      FfiConverterUInt8.write(value.decimals, into);
+      FfiConverterBool.write(value.exactOutEligible, into);
+      FfiConverterArrayTypeSourceAsset.write(value.supportedSources, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeCrossChainProvider.allocationSize(value.provider) +
+        FfiConverterString.allocationSize(value.chain) +
+        FfiConverterOptionalString.allocationSize(value.chainId) +
+        FfiConverterString.allocationSize(value.asset) +
+        FfiConverterOptionalString.allocationSize(value.contractAddress) +
+        FfiConverterUInt8.allocationSize(value.decimals) +
+        FfiConverterBool.allocationSize(value.exactOutEligible) +
+        FfiConverterArrayTypeSourceAsset.allocationSize(value.supportedSources)
       );
     }
   }
@@ -9721,6 +10054,10 @@ export type PaymentMetadata = {
   lnurlPayInfo: LnurlPayInfo | undefined;
   lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
   lnurlDescription: string | undefined;
+  /**
+   * Conversion info for this payment. Defaults `"type"` to `"amm"` when the
+   * tag is missing (pre-migration sync records).
+   */
   conversionInfo: ConversionInfo | undefined;
   conversionStatus: ConversionStatus | undefined;
 };
@@ -9881,7 +10218,7 @@ export type PrepareLnurlPayRequest = {
    */
   conversionOptions: ConversionOptions | undefined;
   /**
-   * How fees should be handled. Defaults to `FeesExcluded` (fees added on top).
+   * How fees are handled. See [`FeePolicy`]. Defaults to `FeesExcluded`.
    */
   feePolicy: FeePolicy | undefined;
 };
@@ -9993,7 +10330,9 @@ export type PrepareLnurlPayResponse = {
    */
   conversionEstimate: ConversionEstimate | undefined;
   /**
-   * How fees are handled for this payment.
+   * The fee policy actually applied. May differ from the request — e.g.,
+   * LNURL sends with `token_identifier` set + conversion are always
+   * `FeesIncluded` (explicit `FeesExcluded` is rejected).
    */
   feePolicy: FeePolicy;
 };
@@ -10084,7 +10423,7 @@ const FfiConverterTypePrepareLnurlPayResponse = (() => {
 })();
 
 export type PrepareSendPaymentRequest = {
-  paymentRequest: string;
+  paymentRequest: PaymentRequest;
   /**
    * The amount to send.
    * Optional for payment requests with embedded amounts (e.g., Spark/Bolt11 invoices with amounts).
@@ -10102,7 +10441,13 @@ export type PrepareSendPaymentRequest = {
    */
   conversionOptions: ConversionOptions | undefined;
   /**
-   * How fees should be handled. Defaults to `FeesExcluded` (fees added on top).
+   * How fees are handled. See [`FeePolicy`]. Defaults to `FeesExcluded`.
+   *
+   * Ignored on cross-chain AMM-conversion sends (whether the conversion was
+   * explicitly requested or auto-injected by stable balance) — fees come
+   * out of the converted sats. Bolt11 and Bitcoin AMM-conversion sends
+   * still respect this field by sizing the conversion to cover fees. The
+   * prepare response's `fee_policy` reflects what was actually applied.
    */
   feePolicy: FeePolicy | undefined;
 };
@@ -10149,7 +10494,7 @@ const FfiConverterTypePrepareSendPaymentRequest = (() => {
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
-        paymentRequest: FfiConverterString.read(from),
+        paymentRequest: FfiConverterTypePaymentRequest.read(from),
         amount: FfiConverterOptionalTypeu128.read(from),
         tokenIdentifier: FfiConverterOptionalString.read(from),
         conversionOptions: FfiConverterOptionalTypeConversionOptions.read(from),
@@ -10157,7 +10502,7 @@ const FfiConverterTypePrepareSendPaymentRequest = (() => {
       };
     }
     write(value: TypeName, into: RustBuffer): void {
-      FfiConverterString.write(value.paymentRequest, into);
+      FfiConverterTypePaymentRequest.write(value.paymentRequest, into);
       FfiConverterOptionalTypeu128.write(value.amount, into);
       FfiConverterOptionalString.write(value.tokenIdentifier, into);
       FfiConverterOptionalTypeConversionOptions.write(
@@ -10168,7 +10513,7 @@ const FfiConverterTypePrepareSendPaymentRequest = (() => {
     }
     allocationSize(value: TypeName): number {
       return (
-        FfiConverterString.allocationSize(value.paymentRequest) +
+        FfiConverterTypePaymentRequest.allocationSize(value.paymentRequest) +
         FfiConverterOptionalTypeu128.allocationSize(value.amount) +
         FfiConverterOptionalString.allocationSize(value.tokenIdentifier) +
         FfiConverterOptionalTypeConversionOptions.allocationSize(
@@ -10200,7 +10545,8 @@ export type PrepareSendPaymentResponse = {
    */
   conversionEstimate: ConversionEstimate | undefined;
   /**
-   * How fees are handled for this payment.
+   * The fee policy actually applied. May differ from the request — e.g.,
+   * cross-chain AMM-conversion sends are always `FeesIncluded`.
    */
   feePolicy: FeePolicy;
 };
@@ -11773,7 +12119,8 @@ export type SendPaymentRequest = {
   prepareResponse: PrepareSendPaymentResponse;
   options: SendPaymentOptions | undefined;
   /**
-   * The optional idempotency key for all Spark based transfers (excludes token payments).
+   * The optional idempotency key for all Spark based transfers (excludes token payments
+   * and cross-chain sends).
    * If set, providing the same idempotency key for multiple requests will ensure that only one
    * payment is made. If an idempotency key is re-used, the same payment will be returned.
    * The idempotency key must be a valid UUID.
@@ -12987,6 +13334,13 @@ export type SparkSigningOperator = {
    * Hex-encoded compressed public key of the operator.
    */
   identityPublicKey: string;
+  /**
+   * Optional PEM-encoded CA certificate for TLS verification.
+   * When set, the SDK uses this CA to verify the operator's TLS certificate
+   * instead of the system/default roots. Useful for local development with
+   * self-signed certificates.
+   */
+  caCertPem: string | undefined;
 };
 
 /**
@@ -13029,6 +13383,7 @@ const FfiConverterTypeSparkSigningOperator = (() => {
         identifier: FfiConverterString.read(from),
         address: FfiConverterString.read(from),
         identityPublicKey: FfiConverterString.read(from),
+        caCertPem: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -13036,13 +13391,15 @@ const FfiConverterTypeSparkSigningOperator = (() => {
       FfiConverterString.write(value.identifier, into);
       FfiConverterString.write(value.address, into);
       FfiConverterString.write(value.identityPublicKey, into);
+      FfiConverterOptionalString.write(value.caCertPem, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterUInt32.allocationSize(value.id) +
         FfiConverterString.allocationSize(value.identifier) +
         FfiConverterString.allocationSize(value.address) +
-        FfiConverterString.allocationSize(value.identityPublicKey)
+        FfiConverterString.allocationSize(value.identityPublicKey) +
+        FfiConverterOptionalString.allocationSize(value.caCertPem)
       );
     }
   }
@@ -13477,6 +13834,112 @@ const FfiConverterTypeStorageListPaymentsRequest = (() => {
         FfiConverterOptionalUInt32.allocationSize(value.offset) +
         FfiConverterOptionalUInt32.allocationSize(value.limit) +
         FfiConverterOptionalBool.allocationSize(value.sortAscending)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * A cross-chain swap row as persisted and synced. Shared across providers
+ * (Boltz, Orchestra, future) so each provider's adapter writes opaque
+ * JSON into `data` and (optionally) opaque ciphertext into `secrets`.
+ *
+ * For providers with money-critical secrets, the adapter lifts them out of
+ * the swap JSON, ECIES-encrypts them, and carries only the ciphertext in
+ * `secrets`. The storage layer treats both fields as opaque, so it needs
+ * no signer.
+ */
+export type StoredCrossChainSwap = {
+  /**
+   * Provider tag (e.g. `"boltz"`, `"orchestra"`).
+   */
+  provider: string;
+  /**
+   * Provider-scoped swap id (boltz swap id, orchestra quote-or-order id).
+   */
+  id: string;
+  /**
+   * Lifted from the underlying swap's terminal flag into an indexed column
+   * so `list_active_cross_chain_swaps` filters without parsing `data`.
+   */
+  isTerminal: boolean;
+  /**
+   * Lifted from the underlying swap's `updated_at` into a column so the
+   * row's freshness is inspectable without parsing `data`.
+   */
+  updatedAt: /*u64*/ bigint;
+  /**
+   * Serialized JSON owned by the cross-chain provider's storage adapter.
+   */
+  data: string;
+  /**
+   * Base64 of the ECIES ciphertext of the provider's lifted secrets.
+   * Empty for providers with no money-critical secrets to protect at rest.
+   */
+  secrets: string;
+};
+
+/**
+ * Generated factory for {@link StoredCrossChainSwap} record objects.
+ */
+export const StoredCrossChainSwap = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      StoredCrossChainSwap,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link StoredCrossChainSwap}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link StoredCrossChainSwap}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<StoredCrossChainSwap>,
+  });
+})();
+
+const FfiConverterTypeStoredCrossChainSwap = (() => {
+  type TypeName = StoredCrossChainSwap;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        provider: FfiConverterString.read(from),
+        id: FfiConverterString.read(from),
+        isTerminal: FfiConverterBool.read(from),
+        updatedAt: FfiConverterUInt64.read(from),
+        data: FfiConverterString.read(from),
+        secrets: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.provider, into);
+      FfiConverterString.write(value.id, into);
+      FfiConverterBool.write(value.isTerminal, into);
+      FfiConverterUInt64.write(value.updatedAt, into);
+      FfiConverterString.write(value.data, into);
+      FfiConverterString.write(value.secrets, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.provider) +
+        FfiConverterString.allocationSize(value.id) +
+        FfiConverterBool.allocationSize(value.isTerminal) +
+        FfiConverterUInt64.allocationSize(value.updatedAt) +
+        FfiConverterString.allocationSize(value.data) +
+        FfiConverterString.allocationSize(value.secrets)
       );
     }
   }
@@ -16384,6 +16847,1020 @@ const FfiConverterTypeChainServiceError = (() => {
   return new FFIConverter();
 })();
 
+// Enum: ConversionChain
+export enum ConversionChain_Tags {
+  Spark = 'Spark',
+  Lightning = 'Lightning',
+  External = 'External',
+}
+/**
+ * The chain or network that a [`ConversionSide`] lives on.
+ */
+export const ConversionChain = (() => {
+  type Spark__interface = {
+    tag: ConversionChain_Tags.Spark;
+  };
+
+  /**
+   * Spark layer-2 network.
+   */
+  class Spark_ extends UniffiEnum implements Spark__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ConversionChain';
+    readonly tag = ConversionChain_Tags.Spark;
+    constructor() {
+      super('ConversionChain', 'Spark');
+    }
+
+    static new(): Spark_ {
+      return new Spark_();
+    }
+
+    static instanceOf(obj: any): obj is Spark_ {
+      return obj.tag === ConversionChain_Tags.Spark;
+    }
+  }
+
+  type Lightning__interface = {
+    tag: ConversionChain_Tags.Lightning;
+  };
+
+  /**
+   * Bitcoin Lightning Network.
+   */
+  class Lightning_ extends UniffiEnum implements Lightning__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ConversionChain';
+    readonly tag = ConversionChain_Tags.Lightning;
+    constructor() {
+      super('ConversionChain', 'Lightning');
+    }
+
+    static new(): Lightning_ {
+      return new Lightning_();
+    }
+
+    static instanceOf(obj: any): obj is Lightning_ {
+      return obj.tag === ConversionChain_Tags.Lightning;
+    }
+  }
+
+  type External__interface = {
+    tag: ConversionChain_Tags.External;
+    inner: Readonly<{ name: string; chainId: string | undefined }>;
+  };
+
+  /**
+   * An external chain reached via a cross-chain provider.
+   */
+  class External_ extends UniffiEnum implements External__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ConversionChain';
+    readonly tag = ConversionChain_Tags.External;
+    readonly inner: Readonly<{ name: string; chainId: string | undefined }>;
+    constructor(inner: {
+      /**
+       * Human-readable chain name (e.g. `"base"`, `"solana"`, `"arbitrum"`).
+       */ name: string;
+      /**
+       * Stable chain identifier (e.g. EVM `chainId` as a decimal string,
+       * or a chain-native identifier). `None` when the provider does not
+       * expose one for this route.
+       */ chainId: string | undefined;
+    }) {
+      super('ConversionChain', 'External');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * Human-readable chain name (e.g. `"base"`, `"solana"`, `"arbitrum"`).
+       */ name: string;
+      /**
+       * Stable chain identifier (e.g. EVM `chainId` as a decimal string,
+       * or a chain-native identifier). `None` when the provider does not
+       * expose one for this route.
+       */ chainId: string | undefined;
+    }): External_ {
+      return new External_(inner);
+    }
+
+    static instanceOf(obj: any): obj is External_ {
+      return obj.tag === ConversionChain_Tags.External;
+    }
+  }
+
+  function instanceOf(obj: any): obj is ConversionChain {
+    return obj[uniffiTypeNameSymbol] === 'ConversionChain';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Spark: Spark_,
+    Lightning: Lightning_,
+    External: External_,
+  });
+})();
+
+/**
+ * The chain or network that a [`ConversionSide`] lives on.
+ */
+
+export type ConversionChain = InstanceType<
+  (typeof ConversionChain)[keyof Omit<typeof ConversionChain, 'instanceOf'>]
+>;
+
+// FfiConverter for enum ConversionChain
+const FfiConverterTypeConversionChain = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ConversionChain;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new ConversionChain.Spark();
+        case 2:
+          return new ConversionChain.Lightning();
+        case 3:
+          return new ConversionChain.External({
+            name: FfiConverterString.read(from),
+            chainId: FfiConverterOptionalString.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case ConversionChain_Tags.Spark: {
+          ordinalConverter.write(1, into);
+          return;
+        }
+        case ConversionChain_Tags.Lightning: {
+          ordinalConverter.write(2, into);
+          return;
+        }
+        case ConversionChain_Tags.External: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.name, into);
+          FfiConverterOptionalString.write(inner.chainId, into);
+          return;
+        }
+        default:
+          // Throwing from here means that ConversionChain_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case ConversionChain_Tags.Spark: {
+          return ordinalConverter.allocationSize(1);
+        }
+        case ConversionChain_Tags.Lightning: {
+          return ordinalConverter.allocationSize(2);
+        }
+        case ConversionChain_Tags.External: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterString.allocationSize(inner.name);
+          size += FfiConverterOptionalString.allocationSize(inner.chainId);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Selects payments by conversion type + status for background tasks.
+ */
+export enum ConversionFilter {
+  /**
+   * AMM conversions that need a refund (clawback).
+   */
+  AmmRefundNeeded,
+  /**
+   * Orchestra orders that have not yet reached a terminal state.
+   */
+  OrchestraPending,
+  /**
+   * Boltz reverse swaps that have not yet reached a terminal state. Lives on
+   * the Lightning leg (the hold-invoice pay), so it is selected via the
+   * [`StoragePaymentDetailsFilter::Lightning`] filter.
+   */
+  BoltzPending,
+}
+
+const FfiConverterTypeConversionFilter = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ConversionFilter;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return ConversionFilter.AmmRefundNeeded;
+        case 2:
+          return ConversionFilter.OrchestraPending;
+        case 3:
+          return ConversionFilter.BoltzPending;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case ConversionFilter.AmmRefundNeeded:
+          return ordinalConverter.write(1, into);
+        case ConversionFilter.OrchestraPending:
+          return ordinalConverter.write(2, into);
+        case ConversionFilter.BoltzPending:
+          return ordinalConverter.write(3, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: ConversionInfo
+export enum ConversionInfo_Tags {
+  Amm = 'Amm',
+  Orchestra = 'Orchestra',
+  Boltz = 'Boltz',
+}
+/**
+ * Details of the asset conversion attached to a payment, when the payment
+ * involves a swap or cross-chain bridge in addition to the on-Spark transfer.
+ *
+ * The variant identifies which provider handled the conversion:
+ * - [`ConversionInfo::Amm`] for Spark token swaps via Flashnet AMM pools.
+ * - [`ConversionInfo::Orchestra`] for cross-chain sends via Flashnet
+ * Orchestra (Spark → external chain).
+ * - [`ConversionInfo::Boltz`] for sats → stable-coin reverse swaps via Boltz.
+ */
+export const ConversionInfo = (() => {
+  type Amm__interface = {
+    tag: ConversionInfo_Tags.Amm;
+    inner: Readonly<{
+      poolId: string;
+      conversionId: string;
+      status: ConversionStatus;
+      fee: U128 | undefined;
+      purpose: ConversionPurpose | undefined;
+      amountAdjustment: AmountAdjustmentReason | undefined;
+    }>;
+  };
+
+  /**
+   * AMM (Flashnet pool-based) conversion — Spark ↔ Spark token swaps.
+   */
+  class Amm_ extends UniffiEnum implements Amm__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ConversionInfo';
+    readonly tag = ConversionInfo_Tags.Amm;
+    readonly inner: Readonly<{
+      poolId: string;
+      conversionId: string;
+      status: ConversionStatus;
+      fee: U128 | undefined;
+      purpose: ConversionPurpose | undefined;
+      amountAdjustment: AmountAdjustmentReason | undefined;
+    }>;
+    constructor(inner: {
+      /**
+       * The pool id associated with the conversion
+       */ poolId: string;
+      /**
+       * The conversion id shared by both sides of the conversion
+       */ conversionId: string;
+      /**
+       * The status of the conversion
+       */ status: ConversionStatus;
+      /**
+       * The fee paid for the conversion.
+       * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+       */ fee: U128 | undefined;
+      /**
+       * The purpose of the conversion
+       */ purpose: ConversionPurpose | undefined;
+      /**
+       * The reason the conversion amount was adjusted, if applicable.
+       */ amountAdjustment: AmountAdjustmentReason | undefined;
+    }) {
+      super('ConversionInfo', 'Amm');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * The pool id associated with the conversion
+       */ poolId: string;
+      /**
+       * The conversion id shared by both sides of the conversion
+       */ conversionId: string;
+      /**
+       * The status of the conversion
+       */ status: ConversionStatus;
+      /**
+       * The fee paid for the conversion.
+       * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+       */ fee: U128 | undefined;
+      /**
+       * The purpose of the conversion
+       */ purpose: ConversionPurpose | undefined;
+      /**
+       * The reason the conversion amount was adjusted, if applicable.
+       */ amountAdjustment: AmountAdjustmentReason | undefined;
+    }): Amm_ {
+      return new Amm_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Amm_ {
+      return obj.tag === ConversionInfo_Tags.Amm;
+    }
+  }
+
+  type Orchestra__interface = {
+    tag: ConversionInfo_Tags.Orchestra;
+    inner: Readonly<{
+      orderId: string;
+      quoteId: string;
+      readToken: string | undefined;
+      chain: string;
+      chainId: string | undefined;
+      asset: string;
+      recipientAddress: string;
+      assetAmountIn: U128 | undefined;
+      estimatedOut: U128;
+      deliveredAmount: U128 | undefined;
+      status: ConversionStatus;
+      feeAmount: U128 | undefined;
+      serviceFeeAmount: U128 | undefined;
+      serviceFeeAsset: string | undefined;
+      assetDecimals: /*u32*/ number;
+      assetContract: string | undefined;
+    }>;
+  };
+
+  /**
+   * Orchestra cross-chain conversion via the Flashnet orchestration API.
+   */
+  class Orchestra_ extends UniffiEnum implements Orchestra__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ConversionInfo';
+    readonly tag = ConversionInfo_Tags.Orchestra;
+    readonly inner: Readonly<{
+      orderId: string;
+      quoteId: string;
+      readToken: string | undefined;
+      chain: string;
+      chainId: string | undefined;
+      asset: string;
+      recipientAddress: string;
+      assetAmountIn: U128 | undefined;
+      estimatedOut: U128;
+      deliveredAmount: U128 | undefined;
+      status: ConversionStatus;
+      feeAmount: U128 | undefined;
+      serviceFeeAmount: U128 | undefined;
+      serviceFeeAsset: string | undefined;
+      assetDecimals: /*u32*/ number;
+      assetContract: string | undefined;
+    }>;
+    constructor(inner: {
+      /**
+       * The Orchestra order id returned by `/v1/orchestration/submit`.
+       */ orderId: string;
+      /**
+       * The Orchestra quote id used to create this order.
+       */ quoteId: string;
+      /**
+       * Opaque token required for querying order status.
+       */ readToken: string | undefined;
+      /**
+       * Chain name (e.g. `"base"`, `"solana"`, `"tron"`).
+       */ chain: string;
+      /**
+       * Stable chain identifier (e.g. EVM `chainId` decimal string `"8453"`
+       * for Base, SLIP-44 or similar for other chains). `None` if the
+       * provider doesn't expose one for this route.
+       */ chainId: string | undefined;
+      /**
+       * Asset ticker (e.g. `"USDC"`, `"USDT"`).
+       */ asset: string;
+      /**
+       * Recipient address on the target chain.
+       */ recipientAddress: string;
+      /**
+       * Amount in expressed in the cross-chain asset's base units, via
+       * the rate the SDK used at prepare time.
+       */ assetAmountIn: U128 | undefined;
+      /**
+       * Estimated recipient amount, frozen at prepare time.
+       */ estimatedOut: U128;
+      /**
+       * Actual delivered amount, Unset until the order reaches a terminal state.
+       */ deliveredAmount: U128 | undefined;
+      status: ConversionStatus;
+      /**
+       * Best-available total fee in destination asset base units.
+       * Prepare-time estimate while pending, realized fee when Completed.
+       */ feeAmount: U128 | undefined;
+      /**
+       * Orchestra service fee.
+       */ serviceFeeAmount: U128 | undefined;
+      /**
+       * Asset the service fee is denominated in. Unset means BTC sats.
+       */ serviceFeeAsset: string | undefined;
+      /**
+       * Asset decimals (e.g. 6 for USDC).
+       */ assetDecimals: /*u32*/ number;
+      /**
+       * Token contract / mint address. Unset for native-asset destinations.
+       */ assetContract: string | undefined;
+    }) {
+      super('ConversionInfo', 'Orchestra');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * The Orchestra order id returned by `/v1/orchestration/submit`.
+       */ orderId: string;
+      /**
+       * The Orchestra quote id used to create this order.
+       */ quoteId: string;
+      /**
+       * Opaque token required for querying order status.
+       */ readToken: string | undefined;
+      /**
+       * Chain name (e.g. `"base"`, `"solana"`, `"tron"`).
+       */ chain: string;
+      /**
+       * Stable chain identifier (e.g. EVM `chainId` decimal string `"8453"`
+       * for Base, SLIP-44 or similar for other chains). `None` if the
+       * provider doesn't expose one for this route.
+       */ chainId: string | undefined;
+      /**
+       * Asset ticker (e.g. `"USDC"`, `"USDT"`).
+       */ asset: string;
+      /**
+       * Recipient address on the target chain.
+       */ recipientAddress: string;
+      /**
+       * Amount in expressed in the cross-chain asset's base units, via
+       * the rate the SDK used at prepare time.
+       */ assetAmountIn: U128 | undefined;
+      /**
+       * Estimated recipient amount, frozen at prepare time.
+       */ estimatedOut: U128;
+      /**
+       * Actual delivered amount, Unset until the order reaches a terminal state.
+       */ deliveredAmount: U128 | undefined;
+      status: ConversionStatus;
+      /**
+       * Best-available total fee in destination asset base units.
+       * Prepare-time estimate while pending, realized fee when Completed.
+       */ feeAmount: U128 | undefined;
+      /**
+       * Orchestra service fee.
+       */ serviceFeeAmount: U128 | undefined;
+      /**
+       * Asset the service fee is denominated in. Unset means BTC sats.
+       */ serviceFeeAsset: string | undefined;
+      /**
+       * Asset decimals (e.g. 6 for USDC).
+       */ assetDecimals: /*u32*/ number;
+      /**
+       * Token contract / mint address. Unset for native-asset destinations.
+       */ assetContract: string | undefined;
+    }): Orchestra_ {
+      return new Orchestra_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Orchestra_ {
+      return obj.tag === ConversionInfo_Tags.Orchestra;
+    }
+  }
+
+  type Boltz__interface = {
+    tag: ConversionInfo_Tags.Boltz;
+    inner: Readonly<{
+      swapId: string;
+      invoice: string;
+      invoiceAmountSats: /*u64*/ bigint;
+      bridgeRef: string | undefined;
+      maxSlippageBps: /*u32*/ number;
+      quoteDegraded: boolean;
+      chain: string;
+      chainId: string | undefined;
+      asset: string;
+      recipientAddress: string;
+      estimatedOut: U128;
+      deliveredAmount: U128 | undefined;
+      status: ConversionStatus;
+      assetAmountIn: U128 | undefined;
+      feeAmount: U128 | undefined;
+      serviceFeeAmount: U128 | undefined;
+      serviceFeeAsset: string | undefined;
+      assetDecimals: /*u32*/ number;
+      assetContract: string | undefined;
+    }>;
+  };
+
+  /**
+   * Boltz reverse swap: cross-chain conversion via Lightning hold invoice.
+   *
+   * The swap's secrets and lifecycle state live on the synced Boltz swap row
+   * keyed by `swap_id`, which also drives cross-instance recovery.
+   */
+  class Boltz_ extends UniffiEnum implements Boltz__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ConversionInfo';
+    readonly tag = ConversionInfo_Tags.Boltz;
+    readonly inner: Readonly<{
+      swapId: string;
+      invoice: string;
+      invoiceAmountSats: /*u64*/ bigint;
+      bridgeRef: string | undefined;
+      maxSlippageBps: /*u32*/ number;
+      quoteDegraded: boolean;
+      chain: string;
+      chainId: string | undefined;
+      asset: string;
+      recipientAddress: string;
+      estimatedOut: U128;
+      deliveredAmount: U128 | undefined;
+      status: ConversionStatus;
+      assetAmountIn: U128 | undefined;
+      feeAmount: U128 | undefined;
+      serviceFeeAmount: U128 | undefined;
+      serviceFeeAsset: string | undefined;
+      assetDecimals: /*u32*/ number;
+      assetContract: string | undefined;
+    }>;
+    constructor(inner: {
+      /**
+       * The Boltz swap id returned by `POST /swap/reverse`.
+       */ swapId: string;
+      /**
+       * The BOLT11 hold invoice paid on the Spark/Lightning side.
+       */ invoice: string;
+      /**
+       * Amount of the hold invoice in sats.
+       */ invoiceAmountSats: /*u64*/ bigint;
+      /**
+       * Cross-chain bridge tracking handle for bridged swaps: a `LayerZero`
+       * message GUID for OFT (USDT0) routes, or a CCTP reference for USDC
+       * routes. `None` for same-chain (Arbitrum-direct) delivery.
+       */ bridgeRef: string | undefined;
+      /**
+       * DEX slippage tolerance (basis points) committed at prepare time.
+       */ maxSlippageBps: /*u32*/ number;
+      /**
+       * Whether the claim-time DEX quote drifted beyond `max_slippage_bps`.
+       */ quoteDegraded: boolean;
+      /**
+       * Chain name (e.g. `"arbitrum"`, `"solana"`, `"tron"`).
+       */ chain: string;
+      /**
+       * Stable chain identifier (e.g. EVM `chainId` decimal string `"42161"`
+       * for Arbitrum). `None` if the provider doesn't expose one for this
+       * route.
+       */ chainId: string | undefined;
+      /**
+       * Asset ticker (e.g. `"USDT"`, `"USDT0"`).
+       */ asset: string;
+      /**
+       * Recipient address on the target chain.
+       */ recipientAddress: string;
+      /**
+       * Estimated amount in the asset's base units, frozen at prepare time.
+       */ estimatedOut: U128;
+      /**
+       * Actual amount delivered. `None` until the claim receipt is processed.
+       */ deliveredAmount: U128 | undefined;
+      /**
+       * Current status of the reverse swap.
+       */ status: ConversionStatus;
+      /**
+       * Amount in expressed in the cross-chain asset's base units, via the
+       * BTC/USD rate the SDK used at prepare time.
+       */ assetAmountIn: U128 | undefined;
+      /**
+       * Best-available total fee in destination asset base units.
+       * Prepare-time estimate while pending, realized fee on Completed.
+       */ feeAmount: U128 | undefined;
+      /**
+       * Boltz spread in sats.
+       */ serviceFeeAmount: U128 | undefined;
+      /**
+       * Asset service fee is denominated in. Unset means BTC sats.
+       */ serviceFeeAsset: string | undefined;
+      /**
+       * Asset decimals (e.g. 6 for USDT).
+       */ assetDecimals: /*u32*/ number;
+      /**
+       * Token contract / mint address. Unset for native-asset destinations.
+       */ assetContract: string | undefined;
+    }) {
+      super('ConversionInfo', 'Boltz');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * The Boltz swap id returned by `POST /swap/reverse`.
+       */ swapId: string;
+      /**
+       * The BOLT11 hold invoice paid on the Spark/Lightning side.
+       */ invoice: string;
+      /**
+       * Amount of the hold invoice in sats.
+       */ invoiceAmountSats: /*u64*/ bigint;
+      /**
+       * Cross-chain bridge tracking handle for bridged swaps: a `LayerZero`
+       * message GUID for OFT (USDT0) routes, or a CCTP reference for USDC
+       * routes. `None` for same-chain (Arbitrum-direct) delivery.
+       */ bridgeRef: string | undefined;
+      /**
+       * DEX slippage tolerance (basis points) committed at prepare time.
+       */ maxSlippageBps: /*u32*/ number;
+      /**
+       * Whether the claim-time DEX quote drifted beyond `max_slippage_bps`.
+       */ quoteDegraded: boolean;
+      /**
+       * Chain name (e.g. `"arbitrum"`, `"solana"`, `"tron"`).
+       */ chain: string;
+      /**
+       * Stable chain identifier (e.g. EVM `chainId` decimal string `"42161"`
+       * for Arbitrum). `None` if the provider doesn't expose one for this
+       * route.
+       */ chainId: string | undefined;
+      /**
+       * Asset ticker (e.g. `"USDT"`, `"USDT0"`).
+       */ asset: string;
+      /**
+       * Recipient address on the target chain.
+       */ recipientAddress: string;
+      /**
+       * Estimated amount in the asset's base units, frozen at prepare time.
+       */ estimatedOut: U128;
+      /**
+       * Actual amount delivered. `None` until the claim receipt is processed.
+       */ deliveredAmount: U128 | undefined;
+      /**
+       * Current status of the reverse swap.
+       */ status: ConversionStatus;
+      /**
+       * Amount in expressed in the cross-chain asset's base units, via the
+       * BTC/USD rate the SDK used at prepare time.
+       */ assetAmountIn: U128 | undefined;
+      /**
+       * Best-available total fee in destination asset base units.
+       * Prepare-time estimate while pending, realized fee on Completed.
+       */ feeAmount: U128 | undefined;
+      /**
+       * Boltz spread in sats.
+       */ serviceFeeAmount: U128 | undefined;
+      /**
+       * Asset service fee is denominated in. Unset means BTC sats.
+       */ serviceFeeAsset: string | undefined;
+      /**
+       * Asset decimals (e.g. 6 for USDT).
+       */ assetDecimals: /*u32*/ number;
+      /**
+       * Token contract / mint address. Unset for native-asset destinations.
+       */ assetContract: string | undefined;
+    }): Boltz_ {
+      return new Boltz_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Boltz_ {
+      return obj.tag === ConversionInfo_Tags.Boltz;
+    }
+  }
+
+  function instanceOf(obj: any): obj is ConversionInfo {
+    return obj[uniffiTypeNameSymbol] === 'ConversionInfo';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Amm: Amm_,
+    Orchestra: Orchestra_,
+    Boltz: Boltz_,
+  });
+})();
+
+/**
+ * Details of the asset conversion attached to a payment, when the payment
+ * involves a swap or cross-chain bridge in addition to the on-Spark transfer.
+ *
+ * The variant identifies which provider handled the conversion:
+ * - [`ConversionInfo::Amm`] for Spark token swaps via Flashnet AMM pools.
+ * - [`ConversionInfo::Orchestra`] for cross-chain sends via Flashnet
+ * Orchestra (Spark → external chain).
+ * - [`ConversionInfo::Boltz`] for sats → stable-coin reverse swaps via Boltz.
+ */
+
+export type ConversionInfo = InstanceType<
+  (typeof ConversionInfo)[keyof Omit<typeof ConversionInfo, 'instanceOf'>]
+>;
+
+// FfiConverter for enum ConversionInfo
+const FfiConverterTypeConversionInfo = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ConversionInfo;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new ConversionInfo.Amm({
+            poolId: FfiConverterString.read(from),
+            conversionId: FfiConverterString.read(from),
+            status: FfiConverterTypeConversionStatus.read(from),
+            fee: FfiConverterOptionalTypeu128.read(from),
+            purpose: FfiConverterOptionalTypeConversionPurpose.read(from),
+            amountAdjustment:
+              FfiConverterOptionalTypeAmountAdjustmentReason.read(from),
+          });
+        case 2:
+          return new ConversionInfo.Orchestra({
+            orderId: FfiConverterString.read(from),
+            quoteId: FfiConverterString.read(from),
+            readToken: FfiConverterOptionalString.read(from),
+            chain: FfiConverterString.read(from),
+            chainId: FfiConverterOptionalString.read(from),
+            asset: FfiConverterString.read(from),
+            recipientAddress: FfiConverterString.read(from),
+            assetAmountIn: FfiConverterOptionalTypeu128.read(from),
+            estimatedOut: FfiConverterTypeu128.read(from),
+            deliveredAmount: FfiConverterOptionalTypeu128.read(from),
+            status: FfiConverterTypeConversionStatus.read(from),
+            feeAmount: FfiConverterOptionalTypeu128.read(from),
+            serviceFeeAmount: FfiConverterOptionalTypeu128.read(from),
+            serviceFeeAsset: FfiConverterOptionalString.read(from),
+            assetDecimals: FfiConverterUInt32.read(from),
+            assetContract: FfiConverterOptionalString.read(from),
+          });
+        case 3:
+          return new ConversionInfo.Boltz({
+            swapId: FfiConverterString.read(from),
+            invoice: FfiConverterString.read(from),
+            invoiceAmountSats: FfiConverterUInt64.read(from),
+            bridgeRef: FfiConverterOptionalString.read(from),
+            maxSlippageBps: FfiConverterUInt32.read(from),
+            quoteDegraded: FfiConverterBool.read(from),
+            chain: FfiConverterString.read(from),
+            chainId: FfiConverterOptionalString.read(from),
+            asset: FfiConverterString.read(from),
+            recipientAddress: FfiConverterString.read(from),
+            estimatedOut: FfiConverterTypeu128.read(from),
+            deliveredAmount: FfiConverterOptionalTypeu128.read(from),
+            status: FfiConverterTypeConversionStatus.read(from),
+            assetAmountIn: FfiConverterOptionalTypeu128.read(from),
+            feeAmount: FfiConverterOptionalTypeu128.read(from),
+            serviceFeeAmount: FfiConverterOptionalTypeu128.read(from),
+            serviceFeeAsset: FfiConverterOptionalString.read(from),
+            assetDecimals: FfiConverterUInt32.read(from),
+            assetContract: FfiConverterOptionalString.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case ConversionInfo_Tags.Amm: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.poolId, into);
+          FfiConverterString.write(inner.conversionId, into);
+          FfiConverterTypeConversionStatus.write(inner.status, into);
+          FfiConverterOptionalTypeu128.write(inner.fee, into);
+          FfiConverterOptionalTypeConversionPurpose.write(inner.purpose, into);
+          FfiConverterOptionalTypeAmountAdjustmentReason.write(
+            inner.amountAdjustment,
+            into
+          );
+          return;
+        }
+        case ConversionInfo_Tags.Orchestra: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.orderId, into);
+          FfiConverterString.write(inner.quoteId, into);
+          FfiConverterOptionalString.write(inner.readToken, into);
+          FfiConverterString.write(inner.chain, into);
+          FfiConverterOptionalString.write(inner.chainId, into);
+          FfiConverterString.write(inner.asset, into);
+          FfiConverterString.write(inner.recipientAddress, into);
+          FfiConverterOptionalTypeu128.write(inner.assetAmountIn, into);
+          FfiConverterTypeu128.write(inner.estimatedOut, into);
+          FfiConverterOptionalTypeu128.write(inner.deliveredAmount, into);
+          FfiConverterTypeConversionStatus.write(inner.status, into);
+          FfiConverterOptionalTypeu128.write(inner.feeAmount, into);
+          FfiConverterOptionalTypeu128.write(inner.serviceFeeAmount, into);
+          FfiConverterOptionalString.write(inner.serviceFeeAsset, into);
+          FfiConverterUInt32.write(inner.assetDecimals, into);
+          FfiConverterOptionalString.write(inner.assetContract, into);
+          return;
+        }
+        case ConversionInfo_Tags.Boltz: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.swapId, into);
+          FfiConverterString.write(inner.invoice, into);
+          FfiConverterUInt64.write(inner.invoiceAmountSats, into);
+          FfiConverterOptionalString.write(inner.bridgeRef, into);
+          FfiConverterUInt32.write(inner.maxSlippageBps, into);
+          FfiConverterBool.write(inner.quoteDegraded, into);
+          FfiConverterString.write(inner.chain, into);
+          FfiConverterOptionalString.write(inner.chainId, into);
+          FfiConverterString.write(inner.asset, into);
+          FfiConverterString.write(inner.recipientAddress, into);
+          FfiConverterTypeu128.write(inner.estimatedOut, into);
+          FfiConverterOptionalTypeu128.write(inner.deliveredAmount, into);
+          FfiConverterTypeConversionStatus.write(inner.status, into);
+          FfiConverterOptionalTypeu128.write(inner.assetAmountIn, into);
+          FfiConverterOptionalTypeu128.write(inner.feeAmount, into);
+          FfiConverterOptionalTypeu128.write(inner.serviceFeeAmount, into);
+          FfiConverterOptionalString.write(inner.serviceFeeAsset, into);
+          FfiConverterUInt32.write(inner.assetDecimals, into);
+          FfiConverterOptionalString.write(inner.assetContract, into);
+          return;
+        }
+        default:
+          // Throwing from here means that ConversionInfo_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case ConversionInfo_Tags.Amm: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterString.allocationSize(inner.poolId);
+          size += FfiConverterString.allocationSize(inner.conversionId);
+          size += FfiConverterTypeConversionStatus.allocationSize(inner.status);
+          size += FfiConverterOptionalTypeu128.allocationSize(inner.fee);
+          size += FfiConverterOptionalTypeConversionPurpose.allocationSize(
+            inner.purpose
+          );
+          size += FfiConverterOptionalTypeAmountAdjustmentReason.allocationSize(
+            inner.amountAdjustment
+          );
+          return size;
+        }
+        case ConversionInfo_Tags.Orchestra: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner.orderId);
+          size += FfiConverterString.allocationSize(inner.quoteId);
+          size += FfiConverterOptionalString.allocationSize(inner.readToken);
+          size += FfiConverterString.allocationSize(inner.chain);
+          size += FfiConverterOptionalString.allocationSize(inner.chainId);
+          size += FfiConverterString.allocationSize(inner.asset);
+          size += FfiConverterString.allocationSize(inner.recipientAddress);
+          size += FfiConverterOptionalTypeu128.allocationSize(
+            inner.assetAmountIn
+          );
+          size += FfiConverterTypeu128.allocationSize(inner.estimatedOut);
+          size += FfiConverterOptionalTypeu128.allocationSize(
+            inner.deliveredAmount
+          );
+          size += FfiConverterTypeConversionStatus.allocationSize(inner.status);
+          size += FfiConverterOptionalTypeu128.allocationSize(inner.feeAmount);
+          size += FfiConverterOptionalTypeu128.allocationSize(
+            inner.serviceFeeAmount
+          );
+          size += FfiConverterOptionalString.allocationSize(
+            inner.serviceFeeAsset
+          );
+          size += FfiConverterUInt32.allocationSize(inner.assetDecimals);
+          size += FfiConverterOptionalString.allocationSize(
+            inner.assetContract
+          );
+          return size;
+        }
+        case ConversionInfo_Tags.Boltz: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterString.allocationSize(inner.swapId);
+          size += FfiConverterString.allocationSize(inner.invoice);
+          size += FfiConverterUInt64.allocationSize(inner.invoiceAmountSats);
+          size += FfiConverterOptionalString.allocationSize(inner.bridgeRef);
+          size += FfiConverterUInt32.allocationSize(inner.maxSlippageBps);
+          size += FfiConverterBool.allocationSize(inner.quoteDegraded);
+          size += FfiConverterString.allocationSize(inner.chain);
+          size += FfiConverterOptionalString.allocationSize(inner.chainId);
+          size += FfiConverterString.allocationSize(inner.asset);
+          size += FfiConverterString.allocationSize(inner.recipientAddress);
+          size += FfiConverterTypeu128.allocationSize(inner.estimatedOut);
+          size += FfiConverterOptionalTypeu128.allocationSize(
+            inner.deliveredAmount
+          );
+          size += FfiConverterTypeConversionStatus.allocationSize(inner.status);
+          size += FfiConverterOptionalTypeu128.allocationSize(
+            inner.assetAmountIn
+          );
+          size += FfiConverterOptionalTypeu128.allocationSize(inner.feeAmount);
+          size += FfiConverterOptionalTypeu128.allocationSize(
+            inner.serviceFeeAmount
+          );
+          size += FfiConverterOptionalString.allocationSize(
+            inner.serviceFeeAsset
+          );
+          size += FfiConverterUInt32.allocationSize(inner.assetDecimals);
+          size += FfiConverterOptionalString.allocationSize(
+            inner.assetContract
+          );
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * The provider that performed a conversion.
+ */
+export enum ConversionProvider {
+  /**
+   * AMM (Flashnet pool) conversion between token and BTC on Spark
+   */
+  Amm,
+  /**
+   * Orchestra cross-chain conversion
+   */
+  Orchestra,
+  /**
+   * Boltz reverse-swap cross-chain conversion
+   */
+  Boltz,
+}
+
+const FfiConverterTypeConversionProvider = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ConversionProvider;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return ConversionProvider.Amm;
+        case 2:
+          return ConversionProvider.Orchestra;
+        case 3:
+          return ConversionProvider.Boltz;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case ConversionProvider.Amm:
+          return ordinalConverter.write(1, into);
+        case ConversionProvider.Orchestra:
+          return ordinalConverter.write(2, into);
+        case ConversionProvider.Boltz:
+          return ordinalConverter.write(3, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
 // Enum: ConversionPurpose
 export enum ConversionPurpose_Tags {
   OngoingPayment = 'OngoingPayment',
@@ -16765,6 +18242,511 @@ const FfiConverterTypeConversionType = (() => {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
           size += FfiConverterString.allocationSize(inner.fromTokenIdentifier);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+export enum CrossChainAddressFamily {
+  Evm,
+  Solana,
+  Tron,
+}
+
+const FfiConverterTypeCrossChainAddressFamily = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = CrossChainAddressFamily;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return CrossChainAddressFamily.Evm;
+        case 2:
+          return CrossChainAddressFamily.Solana;
+        case 3:
+          return CrossChainAddressFamily.Tron;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case CrossChainAddressFamily.Evm:
+          return ordinalConverter.write(1, into);
+        case CrossChainAddressFamily.Solana:
+          return ordinalConverter.write(2, into);
+        case CrossChainAddressFamily.Tron:
+          return ordinalConverter.write(3, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * How the caller wants fees handled against the request `amount`.
+ *
+ * - `FeesExcluded`: `amount` is the provider invoice/deposit target; the
+ * wallet pays `amount + source_transfer_fee_sats` in total.
+ * - `FeesIncluded`: `amount` is the wallet's total sats budget; the provider
+ * leg is sized so `amount_in + source_transfer_fee_sats <= amount`.
+ */
+export enum CrossChainFeeMode {
+  FeesExcluded,
+  FeesIncluded,
+}
+
+const FfiConverterTypeCrossChainFeeMode = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = CrossChainFeeMode;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return CrossChainFeeMode.FeesExcluded;
+        case 2:
+          return CrossChainFeeMode.FeesIncluded;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case CrossChainFeeMode.FeesExcluded:
+          return ordinalConverter.write(1, into);
+        case CrossChainFeeMode.FeesIncluded:
+          return ordinalConverter.write(2, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export enum CrossChainProvider {
+  Orchestra,
+  Boltz,
+}
+
+const FfiConverterTypeCrossChainProvider = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = CrossChainProvider;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return CrossChainProvider.Orchestra;
+        case 2:
+          return CrossChainProvider.Boltz;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case CrossChainProvider.Orchestra:
+          return ordinalConverter.write(1, into);
+        case CrossChainProvider.Boltz:
+          return ordinalConverter.write(2, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: CrossChainProviderContext
+export enum CrossChainProviderContext_Tags {
+  Orchestra = 'Orchestra',
+  Boltz = 'Boltz',
+}
+/**
+ * Provider-internal state produced by `prepare` and consumed by `send`.
+ * Typed per provider so the send stage can resume without re-quoting and
+ * without a serde round-trip. Callers should round-trip this value as-is.
+ */
+export const CrossChainProviderContext = (() => {
+  type Orchestra__interface = {
+    tag: CrossChainProviderContext_Tags.Orchestra;
+    inner: Readonly<{
+      quoteId: string;
+      depositAddress: string;
+      depositAmount: U128;
+    }>;
+  };
+
+  class Orchestra_ extends UniffiEnum implements Orchestra__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'CrossChainProviderContext';
+    readonly tag = CrossChainProviderContext_Tags.Orchestra;
+    readonly inner: Readonly<{
+      quoteId: string;
+      depositAddress: string;
+      depositAmount: U128;
+    }>;
+    constructor(inner: {
+      /**
+       * Orchestra quote id, passed back on `/submit`.
+       */ quoteId: string;
+      /**
+       * Spark address Orchestra expects the deposit transfer to land on.
+       */ depositAddress: string;
+      /**
+       * Spark-side deposit amount in the route's source-asset base units.
+       */ depositAmount: U128;
+    }) {
+      super('CrossChainProviderContext', 'Orchestra');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * Orchestra quote id, passed back on `/submit`.
+       */ quoteId: string;
+      /**
+       * Spark address Orchestra expects the deposit transfer to land on.
+       */ depositAddress: string;
+      /**
+       * Spark-side deposit amount in the route's source-asset base units.
+       */ depositAmount: U128;
+    }): Orchestra_ {
+      return new Orchestra_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Orchestra_ {
+      return obj.tag === CrossChainProviderContext_Tags.Orchestra;
+    }
+  }
+
+  type Boltz__interface = {
+    tag: CrossChainProviderContext_Tags.Boltz;
+    inner: Readonly<{
+      swapId: string;
+      invoice: string;
+      invoiceAmountSats: /*u64*/ bigint;
+      maxSlippageBps: /*u32*/ number;
+    }>;
+  };
+
+  class Boltz_ extends UniffiEnum implements Boltz__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'CrossChainProviderContext';
+    readonly tag = CrossChainProviderContext_Tags.Boltz;
+    readonly inner: Readonly<{
+      swapId: string;
+      invoice: string;
+      invoiceAmountSats: /*u64*/ bigint;
+      maxSlippageBps: /*u32*/ number;
+    }>;
+    constructor(inner: {
+      /**
+       * Boltz swap id.
+       */ swapId: string;
+      /**
+       * Hold invoice to pay.
+       */ invoice: string;
+      /**
+       * Hold invoice amount in sats.
+       */ invoiceAmountSats: /*u64*/ bigint;
+      /**
+       * Slippage tolerance in basis points.
+       */ maxSlippageBps: /*u32*/ number;
+    }) {
+      super('CrossChainProviderContext', 'Boltz');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * Boltz swap id.
+       */ swapId: string;
+      /**
+       * Hold invoice to pay.
+       */ invoice: string;
+      /**
+       * Hold invoice amount in sats.
+       */ invoiceAmountSats: /*u64*/ bigint;
+      /**
+       * Slippage tolerance in basis points.
+       */ maxSlippageBps: /*u32*/ number;
+    }): Boltz_ {
+      return new Boltz_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Boltz_ {
+      return obj.tag === CrossChainProviderContext_Tags.Boltz;
+    }
+  }
+
+  function instanceOf(obj: any): obj is CrossChainProviderContext {
+    return obj[uniffiTypeNameSymbol] === 'CrossChainProviderContext';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Orchestra: Orchestra_,
+    Boltz: Boltz_,
+  });
+})();
+
+/**
+ * Provider-internal state produced by `prepare` and consumed by `send`.
+ * Typed per provider so the send stage can resume without re-quoting and
+ * without a serde round-trip. Callers should round-trip this value as-is.
+ */
+
+export type CrossChainProviderContext = InstanceType<
+  (typeof CrossChainProviderContext)[keyof Omit<
+    typeof CrossChainProviderContext,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum CrossChainProviderContext
+const FfiConverterTypeCrossChainProviderContext = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = CrossChainProviderContext;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new CrossChainProviderContext.Orchestra({
+            quoteId: FfiConverterString.read(from),
+            depositAddress: FfiConverterString.read(from),
+            depositAmount: FfiConverterTypeu128.read(from),
+          });
+        case 2:
+          return new CrossChainProviderContext.Boltz({
+            swapId: FfiConverterString.read(from),
+            invoice: FfiConverterString.read(from),
+            invoiceAmountSats: FfiConverterUInt64.read(from),
+            maxSlippageBps: FfiConverterUInt32.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case CrossChainProviderContext_Tags.Orchestra: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.quoteId, into);
+          FfiConverterString.write(inner.depositAddress, into);
+          FfiConverterTypeu128.write(inner.depositAmount, into);
+          return;
+        }
+        case CrossChainProviderContext_Tags.Boltz: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.swapId, into);
+          FfiConverterString.write(inner.invoice, into);
+          FfiConverterUInt64.write(inner.invoiceAmountSats, into);
+          FfiConverterUInt32.write(inner.maxSlippageBps, into);
+          return;
+        }
+        default:
+          // Throwing from here means that CrossChainProviderContext_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case CrossChainProviderContext_Tags.Orchestra: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterString.allocationSize(inner.quoteId);
+          size += FfiConverterString.allocationSize(inner.depositAddress);
+          size += FfiConverterTypeu128.allocationSize(inner.depositAmount);
+          return size;
+        }
+        case CrossChainProviderContext_Tags.Boltz: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner.swapId);
+          size += FfiConverterString.allocationSize(inner.invoice);
+          size += FfiConverterUInt64.allocationSize(inner.invoiceAmountSats);
+          size += FfiConverterUInt32.allocationSize(inner.maxSlippageBps);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: CrossChainRouteFilter
+export enum CrossChainRouteFilter_Tags {
+  Send = 'Send',
+  Receive = 'Receive',
+}
+/**
+ * Filter for [`CrossChainService::get_routes`] and the public
+ * `get_cross_chain_routes()` API.
+ */
+export const CrossChainRouteFilter = (() => {
+  type Send__interface = {
+    tag: CrossChainRouteFilter_Tags.Send;
+    inner: Readonly<{ addressDetails: CrossChainAddressDetails }>;
+  };
+
+  /**
+   * Routes for sending from Spark to another chain.
+   * Filtered by the parsed recipient address details.
+   */
+  class Send_ extends UniffiEnum implements Send__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'CrossChainRouteFilter';
+    readonly tag = CrossChainRouteFilter_Tags.Send;
+    readonly inner: Readonly<{ addressDetails: CrossChainAddressDetails }>;
+    constructor(inner: { addressDetails: CrossChainAddressDetails }) {
+      super('CrossChainRouteFilter', 'Send');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { addressDetails: CrossChainAddressDetails }): Send_ {
+      return new Send_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Send_ {
+      return obj.tag === CrossChainRouteFilter_Tags.Send;
+    }
+  }
+
+  type Receive__interface = {
+    tag: CrossChainRouteFilter_Tags.Receive;
+    inner: Readonly<{ contractAddress: string | undefined }>;
+  };
+
+  /**
+   * Routes for receiving to Spark from another chain.
+   * Optionally filtered by the source token contract address.
+   */
+  class Receive_ extends UniffiEnum implements Receive__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'CrossChainRouteFilter';
+    readonly tag = CrossChainRouteFilter_Tags.Receive;
+    readonly inner: Readonly<{ contractAddress: string | undefined }>;
+    constructor(inner: { contractAddress: string | undefined }) {
+      super('CrossChainRouteFilter', 'Receive');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { contractAddress: string | undefined }): Receive_ {
+      return new Receive_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Receive_ {
+      return obj.tag === CrossChainRouteFilter_Tags.Receive;
+    }
+  }
+
+  function instanceOf(obj: any): obj is CrossChainRouteFilter {
+    return obj[uniffiTypeNameSymbol] === 'CrossChainRouteFilter';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Send: Send_,
+    Receive: Receive_,
+  });
+})();
+
+/**
+ * Filter for [`CrossChainService::get_routes`] and the public
+ * `get_cross_chain_routes()` API.
+ */
+
+export type CrossChainRouteFilter = InstanceType<
+  (typeof CrossChainRouteFilter)[keyof Omit<
+    typeof CrossChainRouteFilter,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum CrossChainRouteFilter
+const FfiConverterTypeCrossChainRouteFilter = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = CrossChainRouteFilter;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new CrossChainRouteFilter.Send({
+            addressDetails: FfiConverterTypeCrossChainAddressDetails.read(from),
+          });
+        case 2:
+          return new CrossChainRouteFilter.Receive({
+            contractAddress: FfiConverterOptionalString.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case CrossChainRouteFilter_Tags.Send: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterTypeCrossChainAddressDetails.write(
+            inner.addressDetails,
+            into
+          );
+          return;
+        }
+        case CrossChainRouteFilter_Tags.Receive: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterOptionalString.write(inner.contractAddress, into);
+          return;
+        }
+        default:
+          // Throwing from here means that CrossChainRouteFilter_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case CrossChainRouteFilter_Tags.Send: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterTypeCrossChainAddressDetails.allocationSize(
+            inner.addressDetails
+          );
+          return size;
+        }
+        case CrossChainRouteFilter_Tags.Receive: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterOptionalString.allocationSize(
+            inner.contractAddress
+          );
           return size;
         }
         default:
@@ -17743,16 +19725,24 @@ const FfiConverterTypeFee = (() => {
 
 /**
  * Specifies how fees are handled in a payment.
+ *
+ * "Fees" are the wallet's sender-paid fees (Lightning routing, on-chain,
+ * Spark transfer). They do not include provider spreads or destination-chain
+ * costs on cross-chain routes; those are reported separately via
+ * `estimated_out` on the prepare response and are not deterministic.
+ * `FeePolicy` only controls the wallet's spend accounting.
  */
 export enum FeePolicy {
   /**
-   * Fees are added on top of the specified amount (default behavior).
-   * The receiver gets the exact amount specified.
+   * Fees are added on top of `amount`. Wallet's total spend is
+   * `amount + fees`. For direct sat sends, the recipient receives exactly
+   * `amount`. Default.
    */
   FeesExcluded,
   /**
-   * Fees are deducted from the specified amount.
-   * The receiver gets the amount minus fees.
+   * Fees are deducted from `amount`. Wallet's total spend is `amount`.
+   * Use this to drain a balance — pass `amount = balance` and the wallet
+   * spends exactly that.
    */
   FeesIncluded,
 }
@@ -17802,6 +19792,7 @@ export enum InputType_Tags {
   LnurlWithdraw = 'LnurlWithdraw',
   SparkAddress = 'SparkAddress',
   SparkInvoice = 'SparkInvoice',
+  CrossChainAddress = 'CrossChainAddress',
 }
 export const InputType = (() => {
   type BitcoinAddress__interface = {
@@ -18194,6 +20185,36 @@ export const InputType = (() => {
     }
   }
 
+  type CrossChainAddress__interface = {
+    tag: InputType_Tags.CrossChainAddress;
+    inner: Readonly<[CrossChainAddressDetails]>;
+  };
+
+  class CrossChainAddress_
+    extends UniffiEnum
+    implements CrossChainAddress__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'InputType';
+    readonly tag = InputType_Tags.CrossChainAddress;
+    readonly inner: Readonly<[CrossChainAddressDetails]>;
+    constructor(v0: CrossChainAddressDetails) {
+      super('InputType', 'CrossChainAddress');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: CrossChainAddressDetails): CrossChainAddress_ {
+      return new CrossChainAddress_(v0);
+    }
+
+    static instanceOf(obj: any): obj is CrossChainAddress_ {
+      return obj.tag === InputType_Tags.CrossChainAddress;
+    }
+  }
+
   function instanceOf(obj: any): obj is InputType {
     return obj[uniffiTypeNameSymbol] === 'InputType';
   }
@@ -18214,6 +20235,7 @@ export const InputType = (() => {
     LnurlWithdraw: LnurlWithdraw_,
     SparkAddress: SparkAddress_,
     SparkInvoice: SparkInvoice_,
+    CrossChainAddress: CrossChainAddress_,
   });
 })();
 
@@ -18279,6 +20301,10 @@ const FfiConverterTypeInputType = (() => {
         case 14:
           return new InputType.SparkInvoice(
             FfiConverterTypeSparkInvoiceDetails.read(from)
+          );
+        case 15:
+          return new InputType.CrossChainAddress(
+            FfiConverterTypeCrossChainAddressDetails.read(from)
           );
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -18368,6 +20394,12 @@ const FfiConverterTypeInputType = (() => {
           ordinalConverter.write(14, into);
           const inner = value.inner;
           FfiConverterTypeSparkInvoiceDetails.write(inner[0], into);
+          return;
+        }
+        case InputType_Tags.CrossChainAddress: {
+          ordinalConverter.write(15, into);
+          const inner = value.inner;
+          FfiConverterTypeCrossChainAddressDetails.write(inner[0], into);
           return;
         }
         default:
@@ -18473,6 +20505,14 @@ const FfiConverterTypeInputType = (() => {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(14);
           size += FfiConverterTypeSparkInvoiceDetails.allocationSize(inner[0]);
+          return size;
+        }
+        case InputType_Tags.CrossChainAddress: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(15);
+          size += FfiConverterTypeCrossChainAddressDetails.allocationSize(
+            inner[0]
+          );
           return size;
         }
         default:
@@ -20042,6 +22082,7 @@ export const PaymentDetails = (() => {
       lnurlPayInfo: LnurlPayInfo | undefined;
       lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
       lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
+      conversionInfo: ConversionInfo | undefined;
     }>;
   };
 
@@ -20060,6 +22101,7 @@ export const PaymentDetails = (() => {
       lnurlPayInfo: LnurlPayInfo | undefined;
       lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
       lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
+      conversionInfo: ConversionInfo | undefined;
     }>;
     constructor(inner: {
       /**
@@ -20085,6 +22127,11 @@ export const PaymentDetails = (() => {
       /**
        * Lnurl receive information if this was a received lnurl payment.
        */ lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
+      /**
+       * The information for a conversion — populated when this Lightning
+       * payment is the source leg of a cross-chain conversion (e.g. a
+       * Boltz reverse swap paying a hold invoice).
+       */ conversionInfo: ConversionInfo | undefined;
     }) {
       super('PaymentDetails', 'Lightning');
       this.inner = Object.freeze(inner);
@@ -20114,6 +22161,11 @@ export const PaymentDetails = (() => {
       /**
        * Lnurl receive information if this was a received lnurl payment.
        */ lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
+      /**
+       * The information for a conversion — populated when this Lightning
+       * payment is the source leg of a cross-chain conversion (e.g. a
+       * Boltz reverse swap paying a hold invoice).
+       */ conversionInfo: ConversionInfo | undefined;
     }): Lightning_ {
       return new Lightning_(inner);
     }
@@ -20229,6 +22281,7 @@ const FfiConverterTypePaymentDetails = (() => {
               FfiConverterOptionalTypeLnurlWithdrawInfo.read(from),
             lnurlReceiveMetadata:
               FfiConverterOptionalTypeLnurlReceiveMetadata.read(from),
+            conversionInfo: FfiConverterOptionalTypeConversionInfo.read(from),
           });
         case 4:
           return new PaymentDetails.Withdraw({
@@ -20292,6 +22345,10 @@ const FfiConverterTypePaymentDetails = (() => {
           );
           FfiConverterOptionalTypeLnurlReceiveMetadata.write(
             inner.lnurlReceiveMetadata,
+            into
+          );
+          FfiConverterOptionalTypeConversionInfo.write(
+            inner.conversionInfo,
             into
           );
           return;
@@ -20365,6 +22422,9 @@ const FfiConverterTypePaymentDetails = (() => {
           );
           size += FfiConverterOptionalTypeLnurlReceiveMetadata.allocationSize(
             inner.lnurlReceiveMetadata
+          );
+          size += FfiConverterOptionalTypeConversionInfo.allocationSize(
+            inner.conversionInfo
           );
           return size;
         }
@@ -20861,6 +22921,218 @@ const FfiConverterTypePaymentObserverError = (() => {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
           size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: PaymentRequest
+export enum PaymentRequest_Tags {
+  Input = 'Input',
+  CrossChain = 'CrossChain',
+}
+/**
+ * The payment destination. Either a raw string (bolt11, spark address, BIP-21,
+ * cross-chain URI, etc.) that is parsed internally, or a structured
+ * cross-chain destination with explicit chain + asset selection.
+ */
+export const PaymentRequest = (() => {
+  type Input__interface = {
+    tag: PaymentRequest_Tags.Input;
+    inner: Readonly<{ input: string }>;
+  };
+
+  /**
+   * Unparsed user input string (bolt11, spark address, BIP-21, cross-chain URI, etc.)
+   */
+  class Input_ extends UniffiEnum implements Input__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PaymentRequest';
+    readonly tag = PaymentRequest_Tags.Input;
+    readonly inner: Readonly<{ input: string }>;
+    constructor(inner: { input: string }) {
+      super('PaymentRequest', 'Input');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { input: string }): Input_ {
+      return new Input_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Input_ {
+      return obj.tag === PaymentRequest_Tags.Input;
+    }
+  }
+
+  type CrossChain__interface = {
+    tag: PaymentRequest_Tags.CrossChain;
+    inner: Readonly<{
+      address: string;
+      route: CrossChainRoutePair;
+      maxSlippageBps: /*u32*/ number | undefined;
+      targetOverpayBps: /*u32*/ number | undefined;
+    }>;
+  };
+
+  /**
+   * Cross-chain send with a selected route from `get_cross_chain_routes()`.
+   * Amount comes from `PrepareSendPaymentRequest.amount`, not here.
+   */
+  class CrossChain_ extends UniffiEnum implements CrossChain__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PaymentRequest';
+    readonly tag = PaymentRequest_Tags.CrossChain;
+    readonly inner: Readonly<{
+      address: string;
+      route: CrossChainRoutePair;
+      maxSlippageBps: /*u32*/ number | undefined;
+      targetOverpayBps: /*u32*/ number | undefined;
+    }>;
+    constructor(inner: {
+      address: string;
+      route: CrossChainRoutePair;
+      /**
+       * Maximum slippage tolerance in basis points (1/100 of a percent)
+       * for the cross-chain quote. Must be in `10..=500`. Falls back to
+       * [`Config::default_slippage_bps`] when `None`, which itself
+       * defaults to 100 bps (1%) when unset.
+       */ maxSlippageBps: /*u32*/ number | undefined;
+      /**
+       * Target-overpay pad in basis points applied on `FeesExcluded`
+       * conversion sends. Inflates the destination target before quoting
+       * so the recipient lands at or above the user's requested amount
+       * despite provider slippage. Must be in `0..=500`. Falls back to
+       * [`CrossChainConfig::default_target_overpay_bps`] when `None`,
+       * which itself defaults to 15 bps.
+       */ targetOverpayBps: /*u32*/ number | undefined;
+    }) {
+      super('PaymentRequest', 'CrossChain');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      address: string;
+      route: CrossChainRoutePair;
+      /**
+       * Maximum slippage tolerance in basis points (1/100 of a percent)
+       * for the cross-chain quote. Must be in `10..=500`. Falls back to
+       * [`Config::default_slippage_bps`] when `None`, which itself
+       * defaults to 100 bps (1%) when unset.
+       */ maxSlippageBps: /*u32*/ number | undefined;
+      /**
+       * Target-overpay pad in basis points applied on `FeesExcluded`
+       * conversion sends. Inflates the destination target before quoting
+       * so the recipient lands at or above the user's requested amount
+       * despite provider slippage. Must be in `0..=500`. Falls back to
+       * [`CrossChainConfig::default_target_overpay_bps`] when `None`,
+       * which itself defaults to 15 bps.
+       */ targetOverpayBps: /*u32*/ number | undefined;
+    }): CrossChain_ {
+      return new CrossChain_(inner);
+    }
+
+    static instanceOf(obj: any): obj is CrossChain_ {
+      return obj.tag === PaymentRequest_Tags.CrossChain;
+    }
+  }
+
+  function instanceOf(obj: any): obj is PaymentRequest {
+    return obj[uniffiTypeNameSymbol] === 'PaymentRequest';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Input: Input_,
+    CrossChain: CrossChain_,
+  });
+})();
+
+/**
+ * The payment destination. Either a raw string (bolt11, spark address, BIP-21,
+ * cross-chain URI, etc.) that is parsed internally, or a structured
+ * cross-chain destination with explicit chain + asset selection.
+ */
+
+export type PaymentRequest = InstanceType<
+  (typeof PaymentRequest)[keyof Omit<typeof PaymentRequest, 'instanceOf'>]
+>;
+
+// FfiConverter for enum PaymentRequest
+const FfiConverterTypePaymentRequest = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = PaymentRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new PaymentRequest.Input({
+            input: FfiConverterString.read(from),
+          });
+        case 2:
+          return new PaymentRequest.CrossChain({
+            address: FfiConverterString.read(from),
+            route: FfiConverterTypeCrossChainRoutePair.read(from),
+            maxSlippageBps: FfiConverterOptionalUInt32.read(from),
+            targetOverpayBps: FfiConverterOptionalUInt32.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case PaymentRequest_Tags.Input: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.input, into);
+          return;
+        }
+        case PaymentRequest_Tags.CrossChain: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.address, into);
+          FfiConverterTypeCrossChainRoutePair.write(inner.route, into);
+          FfiConverterOptionalUInt32.write(inner.maxSlippageBps, into);
+          FfiConverterOptionalUInt32.write(inner.targetOverpayBps, into);
+          return;
+        }
+        default:
+          // Throwing from here means that PaymentRequest_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case PaymentRequest_Tags.Input: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterString.allocationSize(inner.input);
+          return size;
+        }
+        case PaymentRequest_Tags.CrossChain: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner.address);
+          size += FfiConverterTypeCrossChainRoutePair.allocationSize(
+            inner.route
+          );
+          size += FfiConverterOptionalUInt32.allocationSize(
+            inner.maxSlippageBps
+          );
+          size += FfiConverterOptionalUInt32.allocationSize(
+            inner.targetOverpayBps
+          );
           return size;
         }
         default:
@@ -23586,6 +25858,7 @@ export enum SendPaymentMethod_Tags {
   Bolt11Invoice = 'Bolt11Invoice',
   SparkAddress = 'SparkAddress',
   SparkInvoice = 'SparkInvoice',
+  CrossChainAddress = 'CrossChainAddress',
 }
 export const SendPaymentMethod = (() => {
   type BitcoinAddress__interface = {
@@ -23783,6 +26056,159 @@ export const SendPaymentMethod = (() => {
     }
   }
 
+  type CrossChainAddress__interface = {
+    tag: SendPaymentMethod_Tags.CrossChainAddress;
+    inner: Readonly<{
+      route: CrossChainRoutePair;
+      recipientAddress: string;
+      amountIn: U128;
+      assetAmountIn: U128;
+      estimatedOut: U128;
+      feeAmount: U128;
+      serviceFeeAmount: U128;
+      serviceFeeAsset: string | undefined;
+      sourceTransferFeeSats: /*u64*/ bigint;
+      feeMode: CrossChainFeeMode;
+      expiresAt: string;
+      providerContext: CrossChainProviderContext;
+    }>;
+  };
+
+  /**
+   * A cross-chain send via a bridge/swap provider.
+   */
+  class CrossChainAddress_
+    extends UniffiEnum
+    implements CrossChainAddress__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SendPaymentMethod';
+    readonly tag = SendPaymentMethod_Tags.CrossChainAddress;
+    readonly inner: Readonly<{
+      route: CrossChainRoutePair;
+      recipientAddress: string;
+      amountIn: U128;
+      assetAmountIn: U128;
+      estimatedOut: U128;
+      feeAmount: U128;
+      serviceFeeAmount: U128;
+      serviceFeeAsset: string | undefined;
+      sourceTransferFeeSats: /*u64*/ bigint;
+      feeMode: CrossChainFeeMode;
+      expiresAt: string;
+      providerContext: CrossChainProviderContext;
+    }>;
+    constructor(inner: {
+      /**
+       * The route selected for this cross-chain send (includes provider, chain, asset).
+       */ route: CrossChainRoutePair;
+      /**
+       * Raw destination address (e.g. `0xabc...`).
+       */ recipientAddress: string;
+      /**
+       * Amount routed to the provider, in the route's source-asset units
+       * (Boltz invoice sats; Orchestra deposit sats/token). On the
+       * token-conversion path (both `FeesIncluded` and `FeesExcluded`)
+       * the dispatcher overrides this with the wallet-side token debit
+       * when the source token and destination asset form a USD-stable pair.
+       */ amountIn: U128;
+      /**
+       * `amount_in` expressed in the cross-chain (destination) asset's
+       * base units, via the same rate the SDK used at prepare time.
+       */ assetAmountIn: U128;
+      /**
+       * Estimated recipient amount in cross-chain asset base units.
+       */ estimatedOut: U128;
+      /**
+       * Prepare-time total user-visible fee in cross-chain asset base units.
+       * Covers provider spread + bridge/gas + DEX slippage. On the
+       * token-conversion path it also rolls in the LN routing budget; on
+       * the direct path that budget lives separately in
+       * `source_transfer_fee_sats`.
+       */ feeAmount: U128;
+      /**
+       * Provider's own service fee/spread in its native denomination.
+       */ serviceFeeAmount: U128;
+      /**
+       * Asset which service fee is denominated in. Unset means BTC sats.
+       */ serviceFeeAsset: string | undefined;
+      /**
+       * Sats budget for moving the amount in from the wallet to the provider.
+       */ sourceTransferFeeSats: /*u64*/ bigint;
+      /**
+       * Fee mode the prepare ran under; the send stage matches.
+       */ feeMode: CrossChainFeeMode;
+      /**
+       * ISO8601 timestamp after which the quote is no longer valid.
+       */ expiresAt: string;
+      /**
+       * Provider-internal state, produced when preparing and consumed
+       * when sending.
+       */ providerContext: CrossChainProviderContext;
+    }) {
+      super('SendPaymentMethod', 'CrossChainAddress');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      /**
+       * The route selected for this cross-chain send (includes provider, chain, asset).
+       */ route: CrossChainRoutePair;
+      /**
+       * Raw destination address (e.g. `0xabc...`).
+       */ recipientAddress: string;
+      /**
+       * Amount routed to the provider, in the route's source-asset units
+       * (Boltz invoice sats; Orchestra deposit sats/token). On the
+       * token-conversion path (both `FeesIncluded` and `FeesExcluded`)
+       * the dispatcher overrides this with the wallet-side token debit
+       * when the source token and destination asset form a USD-stable pair.
+       */ amountIn: U128;
+      /**
+       * `amount_in` expressed in the cross-chain (destination) asset's
+       * base units, via the same rate the SDK used at prepare time.
+       */ assetAmountIn: U128;
+      /**
+       * Estimated recipient amount in cross-chain asset base units.
+       */ estimatedOut: U128;
+      /**
+       * Prepare-time total user-visible fee in cross-chain asset base units.
+       * Covers provider spread + bridge/gas + DEX slippage. On the
+       * token-conversion path it also rolls in the LN routing budget; on
+       * the direct path that budget lives separately in
+       * `source_transfer_fee_sats`.
+       */ feeAmount: U128;
+      /**
+       * Provider's own service fee/spread in its native denomination.
+       */ serviceFeeAmount: U128;
+      /**
+       * Asset which service fee is denominated in. Unset means BTC sats.
+       */ serviceFeeAsset: string | undefined;
+      /**
+       * Sats budget for moving the amount in from the wallet to the provider.
+       */ sourceTransferFeeSats: /*u64*/ bigint;
+      /**
+       * Fee mode the prepare ran under; the send stage matches.
+       */ feeMode: CrossChainFeeMode;
+      /**
+       * ISO8601 timestamp after which the quote is no longer valid.
+       */ expiresAt: string;
+      /**
+       * Provider-internal state, produced when preparing and consumed
+       * when sending.
+       */ providerContext: CrossChainProviderContext;
+    }): CrossChainAddress_ {
+      return new CrossChainAddress_(inner);
+    }
+
+    static instanceOf(obj: any): obj is CrossChainAddress_ {
+      return obj.tag === SendPaymentMethod_Tags.CrossChainAddress;
+    }
+  }
+
   function instanceOf(obj: any): obj is SendPaymentMethod {
     return obj[uniffiTypeNameSymbol] === 'SendPaymentMethod';
   }
@@ -23793,6 +26219,7 @@ export const SendPaymentMethod = (() => {
     Bolt11Invoice: Bolt11Invoice_,
     SparkAddress: SparkAddress_,
     SparkInvoice: SparkInvoice_,
+    CrossChainAddress: CrossChainAddress_,
   });
 })();
 
@@ -23829,6 +26256,22 @@ const FfiConverterTypeSendPaymentMethod = (() => {
             sparkInvoiceDetails: FfiConverterTypeSparkInvoiceDetails.read(from),
             fee: FfiConverterTypeu128.read(from),
             tokenIdentifier: FfiConverterOptionalString.read(from),
+          });
+        case 5:
+          return new SendPaymentMethod.CrossChainAddress({
+            route: FfiConverterTypeCrossChainRoutePair.read(from),
+            recipientAddress: FfiConverterString.read(from),
+            amountIn: FfiConverterTypeu128.read(from),
+            assetAmountIn: FfiConverterTypeu128.read(from),
+            estimatedOut: FfiConverterTypeu128.read(from),
+            feeAmount: FfiConverterTypeu128.read(from),
+            serviceFeeAmount: FfiConverterTypeu128.read(from),
+            serviceFeeAsset: FfiConverterOptionalString.read(from),
+            sourceTransferFeeSats: FfiConverterUInt64.read(from),
+            feeMode: FfiConverterTypeCrossChainFeeMode.read(from),
+            expiresAt: FfiConverterString.read(from),
+            providerContext:
+              FfiConverterTypeCrossChainProviderContext.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -23871,6 +26314,26 @@ const FfiConverterTypeSendPaymentMethod = (() => {
           );
           FfiConverterTypeu128.write(inner.fee, into);
           FfiConverterOptionalString.write(inner.tokenIdentifier, into);
+          return;
+        }
+        case SendPaymentMethod_Tags.CrossChainAddress: {
+          ordinalConverter.write(5, into);
+          const inner = value.inner;
+          FfiConverterTypeCrossChainRoutePair.write(inner.route, into);
+          FfiConverterString.write(inner.recipientAddress, into);
+          FfiConverterTypeu128.write(inner.amountIn, into);
+          FfiConverterTypeu128.write(inner.assetAmountIn, into);
+          FfiConverterTypeu128.write(inner.estimatedOut, into);
+          FfiConverterTypeu128.write(inner.feeAmount, into);
+          FfiConverterTypeu128.write(inner.serviceFeeAmount, into);
+          FfiConverterOptionalString.write(inner.serviceFeeAsset, into);
+          FfiConverterUInt64.write(inner.sourceTransferFeeSats, into);
+          FfiConverterTypeCrossChainFeeMode.write(inner.feeMode, into);
+          FfiConverterString.write(inner.expiresAt, into);
+          FfiConverterTypeCrossChainProviderContext.write(
+            inner.providerContext,
+            into
+          );
           return;
         }
         default:
@@ -23922,6 +26385,33 @@ const FfiConverterTypeSendPaymentMethod = (() => {
           size += FfiConverterTypeu128.allocationSize(inner.fee);
           size += FfiConverterOptionalString.allocationSize(
             inner.tokenIdentifier
+          );
+          return size;
+        }
+        case SendPaymentMethod_Tags.CrossChainAddress: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(5);
+          size += FfiConverterTypeCrossChainRoutePair.allocationSize(
+            inner.route
+          );
+          size += FfiConverterString.allocationSize(inner.recipientAddress);
+          size += FfiConverterTypeu128.allocationSize(inner.amountIn);
+          size += FfiConverterTypeu128.allocationSize(inner.assetAmountIn);
+          size += FfiConverterTypeu128.allocationSize(inner.estimatedOut);
+          size += FfiConverterTypeu128.allocationSize(inner.feeAmount);
+          size += FfiConverterTypeu128.allocationSize(inner.serviceFeeAmount);
+          size += FfiConverterOptionalString.allocationSize(
+            inner.serviceFeeAsset
+          );
+          size += FfiConverterUInt64.allocationSize(
+            inner.sourceTransferFeeSats
+          );
+          size += FfiConverterTypeCrossChainFeeMode.allocationSize(
+            inner.feeMode
+          );
+          size += FfiConverterString.allocationSize(inner.expiresAt);
+          size += FfiConverterTypeCrossChainProviderContext.allocationSize(
+            inner.providerContext
           );
           return size;
         }
@@ -25371,6 +27861,144 @@ const FfiConverterTypeSignerError = (() => {
   return new FFIConverter();
 })();
 
+// Enum: SourceAsset
+export enum SourceAsset_Tags {
+  Bitcoin = 'Bitcoin',
+  Token = 'Token',
+}
+/**
+ * The source asset a cross-chain route accepts as input on the Spark side.
+ */
+export const SourceAsset = (() => {
+  type Bitcoin__interface = {
+    tag: SourceAsset_Tags.Bitcoin;
+  };
+
+  /**
+   * Native BTC (sats).
+   */
+  class Bitcoin_ extends UniffiEnum implements Bitcoin__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SourceAsset';
+    readonly tag = SourceAsset_Tags.Bitcoin;
+    constructor() {
+      super('SourceAsset', 'Bitcoin');
+    }
+
+    static new(): Bitcoin_ {
+      return new Bitcoin_();
+    }
+
+    static instanceOf(obj: any): obj is Bitcoin_ {
+      return obj.tag === SourceAsset_Tags.Bitcoin;
+    }
+  }
+
+  type Token__interface = {
+    tag: SourceAsset_Tags.Token;
+    inner: Readonly<{ tokenIdentifier: string }>;
+  };
+
+  /**
+   * A Spark token, identified by its bech32m `token_identifier` (e.g. `btkn1...`).
+   */
+  class Token_ extends UniffiEnum implements Token__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SourceAsset';
+    readonly tag = SourceAsset_Tags.Token;
+    readonly inner: Readonly<{ tokenIdentifier: string }>;
+    constructor(inner: { tokenIdentifier: string }) {
+      super('SourceAsset', 'Token');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { tokenIdentifier: string }): Token_ {
+      return new Token_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Token_ {
+      return obj.tag === SourceAsset_Tags.Token;
+    }
+  }
+
+  function instanceOf(obj: any): obj is SourceAsset {
+    return obj[uniffiTypeNameSymbol] === 'SourceAsset';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Bitcoin: Bitcoin_,
+    Token: Token_,
+  });
+})();
+
+/**
+ * The source asset a cross-chain route accepts as input on the Spark side.
+ */
+
+export type SourceAsset = InstanceType<
+  (typeof SourceAsset)[keyof Omit<typeof SourceAsset, 'instanceOf'>]
+>;
+
+// FfiConverter for enum SourceAsset
+const FfiConverterTypeSourceAsset = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = SourceAsset;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new SourceAsset.Bitcoin();
+        case 2:
+          return new SourceAsset.Token({
+            tokenIdentifier: FfiConverterString.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case SourceAsset_Tags.Bitcoin: {
+          ordinalConverter.write(1, into);
+          return;
+        }
+        case SourceAsset_Tags.Token: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.tokenIdentifier, into);
+          return;
+        }
+        default:
+          // Throwing from here means that SourceAsset_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case SourceAsset_Tags.Bitcoin: {
+          return ordinalConverter.allocationSize(1);
+        }
+        case SourceAsset_Tags.Token: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner.tokenIdentifier);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
 export enum SparkHtlcStatus {
   /**
    * The HTLC is waiting for the preimage to be shared by the receiver
@@ -25886,7 +28514,7 @@ export const StoragePaymentDetailsFilter = (() => {
     tag: StoragePaymentDetailsFilter_Tags.Spark;
     inner: Readonly<{
       htlcStatus: Array<SparkHtlcStatus> | undefined;
-      conversionRefundNeeded: boolean | undefined;
+      conversionFilter: ConversionFilter | undefined;
     }>;
   };
 
@@ -25899,11 +28527,11 @@ export const StoragePaymentDetailsFilter = (() => {
     readonly tag = StoragePaymentDetailsFilter_Tags.Spark;
     readonly inner: Readonly<{
       htlcStatus: Array<SparkHtlcStatus> | undefined;
-      conversionRefundNeeded: boolean | undefined;
+      conversionFilter: ConversionFilter | undefined;
     }>;
     constructor(inner: {
       htlcStatus: Array<SparkHtlcStatus> | undefined;
-      conversionRefundNeeded: boolean | undefined;
+      conversionFilter: ConversionFilter | undefined;
     }) {
       super('StoragePaymentDetailsFilter', 'Spark');
       this.inner = Object.freeze(inner);
@@ -25911,7 +28539,7 @@ export const StoragePaymentDetailsFilter = (() => {
 
     static new(inner: {
       htlcStatus: Array<SparkHtlcStatus> | undefined;
-      conversionRefundNeeded: boolean | undefined;
+      conversionFilter: ConversionFilter | undefined;
     }): Spark_ {
       return new Spark_(inner);
     }
@@ -25924,7 +28552,7 @@ export const StoragePaymentDetailsFilter = (() => {
   type Token__interface = {
     tag: StoragePaymentDetailsFilter_Tags.Token;
     inner: Readonly<{
-      conversionRefundNeeded: boolean | undefined;
+      conversionFilter: ConversionFilter | undefined;
       txHash: string | undefined;
       txType: TokenTransactionType | undefined;
     }>;
@@ -25938,12 +28566,12 @@ export const StoragePaymentDetailsFilter = (() => {
     readonly [uniffiTypeNameSymbol] = 'StoragePaymentDetailsFilter';
     readonly tag = StoragePaymentDetailsFilter_Tags.Token;
     readonly inner: Readonly<{
-      conversionRefundNeeded: boolean | undefined;
+      conversionFilter: ConversionFilter | undefined;
       txHash: string | undefined;
       txType: TokenTransactionType | undefined;
     }>;
     constructor(inner: {
-      conversionRefundNeeded: boolean | undefined;
+      conversionFilter: ConversionFilter | undefined;
       txHash: string | undefined;
       txType: TokenTransactionType | undefined;
     }) {
@@ -25952,7 +28580,7 @@ export const StoragePaymentDetailsFilter = (() => {
     }
 
     static new(inner: {
-      conversionRefundNeeded: boolean | undefined;
+      conversionFilter: ConversionFilter | undefined;
       txHash: string | undefined;
       txType: TokenTransactionType | undefined;
     }): Token_ {
@@ -25966,7 +28594,10 @@ export const StoragePaymentDetailsFilter = (() => {
 
   type Lightning__interface = {
     tag: StoragePaymentDetailsFilter_Tags.Lightning;
-    inner: Readonly<{ htlcStatus: Array<SparkHtlcStatus> | undefined }>;
+    inner: Readonly<{
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      conversionFilter: ConversionFilter | undefined;
+    }>;
   };
 
   class Lightning_ extends UniffiEnum implements Lightning__interface {
@@ -25978,14 +28609,19 @@ export const StoragePaymentDetailsFilter = (() => {
     readonly tag = StoragePaymentDetailsFilter_Tags.Lightning;
     readonly inner: Readonly<{
       htlcStatus: Array<SparkHtlcStatus> | undefined;
+      conversionFilter: ConversionFilter | undefined;
     }>;
-    constructor(inner: { htlcStatus: Array<SparkHtlcStatus> | undefined }) {
+    constructor(inner: {
+      htlcStatus: Array<SparkHtlcStatus> | undefined;
+      conversionFilter: ConversionFilter | undefined;
+    }) {
       super('StoragePaymentDetailsFilter', 'Lightning');
       this.inner = Object.freeze(inner);
     }
 
     static new(inner: {
       htlcStatus: Array<SparkHtlcStatus> | undefined;
+      conversionFilter: ConversionFilter | undefined;
     }): Lightning_ {
       return new Lightning_(inner);
     }
@@ -26028,17 +28664,21 @@ const FfiConverterTypeStoragePaymentDetailsFilter = (() => {
         case 1:
           return new StoragePaymentDetailsFilter.Spark({
             htlcStatus: FfiConverterOptionalArrayTypeSparkHtlcStatus.read(from),
-            conversionRefundNeeded: FfiConverterOptionalBool.read(from),
+            conversionFilter:
+              FfiConverterOptionalTypeConversionFilter.read(from),
           });
         case 2:
           return new StoragePaymentDetailsFilter.Token({
-            conversionRefundNeeded: FfiConverterOptionalBool.read(from),
+            conversionFilter:
+              FfiConverterOptionalTypeConversionFilter.read(from),
             txHash: FfiConverterOptionalString.read(from),
             txType: FfiConverterOptionalTypeTokenTransactionType.read(from),
           });
         case 3:
           return new StoragePaymentDetailsFilter.Lightning({
             htlcStatus: FfiConverterOptionalArrayTypeSparkHtlcStatus.read(from),
+            conversionFilter:
+              FfiConverterOptionalTypeConversionFilter.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -26053,13 +28693,19 @@ const FfiConverterTypeStoragePaymentDetailsFilter = (() => {
             inner.htlcStatus,
             into
           );
-          FfiConverterOptionalBool.write(inner.conversionRefundNeeded, into);
+          FfiConverterOptionalTypeConversionFilter.write(
+            inner.conversionFilter,
+            into
+          );
           return;
         }
         case StoragePaymentDetailsFilter_Tags.Token: {
           ordinalConverter.write(2, into);
           const inner = value.inner;
-          FfiConverterOptionalBool.write(inner.conversionRefundNeeded, into);
+          FfiConverterOptionalTypeConversionFilter.write(
+            inner.conversionFilter,
+            into
+          );
           FfiConverterOptionalString.write(inner.txHash, into);
           FfiConverterOptionalTypeTokenTransactionType.write(
             inner.txType,
@@ -26072,6 +28718,10 @@ const FfiConverterTypeStoragePaymentDetailsFilter = (() => {
           const inner = value.inner;
           FfiConverterOptionalArrayTypeSparkHtlcStatus.write(
             inner.htlcStatus,
+            into
+          );
+          FfiConverterOptionalTypeConversionFilter.write(
+            inner.conversionFilter,
             into
           );
           return;
@@ -26089,16 +28739,16 @@ const FfiConverterTypeStoragePaymentDetailsFilter = (() => {
           size += FfiConverterOptionalArrayTypeSparkHtlcStatus.allocationSize(
             inner.htlcStatus
           );
-          size += FfiConverterOptionalBool.allocationSize(
-            inner.conversionRefundNeeded
+          size += FfiConverterOptionalTypeConversionFilter.allocationSize(
+            inner.conversionFilter
           );
           return size;
         }
         case StoragePaymentDetailsFilter_Tags.Token: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
-          size += FfiConverterOptionalBool.allocationSize(
-            inner.conversionRefundNeeded
+          size += FfiConverterOptionalTypeConversionFilter.allocationSize(
+            inner.conversionFilter
           );
           size += FfiConverterOptionalString.allocationSize(inner.txHash);
           size += FfiConverterOptionalTypeTokenTransactionType.allocationSize(
@@ -26111,6 +28761,9 @@ const FfiConverterTypeStoragePaymentDetailsFilter = (() => {
           let size = ordinalConverter.allocationSize(3);
           size += FfiConverterOptionalArrayTypeSparkHtlcStatus.allocationSize(
             inner.htlcStatus
+          );
+          size += FfiConverterOptionalTypeConversionFilter.allocationSize(
+            inner.conversionFilter
           );
           return size;
         }
@@ -27696,6 +30349,18 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<FetchConversionLimitsResponse>;
   /**
+   * Returns the available cross-chain routes.
+   *
+   * Use [`CrossChainRouteFilter::Send`] to get routes for sending from Spark
+   * (filtered by the parsed recipient address), or
+   * [`CrossChainRouteFilter::Receive`] to get routes for receiving into Spark
+   * (optionally filtered by a source contract address).
+   */
+  getCrossChainRoutes(
+    filter: CrossChainRouteFilter,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<Array<CrossChainRoutePair>>;
+  /**
    * Returns the balance of the wallet in satoshis
    */
   getInfo(
@@ -28573,6 +31238,53 @@ export class BreezSdk
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypeFetchConversionLimitsResponse.lift.bind(
           FfiConverterTypeFetchConversionLimitsResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Returns the available cross-chain routes.
+   *
+   * Use [`CrossChainRouteFilter::Send`] to get routes for sending from Spark
+   * (filtered by the parsed recipient address), or
+   * [`CrossChainRouteFilter::Receive`] to get routes for receiving into Spark
+   * (optionally filtered by a source contract address).
+   */
+  public async getCrossChainRoutes(
+    filter: CrossChainRouteFilter,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<Array<CrossChainRoutePair>> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_cross_chain_routes(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeCrossChainRouteFilter.lower(filter)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterArrayTypeCrossChainRoutePair.lift.bind(
+          FfiConverterArrayTypeCrossChainRoutePair
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -36492,6 +39204,29 @@ export interface Storage {
     id: string,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<void>;
+  /**
+   * Inserts or overwrites a cross-chain swap row (upsert by `(provider, id)`).
+   */
+  setCrossChainSwap(
+    swap: StoredCrossChainSwap,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<void>;
+  /**
+   * Gets a single cross-chain swap row by its `(provider, id)`, or `None` if absent.
+   */
+  getCrossChainSwap(
+    provider: string,
+    id: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<StoredCrossChainSwap | undefined>;
+  /**
+   * Lists all non-terminal cross-chain swap rows for a single provider
+   * (`provider = ? AND is_terminal = false`).
+   */
+  listActiveCrossChainSwaps(
+    provider: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<Array<StoredCrossChainSwap>>;
   addOutgoingChange(
     record: UnversionedRecordChange,
     asyncOpts_?: { signal: AbortSignal }
@@ -37368,6 +40103,133 @@ export class StorageImpl extends UniffiAbstractObject implements Storage {
         /*freeFunc:*/ nativeModule()
           .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
         /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeStorageError.lift.bind(
+          FfiConverterTypeStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Inserts or overwrites a cross-chain swap row (upsert by `(provider, id)`).
+   */
+  public async setCrossChainSwap(
+    swap: StoredCrossChainSwap,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<void> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_storage_set_cross_chain_swap(
+            uniffiTypeStorageImplObjectFactory.clonePointer(this),
+            FfiConverterTypeStoredCrossChainSwap.lower(swap)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
+        /*liftFunc:*/ (_v) => {},
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeStorageError.lift.bind(
+          FfiConverterTypeStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Gets a single cross-chain swap row by its `(provider, id)`, or `None` if absent.
+   */
+  public async getCrossChainSwap(
+    provider: string,
+    id: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<StoredCrossChainSwap | undefined> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_storage_get_cross_chain_swap(
+            uniffiTypeStorageImplObjectFactory.clonePointer(this),
+            FfiConverterString.lower(provider),
+            FfiConverterString.lower(id)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterOptionalTypeStoredCrossChainSwap.lift.bind(
+          FfiConverterOptionalTypeStoredCrossChainSwap
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeStorageError.lift.bind(
+          FfiConverterTypeStorageError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Lists all non-terminal cross-chain swap rows for a single provider
+   * (`provider = ? AND is_terminal = false`).
+   */
+  public async listActiveCrossChainSwaps(
+    provider: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<Array<StoredCrossChainSwap>> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_storage_list_active_cross_chain_swaps(
+            uniffiTypeStorageImplObjectFactory.clonePointer(this),
+            FfiConverterString.lower(provider)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterArrayTypeStoredCrossChainSwap.lift.bind(
+          FfiConverterArrayTypeStoredCrossChainSwap
+        ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
         /*errorHandler:*/ FfiConverterTypeStorageError.lift.bind(
@@ -38671,6 +41533,154 @@ const uniffiCallbackInterfaceStorage: {
       );
       return uniffiForeignFuture;
     },
+    setCrossChainSwap: (
+      uniffiHandle: bigint,
+      swap: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<void> => {
+        const jsCallback = FfiConverterTypeStorage.lift(uniffiHandle);
+        return await jsCallback.setCrossChainSwap(
+          FfiConverterTypeStoredCrossChainSwap.lift(swap),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: void) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructVoid */ {
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ StorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeStorageError.lower.bind(
+          FfiConverterTypeStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    getCrossChainSwap: (
+      uniffiHandle: bigint,
+      provider: Uint8Array,
+      id: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<StoredCrossChainSwap | undefined> => {
+        const jsCallback = FfiConverterTypeStorage.lift(uniffiHandle);
+        return await jsCallback.getCrossChainSwap(
+          FfiConverterString.lift(provider),
+          FfiConverterString.lift(id),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (
+        returnValue: StoredCrossChainSwap | undefined
+      ) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterOptionalTypeStoredCrossChainSwap.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ StorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeStorageError.lower.bind(
+          FfiConverterTypeStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    listActiveCrossChainSwaps: (
+      uniffiHandle: bigint,
+      provider: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<Array<StoredCrossChainSwap>> => {
+        const jsCallback = FfiConverterTypeStorage.lift(uniffiHandle);
+        return await jsCallback.listActiveCrossChainSwaps(
+          FfiConverterString.lift(provider),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (
+        returnValue: Array<StoredCrossChainSwap>
+      ) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterArrayTypeStoredCrossChainSwap.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ StorageError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeStorageError.lower.bind(
+          FfiConverterTypeStorageError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
     addOutgoingChange: (
       uniffiHandle: bigint,
       record: Uint8Array,
@@ -39850,24 +42860,19 @@ const FfiConverterOptionalTypeConversionEstimate = new FfiConverterOptional(
   FfiConverterTypeConversionEstimate
 );
 
-// FfiConverter for ConversionInfo | undefined
-const FfiConverterOptionalTypeConversionInfo = new FfiConverterOptional(
-  FfiConverterTypeConversionInfo
-);
-
 // FfiConverter for ConversionOptions | undefined
 const FfiConverterOptionalTypeConversionOptions = new FfiConverterOptional(
   FfiConverterTypeConversionOptions
 );
 
-// FfiConverter for ConversionStep | undefined
-const FfiConverterOptionalTypeConversionStep = new FfiConverterOptional(
-  FfiConverterTypeConversionStep
-);
-
 // FfiConverter for Credentials | undefined
 const FfiConverterOptionalTypeCredentials = new FfiConverterOptional(
   FfiConverterTypeCredentials
+);
+
+// FfiConverter for CrossChainConfig | undefined
+const FfiConverterOptionalTypeCrossChainConfig = new FfiConverterOptional(
+  FfiConverterTypeCrossChainConfig
 );
 
 // FfiConverter for LightningAddressInfo | undefined
@@ -39944,14 +42949,14 @@ const FfiConverterOptionalTypeStableBalanceConfig = new FfiConverterOptional(
   FfiConverterTypeStableBalanceConfig
 );
 
+// FfiConverter for StoredCrossChainSwap | undefined
+const FfiConverterOptionalTypeStoredCrossChainSwap = new FfiConverterOptional(
+  FfiConverterTypeStoredCrossChainSwap
+);
+
 // FfiConverter for Symbol | undefined
 const FfiConverterOptionalTypeSymbol = new FfiConverterOptional(
   FfiConverterTypeSymbol
-);
-
-// FfiConverter for TokenMetadata | undefined
-const FfiConverterOptionalTypeTokenMetadata = new FfiConverterOptional(
-  FfiConverterTypeTokenMetadata
 );
 
 // FfiConverter for TurnkeyRetryConfig | undefined
@@ -39996,6 +43001,16 @@ const FfiConverterArrayTypeBolt12OfferBlindedPath = new FfiConverterArray(
 // FfiConverter for Array<Contact>
 const FfiConverterArrayTypeContact = new FfiConverterArray(
   FfiConverterTypeContact
+);
+
+// FfiConverter for Array<Conversion>
+const FfiConverterArrayTypeConversion = new FfiConverterArray(
+  FfiConverterTypeConversion
+);
+
+// FfiConverter for Array<CrossChainRoutePair>
+const FfiConverterArrayTypeCrossChainRoutePair = new FfiConverterArray(
+  FfiConverterTypeCrossChainRoutePair
 );
 
 // FfiConverter for Array<DepositInfo>
@@ -40121,6 +43136,11 @@ const FfiConverterArrayTypeStableBalanceToken = new FfiConverterArray(
   FfiConverterTypeStableBalanceToken
 );
 
+// FfiConverter for Array<StoredCrossChainSwap>
+const FfiConverterArrayTypeStoredCrossChainSwap = new FfiConverterArray(
+  FfiConverterTypeStoredCrossChainSwap
+);
+
 // FfiConverter for Array<TokenMetadata>
 const FfiConverterArrayTypeTokenMetadata = new FfiConverterArray(
   FfiConverterTypeTokenMetadata
@@ -40161,6 +43181,16 @@ const FfiConverterOptionalTypeAmountAdjustmentReason = new FfiConverterOptional(
 // FfiConverter for AssetFilter | undefined
 const FfiConverterOptionalTypeAssetFilter = new FfiConverterOptional(
   FfiConverterTypeAssetFilter
+);
+
+// FfiConverter for ConversionFilter | undefined
+const FfiConverterOptionalTypeConversionFilter = new FfiConverterOptional(
+  FfiConverterTypeConversionFilter
+);
+
+// FfiConverter for ConversionInfo | undefined
+const FfiConverterOptionalTypeConversionInfo = new FfiConverterOptional(
+  FfiConverterTypeConversionInfo
 );
 
 // FfiConverter for ConversionPurpose | undefined
@@ -40259,6 +43289,11 @@ const FfiConverterArrayTypePaymentStatus = new FfiConverterArray(
 // FfiConverter for Array<PaymentType>
 const FfiConverterArrayTypePaymentType = new FfiConverterArray(
   FfiConverterTypePaymentType
+);
+
+// FfiConverter for Array<SourceAsset>
+const FfiConverterArrayTypeSourceAsset = new FfiConverterArray(
+  FfiConverterTypeSourceAsset
 );
 
 // FfiConverter for Array<SparkHtlcStatus>
@@ -40370,7 +43405,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_default_server_config() !==
-    33858
+    40188
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_func_default_server_config'
@@ -40558,6 +43593,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_cross_chain_routes() !==
+    25164
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_get_cross_chain_routes'
     );
   }
   if (
@@ -41385,8 +44428,32 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_set_cross_chain_swap() !==
+    31116
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_storage_set_cross_chain_swap'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_cross_chain_swap() !==
+    20172
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_storage_get_cross_chain_swap'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_active_cross_chain_swaps() !==
+    23493
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_storage_list_active_cross_chain_swaps'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_add_outgoing_change() !==
-    1304
+    44890
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_add_outgoing_change'
@@ -41394,7 +44461,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_complete_outgoing_sync() !==
-    7860
+    8492
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_complete_outgoing_sync'
@@ -41402,7 +44469,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_pending_outgoing_changes() !==
-    30862
+    54668
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_get_pending_outgoing_changes'
@@ -41410,7 +44477,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_last_revision() !==
-    6931
+    17237
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_get_last_revision'
@@ -41418,7 +44485,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_insert_incoming_records() !==
-    59522
+    35265
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_insert_incoming_records'
@@ -41426,7 +44493,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_incoming_record() !==
-    19643
+    32789
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_delete_incoming_record'
@@ -41434,7 +44501,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_incoming_records() !==
-    28540
+    18699
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_get_incoming_records'
@@ -41442,7 +44509,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_latest_outgoing_change() !==
-    41369
+    59591
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_get_latest_outgoing_change'
@@ -41450,7 +44517,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_storage_update_record_from_incoming() !==
-    18793
+    30443
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_storage_update_record_from_incoming'
@@ -41621,16 +44688,29 @@ export default Object.freeze({
     FfiConverterTypeConnectWithPasskeyResponse,
     FfiConverterTypeConnectWithSignerRequest,
     FfiConverterTypeContact,
+    FfiConverterTypeConversion,
+    FfiConverterTypeConversionAsset,
+    FfiConverterTypeConversionChain,
     FfiConverterTypeConversionDetails,
     FfiConverterTypeConversionEstimate,
+    FfiConverterTypeConversionFilter,
     FfiConverterTypeConversionInfo,
     FfiConverterTypeConversionOptions,
+    FfiConverterTypeConversionProvider,
     FfiConverterTypeConversionPurpose,
+    FfiConverterTypeConversionSide,
     FfiConverterTypeConversionStatus,
-    FfiConverterTypeConversionStep,
     FfiConverterTypeConversionType,
     FfiConverterTypeCreateIssuerTokenRequest,
     FfiConverterTypeCredentials,
+    FfiConverterTypeCrossChainAddressDetails,
+    FfiConverterTypeCrossChainAddressFamily,
+    FfiConverterTypeCrossChainConfig,
+    FfiConverterTypeCrossChainFeeMode,
+    FfiConverterTypeCrossChainProvider,
+    FfiConverterTypeCrossChainProviderContext,
+    FfiConverterTypeCrossChainRouteFilter,
+    FfiConverterTypeCrossChainRoutePair,
     FfiConverterTypeCurrencyInfo,
     FfiConverterTypeDepositClaimError,
     FfiConverterTypeDepositInfo,
@@ -41748,6 +44828,7 @@ export default Object.freeze({
     FfiConverterTypePaymentMethod,
     FfiConverterTypePaymentObserver,
     FfiConverterTypePaymentObserverError,
+    FfiConverterTypePaymentRequest,
     FfiConverterTypePaymentRequestSource,
     FfiConverterTypePaymentStatus,
     FfiConverterTypePaymentType,
@@ -41807,6 +44888,7 @@ export default Object.freeze({
     FfiConverterTypeSignMessageResponse,
     FfiConverterTypeSignerError,
     FfiConverterTypeSilentPaymentAddressDetails,
+    FfiConverterTypeSourceAsset,
     FfiConverterTypeSparkAddressDetails,
     FfiConverterTypeSparkConfig,
     FfiConverterTypeSparkHtlcDetails,
@@ -41825,6 +44907,7 @@ export default Object.freeze({
     FfiConverterTypeStorageError,
     FfiConverterTypeStorageListPaymentsRequest,
     FfiConverterTypeStoragePaymentDetailsFilter,
+    FfiConverterTypeStoredCrossChainSwap,
     FfiConverterTypeSuccessAction,
     FfiConverterTypeSuccessActionProcessed,
     FfiConverterTypeSymbol,

@@ -76,8 +76,8 @@ export declare function defaultExternalSigners(mnemonic: string, passphrase: str
  * explicitly, so an ephemeral SDK instance stays cheap and predictable.
  *
  * Config fields whose background services are gated off are reset to their
- * inactive shape: `real_time_sync_server_url` is set to `None`, and both
- * `leaf_optimization_config.auto_enabled` and
+ * inactive shape: `real_time_sync_server_url` and `cross_chain_config` are
+ * set to `None`, and both `leaf_optimization_config.auto_enabled` and
  * `token_optimization_config.auto_enabled` are set to `false`. The SDK
  * rejects builds where `background_tasks_enabled` is `false` and any of
  * those fields is left in its active shape, so flip the flag via this
@@ -985,6 +985,16 @@ export type Config = {
      * `default_server_config` already sets these compatible values.
      */
     backgroundTasksEnabled: boolean;
+    /**
+     * Configuration for cross-chain sends via Orchestra and Boltz.
+     *
+     * `Some(_)` enables cross-chain sends (sats to USDT on external chains).
+     * `None` (default) disables them entirely. Opt in by setting this to
+     * [`CrossChainConfig::default`] (or a customized value): the providers
+     * run background work (e.g. web sockets), so enabling is left to the
+     * caller. Cross-chain sends are only supported on mainnet.
+     */
+    crossChainConfig: CrossChainConfig | undefined;
 };
 /**
  * Generated factory for {@link Config} record objects.
@@ -1174,24 +1184,108 @@ export declare const Contact: Readonly<{
     defaults: () => Partial<Contact>;
 }>;
 /**
- * Outlines the steps involved in a conversion.
- *
- * Built progressively: `status` is available immediately from payment metadata,
- * while `from`/`to` steps are enriched later from child payments.
+ * A single conversion in a payment's conversion chain.
  */
-export type ConversionDetails = {
+export type Conversion = {
     /**
-     * Current status of the conversion
+     * The provider that performed this conversion
+     */
+    provider: ConversionProvider;
+    /**
+     * Status of this specific conversion step
      */
     status: ConversionStatus;
     /**
-     * The send step of the conversion (e.g., sats sent to Flashnet)
+     * Source side of the conversion
      */
-    from: ConversionStep | undefined;
+    from: ConversionSide;
     /**
-     * The receive step of the conversion (e.g., tokens received from Flashnet)
+     * Destination side of the conversion
      */
-    to: ConversionStep | undefined;
+    to: ConversionSide;
+    /**
+     * Reason the conversion amount was adjusted, if applicable (AMM only)
+     */
+    amountAdjustment: AmountAdjustmentReason | undefined;
+};
+/**
+ * Generated factory for {@link Conversion} record objects.
+ */
+export declare const Conversion: Readonly<{
+    /**
+     * Create a frozen instance of {@link Conversion}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<Conversion> & Required<Omit<Conversion, never>>) => Conversion;
+    /**
+     * Create a frozen instance of {@link Conversion}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<Conversion> & Required<Omit<Conversion, never>>) => Conversion;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<Conversion>;
+}>;
+/**
+ * The asset on a [`ConversionSide`] — groups the ticker, stable identifier,
+ * and decimals that always travel together.
+ */
+export type ConversionAsset = {
+    /**
+     * Ticker (e.g. `"BTC"`, `"USDB"`, `"USDC"`, `"USDT"`). Tickers alone
+     * are ambiguous across chains — pair with [`Self::identifier`] for a
+     * hard match.
+     */
+    ticker: string;
+    /**
+     * Stable identifier: a Spark token identifier for Spark tokens, or a
+     * contract/mint address for cross-chain assets. `None` for BTC/sats.
+     */
+    identifier: string | undefined;
+    /**
+     * Number of decimals for the asset.
+     * `0` for BTC/sats sides (amount is already in the smallest unit,
+     * so no scaling is needed); non-zero for token assets (e.g. `6` for
+     * USDC/USDT/USDB).
+     */
+    decimals: number;
+};
+/**
+ * Generated factory for {@link ConversionAsset} record objects.
+ */
+export declare const ConversionAsset: Readonly<{
+    /**
+     * Create a frozen instance of {@link ConversionAsset}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ConversionAsset> & Required<Omit<ConversionAsset, never>>) => ConversionAsset;
+    /**
+     * Create a frozen instance of {@link ConversionAsset}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ConversionAsset> & Required<Omit<ConversionAsset, never>>) => ConversionAsset;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ConversionAsset>;
+}>;
+/**
+ * Outlines the steps involved in one or more conversions on a payment.
+ *
+ * Built progressively: `status` is available immediately from payment metadata,
+ * while `conversions` are enriched later from child payments and conversion info.
+ */
+export type ConversionDetails = {
+    /**
+     * Overall status of the conversion (persisted in storage)
+     */
+    status: ConversionStatus;
+    /**
+     * Ordered list of conversion steps. For sends: [AMM, cross-chain].
+     * For receives: [cross-chain, AMM]. Rebuilt on retrieval, not persisted.
+     */
+    conversions: Array<Conversion>;
 };
 /**
  * Generated factory for {@link ConversionDetails} record objects.
@@ -1261,52 +1355,6 @@ export declare const ConversionEstimate: Readonly<{
      */
     defaults: () => Partial<ConversionEstimate>;
 }>;
-export type ConversionInfo = {
-    /**
-     * The pool id associated with the conversion
-     */
-    poolId: string;
-    /**
-     * The conversion id shared by both sides of the conversion
-     */
-    conversionId: string;
-    /**
-     * The status of the conversion
-     */
-    status: ConversionStatus;
-    /**
-     * The fee paid for the conversion
-     * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
-     */
-    fee: U128 | undefined;
-    /**
-     * The purpose of the conversion
-     */
-    purpose: ConversionPurpose | undefined;
-    /**
-     * The reason the conversion amount was adjusted, if applicable.
-     */
-    amountAdjustment: AmountAdjustmentReason | undefined;
-};
-/**
- * Generated factory for {@link ConversionInfo} record objects.
- */
-export declare const ConversionInfo: Readonly<{
-    /**
-     * Create a frozen instance of {@link ConversionInfo}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create: (partial: Partial<ConversionInfo> & Required<Omit<ConversionInfo, never>>) => ConversionInfo;
-    /**
-     * Create a frozen instance of {@link ConversionInfo}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: (partial: Partial<ConversionInfo> & Required<Omit<ConversionInfo, never>>) => ConversionInfo;
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Partial<ConversionInfo>;
-}>;
 /**
  * Options for conversion when fulfilling a payment. When set, the SDK will
  * perform a conversion before fulfilling the payment. If not set, the payment
@@ -1352,53 +1400,44 @@ export declare const ConversionOptions: Readonly<{
     defaults: () => Partial<ConversionOptions>;
 }>;
 /**
- * A single step in a conversion
+ * One side (source or destination) of a conversion.
  */
-export type ConversionStep = {
+export type ConversionSide = {
     /**
-     * The underlying payment id of the conversion step
+     * The chain or network for this side.
      */
-    paymentId: string;
+    chain: ConversionChain;
     /**
-     * Payment amount in satoshis or token base units
+     * The asset being converted on this side.
+     */
+    asset: ConversionAsset;
+    /**
+     * Amount in base units (satoshis or token base units)
      */
     amount: U128;
     /**
-     * Fee paid in satoshis or token base units
-     * This represents the payment fee + the conversion fee
+     * Fee in the same base units
      */
     fee: U128;
-    /**
-     * Method of payment
-     */
-    method: PaymentMethod;
-    /**
-     * Token metadata if a token is used for payment
-     */
-    tokenMetadata: TokenMetadata | undefined;
-    /**
-     * The reason the conversion amount was adjusted, if applicable.
-     */
-    amountAdjustment: AmountAdjustmentReason | undefined;
 };
 /**
- * Generated factory for {@link ConversionStep} record objects.
+ * Generated factory for {@link ConversionSide} record objects.
  */
-export declare const ConversionStep: Readonly<{
+export declare const ConversionSide: Readonly<{
     /**
-     * Create a frozen instance of {@link ConversionStep}, with defaults specified
+     * Create a frozen instance of {@link ConversionSide}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<ConversionStep> & Required<Omit<ConversionStep, never>>) => ConversionStep;
+    create: (partial: Partial<ConversionSide> & Required<Omit<ConversionSide, never>>) => ConversionSide;
     /**
-     * Create a frozen instance of {@link ConversionStep}, with defaults specified
+     * Create a frozen instance of {@link ConversionSide}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<ConversionStep> & Required<Omit<ConversionStep, never>>) => ConversionStep;
+    new: (partial: Partial<ConversionSide> & Required<Omit<ConversionSide, never>>) => ConversionSide;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
-    defaults: () => Partial<ConversionStep>;
+    defaults: () => Partial<ConversionSide>;
 }>;
 export type CreateIssuerTokenRequest = {
     name: string;
@@ -1448,6 +1487,137 @@ export declare const Credentials: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<Credentials>;
+}>;
+export type CrossChainAddressDetails = {
+    address: string;
+    addressFamily: CrossChainAddressFamily;
+    contractAddress: string | undefined;
+    chainId: /*u64*/ bigint | undefined;
+    amount: U128 | undefined;
+};
+/**
+ * Generated factory for {@link CrossChainAddressDetails} record objects.
+ */
+export declare const CrossChainAddressDetails: Readonly<{
+    /**
+     * Create a frozen instance of {@link CrossChainAddressDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CrossChainAddressDetails> & Required<Omit<CrossChainAddressDetails, never>>) => CrossChainAddressDetails;
+    /**
+     * Create a frozen instance of {@link CrossChainAddressDetails}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CrossChainAddressDetails> & Required<Omit<CrossChainAddressDetails, never>>) => CrossChainAddressDetails;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CrossChainAddressDetails>;
+}>;
+/**
+ * Configuration for cross-chain sends.
+ *
+ * The presence of this struct on [`Config::cross_chain_config`] enables
+ * cross-chain providers; `None` disables them.
+ */
+export type CrossChainConfig = {
+    /**
+     * Default maximum slippage in basis points used when
+     * [`PaymentRequest::CrossChain::max_slippage_bps`] is not set on the
+     * prepare request. Must be in `10..=500`. Falls back to 100 bps (1%)
+     * when this field is `None`.
+     */
+    defaultSlippageBps: /*u32*/ number | undefined;
+    /**
+     * Default target-overpay pad in basis points applied to the user's
+     * destination amount on `FeesExcluded` conversion sends. Bumps the
+     * target upward before quoting so the recipient lands at or above the
+     * requested amount despite provider slippage. Must be in `0..=500`.
+     * Falls back to 15 bps when `None`.
+     */
+    defaultTargetOverpayBps: /*u32*/ number | undefined;
+};
+/**
+ * Generated factory for {@link CrossChainConfig} record objects.
+ */
+export declare const CrossChainConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link CrossChainConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CrossChainConfig> & Required<Omit<CrossChainConfig, "defaultSlippageBps" | "defaultTargetOverpayBps">>) => CrossChainConfig;
+    /**
+     * Create a frozen instance of {@link CrossChainConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CrossChainConfig> & Required<Omit<CrossChainConfig, "defaultSlippageBps" | "defaultTargetOverpayBps">>) => CrossChainConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CrossChainConfig>;
+}>;
+/**
+ * A single route available for cross-chain transfers, tagged with the provider
+ * that offers it. Returned by `get_cross_chain_routes()`.
+ */
+export type CrossChainRoutePair = {
+    /**
+     * Which provider offers this route.
+     */
+    provider: CrossChainProvider;
+    /**
+     * Destination blockchain (e.g. `"base"`, `"solana"`, `"tron"`).
+     */
+    chain: string;
+    /**
+     * Stable chain identifier (e.g. EVM `chainId` as a decimal string).
+     * `None` for non-EVM chains that don't expose one, or when the
+     * provider doesn't surface it.
+     */
+    chainId: string | undefined;
+    /**
+     * Destination asset symbol (e.g. `"USDC"`, `"USDT"`).
+     */
+    asset: string;
+    /**
+     * Token contract / mint address on the destination chain.
+     */
+    contractAddress: string | undefined;
+    /**
+     * Decimal places for the destination asset.
+     */
+    decimals: number;
+    /**
+     * Whether the route supports exact-out mode.
+     */
+    exactOutEligible: boolean;
+    /**
+     * The source assets this route accepts on the Spark side.
+     *
+     * Boltz routes accept `[SourceAsset::Bitcoin]`. Orchestra routes accept
+     * one or more of `Bitcoin` / `Token(...)` (a given destination endpoint
+     * may be fronted by multiple source variants on Orchestra).
+     */
+    supportedSources: Array<SourceAsset>;
+};
+/**
+ * Generated factory for {@link CrossChainRoutePair} record objects.
+ */
+export declare const CrossChainRoutePair: Readonly<{
+    /**
+     * Create a frozen instance of {@link CrossChainRoutePair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CrossChainRoutePair> & Required<Omit<CrossChainRoutePair, never>>) => CrossChainRoutePair;
+    /**
+     * Create a frozen instance of {@link CrossChainRoutePair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CrossChainRoutePair> & Required<Omit<CrossChainRoutePair, never>>) => CrossChainRoutePair;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CrossChainRoutePair>;
 }>;
 /**
  * Details about a supported currency in the fiat rate feed
@@ -4105,6 +4275,10 @@ export type PaymentMetadata = {
     lnurlPayInfo: LnurlPayInfo | undefined;
     lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
     lnurlDescription: string | undefined;
+    /**
+     * Conversion info for this payment. Defaults `"type"` to `"amm"` when the
+     * tag is missing (pre-migration sync records).
+     */
     conversionInfo: ConversionInfo | undefined;
     conversionStatus: ConversionStatus | undefined;
 };
@@ -4168,7 +4342,7 @@ export type PrepareLnurlPayRequest = {
      */
     conversionOptions: ConversionOptions | undefined;
     /**
-     * How fees should be handled. Defaults to `FeesExcluded` (fees added on top).
+     * How fees are handled. See [`FeePolicy`]. Defaults to `FeesExcluded`.
      */
     feePolicy: FeePolicy | undefined;
 };
@@ -4213,7 +4387,9 @@ export type PrepareLnurlPayResponse = {
      */
     conversionEstimate: ConversionEstimate | undefined;
     /**
-     * How fees are handled for this payment.
+     * The fee policy actually applied. May differ from the request — e.g.,
+     * LNURL sends with `token_identifier` set + conversion are always
+     * `FeesIncluded` (explicit `FeesExcluded` is rejected).
      */
     feePolicy: FeePolicy;
 };
@@ -4237,7 +4413,7 @@ export declare const PrepareLnurlPayResponse: Readonly<{
     defaults: () => Partial<PrepareLnurlPayResponse>;
 }>;
 export type PrepareSendPaymentRequest = {
-    paymentRequest: string;
+    paymentRequest: PaymentRequest;
     /**
      * The amount to send.
      * Optional for payment requests with embedded amounts (e.g., Spark/Bolt11 invoices with amounts).
@@ -4255,7 +4431,13 @@ export type PrepareSendPaymentRequest = {
      */
     conversionOptions: ConversionOptions | undefined;
     /**
-     * How fees should be handled. Defaults to `FeesExcluded` (fees added on top).
+     * How fees are handled. See [`FeePolicy`]. Defaults to `FeesExcluded`.
+     *
+     * Ignored on cross-chain AMM-conversion sends (whether the conversion was
+     * explicitly requested or auto-injected by stable balance) — fees come
+     * out of the converted sats. Bolt11 and Bitcoin AMM-conversion sends
+     * still respect this field by sizing the conversion to cover fees. The
+     * prepare response's `fee_policy` reflects what was actually applied.
      */
     feePolicy: FeePolicy | undefined;
 };
@@ -4297,7 +4479,8 @@ export type PrepareSendPaymentResponse = {
      */
     conversionEstimate: ConversionEstimate | undefined;
     /**
-     * How fees are handled for this payment.
+     * The fee policy actually applied. May differ from the request — e.g.,
+     * cross-chain AMM-conversion sends are always `FeesIncluded`.
      */
     feePolicy: FeePolicy;
 };
@@ -4966,7 +5149,8 @@ export type SendPaymentRequest = {
     prepareResponse: PrepareSendPaymentResponse;
     options: SendPaymentOptions | undefined;
     /**
-     * The optional idempotency key for all Spark based transfers (excludes token payments).
+     * The optional idempotency key for all Spark based transfers (excludes token payments
+     * and cross-chain sends).
      * If set, providing the same idempotency key for multiple requests will ensure that only one
      * payment is made. If an idempotency key is re-used, the same payment will be returned.
      * The idempotency key must be a valid UUID.
@@ -5514,6 +5698,13 @@ export type SparkSigningOperator = {
      * Hex-encoded compressed public key of the operator.
      */
     identityPublicKey: string;
+    /**
+     * Optional PEM-encoded CA certificate for TLS verification.
+     * When set, the SDK uses this CA to verify the operator's TLS certificate
+     * instead of the system/default roots. Useful for local development with
+     * self-signed certificates.
+     */
+    caCertPem: string | undefined;
 };
 /**
  * Generated factory for {@link SparkSigningOperator} record objects.
@@ -5733,6 +5924,64 @@ export declare const StorageListPaymentsRequest: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<StorageListPaymentsRequest>;
+}>;
+/**
+ * A cross-chain swap row as persisted and synced. Shared across providers
+ * (Boltz, Orchestra, future) so each provider's adapter writes opaque
+ * JSON into `data` and (optionally) opaque ciphertext into `secrets`.
+ *
+ * For providers with money-critical secrets, the adapter lifts them out of
+ * the swap JSON, ECIES-encrypts them, and carries only the ciphertext in
+ * `secrets`. The storage layer treats both fields as opaque, so it needs
+ * no signer.
+ */
+export type StoredCrossChainSwap = {
+    /**
+     * Provider tag (e.g. `"boltz"`, `"orchestra"`).
+     */
+    provider: string;
+    /**
+     * Provider-scoped swap id (boltz swap id, orchestra quote-or-order id).
+     */
+    id: string;
+    /**
+     * Lifted from the underlying swap's terminal flag into an indexed column
+     * so `list_active_cross_chain_swaps` filters without parsing `data`.
+     */
+    isTerminal: boolean;
+    /**
+     * Lifted from the underlying swap's `updated_at` into a column so the
+     * row's freshness is inspectable without parsing `data`.
+     */
+    updatedAt: bigint;
+    /**
+     * Serialized JSON owned by the cross-chain provider's storage adapter.
+     */
+    data: string;
+    /**
+     * Base64 of the ECIES ciphertext of the provider's lifted secrets.
+     * Empty for providers with no money-critical secrets to protect at rest.
+     */
+    secrets: string;
+};
+/**
+ * Generated factory for {@link StoredCrossChainSwap} record objects.
+ */
+export declare const StoredCrossChainSwap: Readonly<{
+    /**
+     * Create a frozen instance of {@link StoredCrossChainSwap}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<StoredCrossChainSwap> & Required<Omit<StoredCrossChainSwap, never>>) => StoredCrossChainSwap;
+    /**
+     * Create a frozen instance of {@link StoredCrossChainSwap}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<StoredCrossChainSwap> & Required<Omit<StoredCrossChainSwap, never>>) => StoredCrossChainSwap;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<StoredCrossChainSwap>;
 }>;
 /**
  * Settings for the symbol representation of a currency
@@ -7290,6 +7539,683 @@ export declare const ChainServiceError: Readonly<{
     };
 }>;
 export type ChainServiceError = InstanceType<(typeof ChainServiceError)[keyof Omit<typeof ChainServiceError, 'instanceOf'>]>;
+export declare enum ConversionChain_Tags {
+    Spark = "Spark",
+    Lightning = "Lightning",
+    External = "External"
+}
+/**
+ * The chain or network that a [`ConversionSide`] lives on.
+ */
+export declare const ConversionChain: Readonly<{
+    instanceOf: (obj: any) => obj is ConversionChain;
+    Spark: {
+        new (): {
+            readonly tag: ConversionChain_Tags.Spark;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionChain";
+        };
+        "new"(): {
+            readonly tag: ConversionChain_Tags.Spark;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionChain";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ConversionChain_Tags.Spark;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionChain";
+        };
+    };
+    Lightning: {
+        new (): {
+            readonly tag: ConversionChain_Tags.Lightning;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionChain";
+        };
+        "new"(): {
+            readonly tag: ConversionChain_Tags.Lightning;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionChain";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ConversionChain_Tags.Lightning;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionChain";
+        };
+    };
+    External: {
+        new (inner: {
+            /**
+             * Human-readable chain name (e.g. `"base"`, `"solana"`, `"arbitrum"`).
+             */ name: string;
+            /**
+             * Stable chain identifier (e.g. EVM `chainId` as a decimal string,
+             * or a chain-native identifier). `None` when the provider does not
+             * expose one for this route.
+             */ chainId: string | undefined;
+        }): {
+            readonly tag: ConversionChain_Tags.External;
+            readonly inner: Readonly<{
+                name: string;
+                chainId: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionChain";
+        };
+        "new"(inner: {
+            /**
+             * Human-readable chain name (e.g. `"base"`, `"solana"`, `"arbitrum"`).
+             */ name: string;
+            /**
+             * Stable chain identifier (e.g. EVM `chainId` as a decimal string,
+             * or a chain-native identifier). `None` when the provider does not
+             * expose one for this route.
+             */ chainId: string | undefined;
+        }): {
+            readonly tag: ConversionChain_Tags.External;
+            readonly inner: Readonly<{
+                name: string;
+                chainId: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionChain";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ConversionChain_Tags.External;
+            readonly inner: Readonly<{
+                name: string;
+                chainId: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionChain";
+        };
+    };
+}>;
+/**
+ * The chain or network that a [`ConversionSide`] lives on.
+ */
+export type ConversionChain = InstanceType<(typeof ConversionChain)[keyof Omit<typeof ConversionChain, 'instanceOf'>]>;
+/**
+ * Selects payments by conversion type + status for background tasks.
+ */
+export declare enum ConversionFilter {
+    /**
+     * AMM conversions that need a refund (clawback).
+     */
+    AmmRefundNeeded = 0,
+    /**
+     * Orchestra orders that have not yet reached a terminal state.
+     */
+    OrchestraPending = 1,
+    /**
+     * Boltz reverse swaps that have not yet reached a terminal state. Lives on
+     * the Lightning leg (the hold-invoice pay), so it is selected via the
+     * [`StoragePaymentDetailsFilter::Lightning`] filter.
+     */
+    BoltzPending = 2
+}
+export declare enum ConversionInfo_Tags {
+    Amm = "Amm",
+    Orchestra = "Orchestra",
+    Boltz = "Boltz"
+}
+/**
+ * Details of the asset conversion attached to a payment, when the payment
+ * involves a swap or cross-chain bridge in addition to the on-Spark transfer.
+ *
+ * The variant identifies which provider handled the conversion:
+ * - [`ConversionInfo::Amm`] for Spark token swaps via Flashnet AMM pools.
+ * - [`ConversionInfo::Orchestra`] for cross-chain sends via Flashnet
+ * Orchestra (Spark → external chain).
+ * - [`ConversionInfo::Boltz`] for sats → stable-coin reverse swaps via Boltz.
+ */
+export declare const ConversionInfo: Readonly<{
+    instanceOf: (obj: any) => obj is ConversionInfo;
+    Amm: {
+        new (inner: {
+            /**
+             * The pool id associated with the conversion
+             */ poolId: string;
+            /**
+             * The conversion id shared by both sides of the conversion
+             */ conversionId: string;
+            /**
+             * The status of the conversion
+             */ status: ConversionStatus;
+            /**
+             * The fee paid for the conversion.
+             * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+             */ fee: U128 | undefined;
+            /**
+             * The purpose of the conversion
+             */ purpose: ConversionPurpose | undefined;
+            /**
+             * The reason the conversion amount was adjusted, if applicable.
+             */ amountAdjustment: AmountAdjustmentReason | undefined;
+        }): {
+            readonly tag: ConversionInfo_Tags.Amm;
+            readonly inner: Readonly<{
+                poolId: string;
+                conversionId: string;
+                status: ConversionStatus;
+                fee: U128 | undefined;
+                purpose: ConversionPurpose | undefined;
+                amountAdjustment: AmountAdjustmentReason | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionInfo";
+        };
+        "new"(inner: {
+            /**
+             * The pool id associated with the conversion
+             */ poolId: string;
+            /**
+             * The conversion id shared by both sides of the conversion
+             */ conversionId: string;
+            /**
+             * The status of the conversion
+             */ status: ConversionStatus;
+            /**
+             * The fee paid for the conversion.
+             * Denominated in satoshis if converting from Bitcoin, otherwise in the token base units.
+             */ fee: U128 | undefined;
+            /**
+             * The purpose of the conversion
+             */ purpose: ConversionPurpose | undefined;
+            /**
+             * The reason the conversion amount was adjusted, if applicable.
+             */ amountAdjustment: AmountAdjustmentReason | undefined;
+        }): {
+            readonly tag: ConversionInfo_Tags.Amm;
+            readonly inner: Readonly<{
+                poolId: string;
+                conversionId: string;
+                status: ConversionStatus;
+                fee: U128 | undefined;
+                purpose: ConversionPurpose | undefined;
+                amountAdjustment: AmountAdjustmentReason | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionInfo";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ConversionInfo_Tags.Amm;
+            readonly inner: Readonly<{
+                poolId: string;
+                conversionId: string;
+                status: ConversionStatus;
+                fee: U128 | undefined;
+                purpose: ConversionPurpose | undefined;
+                amountAdjustment: AmountAdjustmentReason | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionInfo";
+        };
+    };
+    Orchestra: {
+        new (inner: {
+            /**
+             * The Orchestra order id returned by `/v1/orchestration/submit`.
+             */ orderId: string;
+            /**
+             * The Orchestra quote id used to create this order.
+             */ quoteId: string;
+            /**
+             * Opaque token required for querying order status.
+             */ readToken: string | undefined;
+            /**
+             * Chain name (e.g. `"base"`, `"solana"`, `"tron"`).
+             */ chain: string;
+            /**
+             * Stable chain identifier (e.g. EVM `chainId` decimal string `"8453"`
+             * for Base, SLIP-44 or similar for other chains). `None` if the
+             * provider doesn't expose one for this route.
+             */ chainId: string | undefined;
+            /**
+             * Asset ticker (e.g. `"USDC"`, `"USDT"`).
+             */ asset: string;
+            /**
+             * Recipient address on the target chain.
+             */ recipientAddress: string;
+            /**
+             * Amount in expressed in the cross-chain asset's base units, via
+             * the rate the SDK used at prepare time.
+             */ assetAmountIn: U128 | undefined;
+            /**
+             * Estimated recipient amount, frozen at prepare time.
+             */ estimatedOut: U128;
+            /**
+             * Actual delivered amount, Unset until the order reaches a terminal state.
+             */ deliveredAmount: U128 | undefined;
+            status: ConversionStatus;
+            /**
+             * Best-available total fee in destination asset base units.
+             * Prepare-time estimate while pending, realized fee when Completed.
+             */ feeAmount: U128 | undefined;
+            /**
+             * Orchestra service fee.
+             */ serviceFeeAmount: U128 | undefined;
+            /**
+             * Asset the service fee is denominated in. Unset means BTC sats.
+             */ serviceFeeAsset: string | undefined;
+            /**
+             * Asset decimals (e.g. 6 for USDC).
+             */ assetDecimals: number;
+            /**
+             * Token contract / mint address. Unset for native-asset destinations.
+             */ assetContract: string | undefined;
+        }): {
+            readonly tag: ConversionInfo_Tags.Orchestra;
+            readonly inner: Readonly<{
+                orderId: string;
+                quoteId: string;
+                readToken: string | undefined;
+                chain: string;
+                chainId: string | undefined;
+                asset: string;
+                recipientAddress: string;
+                assetAmountIn: U128 | undefined;
+                estimatedOut: U128;
+                deliveredAmount: U128 | undefined;
+                status: ConversionStatus;
+                feeAmount: U128 | undefined;
+                serviceFeeAmount: U128 | undefined;
+                serviceFeeAsset: string | undefined;
+                assetDecimals: number;
+                assetContract: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionInfo";
+        };
+        "new"(inner: {
+            /**
+             * The Orchestra order id returned by `/v1/orchestration/submit`.
+             */ orderId: string;
+            /**
+             * The Orchestra quote id used to create this order.
+             */ quoteId: string;
+            /**
+             * Opaque token required for querying order status.
+             */ readToken: string | undefined;
+            /**
+             * Chain name (e.g. `"base"`, `"solana"`, `"tron"`).
+             */ chain: string;
+            /**
+             * Stable chain identifier (e.g. EVM `chainId` decimal string `"8453"`
+             * for Base, SLIP-44 or similar for other chains). `None` if the
+             * provider doesn't expose one for this route.
+             */ chainId: string | undefined;
+            /**
+             * Asset ticker (e.g. `"USDC"`, `"USDT"`).
+             */ asset: string;
+            /**
+             * Recipient address on the target chain.
+             */ recipientAddress: string;
+            /**
+             * Amount in expressed in the cross-chain asset's base units, via
+             * the rate the SDK used at prepare time.
+             */ assetAmountIn: U128 | undefined;
+            /**
+             * Estimated recipient amount, frozen at prepare time.
+             */ estimatedOut: U128;
+            /**
+             * Actual delivered amount, Unset until the order reaches a terminal state.
+             */ deliveredAmount: U128 | undefined;
+            status: ConversionStatus;
+            /**
+             * Best-available total fee in destination asset base units.
+             * Prepare-time estimate while pending, realized fee when Completed.
+             */ feeAmount: U128 | undefined;
+            /**
+             * Orchestra service fee.
+             */ serviceFeeAmount: U128 | undefined;
+            /**
+             * Asset the service fee is denominated in. Unset means BTC sats.
+             */ serviceFeeAsset: string | undefined;
+            /**
+             * Asset decimals (e.g. 6 for USDC).
+             */ assetDecimals: number;
+            /**
+             * Token contract / mint address. Unset for native-asset destinations.
+             */ assetContract: string | undefined;
+        }): {
+            readonly tag: ConversionInfo_Tags.Orchestra;
+            readonly inner: Readonly<{
+                orderId: string;
+                quoteId: string;
+                readToken: string | undefined;
+                chain: string;
+                chainId: string | undefined;
+                asset: string;
+                recipientAddress: string;
+                assetAmountIn: U128 | undefined;
+                estimatedOut: U128;
+                deliveredAmount: U128 | undefined;
+                status: ConversionStatus;
+                feeAmount: U128 | undefined;
+                serviceFeeAmount: U128 | undefined;
+                serviceFeeAsset: string | undefined;
+                assetDecimals: number;
+                assetContract: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionInfo";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ConversionInfo_Tags.Orchestra;
+            readonly inner: Readonly<{
+                orderId: string;
+                quoteId: string;
+                readToken: string | undefined;
+                chain: string;
+                chainId: string | undefined;
+                asset: string;
+                recipientAddress: string;
+                assetAmountIn: U128 | undefined;
+                estimatedOut: U128;
+                deliveredAmount: U128 | undefined;
+                status: ConversionStatus;
+                feeAmount: U128 | undefined;
+                serviceFeeAmount: U128 | undefined;
+                serviceFeeAsset: string | undefined;
+                assetDecimals: number;
+                assetContract: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionInfo";
+        };
+    };
+    Boltz: {
+        new (inner: {
+            /**
+             * The Boltz swap id returned by `POST /swap/reverse`.
+             */ swapId: string;
+            /**
+             * The BOLT11 hold invoice paid on the Spark/Lightning side.
+             */ invoice: string;
+            /**
+             * Amount of the hold invoice in sats.
+             */ invoiceAmountSats: bigint;
+            /**
+             * Cross-chain bridge tracking handle for bridged swaps: a `LayerZero`
+             * message GUID for OFT (USDT0) routes, or a CCTP reference for USDC
+             * routes. `None` for same-chain (Arbitrum-direct) delivery.
+             */ bridgeRef: string | undefined;
+            /**
+             * DEX slippage tolerance (basis points) committed at prepare time.
+             */ maxSlippageBps: number;
+            /**
+             * Whether the claim-time DEX quote drifted beyond `max_slippage_bps`.
+             */ quoteDegraded: boolean;
+            /**
+             * Chain name (e.g. `"arbitrum"`, `"solana"`, `"tron"`).
+             */ chain: string;
+            /**
+             * Stable chain identifier (e.g. EVM `chainId` decimal string `"42161"`
+             * for Arbitrum). `None` if the provider doesn't expose one for this
+             * route.
+             */ chainId: string | undefined;
+            /**
+             * Asset ticker (e.g. `"USDT"`, `"USDT0"`).
+             */ asset: string;
+            /**
+             * Recipient address on the target chain.
+             */ recipientAddress: string;
+            /**
+             * Estimated amount in the asset's base units, frozen at prepare time.
+             */ estimatedOut: U128;
+            /**
+             * Actual amount delivered. `None` until the claim receipt is processed.
+             */ deliveredAmount: U128 | undefined;
+            /**
+             * Current status of the reverse swap.
+             */ status: ConversionStatus;
+            /**
+             * Amount in expressed in the cross-chain asset's base units, via the
+             * BTC/USD rate the SDK used at prepare time.
+             */ assetAmountIn: U128 | undefined;
+            /**
+             * Best-available total fee in destination asset base units.
+             * Prepare-time estimate while pending, realized fee on Completed.
+             */ feeAmount: U128 | undefined;
+            /**
+             * Boltz spread in sats.
+             */ serviceFeeAmount: U128 | undefined;
+            /**
+             * Asset service fee is denominated in. Unset means BTC sats.
+             */ serviceFeeAsset: string | undefined;
+            /**
+             * Asset decimals (e.g. 6 for USDT).
+             */ assetDecimals: number;
+            /**
+             * Token contract / mint address. Unset for native-asset destinations.
+             */ assetContract: string | undefined;
+        }): {
+            readonly tag: ConversionInfo_Tags.Boltz;
+            readonly inner: Readonly<{
+                swapId: string;
+                invoice: string;
+                invoiceAmountSats: bigint;
+                bridgeRef: string | undefined;
+                maxSlippageBps: number;
+                quoteDegraded: boolean;
+                chain: string;
+                chainId: string | undefined;
+                asset: string;
+                recipientAddress: string;
+                estimatedOut: U128;
+                deliveredAmount: U128 | undefined;
+                status: ConversionStatus;
+                assetAmountIn: U128 | undefined;
+                feeAmount: U128 | undefined;
+                serviceFeeAmount: U128 | undefined;
+                serviceFeeAsset: string | undefined;
+                assetDecimals: number;
+                assetContract: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionInfo";
+        };
+        "new"(inner: {
+            /**
+             * The Boltz swap id returned by `POST /swap/reverse`.
+             */ swapId: string;
+            /**
+             * The BOLT11 hold invoice paid on the Spark/Lightning side.
+             */ invoice: string;
+            /**
+             * Amount of the hold invoice in sats.
+             */ invoiceAmountSats: bigint;
+            /**
+             * Cross-chain bridge tracking handle for bridged swaps: a `LayerZero`
+             * message GUID for OFT (USDT0) routes, or a CCTP reference for USDC
+             * routes. `None` for same-chain (Arbitrum-direct) delivery.
+             */ bridgeRef: string | undefined;
+            /**
+             * DEX slippage tolerance (basis points) committed at prepare time.
+             */ maxSlippageBps: number;
+            /**
+             * Whether the claim-time DEX quote drifted beyond `max_slippage_bps`.
+             */ quoteDegraded: boolean;
+            /**
+             * Chain name (e.g. `"arbitrum"`, `"solana"`, `"tron"`).
+             */ chain: string;
+            /**
+             * Stable chain identifier (e.g. EVM `chainId` decimal string `"42161"`
+             * for Arbitrum). `None` if the provider doesn't expose one for this
+             * route.
+             */ chainId: string | undefined;
+            /**
+             * Asset ticker (e.g. `"USDT"`, `"USDT0"`).
+             */ asset: string;
+            /**
+             * Recipient address on the target chain.
+             */ recipientAddress: string;
+            /**
+             * Estimated amount in the asset's base units, frozen at prepare time.
+             */ estimatedOut: U128;
+            /**
+             * Actual amount delivered. `None` until the claim receipt is processed.
+             */ deliveredAmount: U128 | undefined;
+            /**
+             * Current status of the reverse swap.
+             */ status: ConversionStatus;
+            /**
+             * Amount in expressed in the cross-chain asset's base units, via the
+             * BTC/USD rate the SDK used at prepare time.
+             */ assetAmountIn: U128 | undefined;
+            /**
+             * Best-available total fee in destination asset base units.
+             * Prepare-time estimate while pending, realized fee on Completed.
+             */ feeAmount: U128 | undefined;
+            /**
+             * Boltz spread in sats.
+             */ serviceFeeAmount: U128 | undefined;
+            /**
+             * Asset service fee is denominated in. Unset means BTC sats.
+             */ serviceFeeAsset: string | undefined;
+            /**
+             * Asset decimals (e.g. 6 for USDT).
+             */ assetDecimals: number;
+            /**
+             * Token contract / mint address. Unset for native-asset destinations.
+             */ assetContract: string | undefined;
+        }): {
+            readonly tag: ConversionInfo_Tags.Boltz;
+            readonly inner: Readonly<{
+                swapId: string;
+                invoice: string;
+                invoiceAmountSats: bigint;
+                bridgeRef: string | undefined;
+                maxSlippageBps: number;
+                quoteDegraded: boolean;
+                chain: string;
+                chainId: string | undefined;
+                asset: string;
+                recipientAddress: string;
+                estimatedOut: U128;
+                deliveredAmount: U128 | undefined;
+                status: ConversionStatus;
+                assetAmountIn: U128 | undefined;
+                feeAmount: U128 | undefined;
+                serviceFeeAmount: U128 | undefined;
+                serviceFeeAsset: string | undefined;
+                assetDecimals: number;
+                assetContract: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionInfo";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ConversionInfo_Tags.Boltz;
+            readonly inner: Readonly<{
+                swapId: string;
+                invoice: string;
+                invoiceAmountSats: bigint;
+                bridgeRef: string | undefined;
+                maxSlippageBps: number;
+                quoteDegraded: boolean;
+                chain: string;
+                chainId: string | undefined;
+                asset: string;
+                recipientAddress: string;
+                estimatedOut: U128;
+                deliveredAmount: U128 | undefined;
+                status: ConversionStatus;
+                assetAmountIn: U128 | undefined;
+                feeAmount: U128 | undefined;
+                serviceFeeAmount: U128 | undefined;
+                serviceFeeAsset: string | undefined;
+                assetDecimals: number;
+                assetContract: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ConversionInfo";
+        };
+    };
+}>;
+/**
+ * Details of the asset conversion attached to a payment, when the payment
+ * involves a swap or cross-chain bridge in addition to the on-Spark transfer.
+ *
+ * The variant identifies which provider handled the conversion:
+ * - [`ConversionInfo::Amm`] for Spark token swaps via Flashnet AMM pools.
+ * - [`ConversionInfo::Orchestra`] for cross-chain sends via Flashnet
+ * Orchestra (Spark → external chain).
+ * - [`ConversionInfo::Boltz`] for sats → stable-coin reverse swaps via Boltz.
+ */
+export type ConversionInfo = InstanceType<(typeof ConversionInfo)[keyof Omit<typeof ConversionInfo, 'instanceOf'>]>;
+/**
+ * The provider that performed a conversion.
+ */
+export declare enum ConversionProvider {
+    /**
+     * AMM (Flashnet pool) conversion between token and BTC on Spark
+     */
+    Amm = 0,
+    /**
+     * Orchestra cross-chain conversion
+     */
+    Orchestra = 1,
+    /**
+     * Boltz reverse-swap cross-chain conversion
+     */
+    Boltz = 2
+}
 export declare enum ConversionPurpose_Tags {
     OngoingPayment = "OngoingPayment",
     SelfTransfer = "SelfTransfer",
@@ -7501,6 +8427,270 @@ export declare const ConversionType: Readonly<{
     };
 }>;
 export type ConversionType = InstanceType<(typeof ConversionType)[keyof Omit<typeof ConversionType, 'instanceOf'>]>;
+export declare enum CrossChainAddressFamily {
+    Evm = 0,
+    Solana = 1,
+    Tron = 2
+}
+/**
+ * How the caller wants fees handled against the request `amount`.
+ *
+ * - `FeesExcluded`: `amount` is the provider invoice/deposit target; the
+ * wallet pays `amount + source_transfer_fee_sats` in total.
+ * - `FeesIncluded`: `amount` is the wallet's total sats budget; the provider
+ * leg is sized so `amount_in + source_transfer_fee_sats <= amount`.
+ */
+export declare enum CrossChainFeeMode {
+    FeesExcluded = 0,
+    FeesIncluded = 1
+}
+export declare enum CrossChainProvider {
+    Orchestra = 0,
+    Boltz = 1
+}
+export declare enum CrossChainProviderContext_Tags {
+    Orchestra = "Orchestra",
+    Boltz = "Boltz"
+}
+/**
+ * Provider-internal state produced by `prepare` and consumed by `send`.
+ * Typed per provider so the send stage can resume without re-quoting and
+ * without a serde round-trip. Callers should round-trip this value as-is.
+ */
+export declare const CrossChainProviderContext: Readonly<{
+    instanceOf: (obj: any) => obj is CrossChainProviderContext;
+    Orchestra: {
+        new (inner: {
+            /**
+             * Orchestra quote id, passed back on `/submit`.
+             */ quoteId: string;
+            /**
+             * Spark address Orchestra expects the deposit transfer to land on.
+             */ depositAddress: string;
+            /**
+             * Spark-side deposit amount in the route's source-asset base units.
+             */ depositAmount: U128;
+        }): {
+            readonly tag: CrossChainProviderContext_Tags.Orchestra;
+            readonly inner: Readonly<{
+                quoteId: string;
+                depositAddress: string;
+                depositAmount: U128;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CrossChainProviderContext";
+        };
+        "new"(inner: {
+            /**
+             * Orchestra quote id, passed back on `/submit`.
+             */ quoteId: string;
+            /**
+             * Spark address Orchestra expects the deposit transfer to land on.
+             */ depositAddress: string;
+            /**
+             * Spark-side deposit amount in the route's source-asset base units.
+             */ depositAmount: U128;
+        }): {
+            readonly tag: CrossChainProviderContext_Tags.Orchestra;
+            readonly inner: Readonly<{
+                quoteId: string;
+                depositAddress: string;
+                depositAmount: U128;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CrossChainProviderContext";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: CrossChainProviderContext_Tags.Orchestra;
+            readonly inner: Readonly<{
+                quoteId: string;
+                depositAddress: string;
+                depositAmount: U128;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CrossChainProviderContext";
+        };
+    };
+    Boltz: {
+        new (inner: {
+            /**
+             * Boltz swap id.
+             */ swapId: string;
+            /**
+             * Hold invoice to pay.
+             */ invoice: string;
+            /**
+             * Hold invoice amount in sats.
+             */ invoiceAmountSats: bigint;
+            /**
+             * Slippage tolerance in basis points.
+             */ maxSlippageBps: number;
+        }): {
+            readonly tag: CrossChainProviderContext_Tags.Boltz;
+            readonly inner: Readonly<{
+                swapId: string;
+                invoice: string;
+                invoiceAmountSats: bigint;
+                maxSlippageBps: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CrossChainProviderContext";
+        };
+        "new"(inner: {
+            /**
+             * Boltz swap id.
+             */ swapId: string;
+            /**
+             * Hold invoice to pay.
+             */ invoice: string;
+            /**
+             * Hold invoice amount in sats.
+             */ invoiceAmountSats: bigint;
+            /**
+             * Slippage tolerance in basis points.
+             */ maxSlippageBps: number;
+        }): {
+            readonly tag: CrossChainProviderContext_Tags.Boltz;
+            readonly inner: Readonly<{
+                swapId: string;
+                invoice: string;
+                invoiceAmountSats: bigint;
+                maxSlippageBps: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CrossChainProviderContext";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: CrossChainProviderContext_Tags.Boltz;
+            readonly inner: Readonly<{
+                swapId: string;
+                invoice: string;
+                invoiceAmountSats: bigint;
+                maxSlippageBps: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CrossChainProviderContext";
+        };
+    };
+}>;
+/**
+ * Provider-internal state produced by `prepare` and consumed by `send`.
+ * Typed per provider so the send stage can resume without re-quoting and
+ * without a serde round-trip. Callers should round-trip this value as-is.
+ */
+export type CrossChainProviderContext = InstanceType<(typeof CrossChainProviderContext)[keyof Omit<typeof CrossChainProviderContext, 'instanceOf'>]>;
+export declare enum CrossChainRouteFilter_Tags {
+    Send = "Send",
+    Receive = "Receive"
+}
+/**
+ * Filter for [`CrossChainService::get_routes`] and the public
+ * `get_cross_chain_routes()` API.
+ */
+export declare const CrossChainRouteFilter: Readonly<{
+    instanceOf: (obj: any) => obj is CrossChainRouteFilter;
+    Send: {
+        new (inner: {
+            addressDetails: CrossChainAddressDetails;
+        }): {
+            readonly tag: CrossChainRouteFilter_Tags.Send;
+            readonly inner: Readonly<{
+                addressDetails: CrossChainAddressDetails;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CrossChainRouteFilter";
+        };
+        "new"(inner: {
+            addressDetails: CrossChainAddressDetails;
+        }): {
+            readonly tag: CrossChainRouteFilter_Tags.Send;
+            readonly inner: Readonly<{
+                addressDetails: CrossChainAddressDetails;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CrossChainRouteFilter";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: CrossChainRouteFilter_Tags.Send;
+            readonly inner: Readonly<{
+                addressDetails: CrossChainAddressDetails;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CrossChainRouteFilter";
+        };
+    };
+    Receive: {
+        new (inner: {
+            contractAddress: string | undefined;
+        }): {
+            readonly tag: CrossChainRouteFilter_Tags.Receive;
+            readonly inner: Readonly<{
+                contractAddress: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CrossChainRouteFilter";
+        };
+        "new"(inner: {
+            contractAddress: string | undefined;
+        }): {
+            readonly tag: CrossChainRouteFilter_Tags.Receive;
+            readonly inner: Readonly<{
+                contractAddress: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CrossChainRouteFilter";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: CrossChainRouteFilter_Tags.Receive;
+            readonly inner: Readonly<{
+                contractAddress: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CrossChainRouteFilter";
+        };
+    };
+}>;
+/**
+ * Filter for [`CrossChainService::get_routes`] and the public
+ * `get_cross_chain_routes()` API.
+ */
+export type CrossChainRouteFilter = InstanceType<(typeof CrossChainRouteFilter)[keyof Omit<typeof CrossChainRouteFilter, 'instanceOf'>]>;
 export declare enum DepositClaimError_Tags {
     MaxDepositClaimFeeExceeded = "MaxDepositClaimFeeExceeded",
     MissingUtxo = "MissingUtxo",
@@ -8078,16 +9268,24 @@ export declare const Fee: Readonly<{
 export type Fee = InstanceType<(typeof Fee)[keyof Omit<typeof Fee, 'instanceOf'>]>;
 /**
  * Specifies how fees are handled in a payment.
+ *
+ * "Fees" are the wallet's sender-paid fees (Lightning routing, on-chain,
+ * Spark transfer). They do not include provider spreads or destination-chain
+ * costs on cross-chain routes; those are reported separately via
+ * `estimated_out` on the prepare response and are not deterministic.
+ * `FeePolicy` only controls the wallet's spend accounting.
  */
 export declare enum FeePolicy {
     /**
-     * Fees are added on top of the specified amount (default behavior).
-     * The receiver gets the exact amount specified.
+     * Fees are added on top of `amount`. Wallet's total spend is
+     * `amount + fees`. For direct sat sends, the recipient receives exactly
+     * `amount`. Default.
      */
     FeesExcluded = 0,
     /**
-     * Fees are deducted from the specified amount.
-     * The receiver gets the amount minus fees.
+     * Fees are deducted from `amount`. Wallet's total spend is `amount`.
+     * Use this to drain a balance — pass `amount = balance` and the wallet
+     * spends exactly that.
      */
     FeesIncluded = 1
 }
@@ -8105,7 +9303,8 @@ export declare enum InputType_Tags {
     Bolt12InvoiceRequest = "Bolt12InvoiceRequest",
     LnurlWithdraw = "LnurlWithdraw",
     SparkAddress = "SparkAddress",
-    SparkInvoice = "SparkInvoice"
+    SparkInvoice = "SparkInvoice",
+    CrossChainAddress = "CrossChainAddress"
 }
 export declare const InputType: Readonly<{
     instanceOf: (obj: any) => obj is InputType;
@@ -8508,6 +9707,35 @@ export declare const InputType: Readonly<{
         instanceOf(obj: any): obj is {
             readonly tag: InputType_Tags.SparkInvoice;
             readonly inner: Readonly<[SparkInvoiceDetails]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "InputType";
+        };
+    };
+    CrossChainAddress: {
+        new (v0: CrossChainAddressDetails): {
+            readonly tag: InputType_Tags.CrossChainAddress;
+            readonly inner: Readonly<[CrossChainAddressDetails]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "InputType";
+        };
+        "new"(v0: CrossChainAddressDetails): {
+            readonly tag: InputType_Tags.CrossChainAddress;
+            readonly inner: Readonly<[CrossChainAddressDetails]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "InputType";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: InputType_Tags.CrossChainAddress;
+            readonly inner: Readonly<[CrossChainAddressDetails]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -9846,6 +11074,11 @@ export declare const PaymentDetails: Readonly<{
             /**
              * Lnurl receive information if this was a received lnurl payment.
              */ lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
+            /**
+             * The information for a conversion — populated when this Lightning
+             * payment is the source leg of a cross-chain conversion (e.g. a
+             * Boltz reverse swap paying a hold invoice).
+             */ conversionInfo: ConversionInfo | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Lightning;
             readonly inner: Readonly<{
@@ -9856,6 +11089,7 @@ export declare const PaymentDetails: Readonly<{
                 lnurlPayInfo: LnurlPayInfo | undefined;
                 lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
                 lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
+                conversionInfo: ConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -9887,6 +11121,11 @@ export declare const PaymentDetails: Readonly<{
             /**
              * Lnurl receive information if this was a received lnurl payment.
              */ lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
+            /**
+             * The information for a conversion — populated when this Lightning
+             * payment is the source leg of a cross-chain conversion (e.g. a
+             * Boltz reverse swap paying a hold invoice).
+             */ conversionInfo: ConversionInfo | undefined;
         }): {
             readonly tag: PaymentDetails_Tags.Lightning;
             readonly inner: Readonly<{
@@ -9897,6 +11136,7 @@ export declare const PaymentDetails: Readonly<{
                 lnurlPayInfo: LnurlPayInfo | undefined;
                 lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
                 lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
+                conversionInfo: ConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -9914,6 +11154,7 @@ export declare const PaymentDetails: Readonly<{
                 lnurlPayInfo: LnurlPayInfo | undefined;
                 lnurlWithdrawInfo: LnurlWithdrawInfo | undefined;
                 lnurlReceiveMetadata: LnurlReceiveMetadata | undefined;
+                conversionInfo: ConversionInfo | undefined;
             }>;
             /**
              * @private
@@ -10330,6 +11571,141 @@ export declare const PaymentObserverError: Readonly<{
     };
 }>;
 export type PaymentObserverError = InstanceType<(typeof PaymentObserverError)[keyof Omit<typeof PaymentObserverError, 'instanceOf'>]>;
+export declare enum PaymentRequest_Tags {
+    Input = "Input",
+    CrossChain = "CrossChain"
+}
+/**
+ * The payment destination. Either a raw string (bolt11, spark address, BIP-21,
+ * cross-chain URI, etc.) that is parsed internally, or a structured
+ * cross-chain destination with explicit chain + asset selection.
+ */
+export declare const PaymentRequest: Readonly<{
+    instanceOf: (obj: any) => obj is PaymentRequest;
+    Input: {
+        new (inner: {
+            input: string;
+        }): {
+            readonly tag: PaymentRequest_Tags.Input;
+            readonly inner: Readonly<{
+                input: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentRequest";
+        };
+        "new"(inner: {
+            input: string;
+        }): {
+            readonly tag: PaymentRequest_Tags.Input;
+            readonly inner: Readonly<{
+                input: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentRequest";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PaymentRequest_Tags.Input;
+            readonly inner: Readonly<{
+                input: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentRequest";
+        };
+    };
+    CrossChain: {
+        new (inner: {
+            address: string;
+            route: CrossChainRoutePair;
+            /**
+             * Maximum slippage tolerance in basis points (1/100 of a percent)
+             * for the cross-chain quote. Must be in `10..=500`. Falls back to
+             * [`Config::default_slippage_bps`] when `None`, which itself
+             * defaults to 100 bps (1%) when unset.
+             */ maxSlippageBps: /*u32*/ number | undefined;
+            /**
+             * Target-overpay pad in basis points applied on `FeesExcluded`
+             * conversion sends. Inflates the destination target before quoting
+             * so the recipient lands at or above the user's requested amount
+             * despite provider slippage. Must be in `0..=500`. Falls back to
+             * [`CrossChainConfig::default_target_overpay_bps`] when `None`,
+             * which itself defaults to 15 bps.
+             */ targetOverpayBps: /*u32*/ number | undefined;
+        }): {
+            readonly tag: PaymentRequest_Tags.CrossChain;
+            readonly inner: Readonly<{
+                address: string;
+                route: CrossChainRoutePair;
+                maxSlippageBps: /*u32*/ number | undefined;
+                targetOverpayBps: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentRequest";
+        };
+        "new"(inner: {
+            address: string;
+            route: CrossChainRoutePair;
+            /**
+             * Maximum slippage tolerance in basis points (1/100 of a percent)
+             * for the cross-chain quote. Must be in `10..=500`. Falls back to
+             * [`Config::default_slippage_bps`] when `None`, which itself
+             * defaults to 100 bps (1%) when unset.
+             */ maxSlippageBps: /*u32*/ number | undefined;
+            /**
+             * Target-overpay pad in basis points applied on `FeesExcluded`
+             * conversion sends. Inflates the destination target before quoting
+             * so the recipient lands at or above the user's requested amount
+             * despite provider slippage. Must be in `0..=500`. Falls back to
+             * [`CrossChainConfig::default_target_overpay_bps`] when `None`,
+             * which itself defaults to 15 bps.
+             */ targetOverpayBps: /*u32*/ number | undefined;
+        }): {
+            readonly tag: PaymentRequest_Tags.CrossChain;
+            readonly inner: Readonly<{
+                address: string;
+                route: CrossChainRoutePair;
+                maxSlippageBps: /*u32*/ number | undefined;
+                targetOverpayBps: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentRequest";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PaymentRequest_Tags.CrossChain;
+            readonly inner: Readonly<{
+                address: string;
+                route: CrossChainRoutePair;
+                maxSlippageBps: /*u32*/ number | undefined;
+                targetOverpayBps: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PaymentRequest";
+        };
+    };
+}>;
+/**
+ * The payment destination. Either a raw string (bolt11, spark address, BIP-21,
+ * cross-chain URI, etc.) that is parsed internally, or a structured
+ * cross-chain destination with explicit chain + asset selection.
+ */
+export type PaymentRequest = InstanceType<(typeof PaymentRequest)[keyof Omit<typeof PaymentRequest, 'instanceOf'>]>;
 /**
  * The status of a payment
  */
@@ -12895,7 +14271,8 @@ export declare enum SendPaymentMethod_Tags {
     BitcoinAddress = "BitcoinAddress",
     Bolt11Invoice = "Bolt11Invoice",
     SparkAddress = "SparkAddress",
-    SparkInvoice = "SparkInvoice"
+    SparkInvoice = "SparkInvoice",
+    CrossChainAddress = "CrossChainAddress"
 }
 export declare const SendPaymentMethod: Readonly<{
     instanceOf: (obj: any) => obj is SendPaymentMethod;
@@ -13106,6 +14483,168 @@ export declare const SendPaymentMethod: Readonly<{
                 sparkInvoiceDetails: SparkInvoiceDetails;
                 fee: U128;
                 tokenIdentifier: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SendPaymentMethod";
+        };
+    };
+    CrossChainAddress: {
+        new (inner: {
+            /**
+             * The route selected for this cross-chain send (includes provider, chain, asset).
+             */ route: CrossChainRoutePair;
+            /**
+             * Raw destination address (e.g. `0xabc...`).
+             */ recipientAddress: string;
+            /**
+             * Amount routed to the provider, in the route's source-asset units
+             * (Boltz invoice sats; Orchestra deposit sats/token). On the
+             * token-conversion path (both `FeesIncluded` and `FeesExcluded`)
+             * the dispatcher overrides this with the wallet-side token debit
+             * when the source token and destination asset form a USD-stable pair.
+             */ amountIn: U128;
+            /**
+             * `amount_in` expressed in the cross-chain (destination) asset's
+             * base units, via the same rate the SDK used at prepare time.
+             */ assetAmountIn: U128;
+            /**
+             * Estimated recipient amount in cross-chain asset base units.
+             */ estimatedOut: U128;
+            /**
+             * Prepare-time total user-visible fee in cross-chain asset base units.
+             * Covers provider spread + bridge/gas + DEX slippage. On the
+             * token-conversion path it also rolls in the LN routing budget; on
+             * the direct path that budget lives separately in
+             * `source_transfer_fee_sats`.
+             */ feeAmount: U128;
+            /**
+             * Provider's own service fee/spread in its native denomination.
+             */ serviceFeeAmount: U128;
+            /**
+             * Asset which service fee is denominated in. Unset means BTC sats.
+             */ serviceFeeAsset: string | undefined;
+            /**
+             * Sats budget for moving the amount in from the wallet to the provider.
+             */ sourceTransferFeeSats: bigint;
+            /**
+             * Fee mode the prepare ran under; the send stage matches.
+             */ feeMode: CrossChainFeeMode;
+            /**
+             * ISO8601 timestamp after which the quote is no longer valid.
+             */ expiresAt: string;
+            /**
+             * Provider-internal state, produced when preparing and consumed
+             * when sending.
+             */ providerContext: CrossChainProviderContext;
+        }): {
+            readonly tag: SendPaymentMethod_Tags.CrossChainAddress;
+            readonly inner: Readonly<{
+                route: CrossChainRoutePair;
+                recipientAddress: string;
+                amountIn: U128;
+                assetAmountIn: U128;
+                estimatedOut: U128;
+                feeAmount: U128;
+                serviceFeeAmount: U128;
+                serviceFeeAsset: string | undefined;
+                sourceTransferFeeSats: bigint;
+                feeMode: CrossChainFeeMode;
+                expiresAt: string;
+                providerContext: CrossChainProviderContext;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SendPaymentMethod";
+        };
+        "new"(inner: {
+            /**
+             * The route selected for this cross-chain send (includes provider, chain, asset).
+             */ route: CrossChainRoutePair;
+            /**
+             * Raw destination address (e.g. `0xabc...`).
+             */ recipientAddress: string;
+            /**
+             * Amount routed to the provider, in the route's source-asset units
+             * (Boltz invoice sats; Orchestra deposit sats/token). On the
+             * token-conversion path (both `FeesIncluded` and `FeesExcluded`)
+             * the dispatcher overrides this with the wallet-side token debit
+             * when the source token and destination asset form a USD-stable pair.
+             */ amountIn: U128;
+            /**
+             * `amount_in` expressed in the cross-chain (destination) asset's
+             * base units, via the same rate the SDK used at prepare time.
+             */ assetAmountIn: U128;
+            /**
+             * Estimated recipient amount in cross-chain asset base units.
+             */ estimatedOut: U128;
+            /**
+             * Prepare-time total user-visible fee in cross-chain asset base units.
+             * Covers provider spread + bridge/gas + DEX slippage. On the
+             * token-conversion path it also rolls in the LN routing budget; on
+             * the direct path that budget lives separately in
+             * `source_transfer_fee_sats`.
+             */ feeAmount: U128;
+            /**
+             * Provider's own service fee/spread in its native denomination.
+             */ serviceFeeAmount: U128;
+            /**
+             * Asset which service fee is denominated in. Unset means BTC sats.
+             */ serviceFeeAsset: string | undefined;
+            /**
+             * Sats budget for moving the amount in from the wallet to the provider.
+             */ sourceTransferFeeSats: bigint;
+            /**
+             * Fee mode the prepare ran under; the send stage matches.
+             */ feeMode: CrossChainFeeMode;
+            /**
+             * ISO8601 timestamp after which the quote is no longer valid.
+             */ expiresAt: string;
+            /**
+             * Provider-internal state, produced when preparing and consumed
+             * when sending.
+             */ providerContext: CrossChainProviderContext;
+        }): {
+            readonly tag: SendPaymentMethod_Tags.CrossChainAddress;
+            readonly inner: Readonly<{
+                route: CrossChainRoutePair;
+                recipientAddress: string;
+                amountIn: U128;
+                assetAmountIn: U128;
+                estimatedOut: U128;
+                feeAmount: U128;
+                serviceFeeAmount: U128;
+                serviceFeeAsset: string | undefined;
+                sourceTransferFeeSats: bigint;
+                feeMode: CrossChainFeeMode;
+                expiresAt: string;
+                providerContext: CrossChainProviderContext;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SendPaymentMethod";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SendPaymentMethod_Tags.CrossChainAddress;
+            readonly inner: Readonly<{
+                route: CrossChainRoutePair;
+                recipientAddress: string;
+                amountIn: U128;
+                assetAmountIn: U128;
+                estimatedOut: U128;
+                feeAmount: U128;
+                serviceFeeAmount: U128;
+                serviceFeeAsset: string | undefined;
+                sourceTransferFeeSats: bigint;
+                feeMode: CrossChainFeeMode;
+                expiresAt: string;
+                providerContext: CrossChainProviderContext;
             }>;
             /**
              * @private
@@ -14687,6 +16226,85 @@ export declare const SignerError: Readonly<{
  * Error type for signer operations
  */
 export type SignerError = InstanceType<(typeof SignerError)[keyof Omit<typeof SignerError, 'instanceOf'>]>;
+export declare enum SourceAsset_Tags {
+    Bitcoin = "Bitcoin",
+    Token = "Token"
+}
+/**
+ * The source asset a cross-chain route accepts as input on the Spark side.
+ */
+export declare const SourceAsset: Readonly<{
+    instanceOf: (obj: any) => obj is SourceAsset;
+    Bitcoin: {
+        new (): {
+            readonly tag: SourceAsset_Tags.Bitcoin;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SourceAsset";
+        };
+        "new"(): {
+            readonly tag: SourceAsset_Tags.Bitcoin;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SourceAsset";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SourceAsset_Tags.Bitcoin;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SourceAsset";
+        };
+    };
+    Token: {
+        new (inner: {
+            tokenIdentifier: string;
+        }): {
+            readonly tag: SourceAsset_Tags.Token;
+            readonly inner: Readonly<{
+                tokenIdentifier: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SourceAsset";
+        };
+        "new"(inner: {
+            tokenIdentifier: string;
+        }): {
+            readonly tag: SourceAsset_Tags.Token;
+            readonly inner: Readonly<{
+                tokenIdentifier: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SourceAsset";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SourceAsset_Tags.Token;
+            readonly inner: Readonly<{
+                tokenIdentifier: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SourceAsset";
+        };
+    };
+}>;
+/**
+ * The source asset a cross-chain route accepts as input on the Spark side.
+ */
+export type SourceAsset = InstanceType<(typeof SourceAsset)[keyof Omit<typeof SourceAsset, 'instanceOf'>]>;
 export declare enum SparkHtlcStatus {
     /**
      * The HTLC is waiting for the preimage to be shared by the receiver
@@ -15148,12 +16766,12 @@ export declare const StoragePaymentDetailsFilter: Readonly<{
     Spark: {
         new (inner: {
             htlcStatus: Array<SparkHtlcStatus> | undefined;
-            conversionRefundNeeded: boolean | undefined;
+            conversionFilter: ConversionFilter | undefined;
         }): {
             readonly tag: StoragePaymentDetailsFilter_Tags.Spark;
             readonly inner: Readonly<{
                 htlcStatus: Array<SparkHtlcStatus> | undefined;
-                conversionRefundNeeded: boolean | undefined;
+                conversionFilter: ConversionFilter | undefined;
             }>;
             /**
              * @private
@@ -15163,12 +16781,12 @@ export declare const StoragePaymentDetailsFilter: Readonly<{
         };
         "new"(inner: {
             htlcStatus: Array<SparkHtlcStatus> | undefined;
-            conversionRefundNeeded: boolean | undefined;
+            conversionFilter: ConversionFilter | undefined;
         }): {
             readonly tag: StoragePaymentDetailsFilter_Tags.Spark;
             readonly inner: Readonly<{
                 htlcStatus: Array<SparkHtlcStatus> | undefined;
-                conversionRefundNeeded: boolean | undefined;
+                conversionFilter: ConversionFilter | undefined;
             }>;
             /**
              * @private
@@ -15180,7 +16798,7 @@ export declare const StoragePaymentDetailsFilter: Readonly<{
             readonly tag: StoragePaymentDetailsFilter_Tags.Spark;
             readonly inner: Readonly<{
                 htlcStatus: Array<SparkHtlcStatus> | undefined;
-                conversionRefundNeeded: boolean | undefined;
+                conversionFilter: ConversionFilter | undefined;
             }>;
             /**
              * @private
@@ -15191,13 +16809,13 @@ export declare const StoragePaymentDetailsFilter: Readonly<{
     };
     Token: {
         new (inner: {
-            conversionRefundNeeded: boolean | undefined;
+            conversionFilter: ConversionFilter | undefined;
             txHash: string | undefined;
             txType: TokenTransactionType | undefined;
         }): {
             readonly tag: StoragePaymentDetailsFilter_Tags.Token;
             readonly inner: Readonly<{
-                conversionRefundNeeded: boolean | undefined;
+                conversionFilter: ConversionFilter | undefined;
                 txHash: string | undefined;
                 txType: TokenTransactionType | undefined;
             }>;
@@ -15208,13 +16826,13 @@ export declare const StoragePaymentDetailsFilter: Readonly<{
             readonly [uniffiTypeNameSymbol]: "StoragePaymentDetailsFilter";
         };
         "new"(inner: {
-            conversionRefundNeeded: boolean | undefined;
+            conversionFilter: ConversionFilter | undefined;
             txHash: string | undefined;
             txType: TokenTransactionType | undefined;
         }): {
             readonly tag: StoragePaymentDetailsFilter_Tags.Token;
             readonly inner: Readonly<{
-                conversionRefundNeeded: boolean | undefined;
+                conversionFilter: ConversionFilter | undefined;
                 txHash: string | undefined;
                 txType: TokenTransactionType | undefined;
             }>;
@@ -15227,7 +16845,7 @@ export declare const StoragePaymentDetailsFilter: Readonly<{
         instanceOf(obj: any): obj is {
             readonly tag: StoragePaymentDetailsFilter_Tags.Token;
             readonly inner: Readonly<{
-                conversionRefundNeeded: boolean | undefined;
+                conversionFilter: ConversionFilter | undefined;
                 txHash: string | undefined;
                 txType: TokenTransactionType | undefined;
             }>;
@@ -15241,10 +16859,12 @@ export declare const StoragePaymentDetailsFilter: Readonly<{
     Lightning: {
         new (inner: {
             htlcStatus: Array<SparkHtlcStatus> | undefined;
+            conversionFilter: ConversionFilter | undefined;
         }): {
             readonly tag: StoragePaymentDetailsFilter_Tags.Lightning;
             readonly inner: Readonly<{
                 htlcStatus: Array<SparkHtlcStatus> | undefined;
+                conversionFilter: ConversionFilter | undefined;
             }>;
             /**
              * @private
@@ -15254,10 +16874,12 @@ export declare const StoragePaymentDetailsFilter: Readonly<{
         };
         "new"(inner: {
             htlcStatus: Array<SparkHtlcStatus> | undefined;
+            conversionFilter: ConversionFilter | undefined;
         }): {
             readonly tag: StoragePaymentDetailsFilter_Tags.Lightning;
             readonly inner: Readonly<{
                 htlcStatus: Array<SparkHtlcStatus> | undefined;
+                conversionFilter: ConversionFilter | undefined;
             }>;
             /**
              * @private
@@ -15269,6 +16891,7 @@ export declare const StoragePaymentDetailsFilter: Readonly<{
             readonly tag: StoragePaymentDetailsFilter_Tags.Lightning;
             readonly inner: Readonly<{
                 htlcStatus: Array<SparkHtlcStatus> | undefined;
+                conversionFilter: ConversionFilter | undefined;
             }>;
             /**
              * @private
@@ -15968,6 +17591,17 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<FetchConversionLimitsResponse>;
     /**
+     * Returns the available cross-chain routes.
+     *
+     * Use [`CrossChainRouteFilter::Send`] to get routes for sending from Spark
+     * (filtered by the parsed recipient address), or
+     * [`CrossChainRouteFilter::Receive`] to get routes for receiving into Spark
+     * (optionally filtered by a source contract address).
+     */
+    getCrossChainRoutes(filter: CrossChainRouteFilter, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<CrossChainRoutePair>>;
+    /**
      * Returns the balance of the wallet in satoshis
      */
     getInfo(request: GetInfoRequest, asyncOpts_?: {
@@ -16374,6 +18008,17 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     fetchConversionLimits(request: FetchConversionLimitsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<FetchConversionLimitsResponse>;
+    /**
+     * Returns the available cross-chain routes.
+     *
+     * Use [`CrossChainRouteFilter::Send`] to get routes for sending from Spark
+     * (filtered by the parsed recipient address), or
+     * [`CrossChainRouteFilter::Receive`] to get routes for receiving into Spark
+     * (optionally filtered by a source contract address).
+     */
+    getCrossChainRoutes(filter: CrossChainRouteFilter, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<CrossChainRoutePair>>;
     /**
      * Returns the balance of the wallet in satoshis
      */
@@ -18144,6 +19789,25 @@ export interface Storage {
     deleteContact(id: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
+    /**
+     * Inserts or overwrites a cross-chain swap row (upsert by `(provider, id)`).
+     */
+    setCrossChainSwap(swap: StoredCrossChainSwap, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Gets a single cross-chain swap row by its `(provider, id)`, or `None` if absent.
+     */
+    getCrossChainSwap(provider: string, id: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<StoredCrossChainSwap | undefined>;
+    /**
+     * Lists all non-terminal cross-chain swap rows for a single provider
+     * (`provider = ? AND is_terminal = false`).
+     */
+    listActiveCrossChainSwaps(provider: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<StoredCrossChainSwap>>;
     addOutgoingChange(record: UnversionedRecordChange, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise</*u64*/ bigint>;
@@ -18376,6 +20040,25 @@ export declare class StorageImpl extends UniffiAbstractObject implements Storage
     deleteContact(id: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
+    /**
+     * Inserts or overwrites a cross-chain swap row (upsert by `(provider, id)`).
+     */
+    setCrossChainSwap(swap: StoredCrossChainSwap, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Gets a single cross-chain swap row by its `(provider, id)`, or `None` if absent.
+     */
+    getCrossChainSwap(provider: string, id: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<StoredCrossChainSwap | undefined>;
+    /**
+     * Lists all non-terminal cross-chain swap rows for a single provider
+     * (`provider = ? AND is_terminal = false`).
+     */
+    listActiveCrossChainSwaps(provider: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<StoredCrossChainSwap>>;
     addOutgoingChange(record: UnversionedRecordChange, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise</*u64*/ bigint>;
@@ -18998,6 +20681,27 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): Contact;
             lower(value: Contact): UniffiByteArray;
         };
+        FfiConverterTypeConversion: {
+            read(from: RustBuffer): Conversion;
+            write(value: Conversion, into: RustBuffer): void;
+            allocationSize(value: Conversion): number;
+            lift(value: UniffiByteArray): Conversion;
+            lower(value: Conversion): UniffiByteArray;
+        };
+        FfiConverterTypeConversionAsset: {
+            read(from: RustBuffer): ConversionAsset;
+            write(value: ConversionAsset, into: RustBuffer): void;
+            allocationSize(value: ConversionAsset): number;
+            lift(value: UniffiByteArray): ConversionAsset;
+            lower(value: ConversionAsset): UniffiByteArray;
+        };
+        FfiConverterTypeConversionChain: {
+            read(from: RustBuffer): ConversionChain;
+            write(value: ConversionChain, into: RustBuffer): void;
+            allocationSize(value: ConversionChain): number;
+            lift(value: UniffiByteArray): ConversionChain;
+            lower(value: ConversionChain): UniffiByteArray;
+        };
         FfiConverterTypeConversionDetails: {
             read(from: RustBuffer): ConversionDetails;
             write(value: ConversionDetails, into: RustBuffer): void;
@@ -19011,6 +20715,13 @@ declare const _default: Readonly<{
             allocationSize(value: ConversionEstimate): number;
             lift(value: UniffiByteArray): ConversionEstimate;
             lower(value: ConversionEstimate): UniffiByteArray;
+        };
+        FfiConverterTypeConversionFilter: {
+            read(from: RustBuffer): ConversionFilter;
+            write(value: ConversionFilter, into: RustBuffer): void;
+            allocationSize(value: ConversionFilter): number;
+            lift(value: UniffiByteArray): ConversionFilter;
+            lower(value: ConversionFilter): UniffiByteArray;
         };
         FfiConverterTypeConversionInfo: {
             read(from: RustBuffer): ConversionInfo;
@@ -19026,6 +20737,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ConversionOptions;
             lower(value: ConversionOptions): UniffiByteArray;
         };
+        FfiConverterTypeConversionProvider: {
+            read(from: RustBuffer): ConversionProvider;
+            write(value: ConversionProvider, into: RustBuffer): void;
+            allocationSize(value: ConversionProvider): number;
+            lift(value: UniffiByteArray): ConversionProvider;
+            lower(value: ConversionProvider): UniffiByteArray;
+        };
         FfiConverterTypeConversionPurpose: {
             read(from: RustBuffer): ConversionPurpose;
             write(value: ConversionPurpose, into: RustBuffer): void;
@@ -19033,19 +20751,19 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ConversionPurpose;
             lower(value: ConversionPurpose): UniffiByteArray;
         };
+        FfiConverterTypeConversionSide: {
+            read(from: RustBuffer): ConversionSide;
+            write(value: ConversionSide, into: RustBuffer): void;
+            allocationSize(value: ConversionSide): number;
+            lift(value: UniffiByteArray): ConversionSide;
+            lower(value: ConversionSide): UniffiByteArray;
+        };
         FfiConverterTypeConversionStatus: {
             read(from: RustBuffer): ConversionStatus;
             write(value: ConversionStatus, into: RustBuffer): void;
             allocationSize(value: ConversionStatus): number;
             lift(value: UniffiByteArray): ConversionStatus;
             lower(value: ConversionStatus): UniffiByteArray;
-        };
-        FfiConverterTypeConversionStep: {
-            read(from: RustBuffer): ConversionStep;
-            write(value: ConversionStep, into: RustBuffer): void;
-            allocationSize(value: ConversionStep): number;
-            lift(value: UniffiByteArray): ConversionStep;
-            lower(value: ConversionStep): UniffiByteArray;
         };
         FfiConverterTypeConversionType: {
             read(from: RustBuffer): ConversionType;
@@ -19067,6 +20785,62 @@ declare const _default: Readonly<{
             allocationSize(value: Credentials): number;
             lift(value: UniffiByteArray): Credentials;
             lower(value: Credentials): UniffiByteArray;
+        };
+        FfiConverterTypeCrossChainAddressDetails: {
+            read(from: RustBuffer): CrossChainAddressDetails;
+            write(value: CrossChainAddressDetails, into: RustBuffer): void;
+            allocationSize(value: CrossChainAddressDetails): number;
+            lift(value: UniffiByteArray): CrossChainAddressDetails;
+            lower(value: CrossChainAddressDetails): UniffiByteArray;
+        };
+        FfiConverterTypeCrossChainAddressFamily: {
+            read(from: RustBuffer): CrossChainAddressFamily;
+            write(value: CrossChainAddressFamily, into: RustBuffer): void;
+            allocationSize(value: CrossChainAddressFamily): number;
+            lift(value: UniffiByteArray): CrossChainAddressFamily;
+            lower(value: CrossChainAddressFamily): UniffiByteArray;
+        };
+        FfiConverterTypeCrossChainConfig: {
+            read(from: RustBuffer): CrossChainConfig;
+            write(value: CrossChainConfig, into: RustBuffer): void;
+            allocationSize(value: CrossChainConfig): number;
+            lift(value: UniffiByteArray): CrossChainConfig;
+            lower(value: CrossChainConfig): UniffiByteArray;
+        };
+        FfiConverterTypeCrossChainFeeMode: {
+            read(from: RustBuffer): CrossChainFeeMode;
+            write(value: CrossChainFeeMode, into: RustBuffer): void;
+            allocationSize(value: CrossChainFeeMode): number;
+            lift(value: UniffiByteArray): CrossChainFeeMode;
+            lower(value: CrossChainFeeMode): UniffiByteArray;
+        };
+        FfiConverterTypeCrossChainProvider: {
+            read(from: RustBuffer): CrossChainProvider;
+            write(value: CrossChainProvider, into: RustBuffer): void;
+            allocationSize(value: CrossChainProvider): number;
+            lift(value: UniffiByteArray): CrossChainProvider;
+            lower(value: CrossChainProvider): UniffiByteArray;
+        };
+        FfiConverterTypeCrossChainProviderContext: {
+            read(from: RustBuffer): CrossChainProviderContext;
+            write(value: CrossChainProviderContext, into: RustBuffer): void;
+            allocationSize(value: CrossChainProviderContext): number;
+            lift(value: UniffiByteArray): CrossChainProviderContext;
+            lower(value: CrossChainProviderContext): UniffiByteArray;
+        };
+        FfiConverterTypeCrossChainRouteFilter: {
+            read(from: RustBuffer): CrossChainRouteFilter;
+            write(value: CrossChainRouteFilter, into: RustBuffer): void;
+            allocationSize(value: CrossChainRouteFilter): number;
+            lift(value: UniffiByteArray): CrossChainRouteFilter;
+            lower(value: CrossChainRouteFilter): UniffiByteArray;
+        };
+        FfiConverterTypeCrossChainRoutePair: {
+            read(from: RustBuffer): CrossChainRoutePair;
+            write(value: CrossChainRoutePair, into: RustBuffer): void;
+            allocationSize(value: CrossChainRoutePair): number;
+            lift(value: UniffiByteArray): CrossChainRoutePair;
+            lower(value: CrossChainRoutePair): UniffiByteArray;
         };
         FfiConverterTypeCurrencyInfo: {
             read(from: RustBuffer): CurrencyInfo;
@@ -19851,6 +21625,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): PaymentObserverError;
             lower(value: PaymentObserverError): UniffiByteArray;
         };
+        FfiConverterTypePaymentRequest: {
+            read(from: RustBuffer): PaymentRequest;
+            write(value: PaymentRequest, into: RustBuffer): void;
+            allocationSize(value: PaymentRequest): number;
+            lift(value: UniffiByteArray): PaymentRequest;
+            lower(value: PaymentRequest): UniffiByteArray;
+        };
         FfiConverterTypePaymentRequestSource: {
             read(from: RustBuffer): PaymentRequestSource;
             write(value: PaymentRequestSource, into: RustBuffer): void;
@@ -20222,6 +22003,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SilentPaymentAddressDetails;
             lower(value: SilentPaymentAddressDetails): UniffiByteArray;
         };
+        FfiConverterTypeSourceAsset: {
+            read(from: RustBuffer): SourceAsset;
+            write(value: SourceAsset, into: RustBuffer): void;
+            allocationSize(value: SourceAsset): number;
+            lift(value: UniffiByteArray): SourceAsset;
+            lower(value: SourceAsset): UniffiByteArray;
+        };
         FfiConverterTypeSparkAddressDetails: {
             read(from: RustBuffer): SparkAddressDetails;
             write(value: SparkAddressDetails, into: RustBuffer): void;
@@ -20335,6 +22123,13 @@ declare const _default: Readonly<{
             allocationSize(value: StoragePaymentDetailsFilter): number;
             lift(value: UniffiByteArray): StoragePaymentDetailsFilter;
             lower(value: StoragePaymentDetailsFilter): UniffiByteArray;
+        };
+        FfiConverterTypeStoredCrossChainSwap: {
+            read(from: RustBuffer): StoredCrossChainSwap;
+            write(value: StoredCrossChainSwap, into: RustBuffer): void;
+            allocationSize(value: StoredCrossChainSwap): number;
+            lift(value: UniffiByteArray): StoredCrossChainSwap;
+            lower(value: StoredCrossChainSwap): UniffiByteArray;
         };
         FfiConverterTypeSuccessAction: {
             read(from: RustBuffer): SuccessAction;

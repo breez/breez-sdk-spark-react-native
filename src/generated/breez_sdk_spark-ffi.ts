@@ -111,6 +111,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_cross_chain_routes(
+    ptr: bigint,
+    filter: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_info(
     ptr: bigint,
     request: Uint8Array
@@ -670,6 +674,19 @@ interface NativeModuleInterface {
     ptr: bigint,
     id: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_storage_set_cross_chain_swap(
+    ptr: bigint,
+    swap: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_storage_get_cross_chain_swap(
+    ptr: bigint,
+    provider: Uint8Array,
+    id: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_storage_list_active_cross_chain_swaps(
+    ptr: bigint,
+    provider: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_storage_add_outgoing_change(
     ptr: bigint,
     record: Uint8Array
@@ -977,6 +994,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_lightning_address(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_cross_chain_routes(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_lightning_address(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_payment(): number;
@@ -1080,6 +1098,9 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_contact(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_insert_contact(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_contact(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_storage_set_cross_chain_swap(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_cross_chain_swap(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_active_cross_chain_swaps(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_add_outgoing_change(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_complete_outgoing_sync(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_pending_outgoing_changes(): number;
@@ -1669,52 +1690,71 @@ type UniffiCallbackInterfaceStorageMethod17 = (
 ) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod18 = (
   uniffiHandle: bigint,
+  swap: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceStorageMethod19 = (
+  uniffiHandle: bigint,
+  provider: Uint8Array,
+  id: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceStorageMethod20 = (
+  uniffiHandle: bigint,
+  provider: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceStorageMethod21 = (
+  uniffiHandle: bigint,
   record: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteU64,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod19 = (
+type UniffiCallbackInterfaceStorageMethod22 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   localRevision: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod20 = (
+type UniffiCallbackInterfaceStorageMethod23 = (
   uniffiHandle: bigint,
   limit: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod21 = (
+type UniffiCallbackInterfaceStorageMethod24 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteU64,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod22 = (
+type UniffiCallbackInterfaceStorageMethod25 = (
   uniffiHandle: bigint,
   records: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod23 = (
+type UniffiCallbackInterfaceStorageMethod26 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod24 = (
+type UniffiCallbackInterfaceStorageMethod27 = (
   uniffiHandle: bigint,
   limit: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod25 = (
+type UniffiCallbackInterfaceStorageMethod28 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod26 = (
+type UniffiCallbackInterfaceStorageMethod29 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
@@ -1818,15 +1858,18 @@ export type UniffiVTableCallbackInterfaceStorage = {
   getContact: UniffiCallbackInterfaceStorageMethod15;
   insertContact: UniffiCallbackInterfaceStorageMethod16;
   deleteContact: UniffiCallbackInterfaceStorageMethod17;
-  addOutgoingChange: UniffiCallbackInterfaceStorageMethod18;
-  completeOutgoingSync: UniffiCallbackInterfaceStorageMethod19;
-  getPendingOutgoingChanges: UniffiCallbackInterfaceStorageMethod20;
-  getLastRevision: UniffiCallbackInterfaceStorageMethod21;
-  insertIncomingRecords: UniffiCallbackInterfaceStorageMethod22;
-  deleteIncomingRecord: UniffiCallbackInterfaceStorageMethod23;
-  getIncomingRecords: UniffiCallbackInterfaceStorageMethod24;
-  getLatestOutgoingChange: UniffiCallbackInterfaceStorageMethod25;
-  updateRecordFromIncoming: UniffiCallbackInterfaceStorageMethod26;
+  setCrossChainSwap: UniffiCallbackInterfaceStorageMethod18;
+  getCrossChainSwap: UniffiCallbackInterfaceStorageMethod19;
+  listActiveCrossChainSwaps: UniffiCallbackInterfaceStorageMethod20;
+  addOutgoingChange: UniffiCallbackInterfaceStorageMethod21;
+  completeOutgoingSync: UniffiCallbackInterfaceStorageMethod22;
+  getPendingOutgoingChanges: UniffiCallbackInterfaceStorageMethod23;
+  getLastRevision: UniffiCallbackInterfaceStorageMethod24;
+  insertIncomingRecords: UniffiCallbackInterfaceStorageMethod25;
+  deleteIncomingRecord: UniffiCallbackInterfaceStorageMethod26;
+  getIncomingRecords: UniffiCallbackInterfaceStorageMethod27;
+  getLatestOutgoingChange: UniffiCallbackInterfaceStorageMethod28;
+  updateRecordFromIncoming: UniffiCallbackInterfaceStorageMethod29;
   uniffiFree: UniffiCallbackInterfaceFree;
 };
 export type UniffiVTableCallbackInterfaceStorageBackend = {
