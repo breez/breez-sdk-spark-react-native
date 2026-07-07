@@ -31,18 +31,49 @@ export declare function connectWithSigner(request: ConnectWithSignerRequest, asy
     signal: AbortSignal;
 }): Promise<BreezSdkInterface>;
 /**
+ * Connects to the Spark network using a signing-only external signer.
+ *
+ * Use this instead of [`connect_with_signer`] for a signer that can't perform
+ * the SDK's local ECIES/HMAC operations (for example a policy-restricted
+ * enclave). The SDK keeps session tokens in plaintext and disables the features
+ * that rely on ECIES/HMAC.
+ *
+ * # Arguments
+ *
+ * * `request` - The connection request object with a signing-only external signer
+ *
+ * # Returns
+ *
+ * Result containing either the initialized `BreezSdk` or an `SdkError`
+ */
+export declare function connectWithSigningOnlySigner(request: ConnectWithSigningOnlySignerRequest, asyncOpts_?: {
+    signal: AbortSignal;
+}): Promise<BreezSdkInterface>;
+/**
  * Builds the Turnkey-backed Breez and Spark signers from `config`, sharing one
  * Turnkey client.
  *
  * The Spark signer keeps every signing operation in the Turnkey enclave; the
  * Breez signer does too, except ECIES and HMAC, which run locally against a
- * dedicated, non-Spark key exported once here. Exporting a non-Spark key keeps
- * every Spark key (the identity key included) in the enclave; ECIES/HMAC only
- * need a stable key, not a Spark one.
+ * dedicated, non-Spark key exported on first use (see `TurnkeyBreezSigner`).
+ * Exporting a non-Spark key keeps every Spark key (the identity key included)
+ * in the enclave; ECIES/HMAC only need a stable key, not a Spark one.
+ *
+ * For a wallet under a deny-export policy, use
+ * [`create_turnkey_signing_only_signer`] instead: it never exports a key.
  */
 export declare function createTurnkeySigner(config: TurnkeyConfig, asyncOpts_?: {
     signal: AbortSignal;
 }): Promise<ExternalSigners>;
+/**
+ * Builds signing-only Turnkey-backed signers from `config`, for a wallet under
+ * a deny-export policy. The Breez half performs signing only and never exports
+ * a key, so no ECIES/HMAC is attempted. Pair with
+ * [`connect_with_signing_only_signer`](crate::connect_with_signing_only_signer).
+ */
+export declare function createTurnkeySigningOnlySigner(config: TurnkeyConfig, asyncOpts_?: {
+    signal: AbortSignal;
+}): Promise<SigningOnlyExternalSigners>;
 /**
  * Wraps a caller-supplied [`Storage`] implementation as a [`StorageBackend`].
  * The tree, token-output and session stores use the in-memory defaults.
@@ -1150,6 +1181,46 @@ export declare const ConnectWithSignerRequest: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<ConnectWithSignerRequest>;
+}>;
+/**
+ * Request object for connecting to the Spark network using a signing-only
+ * external signer.
+ *
+ * Use this instead of [`ConnectWithSignerRequest`] for a signer that can't
+ * perform the SDK's local ECIES/HMAC operations (for example a
+ * policy-restricted enclave). The SDK keeps session tokens in plaintext and
+ * disables the features that rely on ECIES/HMAC.
+ */
+export type ConnectWithSigningOnlySignerRequest = {
+    config: Config;
+    /**
+     * Signing-only external signer for non-Spark SDK signing.
+     */
+    breezSigner: ExternalSigningSigner;
+    /**
+     * External high-level Spark signer for the Spark wallet flows.
+     */
+    sparkSigner: ExternalSparkSigner;
+    storageDir: string;
+};
+/**
+ * Generated factory for {@link ConnectWithSigningOnlySignerRequest} record objects.
+ */
+export declare const ConnectWithSigningOnlySignerRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link ConnectWithSigningOnlySignerRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ConnectWithSigningOnlySignerRequest> & Required<Omit<ConnectWithSigningOnlySignerRequest, never>>) => ConnectWithSigningOnlySignerRequest;
+    /**
+     * Create a frozen instance of {@link ConnectWithSigningOnlySignerRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ConnectWithSigningOnlySignerRequest> & Required<Omit<ConnectWithSigningOnlySignerRequest, never>>) => ConnectWithSigningOnlySignerRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ConnectWithSigningOnlySignerRequest>;
 }>;
 /**
  * A contact entry containing a name and payment identifier.
@@ -5424,6 +5495,40 @@ export declare const SignMessageResponse: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<SignMessageResponse>;
+}>;
+/**
+ * A signing-only external signer paired with the Spark signer, for wallets that
+ * connect via [`connect_with_signing_only_signer`]. The Breez half performs
+ * signing only, without the SDK's local ECIES/HMAC operations.
+ */
+export type SigningOnlyExternalSigners = {
+    /**
+     * Signing-only external signer for non-Spark SDK signing.
+     */
+    breezSigner: ExternalSigningSigner;
+    /**
+     * External high-level Spark signer for the Spark wallet flows.
+     */
+    sparkSigner: ExternalSparkSigner;
+};
+/**
+ * Generated factory for {@link SigningOnlyExternalSigners} record objects.
+ */
+export declare const SigningOnlyExternalSigners: Readonly<{
+    /**
+     * Create a frozen instance of {@link SigningOnlyExternalSigners}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SigningOnlyExternalSigners> & Required<Omit<SigningOnlyExternalSigners, never>>) => SigningOnlyExternalSigners;
+    /**
+     * Create a frozen instance of {@link SigningOnlyExternalSigners}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SigningOnlyExternalSigners> & Required<Omit<SigningOnlyExternalSigners, never>>) => SigningOnlyExternalSigners;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SigningOnlyExternalSigners>;
 }>;
 export type SilentPaymentAddressDetails = {
     address: string;
@@ -15715,6 +15820,7 @@ export declare enum SignerError_Tags {
     Signing = "Signing",
     Encryption = "Encryption",
     Decryption = "Decryption",
+    EncryptionUnavailable = "EncryptionUnavailable",
     Frost = "Frost",
     InvalidInput = "InvalidInput",
     Generic = "Generic"
@@ -15992,6 +16098,77 @@ export declare const SignerError: Readonly<{
         };
         getInner(obj: {
             readonly tag: SignerError_Tags.Decryption;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    EncryptionUnavailable: {
+        new (v0: string): {
+            readonly tag: SignerError_Tags.EncryptionUnavailable;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: SignerError_Tags.EncryptionUnavailable;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SignerError_Tags.EncryptionUnavailable;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SignerError_Tags.EncryptionUnavailable;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SignerError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SignerError_Tags.EncryptionUnavailable;
             readonly inner: Readonly<[string]>;
             /**
              * @private
@@ -18545,6 +18722,151 @@ export declare class ExternalBreezSignerImpl extends UniffiAbstractObject implem
     static instanceOf(obj: any): obj is ExternalBreezSignerImpl;
 }
 /**
+ * External signer that provides signing only, without the SDK's local
+ * ECIES/HMAC operations.
+ *
+ * Implement this instead of [`ExternalBreezSigner`] for a signer that can't
+ * release key material for local encryption (for example a policy-restricted
+ * enclave). The capability is declared by the type: the SDK keeps session
+ * tokens in plaintext and the features that rely on ECIES/HMAC are unavailable.
+ */
+export interface ExternalSigningSigner {
+    /**
+     * Derives a public key for the given BIP32 derivation path.
+     *
+     * # Arguments
+     * * `path` - BIP32 derivation path as a string (e.g., "m/44'/0'/0'/0/0")
+     *
+     * # Returns
+     * The derived public key as 33 bytes, or a `SignerError`
+     *
+     * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
+     */
+    derivePublicKey(path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublicKeyBytes>;
+    /**
+     * Signs a message using ECDSA at the given derivation path.
+     *
+     * The message should be a 32-byte digest (typically a hash of the original data).
+     *
+     * # Arguments
+     * * `message` - The 32-byte message digest to sign
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 64-byte compact ECDSA signature, or a `SignerError`
+     */
+    signEcdsa(message: MessageBytes, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<EcdsaSignatureBytes>;
+    /**
+     * Signs a message using recoverable ECDSA at the given derivation path.
+     *
+     * The message should be a 32-byte digest (typically a hash of the original data).
+     *
+     * # Arguments
+     * * `message` - The 32-byte message digest to sign
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 65 bytes: recovery ID (31 + `recovery_id`) + 64-byte signature, or a `SignerError`
+     */
+    signEcdsaRecoverable(message: MessageBytes, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<RecoverableEcdsaSignatureBytes>;
+    /**
+     * Signs a hash using Schnorr signature at the given derivation path.
+     *
+     * # Arguments
+     * * `hash` - The 32-byte hash to sign (must be 32 bytes)
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 64-byte Schnorr signature, or a `SignerError`
+     */
+    signHashSchnorr(hash: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SchnorrSignatureBytes>;
+}
+/**
+ * External signer that provides signing only, without the SDK's local
+ * ECIES/HMAC operations.
+ *
+ * Implement this instead of [`ExternalBreezSigner`] for a signer that can't
+ * release key material for local encryption (for example a policy-restricted
+ * enclave). The capability is declared by the type: the SDK keeps session
+ * tokens in plaintext and the features that rely on ECIES/HMAC are unavailable.
+ */
+export declare class ExternalSigningSignerImpl extends UniffiAbstractObject implements ExternalSigningSigner {
+    readonly [uniffiTypeNameSymbol] = "ExternalSigningSignerImpl";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    /**
+     * Derives a public key for the given BIP32 derivation path.
+     *
+     * # Arguments
+     * * `path` - BIP32 derivation path as a string (e.g., "m/44'/0'/0'/0/0")
+     *
+     * # Returns
+     * The derived public key as 33 bytes, or a `SignerError`
+     *
+     * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
+     */
+    derivePublicKey(path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublicKeyBytes>;
+    /**
+     * Signs a message using ECDSA at the given derivation path.
+     *
+     * The message should be a 32-byte digest (typically a hash of the original data).
+     *
+     * # Arguments
+     * * `message` - The 32-byte message digest to sign
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 64-byte compact ECDSA signature, or a `SignerError`
+     */
+    signEcdsa(message: MessageBytes, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<EcdsaSignatureBytes>;
+    /**
+     * Signs a message using recoverable ECDSA at the given derivation path.
+     *
+     * The message should be a 32-byte digest (typically a hash of the original data).
+     *
+     * # Arguments
+     * * `message` - The 32-byte message digest to sign
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 65 bytes: recovery ID (31 + `recovery_id`) + 64-byte signature, or a `SignerError`
+     */
+    signEcdsaRecoverable(message: MessageBytes, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<RecoverableEcdsaSignatureBytes>;
+    /**
+     * Signs a hash using Schnorr signature at the given derivation path.
+     *
+     * # Arguments
+     * * `hash` - The 32-byte hash to sign (must be 32 bytes)
+     * * `path` - BIP32 derivation path as a string
+     *
+     * # Returns
+     * 64-byte Schnorr signature, or a `SignerError`
+     */
+    signHashSchnorr(hash: ArrayBuffer, path: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SchnorrSignatureBytes>;
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is ExternalSigningSignerImpl;
+}
+/**
  * FFI-compatible mirror of `spark_wallet::SparkSigner`.
  */
 export interface ExternalSparkSigner {
@@ -19421,6 +19743,19 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
      * - `spark_signer`: External high-level Spark signer for the Spark wallet.
      */
     static newWithSigner(config: Config, breezSigner: ExternalBreezSigner, sparkSigner: ExternalSparkSigner): SdkBuilderInterface;
+    /**
+     * Creates a new `SdkBuilder` with a signing-only external signer.
+     *
+     * Use this for a signer that can't perform the SDK's local ECIES/HMAC
+     * operations (for example a policy-restricted enclave). The SDK keeps
+     * session tokens in plaintext and disables the features that rely on
+     * ECIES/HMAC.
+     * Arguments:
+     * - `config`: The configuration to be used.
+     * - `breez_signer`: Signing-only external signer for non-Spark SDK signing.
+     * - `spark_signer`: External high-level Spark signer for the Spark wallet.
+     */
+    static newWithSigningOnlySigner(config: Config, breezSigner: ExternalSigningSigner, sparkSigner: ExternalSparkSigner): SdkBuilderInterface;
     /**
      * Builds the `BreezSdk` instance with the configured components.
      */
@@ -20674,6 +21009,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ConnectWithSignerRequest;
             lower(value: ConnectWithSignerRequest): UniffiByteArray;
         };
+        FfiConverterTypeConnectWithSigningOnlySignerRequest: {
+            read(from: RustBuffer): ConnectWithSigningOnlySignerRequest;
+            write(value: ConnectWithSigningOnlySignerRequest, into: RustBuffer): void;
+            allocationSize(value: ConnectWithSigningOnlySignerRequest): number;
+            lift(value: UniffiByteArray): ConnectWithSigningOnlySignerRequest;
+            lower(value: ConnectWithSigningOnlySignerRequest): UniffiByteArray;
+        };
         FfiConverterTypeContact: {
             read(from: RustBuffer): Contact;
             write(value: Contact, into: RustBuffer): void;
@@ -21102,6 +21444,7 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ExternalSigningCommitments;
             lower(value: ExternalSigningCommitments): UniffiByteArray;
         };
+        FfiConverterTypeExternalSigningSigner: FfiConverterObjectWithCallbacks<ExternalSigningSigner>;
         FfiConverterTypeExternalSparkInvoiceKind: {
             read(from: RustBuffer): ExternalSparkInvoiceKind;
             write(value: ExternalSparkInvoiceKind, into: RustBuffer): void;
@@ -21995,6 +22338,13 @@ declare const _default: Readonly<{
             allocationSize(value: SignerError): number;
             lift(value: UniffiByteArray): SignerError;
             lower(value: SignerError): UniffiByteArray;
+        };
+        FfiConverterTypeSigningOnlyExternalSigners: {
+            read(from: RustBuffer): SigningOnlyExternalSigners;
+            write(value: SigningOnlyExternalSigners, into: RustBuffer): void;
+            allocationSize(value: SigningOnlyExternalSigners): number;
+            lift(value: UniffiByteArray): SigningOnlyExternalSigners;
+            lower(value: SigningOnlyExternalSigners): UniffiByteArray;
         };
         FfiConverterTypeSilentPaymentAddressDetails: {
             read(from: RustBuffer): SilentPaymentAddressDetails;

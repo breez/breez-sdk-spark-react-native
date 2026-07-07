@@ -281,6 +281,36 @@ interface NativeModuleInterface {
     message: Uint8Array,
     path: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_clone_externalsigningsigner(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_free_externalsigningsigner(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsigningsigner(
+    vtable: UniffiVTableCallbackInterfaceExternalSigningSigner
+  ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_method_externalsigningsigner_derive_public_key(
+    ptr: bigint,
+    path: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_externalsigningsigner_sign_ecdsa(
+    ptr: bigint,
+    message: Uint8Array,
+    path: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_externalsigningsigner_sign_ecdsa_recoverable(
+    ptr: bigint,
+    message: Uint8Array,
+    path: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_externalsigningsigner_sign_hash_schnorr(
+    ptr: bigint,
+    hash: Uint8Array,
+    path: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_clone_externalsparksigner(
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
@@ -508,6 +538,12 @@ interface NativeModuleInterface {
     uniffi_out_err: UniffiRustCallStatus
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new_with_signer(
+    config: Uint8Array,
+    breezSigner: bigint,
+    sparkSigner: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new_with_signing_only_signer(
     config: Uint8Array,
     breezSigner: bigint,
     sparkSigner: bigint,
@@ -779,7 +815,13 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_func_connect_with_signer(
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_func_connect_with_signing_only_signer(
+    request: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_func_create_turnkey_signer(
+    config: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_func_create_turnkey_signing_only_signer(
     config: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_func_custom_storage(
@@ -966,7 +1008,9 @@ interface NativeModuleInterface {
   ): void;
   ubrn_uniffi_breez_sdk_spark_checksum_func_connect(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_connect_with_signer(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_func_connect_with_signing_only_signer(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_create_turnkey_signer(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_func_create_turnkey_signing_only_signer(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_custom_storage(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_default_config(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_default_external_signers(): number;
@@ -1034,6 +1078,10 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_decrypt_ecies(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_hash_schnorr(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_hmac_sha256(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigningsigner_derive_public_key(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigningsigner_sign_ecdsa(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigningsigner_sign_ecdsa_recoverable(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigningsigner_sign_hash_schnorr(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_identity_public_key(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_public_key_for_leaf(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_static_deposit_public_key(): number;
@@ -1121,6 +1169,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_constructor_passkeyclient_new(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new_with_signer(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new_with_signing_only_signer(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_eventlistener_on_event(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_logger_log(): number;
   ubrn_ffi_breez_sdk_spark_uniffi_contract_version(): number;
@@ -1133,6 +1182,10 @@ interface NativeModuleInterface {
     uniffi_out_err: UniffiRustCallStatus
   ): UniffiRustArcPtr;
   ubrn_uniffi_internal_fn_method_externalbreezsigner_ffi__bless_pointer(
+    pointer: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): UniffiRustArcPtr;
+  ubrn_uniffi_internal_fn_method_externalsigningsigner_ffi__bless_pointer(
     pointer: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): UniffiRustArcPtr;
@@ -1400,6 +1453,33 @@ type UniffiCallbackInterfaceExternalBreezSignerMethod5 = (
 type UniffiCallbackInterfaceExternalBreezSignerMethod6 = (
   uniffiHandle: bigint,
   message: Uint8Array,
+  path: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceExternalSigningSignerMethod0 = (
+  uniffiHandle: bigint,
+  path: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceExternalSigningSignerMethod1 = (
+  uniffiHandle: bigint,
+  message: Uint8Array,
+  path: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceExternalSigningSignerMethod2 = (
+  uniffiHandle: bigint,
+  message: Uint8Array,
+  path: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceExternalSigningSignerMethod3 = (
+  uniffiHandle: bigint,
+  hash: Uint8Array,
   path: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
@@ -1791,6 +1871,13 @@ export type UniffiVTableCallbackInterfaceExternalBreezSigner = {
   decryptEcies: UniffiCallbackInterfaceExternalBreezSignerMethod4;
   signHashSchnorr: UniffiCallbackInterfaceExternalBreezSignerMethod5;
   hmacSha256: UniffiCallbackInterfaceExternalBreezSignerMethod6;
+  uniffiFree: UniffiCallbackInterfaceFree;
+};
+export type UniffiVTableCallbackInterfaceExternalSigningSigner = {
+  derivePublicKey: UniffiCallbackInterfaceExternalSigningSignerMethod0;
+  signEcdsa: UniffiCallbackInterfaceExternalSigningSignerMethod1;
+  signEcdsaRecoverable: UniffiCallbackInterfaceExternalSigningSignerMethod2;
+  signHashSchnorr: UniffiCallbackInterfaceExternalSigningSignerMethod3;
   uniffiFree: UniffiCallbackInterfaceFree;
 };
 export type UniffiVTableCallbackInterfaceExternalSparkSigner = {

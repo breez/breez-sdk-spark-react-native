@@ -33,6 +33,7 @@ import nativeModule, {
   type UniffiVTableCallbackInterfaceLogger,
   type UniffiVTableCallbackInterfaceBitcoinChainService,
   type UniffiVTableCallbackInterfaceExternalBreezSigner,
+  type UniffiVTableCallbackInterfaceExternalSigningSigner,
   type UniffiVTableCallbackInterfaceExternalSparkSigner,
   type UniffiVTableCallbackInterfaceFiatService,
   type UniffiVTableCallbackInterfacePaymentObserver,
@@ -196,14 +197,70 @@ export async function connectWithSigner(
   }
 }
 /**
+ * Connects to the Spark network using a signing-only external signer.
+ *
+ * Use this instead of [`connect_with_signer`] for a signer that can't perform
+ * the SDK's local ECIES/HMAC operations (for example a policy-restricted
+ * enclave). The SDK keeps session tokens in plaintext and disables the features
+ * that rely on ECIES/HMAC.
+ *
+ * # Arguments
+ *
+ * * `request` - The connection request object with a signing-only external signer
+ *
+ * # Returns
+ *
+ * Result containing either the initialized `BreezSdk` or an `SdkError`
+ */
+export async function connectWithSigningOnlySigner(
+  request: ConnectWithSigningOnlySignerRequest,
+  asyncOpts_?: { signal: AbortSignal }
+): Promise<BreezSdkInterface> /*throws*/ {
+  const __stack = uniffiIsDebug ? new Error().stack : undefined;
+  try {
+    return await uniffiRustCallAsync(
+      /*rustCaller:*/ uniffiCaller,
+      /*rustFutureFunc:*/ () => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_connect_with_signing_only_signer(
+          FfiConverterTypeConnectWithSigningOnlySignerRequest.lower(request)
+        );
+      },
+      /*pollFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_poll_pointer,
+      /*cancelFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_cancel_pointer,
+      /*completeFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_complete_pointer,
+      /*freeFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_free_pointer,
+      /*liftFunc:*/ FfiConverterTypeBreezSdk.lift.bind(
+        FfiConverterTypeBreezSdk
+      ),
+      /*liftString:*/ FfiConverterString.lift,
+      /*asyncOpts:*/ asyncOpts_,
+      /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+        FfiConverterTypeSdkError
+      )
+    );
+  } catch (__error: any) {
+    if (uniffiIsDebug && __error instanceof Error) {
+      __error.stack = __stack;
+    }
+    throw __error;
+  }
+}
+/**
  * Builds the Turnkey-backed Breez and Spark signers from `config`, sharing one
  * Turnkey client.
  *
  * The Spark signer keeps every signing operation in the Turnkey enclave; the
  * Breez signer does too, except ECIES and HMAC, which run locally against a
- * dedicated, non-Spark key exported once here. Exporting a non-Spark key keeps
- * every Spark key (the identity key included) in the enclave; ECIES/HMAC only
- * need a stable key, not a Spark one.
+ * dedicated, non-Spark key exported on first use (see `TurnkeyBreezSigner`).
+ * Exporting a non-Spark key keeps every Spark key (the identity key included)
+ * in the enclave; ECIES/HMAC only need a stable key, not a Spark one.
+ *
+ * For a wallet under a deny-export policy, use
+ * [`create_turnkey_signing_only_signer`] instead: it never exports a key.
  */
 export async function createTurnkeySigner(
   config: TurnkeyConfig,
@@ -228,6 +285,49 @@ export async function createTurnkeySigner(
         .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
       /*liftFunc:*/ FfiConverterTypeExternalSigners.lift.bind(
         FfiConverterTypeExternalSigners
+      ),
+      /*liftString:*/ FfiConverterString.lift,
+      /*asyncOpts:*/ asyncOpts_,
+      /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+        FfiConverterTypeSignerError
+      )
+    );
+  } catch (__error: any) {
+    if (uniffiIsDebug && __error instanceof Error) {
+      __error.stack = __stack;
+    }
+    throw __error;
+  }
+}
+/**
+ * Builds signing-only Turnkey-backed signers from `config`, for a wallet under
+ * a deny-export policy. The Breez half performs signing only and never exports
+ * a key, so no ECIES/HMAC is attempted. Pair with
+ * [`connect_with_signing_only_signer`](crate::connect_with_signing_only_signer).
+ */
+export async function createTurnkeySigningOnlySigner(
+  config: TurnkeyConfig,
+  asyncOpts_?: { signal: AbortSignal }
+): Promise<SigningOnlyExternalSigners> /*throws*/ {
+  const __stack = uniffiIsDebug ? new Error().stack : undefined;
+  try {
+    return await uniffiRustCallAsync(
+      /*rustCaller:*/ uniffiCaller,
+      /*rustFutureFunc:*/ () => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_create_turnkey_signing_only_signer(
+          FfiConverterTypeTurnkeyConfig.lower(config)
+        );
+      },
+      /*pollFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+      /*cancelFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+      /*completeFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+      /*freeFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+      /*liftFunc:*/ FfiConverterTypeSigningOnlyExternalSigners.lift.bind(
+        FfiConverterTypeSigningOnlyExternalSigners
       ),
       /*liftString:*/ FfiConverterString.lift,
       /*asyncOpts:*/ asyncOpts_,
@@ -2920,6 +3020,91 @@ const FfiConverterTypeConnectWithSignerRequest = (() => {
       return (
         FfiConverterTypeConfig.allocationSize(value.config) +
         FfiConverterTypeExternalBreezSigner.allocationSize(value.breezSigner) +
+        FfiConverterTypeExternalSparkSigner.allocationSize(value.sparkSigner) +
+        FfiConverterString.allocationSize(value.storageDir)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Request object for connecting to the Spark network using a signing-only
+ * external signer.
+ *
+ * Use this instead of [`ConnectWithSignerRequest`] for a signer that can't
+ * perform the SDK's local ECIES/HMAC operations (for example a
+ * policy-restricted enclave). The SDK keeps session tokens in plaintext and
+ * disables the features that rely on ECIES/HMAC.
+ */
+export type ConnectWithSigningOnlySignerRequest = {
+  config: Config;
+  /**
+   * Signing-only external signer for non-Spark SDK signing.
+   */
+  breezSigner: ExternalSigningSigner;
+  /**
+   * External high-level Spark signer for the Spark wallet flows.
+   */
+  sparkSigner: ExternalSparkSigner;
+  storageDir: string;
+};
+
+/**
+ * Generated factory for {@link ConnectWithSigningOnlySignerRequest} record objects.
+ */
+export const ConnectWithSigningOnlySignerRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ConnectWithSigningOnlySignerRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ConnectWithSigningOnlySignerRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ConnectWithSigningOnlySignerRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ConnectWithSigningOnlySignerRequest>,
+  });
+})();
+
+const FfiConverterTypeConnectWithSigningOnlySignerRequest = (() => {
+  type TypeName = ConnectWithSigningOnlySignerRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        config: FfiConverterTypeConfig.read(from),
+        breezSigner: FfiConverterTypeExternalSigningSigner.read(from),
+        sparkSigner: FfiConverterTypeExternalSparkSigner.read(from),
+        storageDir: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeConfig.write(value.config, into);
+      FfiConverterTypeExternalSigningSigner.write(value.breezSigner, into);
+      FfiConverterTypeExternalSparkSigner.write(value.sparkSigner, into);
+      FfiConverterString.write(value.storageDir, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeConfig.allocationSize(value.config) +
+        FfiConverterTypeExternalSigningSigner.allocationSize(
+          value.breezSigner
+        ) +
         FfiConverterTypeExternalSparkSigner.allocationSize(value.sparkSigner) +
         FfiConverterString.allocationSize(value.storageDir)
       );
@@ -12751,6 +12936,79 @@ const FfiConverterTypeSignMessageResponse = (() => {
       return (
         FfiConverterString.allocationSize(value.pubkey) +
         FfiConverterString.allocationSize(value.signature)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * A signing-only external signer paired with the Spark signer, for wallets that
+ * connect via [`connect_with_signing_only_signer`]. The Breez half performs
+ * signing only, without the SDK's local ECIES/HMAC operations.
+ */
+export type SigningOnlyExternalSigners = {
+  /**
+   * Signing-only external signer for non-Spark SDK signing.
+   */
+  breezSigner: ExternalSigningSigner;
+  /**
+   * External high-level Spark signer for the Spark wallet flows.
+   */
+  sparkSigner: ExternalSparkSigner;
+};
+
+/**
+ * Generated factory for {@link SigningOnlyExternalSigners} record objects.
+ */
+export const SigningOnlyExternalSigners = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      SigningOnlyExternalSigners,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SigningOnlyExternalSigners}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SigningOnlyExternalSigners}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<SigningOnlyExternalSigners>,
+  });
+})();
+
+const FfiConverterTypeSigningOnlyExternalSigners = (() => {
+  type TypeName = SigningOnlyExternalSigners;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        breezSigner: FfiConverterTypeExternalSigningSigner.read(from),
+        sparkSigner: FfiConverterTypeExternalSparkSigner.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeExternalSigningSigner.write(value.breezSigner, into);
+      FfiConverterTypeExternalSparkSigner.write(value.sparkSigner, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeExternalSigningSigner.allocationSize(
+          value.breezSigner
+        ) +
+        FfiConverterTypeExternalSparkSigner.allocationSize(value.sparkSigner)
       );
     }
   }
@@ -27458,6 +27716,7 @@ export enum SignerError_Tags {
   Signing = 'Signing',
   Encryption = 'Encryption',
   Decryption = 'Decryption',
+  EncryptionUnavailable = 'EncryptionUnavailable',
   Frost = 'Frost',
   InvalidInput = 'InvalidInput',
   Generic = 'Generic',
@@ -27606,6 +27865,44 @@ export const SignerError = (() => {
     }
   }
 
+  type EncryptionUnavailable__interface = {
+    tag: SignerError_Tags.EncryptionUnavailable;
+    inner: Readonly<[string]>;
+  };
+
+  class EncryptionUnavailable_
+    extends UniffiError
+    implements EncryptionUnavailable__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SignerError';
+    readonly tag = SignerError_Tags.EncryptionUnavailable;
+    readonly inner: Readonly<[string]>;
+    constructor(v0: string) {
+      super('SignerError', 'EncryptionUnavailable');
+      this.inner = Object.freeze([v0]);
+    }
+
+    static new(v0: string): EncryptionUnavailable_ {
+      return new EncryptionUnavailable_(v0);
+    }
+
+    static instanceOf(obj: any): obj is EncryptionUnavailable_ {
+      return obj.tag === SignerError_Tags.EncryptionUnavailable;
+    }
+
+    static hasInner(obj: any): obj is EncryptionUnavailable_ {
+      return EncryptionUnavailable_.instanceOf(obj);
+    }
+
+    static getInner(obj: EncryptionUnavailable_): Readonly<[string]> {
+      return obj.inner;
+    }
+  }
+
   type Frost__interface = {
     tag: SignerError_Tags.Frost;
     inner: Readonly<[string]>;
@@ -27721,6 +28018,7 @@ export const SignerError = (() => {
     Signing: Signing_,
     Encryption: Encryption_,
     Decryption: Decryption_,
+    EncryptionUnavailable: EncryptionUnavailable_,
     Frost: Frost_,
     InvalidInput: InvalidInput_,
     Generic: Generic_,
@@ -27751,10 +28049,14 @@ const FfiConverterTypeSignerError = (() => {
         case 4:
           return new SignerError.Decryption(FfiConverterString.read(from));
         case 5:
-          return new SignerError.Frost(FfiConverterString.read(from));
+          return new SignerError.EncryptionUnavailable(
+            FfiConverterString.read(from)
+          );
         case 6:
-          return new SignerError.InvalidInput(FfiConverterString.read(from));
+          return new SignerError.Frost(FfiConverterString.read(from));
         case 7:
+          return new SignerError.InvalidInput(FfiConverterString.read(from));
+        case 8:
           return new SignerError.Generic(FfiConverterString.read(from));
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -27786,20 +28088,26 @@ const FfiConverterTypeSignerError = (() => {
           FfiConverterString.write(inner[0], into);
           return;
         }
-        case SignerError_Tags.Frost: {
+        case SignerError_Tags.EncryptionUnavailable: {
           ordinalConverter.write(5, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
         }
-        case SignerError_Tags.InvalidInput: {
+        case SignerError_Tags.Frost: {
           ordinalConverter.write(6, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
         }
-        case SignerError_Tags.Generic: {
+        case SignerError_Tags.InvalidInput: {
           ordinalConverter.write(7, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner[0], into);
+          return;
+        }
+        case SignerError_Tags.Generic: {
+          ordinalConverter.write(8, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
@@ -27835,21 +28143,27 @@ const FfiConverterTypeSignerError = (() => {
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
-        case SignerError_Tags.Frost: {
+        case SignerError_Tags.EncryptionUnavailable: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(5);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
-        case SignerError_Tags.InvalidInput: {
+        case SignerError_Tags.Frost: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(6);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
-        case SignerError_Tags.Generic: {
+        case SignerError_Tags.InvalidInput: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(7);
+          size += FfiConverterString.allocationSize(inner[0]);
+          return size;
+        }
+        case SignerError_Tags.Generic: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(8);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
@@ -33760,6 +34074,629 @@ const uniffiCallbackInterfaceExternalBreezSigner: {
 };
 
 /**
+ * External signer that provides signing only, without the SDK's local
+ * ECIES/HMAC operations.
+ *
+ * Implement this instead of [`ExternalBreezSigner`] for a signer that can't
+ * release key material for local encryption (for example a policy-restricted
+ * enclave). The capability is declared by the type: the SDK keeps session
+ * tokens in plaintext and the features that rely on ECIES/HMAC are unavailable.
+ */
+export interface ExternalSigningSigner {
+  /**
+   * Derives a public key for the given BIP32 derivation path.
+   *
+   * # Arguments
+   * * `path` - BIP32 derivation path as a string (e.g., "m/44'/0'/0'/0/0")
+   *
+   * # Returns
+   * The derived public key as 33 bytes, or a `SignerError`
+   *
+   * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
+   */
+  derivePublicKey(
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<PublicKeyBytes>;
+  /**
+   * Signs a message using ECDSA at the given derivation path.
+   *
+   * The message should be a 32-byte digest (typically a hash of the original data).
+   *
+   * # Arguments
+   * * `message` - The 32-byte message digest to sign
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 64-byte compact ECDSA signature, or a `SignerError`
+   */
+  signEcdsa(
+    message: MessageBytes,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<EcdsaSignatureBytes>;
+  /**
+   * Signs a message using recoverable ECDSA at the given derivation path.
+   *
+   * The message should be a 32-byte digest (typically a hash of the original data).
+   *
+   * # Arguments
+   * * `message` - The 32-byte message digest to sign
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 65 bytes: recovery ID (31 + `recovery_id`) + 64-byte signature, or a `SignerError`
+   */
+  signEcdsaRecoverable(
+    message: MessageBytes,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<RecoverableEcdsaSignatureBytes>;
+  /**
+   * Signs a hash using Schnorr signature at the given derivation path.
+   *
+   * # Arguments
+   * * `hash` - The 32-byte hash to sign (must be 32 bytes)
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 64-byte Schnorr signature, or a `SignerError`
+   */
+  signHashSchnorr(
+    hash: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<SchnorrSignatureBytes>;
+}
+
+/**
+ * External signer that provides signing only, without the SDK's local
+ * ECIES/HMAC operations.
+ *
+ * Implement this instead of [`ExternalBreezSigner`] for a signer that can't
+ * release key material for local encryption (for example a policy-restricted
+ * enclave). The capability is declared by the type: the SDK keeps session
+ * tokens in plaintext and the features that rely on ECIES/HMAC are unavailable.
+ */
+export class ExternalSigningSignerImpl
+  extends UniffiAbstractObject
+  implements ExternalSigningSigner
+{
+  readonly [uniffiTypeNameSymbol] = 'ExternalSigningSignerImpl';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypeExternalSigningSignerImplObjectFactory.bless(pointer);
+  }
+
+  /**
+   * Derives a public key for the given BIP32 derivation path.
+   *
+   * # Arguments
+   * * `path` - BIP32 derivation path as a string (e.g., "m/44'/0'/0'/0/0")
+   *
+   * # Returns
+   * The derived public key as 33 bytes, or a `SignerError`
+   *
+   * See also: [JavaScript `getPublicKeyFromDerivation`](https://docs.spark.money/wallets/spark-signer#get-public-key-from-derivation)
+   */
+  public async derivePublicKey(
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<PublicKeyBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigningsigner_derive_public_key(
+            uniffiTypeExternalSigningSignerImplObjectFactory.clonePointer(this),
+            FfiConverterString.lower(path)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePublicKeyBytes.lift.bind(
+          FfiConverterTypePublicKeyBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Signs a message using ECDSA at the given derivation path.
+   *
+   * The message should be a 32-byte digest (typically a hash of the original data).
+   *
+   * # Arguments
+   * * `message` - The 32-byte message digest to sign
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 64-byte compact ECDSA signature, or a `SignerError`
+   */
+  public async signEcdsa(
+    message: MessageBytes,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<EcdsaSignatureBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigningsigner_sign_ecdsa(
+            uniffiTypeExternalSigningSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeMessageBytes.lower(message),
+            FfiConverterString.lower(path)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeEcdsaSignatureBytes.lift.bind(
+          FfiConverterTypeEcdsaSignatureBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Signs a message using recoverable ECDSA at the given derivation path.
+   *
+   * The message should be a 32-byte digest (typically a hash of the original data).
+   *
+   * # Arguments
+   * * `message` - The 32-byte message digest to sign
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 65 bytes: recovery ID (31 + `recovery_id`) + 64-byte signature, or a `SignerError`
+   */
+  public async signEcdsaRecoverable(
+    message: MessageBytes,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<RecoverableEcdsaSignatureBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigningsigner_sign_ecdsa_recoverable(
+            uniffiTypeExternalSigningSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeMessageBytes.lower(message),
+            FfiConverterString.lower(path)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeRecoverableEcdsaSignatureBytes.lift.bind(
+          FfiConverterTypeRecoverableEcdsaSignatureBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Signs a hash using Schnorr signature at the given derivation path.
+   *
+   * # Arguments
+   * * `hash` - The 32-byte hash to sign (must be 32 bytes)
+   * * `path` - BIP32 derivation path as a string
+   *
+   * # Returns
+   * 64-byte Schnorr signature, or a `SignerError`
+   */
+  public async signHashSchnorr(
+    hash: ArrayBuffer,
+    path: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<SchnorrSignatureBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsigningsigner_sign_hash_schnorr(
+            uniffiTypeExternalSigningSignerImplObjectFactory.clonePointer(this),
+            FfiConverterArrayBuffer.lower(hash),
+            FfiConverterString.lower(path)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeSchnorrSignatureBytes.lift.bind(
+          FfiConverterTypeSchnorrSignatureBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer =
+        uniffiTypeExternalSigningSignerImplObjectFactory.pointer(this);
+      uniffiTypeExternalSigningSignerImplObjectFactory.freePointer(pointer);
+      uniffiTypeExternalSigningSignerImplObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is ExternalSigningSignerImpl {
+    return uniffiTypeExternalSigningSignerImplObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypeExternalSigningSignerImplObjectFactory: UniffiObjectFactory<ExternalSigningSigner> =
+  (() => {
+    return {
+      create(pointer: UnsafeMutableRawPointer): ExternalSigningSigner {
+        const instance = Object.create(ExternalSigningSignerImpl.prototype);
+        instance[pointerLiteralSymbol] = pointer;
+        instance[destructorGuardSymbol] = this.bless(pointer);
+        instance[uniffiTypeNameSymbol] = 'ExternalSigningSignerImpl';
+        return instance;
+      },
+
+      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+        return uniffiCaller.rustCall(
+          /*caller:*/ (status) =>
+            nativeModule().ubrn_uniffi_internal_fn_method_externalsigningsigner_ffi__bless_pointer(
+              p,
+              status
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      unbless(ptr: UniffiRustArcPtr) {
+        ptr.markDestroyed();
+      },
+
+      pointer(obj: ExternalSigningSigner): UnsafeMutableRawPointer {
+        if ((obj as any)[destructorGuardSymbol] === undefined) {
+          throw new UniffiInternalError.UnexpectedNullPointer();
+        }
+        return (obj as any)[pointerLiteralSymbol];
+      },
+
+      clonePointer(obj: ExternalSigningSigner): UnsafeMutableRawPointer {
+        const pointer = this.pointer(obj);
+        return uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_externalsigningsigner(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      freePointer(pointer: UnsafeMutableRawPointer): void {
+        uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_externalsigningsigner(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      isConcreteType(obj: any): obj is ExternalSigningSigner {
+        return (
+          obj[destructorGuardSymbol] &&
+          obj[uniffiTypeNameSymbol] === 'ExternalSigningSignerImpl'
+        );
+      },
+    };
+  })();
+// FfiConverter for ExternalSigningSigner
+const FfiConverterTypeExternalSigningSigner =
+  new FfiConverterObjectWithCallbacks(
+    uniffiTypeExternalSigningSignerImplObjectFactory
+  );
+
+// Add a vtavble for the callbacks that go in ExternalSigningSigner.
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+const uniffiCallbackInterfaceExternalSigningSigner: {
+  vtable: UniffiVTableCallbackInterfaceExternalSigningSigner;
+  register: () => void;
+} = {
+  // Create the VTable using a series of closures.
+  // ts automatically converts these into C callback functions.
+  vtable: {
+    derivePublicKey: (
+      uniffiHandle: bigint,
+      path: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<PublicKeyBytes> => {
+        const jsCallback =
+          FfiConverterTypeExternalSigningSigner.lift(uniffiHandle);
+        return await jsCallback.derivePublicKey(FfiConverterString.lift(path), {
+          signal,
+        });
+      };
+      const uniffiHandleSuccess = (returnValue: PublicKeyBytes) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypePublicKeyBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    signEcdsa: (
+      uniffiHandle: bigint,
+      message: Uint8Array,
+      path: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<EcdsaSignatureBytes> => {
+        const jsCallback =
+          FfiConverterTypeExternalSigningSigner.lift(uniffiHandle);
+        return await jsCallback.signEcdsa(
+          FfiConverterTypeMessageBytes.lift(message),
+          FfiConverterString.lift(path),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: EcdsaSignatureBytes) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypeEcdsaSignatureBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    signEcdsaRecoverable: (
+      uniffiHandle: bigint,
+      message: Uint8Array,
+      path: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<RecoverableEcdsaSignatureBytes> => {
+        const jsCallback =
+          FfiConverterTypeExternalSigningSigner.lift(uniffiHandle);
+        return await jsCallback.signEcdsaRecoverable(
+          FfiConverterTypeMessageBytes.lift(message),
+          FfiConverterString.lift(path),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (
+        returnValue: RecoverableEcdsaSignatureBytes
+      ) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeRecoverableEcdsaSignatureBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    signHashSchnorr: (
+      uniffiHandle: bigint,
+      hash: Uint8Array,
+      path: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<SchnorrSignatureBytes> => {
+        const jsCallback =
+          FfiConverterTypeExternalSigningSigner.lift(uniffiHandle);
+        return await jsCallback.signHashSchnorr(
+          FfiConverterArrayBuffer.lift(hash),
+          FfiConverterString.lift(path),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: SchnorrSignatureBytes) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeSchnorrSignatureBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    uniffiFree: (uniffiHandle: UniffiHandle): void => {
+      // ExternalSigningSigner: this will throw a stale handle error if the handle isn't found.
+      FfiConverterTypeExternalSigningSigner.drop(uniffiHandle);
+    },
+  },
+  register: () => {
+    nativeModule().ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_externalsigningsigner(
+      uniffiCallbackInterfaceExternalSigningSigner.vtable
+    );
+  },
+};
+
+/**
  * FFI-compatible mirror of `spark_wallet::SparkSigner`.
  */
 export interface ExternalSparkSigner {
@@ -38001,6 +38938,38 @@ export class SdkBuilder
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new_with_signer(
             FfiConverterTypeConfig.lower(config),
             FfiConverterTypeExternalBreezSigner.lower(breezSigner),
+            FfiConverterTypeExternalSparkSigner.lower(sparkSigner),
+            callStatus
+          );
+        },
+        /*liftString:*/ FfiConverterString.lift
+      )
+    );
+  }
+
+  /**
+   * Creates a new `SdkBuilder` with a signing-only external signer.
+   *
+   * Use this for a signer that can't perform the SDK's local ECIES/HMAC
+   * operations (for example a policy-restricted enclave). The SDK keeps
+   * session tokens in plaintext and disables the features that rely on
+   * ECIES/HMAC.
+   * Arguments:
+   * - `config`: The configuration to be used.
+   * - `breez_signer`: Signing-only external signer for non-Spark SDK signing.
+   * - `spark_signer`: External high-level Spark signer for the Spark wallet.
+   */
+  public static newWithSigningOnlySigner(
+    config: Config,
+    breezSigner: ExternalSigningSigner,
+    sparkSigner: ExternalSparkSigner
+  ): SdkBuilderInterface {
+    return FfiConverterTypeSdkBuilder.lift(
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_constructor_sdkbuilder_new_with_signing_only_signer(
+            FfiConverterTypeConfig.lower(config),
+            FfiConverterTypeExternalSigningSigner.lower(breezSigner),
             FfiConverterTypeExternalSparkSigner.lower(sparkSigner),
             callStatus
           );
@@ -43372,11 +44341,27 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_connect_with_signing_only_signer() !==
+    17952
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_connect_with_signing_only_signer'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_create_turnkey_signer() !==
-    31659
+    50635
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_func_create_turnkey_signer'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_create_turnkey_signing_only_signer() !==
+    37791
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_create_turnkey_signing_only_signer'
     );
   }
   if (
@@ -43913,6 +44898,38 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_hmac_sha256'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigningsigner_derive_public_key() !==
+    28092
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigningsigner_derive_public_key'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigningsigner_sign_ecdsa() !==
+    13755
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigningsigner_sign_ecdsa'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigningsigner_sign_ecdsa_recoverable() !==
+    34935
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigningsigner_sign_ecdsa_recoverable'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsigningsigner_sign_hash_schnorr() !==
+    21395
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsigningsigner_sign_hash_schnorr'
     );
   }
   if (
@@ -44612,6 +45629,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new_with_signing_only_signer() !==
+    27342
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_constructor_sdkbuilder_new_with_signing_only_signer'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_eventlistener_on_event() !==
     24807
   ) {
@@ -44632,6 +45657,7 @@ function uniffiEnsureInitialized() {
   uniffiCallbackInterfaceLogger.register();
   uniffiCallbackInterfaceBitcoinChainService.register();
   uniffiCallbackInterfaceExternalBreezSigner.register();
+  uniffiCallbackInterfaceExternalSigningSigner.register();
   uniffiCallbackInterfaceExternalSparkSigner.register();
   uniffiCallbackInterfaceFiatService.register();
   uniffiCallbackInterfacePaymentObserver.register();
@@ -44687,6 +45713,7 @@ export default Object.freeze({
     FfiConverterTypeConnectWithPasskeyRequest,
     FfiConverterTypeConnectWithPasskeyResponse,
     FfiConverterTypeConnectWithSignerRequest,
+    FfiConverterTypeConnectWithSigningOnlySignerRequest,
     FfiConverterTypeContact,
     FfiConverterTypeConversion,
     FfiConverterTypeConversionAsset,
@@ -44749,6 +45776,7 @@ export default Object.freeze({
     FfiConverterTypeExternalSignedSparkInvoice,
     FfiConverterTypeExternalSigners,
     FfiConverterTypeExternalSigningCommitments,
+    FfiConverterTypeExternalSigningSigner,
     FfiConverterTypeExternalSparkInvoiceKind,
     FfiConverterTypeExternalSparkSigner,
     FfiConverterTypeExternalStartStaticDepositRefundRequest,
@@ -44887,6 +45915,7 @@ export default Object.freeze({
     FfiConverterTypeSignMessageRequest,
     FfiConverterTypeSignMessageResponse,
     FfiConverterTypeSignerError,
+    FfiConverterTypeSigningOnlyExternalSigners,
     FfiConverterTypeSilentPaymentAddressDetails,
     FfiConverterTypeSourceAsset,
     FfiConverterTypeSparkAddressDetails,
