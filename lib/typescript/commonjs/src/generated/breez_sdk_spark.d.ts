@@ -134,6 +134,21 @@ export declare function defaultExternalSigners(mnemonic: string, passphrase: str
  */
 export declare function defaultServerConfig(network: Network): Config;
 /**
+ * The session store `backend` provides for `identity` on `network` (its own
+ * persistence: `PostgreSQL`/`MySQL` when the backend is DB-backed, else an
+ * in-memory store).
+ *
+ * Returned so it can be wrapped in a decorating [`SessionStore`] and passed to
+ * [`SdkBuilder::with_session_store`](crate::SdkBuilder::with_session_store),
+ * keeping the backend's persistence. A typical use is at-rest encryption (the
+ * SDK does not encrypt tokens itself): wrap it in a store that encrypts on
+ * write and decrypts on read. `identity` is the wallet identity public key
+ * bytes (the same value the SDK derives from the signer).
+ */
+export declare function defaultSessionStore(backend: StorageBackend, network: Network, identity: ArrayBuffer, asyncOpts_?: {
+    signal: AbortSignal;
+}): Promise<SessionStore>;
+/**
  * File-based `SQLite` storage rooted at `storage_dir` — the default for
  * mobile and desktop apps. Each tenant gets its own database file under the
  * directory.
@@ -653,6 +668,51 @@ export declare const Bolt12OfferDetails: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<Bolt12OfferDetails>;
+}>;
+export type BuildUnsignedLnurlPayPackageRequest = {
+    prepareResponse: PrepareLnurlPayResponse;
+};
+/**
+ * Generated factory for {@link BuildUnsignedLnurlPayPackageRequest} record objects.
+ */
+export declare const BuildUnsignedLnurlPayPackageRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link BuildUnsignedLnurlPayPackageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<BuildUnsignedLnurlPayPackageRequest> & Required<Omit<BuildUnsignedLnurlPayPackageRequest, never>>) => BuildUnsignedLnurlPayPackageRequest;
+    /**
+     * Create a frozen instance of {@link BuildUnsignedLnurlPayPackageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<BuildUnsignedLnurlPayPackageRequest> & Required<Omit<BuildUnsignedLnurlPayPackageRequest, never>>) => BuildUnsignedLnurlPayPackageRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<BuildUnsignedLnurlPayPackageRequest>;
+}>;
+export type BuildUnsignedTransferPackageRequest = {
+    prepareResponse: PrepareSendPaymentResponse;
+    options: BuildTransferPackageOptions | undefined;
+};
+/**
+ * Generated factory for {@link BuildUnsignedTransferPackageRequest} record objects.
+ */
+export declare const BuildUnsignedTransferPackageRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link BuildUnsignedTransferPackageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<BuildUnsignedTransferPackageRequest> & Required<Omit<BuildUnsignedTransferPackageRequest, "options">>) => BuildUnsignedTransferPackageRequest;
+    /**
+     * Create a frozen instance of {@link BuildUnsignedTransferPackageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<BuildUnsignedTransferPackageRequest> & Required<Omit<BuildUnsignedTransferPackageRequest, "options">>) => BuildUnsignedTransferPackageRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<BuildUnsignedTransferPackageRequest>;
 }>;
 export type BurnIssuerTokenRequest = {
     amount: U128;
@@ -3603,6 +3663,30 @@ export declare const LnurlInfo: Readonly<{
      */
     defaults: () => Partial<LnurlInfo>;
 }>;
+export type LnurlPayContext = {
+    payRequest: LnurlPayRequestDetails;
+    comment: string | undefined;
+    successAction: SuccessAction | undefined;
+};
+/**
+ * Generated factory for {@link LnurlPayContext} record objects.
+ */
+export declare const LnurlPayContext: Readonly<{
+    /**
+     * Create a frozen instance of {@link LnurlPayContext}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<LnurlPayContext> & Required<Omit<LnurlPayContext, never>>) => LnurlPayContext;
+    /**
+     * Create a frozen instance of {@link LnurlPayContext}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<LnurlPayContext> & Required<Omit<LnurlPayContext, never>>) => LnurlPayContext;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<LnurlPayContext>;
+}>;
 /**
  * Represents the payment LNURL info
  */
@@ -4632,6 +4716,50 @@ export declare const PublicKeyBytes: Readonly<{
      */
     defaults: () => Partial<PublicKeyBytes>;
 }>;
+export type PublishSignedLnurlPayPackageRequest = {
+    signedPackage: SignedTransferPackage;
+};
+/**
+ * Generated factory for {@link PublishSignedLnurlPayPackageRequest} record objects.
+ */
+export declare const PublishSignedLnurlPayPackageRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link PublishSignedLnurlPayPackageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PublishSignedLnurlPayPackageRequest> & Required<Omit<PublishSignedLnurlPayPackageRequest, never>>) => PublishSignedLnurlPayPackageRequest;
+    /**
+     * Create a frozen instance of {@link PublishSignedLnurlPayPackageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PublishSignedLnurlPayPackageRequest> & Required<Omit<PublishSignedLnurlPayPackageRequest, never>>) => PublishSignedLnurlPayPackageRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PublishSignedLnurlPayPackageRequest>;
+}>;
+export type PublishSignedTransferPackageRequest = {
+    signedPackage: SignedTransferPackage;
+};
+/**
+ * Generated factory for {@link PublishSignedTransferPackageRequest} record objects.
+ */
+export declare const PublishSignedTransferPackageRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link PublishSignedTransferPackageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PublishSignedTransferPackageRequest> & Required<Omit<PublishSignedTransferPackageRequest, never>>) => PublishSignedTransferPackageRequest;
+    /**
+     * Create a frozen instance of {@link PublishSignedTransferPackageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PublishSignedTransferPackageRequest> & Required<Omit<PublishSignedTransferPackageRequest, never>>) => PublishSignedTransferPackageRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PublishSignedTransferPackageRequest>;
+}>;
 /**
  * Denominator in an exchange rate
  */
@@ -5496,6 +5624,29 @@ export declare const SignMessageResponse: Readonly<{
      */
     defaults: () => Partial<SignMessageResponse>;
 }>;
+export type SignedTransferPackage = {
+    unsigned: UnsignedTransferPackage;
+    signature: TransferSignature;
+};
+/**
+ * Generated factory for {@link SignedTransferPackage} record objects.
+ */
+export declare const SignedTransferPackage: Readonly<{
+    /**
+     * Create a frozen instance of {@link SignedTransferPackage}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SignedTransferPackage> & Required<Omit<SignedTransferPackage, never>>) => SignedTransferPackage;
+    /**
+     * Create a frozen instance of {@link SignedTransferPackage}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SignedTransferPackage> & Required<Omit<SignedTransferPackage, never>>) => SignedTransferPackage;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SignedTransferPackage>;
+}>;
 /**
  * A signing-only external signer paired with the Spark signer, for wallets that
  * connect via [`connect_with_signing_only_signer`]. The Breez half performs
@@ -5617,6 +5768,12 @@ export type SparkConfig = {
      * Expected relative block locktime for token withdrawals.
      */
     expectedWithdrawRelativeBlockLocktime: bigint;
+    /**
+     * Cap on the inputs a single token transaction may spend. A send needing
+     * more first consolidates the wallet's token outputs. Unset uses the SDK
+     * default (500).
+     */
+    maxTokenTransactionInputs: /*u32*/ number | undefined;
 };
 /**
  * Generated factory for {@link SparkConfig} record objects.
@@ -6353,9 +6510,33 @@ export type TurnkeyConfig = {
      */
     accountNumber: /*u32*/ number | undefined;
     /**
+     * The wallet's identity public key (compressed, hex), to skip fetching it
+     * from Turnkey on init. Obtain it once from a freshly-built signer via
+     * [`ExternalSparkSigner::get_identity_public_key`] — the simplest source,
+     * available right after `create_turnkey_signer` with no separate connect —
+     * or, if you only have a connected SDK, from `identity_pubkey` on the
+     * get-info response. Pass it back on later inits: the signer then serves the
+     * identity key and its Spark address from this value instead of the per-init
+     * Turnkey round-trips, making signer setup network-free. Unset fetches
+     * lazily, as before. It is a stable, non-secret, per-wallet value; a value
+     * that does not match the wallet yields a signer that signs with the wrong
+     * identity, so only pass one read from this same wallet.
+     *
+     * [`ExternalSparkSigner::get_identity_public_key`]: crate::signer::ExternalSparkSigner::get_identity_public_key
+     */
+    identityPublicKey: string | undefined;
+    /**
      * Retry policy for Turnkey requests. Unset uses the default policy.
      */
     retry: TurnkeyRetryConfig | undefined;
+    /**
+     * Maximum requests per second the client issues to this suborganization,
+     * across all concurrent operations. The client paces itself to this rate.
+     * Unset uses Turnkey's documented per-suborganization cap of 10 RPS; set it
+     * to the account's actual limit if a different one is provisioned. Must be
+     * greater than 0 when set: 0 is rejected at connect.
+     */
+    maxRps: /*u32*/ number | undefined;
 };
 /**
  * Generated factory for {@link TurnkeyConfig} record objects.
@@ -6365,12 +6546,12 @@ export declare const TurnkeyConfig: Readonly<{
      * Create a frozen instance of {@link TurnkeyConfig}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<TurnkeyConfig> & Required<Omit<TurnkeyConfig, never>>) => TurnkeyConfig;
+    create: (partial: Partial<TurnkeyConfig> & Required<Omit<TurnkeyConfig, "maxRps">>) => TurnkeyConfig;
     /**
      * Create a frozen instance of {@link TurnkeyConfig}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<TurnkeyConfig> & Required<Omit<TurnkeyConfig, never>>) => TurnkeyConfig;
+    new: (partial: Partial<TurnkeyConfig> & Required<Omit<TurnkeyConfig, "maxRps">>) => TurnkeyConfig;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -7303,6 +7484,105 @@ export declare enum BitcoinNetwork {
     Signet = 3,
     Regtest = 4
 }
+export declare enum BuildTransferPackageOptions_Tags {
+    BitcoinAddress = "BitcoinAddress",
+    Bolt11Invoice = "Bolt11Invoice"
+}
+export declare const BuildTransferPackageOptions: Readonly<{
+    instanceOf: (obj: any) => obj is BuildTransferPackageOptions;
+    BitcoinAddress: {
+        new (inner: {
+            confirmationSpeed: OnchainConfirmationSpeed;
+        }): {
+            readonly tag: BuildTransferPackageOptions_Tags.BitcoinAddress;
+            readonly inner: Readonly<{
+                confirmationSpeed: OnchainConfirmationSpeed;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BuildTransferPackageOptions";
+        };
+        "new"(inner: {
+            confirmationSpeed: OnchainConfirmationSpeed;
+        }): {
+            readonly tag: BuildTransferPackageOptions_Tags.BitcoinAddress;
+            readonly inner: Readonly<{
+                confirmationSpeed: OnchainConfirmationSpeed;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BuildTransferPackageOptions";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: BuildTransferPackageOptions_Tags.BitcoinAddress;
+            readonly inner: Readonly<{
+                confirmationSpeed: OnchainConfirmationSpeed;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BuildTransferPackageOptions";
+        };
+    };
+    Bolt11Invoice: {
+        new (inner: {
+            preferSpark: boolean;
+            /**
+             * If set, publishing the package waits up to this many seconds for the
+             * payment to complete before returning it while still pending. If unset,
+             * publishing returns immediately after initiating the payment.
+             */ completionTimeoutSecs: /*u32*/ number | undefined;
+        }): {
+            readonly tag: BuildTransferPackageOptions_Tags.Bolt11Invoice;
+            readonly inner: Readonly<{
+                preferSpark: boolean;
+                completionTimeoutSecs: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BuildTransferPackageOptions";
+        };
+        "new"(inner: {
+            preferSpark: boolean;
+            /**
+             * If set, publishing the package waits up to this many seconds for the
+             * payment to complete before returning it while still pending. If unset,
+             * publishing returns immediately after initiating the payment.
+             */ completionTimeoutSecs: /*u32*/ number | undefined;
+        }): {
+            readonly tag: BuildTransferPackageOptions_Tags.Bolt11Invoice;
+            readonly inner: Readonly<{
+                preferSpark: boolean;
+                completionTimeoutSecs: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BuildTransferPackageOptions";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: BuildTransferPackageOptions_Tags.Bolt11Invoice;
+            readonly inner: Readonly<{
+                preferSpark: boolean;
+                completionTimeoutSecs: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BuildTransferPackageOptions";
+        };
+    };
+}>;
+export type BuildTransferPackageOptions = InstanceType<(typeof BuildTransferPackageOptions)[keyof Omit<typeof BuildTransferPackageOptions, 'instanceOf'>]>;
 export declare enum BuyBitcoinRequest_Tags {
     Moonpay = "Moonpay",
     CashApp = "CashApp"
@@ -12645,6 +12925,152 @@ export declare const ProvisionalPaymentDetails: Readonly<{
     };
 }>;
 export type ProvisionalPaymentDetails = InstanceType<(typeof ProvisionalPaymentDetails)[keyof Omit<typeof ProvisionalPaymentDetails, 'instanceOf'>]>;
+export declare enum PublishSignedLnurlPayResponse_Tags {
+    SwapCompleted = "SwapCompleted",
+    PaymentSent = "PaymentSent"
+}
+export declare const PublishSignedLnurlPayResponse: Readonly<{
+    instanceOf: (obj: any) => obj is PublishSignedLnurlPayResponse;
+    SwapCompleted: {
+        new (): {
+            readonly tag: PublishSignedLnurlPayResponse_Tags.SwapCompleted;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedLnurlPayResponse";
+        };
+        "new"(): {
+            readonly tag: PublishSignedLnurlPayResponse_Tags.SwapCompleted;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedLnurlPayResponse";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PublishSignedLnurlPayResponse_Tags.SwapCompleted;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedLnurlPayResponse";
+        };
+    };
+    PaymentSent: {
+        new (inner: {
+            response: LnurlPayResponse;
+        }): {
+            readonly tag: PublishSignedLnurlPayResponse_Tags.PaymentSent;
+            readonly inner: Readonly<{
+                response: LnurlPayResponse;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedLnurlPayResponse";
+        };
+        "new"(inner: {
+            response: LnurlPayResponse;
+        }): {
+            readonly tag: PublishSignedLnurlPayResponse_Tags.PaymentSent;
+            readonly inner: Readonly<{
+                response: LnurlPayResponse;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedLnurlPayResponse";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PublishSignedLnurlPayResponse_Tags.PaymentSent;
+            readonly inner: Readonly<{
+                response: LnurlPayResponse;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedLnurlPayResponse";
+        };
+    };
+}>;
+export type PublishSignedLnurlPayResponse = InstanceType<(typeof PublishSignedLnurlPayResponse)[keyof Omit<typeof PublishSignedLnurlPayResponse, 'instanceOf'>]>;
+export declare enum PublishSignedTransferPackageResponse_Tags {
+    SwapCompleted = "SwapCompleted",
+    PaymentSent = "PaymentSent"
+}
+export declare const PublishSignedTransferPackageResponse: Readonly<{
+    instanceOf: (obj: any) => obj is PublishSignedTransferPackageResponse;
+    SwapCompleted: {
+        new (): {
+            readonly tag: PublishSignedTransferPackageResponse_Tags.SwapCompleted;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedTransferPackageResponse";
+        };
+        "new"(): {
+            readonly tag: PublishSignedTransferPackageResponse_Tags.SwapCompleted;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedTransferPackageResponse";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PublishSignedTransferPackageResponse_Tags.SwapCompleted;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedTransferPackageResponse";
+        };
+    };
+    PaymentSent: {
+        new (inner: {
+            payment: Payment;
+        }): {
+            readonly tag: PublishSignedTransferPackageResponse_Tags.PaymentSent;
+            readonly inner: Readonly<{
+                payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedTransferPackageResponse";
+        };
+        "new"(inner: {
+            payment: Payment;
+        }): {
+            readonly tag: PublishSignedTransferPackageResponse_Tags.PaymentSent;
+            readonly inner: Readonly<{
+                payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedTransferPackageResponse";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PublishSignedTransferPackageResponse_Tags.PaymentSent;
+            readonly inner: Readonly<{
+                payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedTransferPackageResponse";
+        };
+    };
+}>;
+export type PublishSignedTransferPackageResponse = InstanceType<(typeof PublishSignedTransferPackageResponse)[keyof Omit<typeof PublishSignedTransferPackageResponse, 'instanceOf'>]>;
 export declare enum ReceivePaymentMethod_Tags {
     SparkAddress = "SparkAddress",
     SparkInvoice = "SparkInvoice",
@@ -17361,6 +17787,437 @@ export declare enum TokenTransactionType {
     Mint = 1,
     Burn = 2
 }
+export declare enum TransferSignature_Tags {
+    Transfer = "Transfer",
+    Token = "Token"
+}
+export declare const TransferSignature: Readonly<{
+    instanceOf: (obj: any) => obj is TransferSignature;
+    Transfer: {
+        new (inner: {
+            signed: ExternalPreparedTransfer;
+        }): {
+            readonly tag: TransferSignature_Tags.Transfer;
+            readonly inner: Readonly<{
+                signed: ExternalPreparedTransfer;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferSignature";
+        };
+        "new"(inner: {
+            signed: ExternalPreparedTransfer;
+        }): {
+            readonly tag: TransferSignature_Tags.Transfer;
+            readonly inner: Readonly<{
+                signed: ExternalPreparedTransfer;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferSignature";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: TransferSignature_Tags.Transfer;
+            readonly inner: Readonly<{
+                signed: ExternalPreparedTransfer;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferSignature";
+        };
+    };
+    Token: {
+        new (inner: {
+            signed: ExternalPreparedTokenTransaction;
+        }): {
+            readonly tag: TransferSignature_Tags.Token;
+            readonly inner: Readonly<{
+                signed: ExternalPreparedTokenTransaction;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferSignature";
+        };
+        "new"(inner: {
+            signed: ExternalPreparedTokenTransaction;
+        }): {
+            readonly tag: TransferSignature_Tags.Token;
+            readonly inner: Readonly<{
+                signed: ExternalPreparedTokenTransaction;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferSignature";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: TransferSignature_Tags.Token;
+            readonly inner: Readonly<{
+                signed: ExternalPreparedTokenTransaction;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferSignature";
+        };
+    };
+}>;
+export type TransferSignature = InstanceType<(typeof TransferSignature)[keyof Omit<typeof TransferSignature, 'instanceOf'>]>;
+export declare enum TransferTarget_Tags {
+    Spark = "Spark",
+    Lightning = "Lightning",
+    CoopExit = "CoopExit"
+}
+export declare const TransferTarget: Readonly<{
+    instanceOf: (obj: any) => obj is TransferTarget;
+    Spark: {
+        new (inner: {
+            address: string;
+            sparkInvoice: string | undefined;
+        }): {
+            readonly tag: TransferTarget_Tags.Spark;
+            readonly inner: Readonly<{
+                address: string;
+                sparkInvoice: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferTarget";
+        };
+        "new"(inner: {
+            address: string;
+            sparkInvoice: string | undefined;
+        }): {
+            readonly tag: TransferTarget_Tags.Spark;
+            readonly inner: Readonly<{
+                address: string;
+                sparkInvoice: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferTarget";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: TransferTarget_Tags.Spark;
+            readonly inner: Readonly<{
+                address: string;
+                sparkInvoice: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferTarget";
+        };
+    };
+    Lightning: {
+        new (inner: {
+            bolt11: string;
+            lnurlPay: LnurlPayContext | undefined;
+            feePolicy: FeePolicy;
+            completionTimeoutSecs: /*u32*/ number | undefined;
+        }): {
+            readonly tag: TransferTarget_Tags.Lightning;
+            readonly inner: Readonly<{
+                bolt11: string;
+                lnurlPay: LnurlPayContext | undefined;
+                feePolicy: FeePolicy;
+                completionTimeoutSecs: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferTarget";
+        };
+        "new"(inner: {
+            bolt11: string;
+            lnurlPay: LnurlPayContext | undefined;
+            feePolicy: FeePolicy;
+            completionTimeoutSecs: /*u32*/ number | undefined;
+        }): {
+            readonly tag: TransferTarget_Tags.Lightning;
+            readonly inner: Readonly<{
+                bolt11: string;
+                lnurlPay: LnurlPayContext | undefined;
+                feePolicy: FeePolicy;
+                completionTimeoutSecs: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferTarget";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: TransferTarget_Tags.Lightning;
+            readonly inner: Readonly<{
+                bolt11: string;
+                lnurlPay: LnurlPayContext | undefined;
+                feePolicy: FeePolicy;
+                completionTimeoutSecs: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferTarget";
+        };
+    };
+    CoopExit: {
+        new (inner: {
+            address: string;
+            feeQuote: SendOnchainFeeQuote;
+            confirmationSpeed: OnchainConfirmationSpeed;
+        }): {
+            readonly tag: TransferTarget_Tags.CoopExit;
+            readonly inner: Readonly<{
+                address: string;
+                feeQuote: SendOnchainFeeQuote;
+                confirmationSpeed: OnchainConfirmationSpeed;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferTarget";
+        };
+        "new"(inner: {
+            address: string;
+            feeQuote: SendOnchainFeeQuote;
+            confirmationSpeed: OnchainConfirmationSpeed;
+        }): {
+            readonly tag: TransferTarget_Tags.CoopExit;
+            readonly inner: Readonly<{
+                address: string;
+                feeQuote: SendOnchainFeeQuote;
+                confirmationSpeed: OnchainConfirmationSpeed;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferTarget";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: TransferTarget_Tags.CoopExit;
+            readonly inner: Readonly<{
+                address: string;
+                feeQuote: SendOnchainFeeQuote;
+                confirmationSpeed: OnchainConfirmationSpeed;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "TransferTarget";
+        };
+    };
+}>;
+export type TransferTarget = InstanceType<(typeof TransferTarget)[keyof Omit<typeof TransferTarget, 'instanceOf'>]>;
+export declare enum UnsignedTransferPackage_Tags {
+    Swap = "Swap",
+    Transfer = "Transfer",
+    Token = "Token"
+}
+export declare const UnsignedTransferPackage: Readonly<{
+    instanceOf: (obj: any) => obj is UnsignedTransferPackage;
+    Swap: {
+        new (inner: {
+            prepareTransfer: ExternalPrepareTransferRequest;
+            targetAmounts: Array</*u64*/ bigint>;
+            amountSat: bigint;
+            feeSat: bigint;
+        }): {
+            readonly tag: UnsignedTransferPackage_Tags.Swap;
+            readonly inner: Readonly<{
+                prepareTransfer: ExternalPrepareTransferRequest;
+                targetAmounts: Array</*u64*/ bigint>;
+                amountSat: bigint;
+                feeSat: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnsignedTransferPackage";
+        };
+        "new"(inner: {
+            prepareTransfer: ExternalPrepareTransferRequest;
+            targetAmounts: Array</*u64*/ bigint>;
+            amountSat: bigint;
+            feeSat: bigint;
+        }): {
+            readonly tag: UnsignedTransferPackage_Tags.Swap;
+            readonly inner: Readonly<{
+                prepareTransfer: ExternalPrepareTransferRequest;
+                targetAmounts: Array</*u64*/ bigint>;
+                amountSat: bigint;
+                feeSat: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnsignedTransferPackage";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: UnsignedTransferPackage_Tags.Swap;
+            readonly inner: Readonly<{
+                prepareTransfer: ExternalPrepareTransferRequest;
+                targetAmounts: Array</*u64*/ bigint>;
+                amountSat: bigint;
+                feeSat: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnsignedTransferPackage";
+        };
+    };
+    Transfer: {
+        new (inner: {
+            prepareTransfer: ExternalPrepareTransferRequest;
+            amountSat: bigint;
+            feeSat: bigint;
+            target: TransferTarget;
+        }): {
+            readonly tag: UnsignedTransferPackage_Tags.Transfer;
+            readonly inner: Readonly<{
+                prepareTransfer: ExternalPrepareTransferRequest;
+                amountSat: bigint;
+                feeSat: bigint;
+                target: TransferTarget;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnsignedTransferPackage";
+        };
+        "new"(inner: {
+            prepareTransfer: ExternalPrepareTransferRequest;
+            amountSat: bigint;
+            feeSat: bigint;
+            target: TransferTarget;
+        }): {
+            readonly tag: UnsignedTransferPackage_Tags.Transfer;
+            readonly inner: Readonly<{
+                prepareTransfer: ExternalPrepareTransferRequest;
+                amountSat: bigint;
+                feeSat: bigint;
+                target: TransferTarget;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnsignedTransferPackage";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: UnsignedTransferPackage_Tags.Transfer;
+            readonly inner: Readonly<{
+                prepareTransfer: ExternalPrepareTransferRequest;
+                amountSat: bigint;
+                feeSat: bigint;
+                target: TransferTarget;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnsignedTransferPackage";
+        };
+    };
+    Token: {
+        new (inner: {
+            prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+            tokenContext: ArrayBuffer;
+            tokenIdentifier: string;
+            amount: U128;
+            fee: U128;
+            /**
+             * When set, this package re-shapes the wallet's token outputs instead of
+             * sending a payment. Publishing it returns `SwapCompleted`: rebuild the
+             * original send from the same prepare response and submit again.
+             */ isSwap: boolean;
+        }): {
+            readonly tag: UnsignedTransferPackage_Tags.Token;
+            readonly inner: Readonly<{
+                prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+                tokenContext: ArrayBuffer;
+                tokenIdentifier: string;
+                amount: U128;
+                fee: U128;
+                isSwap: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnsignedTransferPackage";
+        };
+        "new"(inner: {
+            prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+            tokenContext: ArrayBuffer;
+            tokenIdentifier: string;
+            amount: U128;
+            fee: U128;
+            /**
+             * When set, this package re-shapes the wallet's token outputs instead of
+             * sending a payment. Publishing it returns `SwapCompleted`: rebuild the
+             * original send from the same prepare response and submit again.
+             */ isSwap: boolean;
+        }): {
+            readonly tag: UnsignedTransferPackage_Tags.Token;
+            readonly inner: Readonly<{
+                prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+                tokenContext: ArrayBuffer;
+                tokenIdentifier: string;
+                amount: U128;
+                fee: U128;
+                isSwap: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnsignedTransferPackage";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: UnsignedTransferPackage_Tags.Token;
+            readonly inner: Readonly<{
+                prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+                tokenContext: ArrayBuffer;
+                tokenIdentifier: string;
+                amount: U128;
+                fee: U128;
+                isSwap: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnsignedTransferPackage";
+        };
+    };
+}>;
+export type UnsignedTransferPackage = InstanceType<(typeof UnsignedTransferPackage)[keyof Omit<typeof UnsignedTransferPackage, 'instanceOf'>]>;
 export declare enum UpdateDepositPayload_Tags {
     ClaimError = "ClaimError",
     Refund = "Refund"
@@ -17693,6 +18550,12 @@ export interface BreezSdkInterface {
     authorizeLightningAddressTransfer(request: AuthorizeTransferRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<TransferAuthorization>;
+    buildUnsignedLnurlPayPackage(request: BuildUnsignedLnurlPayPackageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<UnsignedTransferPackage>;
+    buildUnsignedTransferPackage(request: BuildUnsignedTransferPackageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<UnsignedTransferPackage>;
     /**
      * Initiates a Bitcoin purchase flow via an external provider.
      *
@@ -17945,6 +18808,12 @@ export interface BreezSdkInterface {
     prepareSendPayment(request: PrepareSendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareSendPaymentResponse>;
+    publishSignedLnurlPayPackage(request: PublishSignedLnurlPayPackageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublishSignedLnurlPayResponse>;
+    publishSignedTransferPackage(request: PublishSignedTransferPackageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublishSignedTransferPackageResponse>;
     receivePayment(request: ReceivePaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ReceivePaymentResponse>;
@@ -18111,6 +18980,12 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     authorizeLightningAddressTransfer(request: AuthorizeTransferRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<TransferAuthorization>;
+    buildUnsignedLnurlPayPackage(request: BuildUnsignedLnurlPayPackageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<UnsignedTransferPackage>;
+    buildUnsignedTransferPackage(request: BuildUnsignedTransferPackageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<UnsignedTransferPackage>;
     /**
      * Initiates a Bitcoin purchase flow via an external provider.
      *
@@ -18363,6 +19238,12 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     prepareSendPayment(request: PrepareSendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareSendPaymentResponse>;
+    publishSignedLnurlPayPackage(request: PublishSignedLnurlPayPackageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublishSignedLnurlPayResponse>;
+    publishSignedTransferPackage(request: PublishSignedTransferPackageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PublishSignedTransferPackageResponse>;
     receivePayment(request: ReceivePaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ReceivePaymentResponse>;
@@ -18883,6 +19764,13 @@ export interface ExternalSparkSigner {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
+     * Whether this signer is backed by a remote service, so its operations are
+     * network round-trips rather than local computation. Local signers return
+     * false; a hosted signer like Turnkey returns true so the SDK can avoid
+     * redundant calls, e.g. re-deriving keys for leaves it has already verified.
+     */
+    isRemote(): boolean;
+    /**
      * The static-deposit signing public key at `index`.
      */
     getStaticDepositPublicKey(index: number, asyncOpts_?: {
@@ -18981,6 +19869,13 @@ export declare class ExternalSparkSignerImpl extends UniffiAbstractObject implem
     getPublicKeyForLeaf(leafId: ExternalTreeNodeId, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
+    /**
+     * Whether this signer is backed by a remote service, so its operations are
+     * network round-trips rather than local computation. Local signers return
+     * false; a hosted signer like Turnkey returns true so the SDK can avoid
+     * redundant calls, e.g. re-deriving keys for leaves it has already verified.
+     */
+    isRemote(): boolean;
     /**
      * The static-deposit signing public key at `index`.
      */
@@ -19682,6 +20577,18 @@ export interface SdkBuilderInterface {
         signal: AbortSignal;
     }): Promise<void>;
     /**
+     * Overrides the session store used to cache auth tokens, replacing the one
+     * the backend provides. Supply any [`SessionStore`]: for example one that
+     * wraps the backend's own store (from
+     * [`default_session_store`](crate::default_session_store)) to add at-rest
+     * encryption, which the SDK does not apply itself.
+     * Arguments:
+     * - `session_store`: The session store to use in place of the backend's.
+     */
+    withSessionStore(sessionStore: SessionStore, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
      * Threads a shared [`SdkContext`](crate::SdkContext) into the builder.
      *
      * Construct the context once via
@@ -19818,6 +20725,18 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
      * - `credentials`: Optional credentials for basic authentication.
      */
     withRestChainService(url: string, apiType: ChainApiType, credentials: Credentials | undefined, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Overrides the session store used to cache auth tokens, replacing the one
+     * the backend provides. Supply any [`SessionStore`]: for example one that
+     * wraps the backend's own store (from
+     * [`default_session_store`](crate::default_session_store)) to add at-rest
+     * encryption, which the SDK does not apply itself.
+     * Arguments:
+     * - `session_store`: The session store to use in place of the backend's.
+     */
+    withSessionStore(sessionStore: SessionStore, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     /**
@@ -20883,6 +21802,27 @@ declare const _default: Readonly<{
             lower(value: Bolt12OfferDetails): UniffiByteArray;
         };
         FfiConverterTypeBreezSdk: FfiConverterObject<BreezSdkInterface>;
+        FfiConverterTypeBuildTransferPackageOptions: {
+            read(from: RustBuffer): BuildTransferPackageOptions;
+            write(value: BuildTransferPackageOptions, into: RustBuffer): void;
+            allocationSize(value: BuildTransferPackageOptions): number;
+            lift(value: UniffiByteArray): BuildTransferPackageOptions;
+            lower(value: BuildTransferPackageOptions): UniffiByteArray;
+        };
+        FfiConverterTypeBuildUnsignedLnurlPayPackageRequest: {
+            read(from: RustBuffer): BuildUnsignedLnurlPayPackageRequest;
+            write(value: BuildUnsignedLnurlPayPackageRequest, into: RustBuffer): void;
+            allocationSize(value: BuildUnsignedLnurlPayPackageRequest): number;
+            lift(value: UniffiByteArray): BuildUnsignedLnurlPayPackageRequest;
+            lower(value: BuildUnsignedLnurlPayPackageRequest): UniffiByteArray;
+        };
+        FfiConverterTypeBuildUnsignedTransferPackageRequest: {
+            read(from: RustBuffer): BuildUnsignedTransferPackageRequest;
+            write(value: BuildUnsignedTransferPackageRequest, into: RustBuffer): void;
+            allocationSize(value: BuildUnsignedTransferPackageRequest): number;
+            lift(value: UniffiByteArray): BuildUnsignedTransferPackageRequest;
+            lower(value: BuildUnsignedTransferPackageRequest): UniffiByteArray;
+        };
         FfiConverterTypeBurnIssuerTokenRequest: {
             read(from: RustBuffer): BurnIssuerTokenRequest;
             write(value: BurnIssuerTokenRequest, into: RustBuffer): void;
@@ -21720,6 +22660,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): LnurlInfo;
             lower(value: LnurlInfo): UniffiByteArray;
         };
+        FfiConverterTypeLnurlPayContext: {
+            read(from: RustBuffer): LnurlPayContext;
+            write(value: LnurlPayContext, into: RustBuffer): void;
+            allocationSize(value: LnurlPayContext): number;
+            lift(value: UniffiByteArray): LnurlPayContext;
+            lower(value: LnurlPayContext): UniffiByteArray;
+        };
         FfiConverterTypeLnurlPayInfo: {
             read(from: RustBuffer): LnurlPayInfo;
             write(value: LnurlPayInfo, into: RustBuffer): void;
@@ -22054,6 +23001,34 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): PublicKeyBytes;
             lower(value: PublicKeyBytes): UniffiByteArray;
         };
+        FfiConverterTypePublishSignedLnurlPayPackageRequest: {
+            read(from: RustBuffer): PublishSignedLnurlPayPackageRequest;
+            write(value: PublishSignedLnurlPayPackageRequest, into: RustBuffer): void;
+            allocationSize(value: PublishSignedLnurlPayPackageRequest): number;
+            lift(value: UniffiByteArray): PublishSignedLnurlPayPackageRequest;
+            lower(value: PublishSignedLnurlPayPackageRequest): UniffiByteArray;
+        };
+        FfiConverterTypePublishSignedLnurlPayResponse: {
+            read(from: RustBuffer): PublishSignedLnurlPayResponse;
+            write(value: PublishSignedLnurlPayResponse, into: RustBuffer): void;
+            allocationSize(value: PublishSignedLnurlPayResponse): number;
+            lift(value: UniffiByteArray): PublishSignedLnurlPayResponse;
+            lower(value: PublishSignedLnurlPayResponse): UniffiByteArray;
+        };
+        FfiConverterTypePublishSignedTransferPackageRequest: {
+            read(from: RustBuffer): PublishSignedTransferPackageRequest;
+            write(value: PublishSignedTransferPackageRequest, into: RustBuffer): void;
+            allocationSize(value: PublishSignedTransferPackageRequest): number;
+            lift(value: UniffiByteArray): PublishSignedTransferPackageRequest;
+            lower(value: PublishSignedTransferPackageRequest): UniffiByteArray;
+        };
+        FfiConverterTypePublishSignedTransferPackageResponse: {
+            read(from: RustBuffer): PublishSignedTransferPackageResponse;
+            write(value: PublishSignedTransferPackageResponse, into: RustBuffer): void;
+            allocationSize(value: PublishSignedTransferPackageResponse): number;
+            lift(value: UniffiByteArray): PublishSignedTransferPackageResponse;
+            lower(value: PublishSignedTransferPackageResponse): UniffiByteArray;
+        };
         FfiConverterTypeRate: {
             read(from: RustBuffer): Rate;
             write(value: Rate, into: RustBuffer): void;
@@ -22332,6 +23307,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SignMessageResponse;
             lower(value: SignMessageResponse): UniffiByteArray;
         };
+        FfiConverterTypeSignedTransferPackage: {
+            read(from: RustBuffer): SignedTransferPackage;
+            write(value: SignedTransferPackage, into: RustBuffer): void;
+            allocationSize(value: SignedTransferPackage): number;
+            lift(value: UniffiByteArray): SignedTransferPackage;
+            lower(value: SignedTransferPackage): UniffiByteArray;
+        };
         FfiConverterTypeSignerError: {
             read(from: RustBuffer): SignerError;
             write(value: SignerError, into: RustBuffer): void;
@@ -22552,6 +23534,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): TransferAuthorization;
             lower(value: TransferAuthorization): UniffiByteArray;
         };
+        FfiConverterTypeTransferSignature: {
+            read(from: RustBuffer): TransferSignature;
+            write(value: TransferSignature, into: RustBuffer): void;
+            allocationSize(value: TransferSignature): number;
+            lift(value: UniffiByteArray): TransferSignature;
+            lower(value: TransferSignature): UniffiByteArray;
+        };
+        FfiConverterTypeTransferTarget: {
+            read(from: RustBuffer): TransferTarget;
+            write(value: TransferTarget, into: RustBuffer): void;
+            allocationSize(value: TransferTarget): number;
+            lift(value: UniffiByteArray): TransferTarget;
+            lower(value: TransferTarget): UniffiByteArray;
+        };
         FfiConverterTypeTurnkeyConfig: {
             read(from: RustBuffer): TurnkeyConfig;
             write(value: TurnkeyConfig, into: RustBuffer): void;
@@ -22593,6 +23589,13 @@ declare const _default: Readonly<{
             allocationSize(value: UnregisterWebhookRequest): number;
             lift(value: UniffiByteArray): UnregisterWebhookRequest;
             lower(value: UnregisterWebhookRequest): UniffiByteArray;
+        };
+        FfiConverterTypeUnsignedTransferPackage: {
+            read(from: RustBuffer): UnsignedTransferPackage;
+            write(value: UnsignedTransferPackage, into: RustBuffer): void;
+            allocationSize(value: UnsignedTransferPackage): number;
+            lift(value: UniffiByteArray): UnsignedTransferPackage;
+            lower(value: UnsignedTransferPackage): UniffiByteArray;
         };
         FfiConverterTypeUnversionedRecordChange: {
             read(from: RustBuffer): UnversionedRecordChange;
