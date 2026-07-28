@@ -1141,10 +1141,11 @@ export type ConnectWithPasskeyRequest = {
      */
     label: string | undefined;
     /**
-     * Optional credential IDs to restrict the silent sign-in
-     * attempt to (reauthentication path). See
-     * [`SignInRequest::allow_credentials`]. Ignored on the fallback
-     * registration path.
+     * Optional credential IDs to restrict the sign-in attempt to
+     * (reauthentication path). A non-empty list runs the modal sign-in
+     * rather than the immediate probe (a pin means a credential is already
+     * known). See [`SignInRequest::allow_credentials`]. Ignored on the
+     * fallback registration path.
      */
     allowCredentials: Array<ArrayBuffer> | undefined;
     /**
@@ -1181,10 +1182,17 @@ export declare const ConnectWithPasskeyRequest: Readonly<{
  * registered, when the provider surfaces it. The register path also
  * populates the attestation fields (`aaguid`, `backup_eligible`); the
  * sign-in path sets only `credential_id`.
+ *
+ * `labels` is the user's discovered label set when `request.label` was
+ * `None` (the returning-user multi-wallet case): `wallet` is the default
+ * label, and a host showing more than one entry lets the user pick
+ * another via [`PasskeyClient::sign_in`]. Empty on the register path (a
+ * new user has no other labels) and when a specific label was requested.
  */
 export type ConnectWithPasskeyResponse = {
     wallet: Wallet;
     credential: PasskeyCredential | undefined;
+    labels: Array<string>;
 };
 /**
  * Generated factory for {@link ConnectWithPasskeyResponse} record objects.
@@ -20032,8 +20040,7 @@ export interface PasskeyClientInterface {
     }): Promise<PasskeyAvailability>;
     /**
      * Single-CTA onboarding: silent sign-in, falling through to
-     * registration when no credential exists on the device. The returned
-     * [`ConnectFlow`] tells the caller which path ran.
+     * registration when no credential exists on the device.
      *
      * The silent sign-in pins `prefer_immediately_available_credentials =
      * true` regardless of [`SignInRequest`]: the fallback depends on the OS
@@ -20042,11 +20049,12 @@ export interface PasskeyClientInterface {
      * register path; every other error (`Cancel`, `Timeout`, ...) propagates
      * unchanged.
      *
-     * Mobile-only: meant for iOS 18+ / Android 9+ where
-     * `preferImmediatelyAvailableCredentials` is honored. The web
-     * equivalent (`mediation: 'immediate'`) is not yet stable
-     * cross-browser, so this is not surfaced on WASM; web hosts call
-     * [`Self::sign_in`] and catch `CredentialNotFound` themselves.
+     * On WASM the silent sign-in maps to `WebAuthn` `uiMode: 'immediate'`
+     * where the browser advertises it. Web hosts gate on the browser's
+     * immediate-mediation capability (the WASM client surfaces it):
+     * without it the probe shows the standard picker and a dismiss is a
+     * cancel, not `CredentialNotFound`, so it never reaches register.
+     * Present an explicit create / sign-in choice there instead.
      */
     connectWithPasskey(request: ConnectWithPasskeyRequest, asyncOpts_?: {
         signal: AbortSignal;
@@ -20111,8 +20119,7 @@ export declare class PasskeyClient extends UniffiAbstractObject implements Passk
     }): Promise<PasskeyAvailability>;
     /**
      * Single-CTA onboarding: silent sign-in, falling through to
-     * registration when no credential exists on the device. The returned
-     * [`ConnectFlow`] tells the caller which path ran.
+     * registration when no credential exists on the device.
      *
      * The silent sign-in pins `prefer_immediately_available_credentials =
      * true` regardless of [`SignInRequest`]: the fallback depends on the OS
@@ -20121,11 +20128,12 @@ export declare class PasskeyClient extends UniffiAbstractObject implements Passk
      * register path; every other error (`Cancel`, `Timeout`, ...) propagates
      * unchanged.
      *
-     * Mobile-only: meant for iOS 18+ / Android 9+ where
-     * `preferImmediatelyAvailableCredentials` is honored. The web
-     * equivalent (`mediation: 'immediate'`) is not yet stable
-     * cross-browser, so this is not surfaced on WASM; web hosts call
-     * [`Self::sign_in`] and catch `CredentialNotFound` themselves.
+     * On WASM the silent sign-in maps to `WebAuthn` `uiMode: 'immediate'`
+     * where the browser advertises it. Web hosts gate on the browser's
+     * immediate-mediation capability (the WASM client surfaces it):
+     * without it the probe shows the standard picker and a dismiss is a
+     * cancel, not `CredentialNotFound`, so it never reaches register.
+     * Present an explicit create / sign-in choice there instead.
      */
     connectWithPasskey(request: ConnectWithPasskeyRequest, asyncOpts_?: {
         signal: AbortSignal;
