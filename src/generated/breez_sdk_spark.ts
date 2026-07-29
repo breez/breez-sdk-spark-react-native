@@ -32,6 +32,7 @@ import nativeModule, {
   type UniffiVTableCallbackInterfaceEventListener,
   type UniffiVTableCallbackInterfaceLogger,
   type UniffiVTableCallbackInterfaceBitcoinChainService,
+  type UniffiVTableCallbackInterfaceCpfpSigner,
   type UniffiVTableCallbackInterfaceExternalBreezSigner,
   type UniffiVTableCallbackInterfaceExternalSigningSigner,
   type UniffiVTableCallbackInterfaceExternalSparkSigner,
@@ -682,6 +683,28 @@ export async function newSharedSdkContext(
     }
     throw __error;
   }
+}
+/**
+ * A CPFP signer backed by a single private key. Signs P2WPKH and P2TR key-path
+ * inputs only; taproot script-path spends are not supported.
+ */
+export function singleKeyCpfpSigner(
+  secretKeyBytes: ArrayBuffer
+): CpfpSigner /*throws*/ {
+  return FfiConverterTypeCpfpSigner.lift(
+    uniffiCaller.rustCallWithError(
+      /*liftError:*/ FfiConverterTypeSignerError.lift.bind(
+        FfiConverterTypeSignerError
+      ),
+      /*caller:*/ (callStatus) => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_single_key_cpfp_signer(
+          FfiConverterArrayBuffer.lower(secretKeyBytes),
+          callStatus
+        );
+      },
+      /*liftString:*/ FfiConverterString.lift
+    )
+  );
 }
 
 /**
@@ -10644,6 +10667,73 @@ const FfiConverterTypePaymentRequestSource = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * How much to fund one branch of the exit to avoid a fan-out.
+ */
+export type PerBranchFunding = {
+  /**
+   * The leaf whose branch this funds.
+   */
+  leafId: string;
+  /**
+   * Fund a UTXO of at least this many satoshis for this branch.
+   */
+  fundingSat: /*u64*/ bigint;
+};
+
+/**
+ * Generated factory for {@link PerBranchFunding} record objects.
+ */
+export const PerBranchFunding = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<PerBranchFunding, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PerBranchFunding}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PerBranchFunding}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<PerBranchFunding>,
+  });
+})();
+
+const FfiConverterTypePerBranchFunding = (() => {
+  type TypeName = PerBranchFunding;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        leafId: FfiConverterString.read(from),
+        fundingSat: FfiConverterUInt64.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.leafId, into);
+      FfiConverterUInt64.write(value.fundingSat, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.leafId) +
+        FfiConverterUInt64.allocationSize(value.fundingSat)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type PrepareLnurlPayRequest = {
   /**
    * The amount to send. Denominated in satoshis, or in token base units
@@ -11059,6 +11149,198 @@ const FfiConverterTypePrepareSendPaymentResponse = (() => {
           value.conversionEstimate
         ) +
         FfiConverterTypeFeePolicy.allocationSize(value.feePolicy)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Request for `prepare_unilateral_exit`, the exit quote.
+ */
+export type PrepareUnilateralExitRequest = {
+  /**
+   * Target fee rate in sat/vByte, applied to every CPFP child, the fan-out,
+   * and the sweep.
+   */
+  feeRateSatPerVbyte: /*u64*/ bigint;
+  fundingKind: CpfpFundingKind;
+  /**
+   * The Bitcoin address the swept funds are sent to.
+   */
+  destination: string;
+  selection: ExitLeafSelection;
+};
+
+/**
+ * Generated factory for {@link PrepareUnilateralExitRequest} record objects.
+ */
+export const PrepareUnilateralExitRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      PrepareUnilateralExitRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PrepareUnilateralExitRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PrepareUnilateralExitRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<PrepareUnilateralExitRequest>,
+  });
+})();
+
+const FfiConverterTypePrepareUnilateralExitRequest = (() => {
+  type TypeName = PrepareUnilateralExitRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        feeRateSatPerVbyte: FfiConverterUInt64.read(from),
+        fundingKind: FfiConverterTypeCpfpFundingKind.read(from),
+        destination: FfiConverterString.read(from),
+        selection: FfiConverterTypeExitLeafSelection.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterUInt64.write(value.feeRateSatPerVbyte, into);
+      FfiConverterTypeCpfpFundingKind.write(value.fundingKind, into);
+      FfiConverterString.write(value.destination, into);
+      FfiConverterTypeExitLeafSelection.write(value.selection, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterUInt64.allocationSize(value.feeRateSatPerVbyte) +
+        FfiConverterTypeCpfpFundingKind.allocationSize(value.fundingKind) +
+        FfiConverterString.allocationSize(value.destination) +
+        FfiConverterTypeExitLeafSelection.allocationSize(value.selection)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Response from `prepare_unilateral_exit`: which leaves would exit, the exact
+ * fee at the requested rate, and how much to fund.
+ */
+export type PrepareUnilateralExitResponse = {
+  leaves: Array<UnilateralExitLeaf>;
+  /**
+   * Total value of the selected leaves, in satoshis.
+   */
+  recoverableValueSat: /*u64*/ bigint;
+  /**
+   * Total on-chain fee when funding with a single UTXO (fanned out across
+   * branches), in satoshis. Exact for the given funding kind; nodes the
+   * operators report on-chain are assumed already paid, so a partially-exited
+   * tree quotes a lower fee than a fresh one.
+   */
+  totalFeeSat: /*u64*/ bigint;
+  /**
+   * The part of `total_fee_sat` paid for the fan-out transaction. Funding one
+   * UTXO per branch (`per_branch_funding`) avoids it. Zero for a single
+   * branch (no fan-out).
+   */
+  fanoutFeeSat: /*u64*/ bigint;
+  /**
+   * Fund a single UTXO of at least this many satoshis to exit with a fan-out.
+   */
+  singleUtxoFundingSat: /*u64*/ bigint;
+  /**
+   * To skip the fan-out, fund one UTXO per branch of at least the given
+   * amount (one entry per selected leaf).
+   */
+  perBranchFunding: Array<PerBranchFunding>;
+  /**
+   * The fee rate this quote was computed at, in sat/vByte.
+   */
+  feeRateSatPerVbyte: /*u64*/ bigint;
+  destination: string;
+};
+
+/**
+ * Generated factory for {@link PrepareUnilateralExitResponse} record objects.
+ */
+export const PrepareUnilateralExitResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      PrepareUnilateralExitResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PrepareUnilateralExitResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PrepareUnilateralExitResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<PrepareUnilateralExitResponse>,
+  });
+})();
+
+const FfiConverterTypePrepareUnilateralExitResponse = (() => {
+  type TypeName = PrepareUnilateralExitResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        leaves: FfiConverterArrayTypeUnilateralExitLeaf.read(from),
+        recoverableValueSat: FfiConverterUInt64.read(from),
+        totalFeeSat: FfiConverterUInt64.read(from),
+        fanoutFeeSat: FfiConverterUInt64.read(from),
+        singleUtxoFundingSat: FfiConverterUInt64.read(from),
+        perBranchFunding: FfiConverterArrayTypePerBranchFunding.read(from),
+        feeRateSatPerVbyte: FfiConverterUInt64.read(from),
+        destination: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayTypeUnilateralExitLeaf.write(value.leaves, into);
+      FfiConverterUInt64.write(value.recoverableValueSat, into);
+      FfiConverterUInt64.write(value.totalFeeSat, into);
+      FfiConverterUInt64.write(value.fanoutFeeSat, into);
+      FfiConverterUInt64.write(value.singleUtxoFundingSat, into);
+      FfiConverterArrayTypePerBranchFunding.write(value.perBranchFunding, into);
+      FfiConverterUInt64.write(value.feeRateSatPerVbyte, into);
+      FfiConverterString.write(value.destination, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayTypeUnilateralExitLeaf.allocationSize(value.leaves) +
+        FfiConverterUInt64.allocationSize(value.recoverableValueSat) +
+        FfiConverterUInt64.allocationSize(value.totalFeeSat) +
+        FfiConverterUInt64.allocationSize(value.fanoutFeeSat) +
+        FfiConverterUInt64.allocationSize(value.singleUtxoFundingSat) +
+        FfiConverterArrayTypePerBranchFunding.allocationSize(
+          value.perBranchFunding
+        ) +
+        FfiConverterUInt64.allocationSize(value.feeRateSatPerVbyte) +
+        FfiConverterString.allocationSize(value.destination)
       );
     }
   }
@@ -11914,6 +12196,84 @@ const FfiConverterTypeRefundDepositResponse = (() => {
       return (
         FfiConverterString.allocationSize(value.txId) +
         FfiConverterString.allocationSize(value.txHex)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Response from refunding pending conversions.
+ */
+export type RefundPendingConversionsResponse = {
+  /**
+   * Conversions successfully refunded this pass.
+   */
+  refunded: /*u32*/ number;
+  /**
+   * Conversions intentionally deferred (eligible but held back by a
+   * safety window). The next pass will retry them.
+   */
+  skipped: /*u32*/ number;
+  /**
+   * Conversions whose clawback did not complete this pass (rejected or
+   * errored; funds not returned). The next pass will retry them.
+   */
+  failed: /*u32*/ number;
+};
+
+/**
+ * Generated factory for {@link RefundPendingConversionsResponse} record objects.
+ */
+export const RefundPendingConversionsResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      RefundPendingConversionsResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link RefundPendingConversionsResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link RefundPendingConversionsResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<RefundPendingConversionsResponse>,
+  });
+})();
+
+const FfiConverterTypeRefundPendingConversionsResponse = (() => {
+  type TypeName = RefundPendingConversionsResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        refunded: FfiConverterUInt32.read(from),
+        skipped: FfiConverterUInt32.read(from),
+        failed: FfiConverterUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterUInt32.write(value.refunded, into);
+      FfiConverterUInt32.write(value.skipped, into);
+      FfiConverterUInt32.write(value.failed, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterUInt32.allocationSize(value.refunded) +
+        FfiConverterUInt32.allocationSize(value.skipped) +
+        FfiConverterUInt32.allocationSize(value.failed)
       );
     }
   }
@@ -15539,6 +15899,336 @@ const FfiConverterTypeUnfreezeIssuerTokenResponse = (() => {
 })();
 
 /**
+ * A leaf selected for exit, with its value.
+ */
+export type UnilateralExitLeaf = {
+  leafId: string;
+  /**
+   * The leaf's value in satoshis.
+   */
+  value: /*u64*/ bigint;
+};
+
+/**
+ * Generated factory for {@link UnilateralExitLeaf} record objects.
+ */
+export const UnilateralExitLeaf = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<UnilateralExitLeaf, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link UnilateralExitLeaf}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link UnilateralExitLeaf}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<UnilateralExitLeaf>,
+  });
+})();
+
+const FfiConverterTypeUnilateralExitLeaf = (() => {
+  type TypeName = UnilateralExitLeaf;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        leafId: FfiConverterString.read(from),
+        value: FfiConverterUInt64.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.leafId, into);
+      FfiConverterUInt64.write(value.value, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.leafId) +
+        FfiConverterUInt64.allocationSize(value.value)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Request for `unilateral_exit`: a `prepare_unilateral_exit` quote plus the
+ * funding UTXOs that pay its fees. The signer is passed separately (it is not a
+ * plain data value).
+ */
+export type UnilateralExitRequest = {
+  /**
+   * The quote returned by `prepare_unilateral_exit`, naming the leaves to exit.
+   */
+  prepared: PrepareUnilateralExitResponse;
+  /**
+   * The funding UTXOs that pay the exit's on-chain fees, meeting the quote's
+   * `single_utxo_funding_sat` (one UTXO) or `per_branch_funding` (one per branch).
+   */
+  fundingInputs: Array<CpfpInput>;
+};
+
+/**
+ * Generated factory for {@link UnilateralExitRequest} record objects.
+ */
+export const UnilateralExitRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      UnilateralExitRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link UnilateralExitRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link UnilateralExitRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<UnilateralExitRequest>,
+  });
+})();
+
+const FfiConverterTypeUnilateralExitRequest = (() => {
+  type TypeName = UnilateralExitRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        prepared: FfiConverterTypePrepareUnilateralExitResponse.read(from),
+        fundingInputs: FfiConverterArrayTypeCpfpInput.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypePrepareUnilateralExitResponse.write(value.prepared, into);
+      FfiConverterArrayTypeCpfpInput.write(value.fundingInputs, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypePrepareUnilateralExitResponse.allocationSize(
+          value.prepared
+        ) + FfiConverterArrayTypeCpfpInput.allocationSize(value.fundingInputs)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Result of `unilateral_exit`: a cost summary plus the complete, signed exit
+ * path.
+ */
+export type UnilateralExitResponse = {
+  /**
+   * Total value of the selected leaves, in satoshis.
+   */
+  recoverableValueSat: /*u64*/ bigint;
+  /**
+   * The actual total on-chain fee the returned transactions pay at the
+   * requested rate, in satoshis. A resumed or partially-confirmed exit pays
+   * less because already-confirmed steps are not rebuilt.
+   */
+  totalFeeSat: /*u64*/ bigint;
+  leaves: Array<UnilateralExitLeaf>;
+  /**
+   * The full signed transaction set, in valid topological (broadcast) order
+   * with shared ancestors appearing once and the sweep last.
+   */
+  transactions: Array<UnilateralExitTransaction>;
+};
+
+/**
+ * Generated factory for {@link UnilateralExitResponse} record objects.
+ */
+export const UnilateralExitResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      UnilateralExitResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link UnilateralExitResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link UnilateralExitResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<UnilateralExitResponse>,
+  });
+})();
+
+const FfiConverterTypeUnilateralExitResponse = (() => {
+  type TypeName = UnilateralExitResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        recoverableValueSat: FfiConverterUInt64.read(from),
+        totalFeeSat: FfiConverterUInt64.read(from),
+        leaves: FfiConverterArrayTypeUnilateralExitLeaf.read(from),
+        transactions: FfiConverterArrayTypeUnilateralExitTransaction.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterUInt64.write(value.recoverableValueSat, into);
+      FfiConverterUInt64.write(value.totalFeeSat, into);
+      FfiConverterArrayTypeUnilateralExitLeaf.write(value.leaves, into);
+      FfiConverterArrayTypeUnilateralExitTransaction.write(
+        value.transactions,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterUInt64.allocationSize(value.recoverableValueSat) +
+        FfiConverterUInt64.allocationSize(value.totalFeeSat) +
+        FfiConverterArrayTypeUnilateralExitLeaf.allocationSize(value.leaves) +
+        FfiConverterArrayTypeUnilateralExitTransaction.allocationSize(
+          value.transactions
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * One transaction in the unilateral exit path, with everything needed to
+ * order and broadcast it.
+ */
+export type UnilateralExitTransaction = {
+  kind: UnilateralExitTxKind;
+  /**
+   * The tree node this transaction belongs to. Unset for the fan-out and the
+   * sweep.
+   */
+  nodeId: string | undefined;
+  txid: string;
+  txHex: string;
+  /**
+   * The signed CPFP child to broadcast alongside `tx_hex` as a package.
+   * Unset for the fan-out and the sweep (no anchor to bump) and for a
+   * `Confirmed` step (its CPFP is already on-chain).
+   */
+  cpfpTxHex: string | undefined;
+  /**
+   * Relative CSV timelock, in blocks, that must mature on the spent input
+   * before this transaction can confirm. Unset when there is no timelock.
+   */
+  csvTimelockBlocks: /*u32*/ number | undefined;
+  /**
+   * Txids of other entries in this list that must be confirmed before this
+   * one can be broadcast.
+   */
+  dependsOn: Array<string>;
+  status: ConfirmationStatus;
+};
+
+/**
+ * Generated factory for {@link UnilateralExitTransaction} record objects.
+ */
+export const UnilateralExitTransaction = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      UnilateralExitTransaction,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link UnilateralExitTransaction}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link UnilateralExitTransaction}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<UnilateralExitTransaction>,
+  });
+})();
+
+const FfiConverterTypeUnilateralExitTransaction = (() => {
+  type TypeName = UnilateralExitTransaction;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        kind: FfiConverterTypeUnilateralExitTxKind.read(from),
+        nodeId: FfiConverterOptionalString.read(from),
+        txid: FfiConverterString.read(from),
+        txHex: FfiConverterString.read(from),
+        cpfpTxHex: FfiConverterOptionalString.read(from),
+        csvTimelockBlocks: FfiConverterOptionalUInt32.read(from),
+        dependsOn: FfiConverterArrayString.read(from),
+        status: FfiConverterTypeConfirmationStatus.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeUnilateralExitTxKind.write(value.kind, into);
+      FfiConverterOptionalString.write(value.nodeId, into);
+      FfiConverterString.write(value.txid, into);
+      FfiConverterString.write(value.txHex, into);
+      FfiConverterOptionalString.write(value.cpfpTxHex, into);
+      FfiConverterOptionalUInt32.write(value.csvTimelockBlocks, into);
+      FfiConverterArrayString.write(value.dependsOn, into);
+      FfiConverterTypeConfirmationStatus.write(value.status, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeUnilateralExitTxKind.allocationSize(value.kind) +
+        FfiConverterOptionalString.allocationSize(value.nodeId) +
+        FfiConverterString.allocationSize(value.txid) +
+        FfiConverterString.allocationSize(value.txHex) +
+        FfiConverterOptionalString.allocationSize(value.cpfpTxHex) +
+        FfiConverterOptionalUInt32.allocationSize(value.csvTimelockBlocks) +
+        FfiConverterArrayString.allocationSize(value.dependsOn) +
+        FfiConverterTypeConfirmationStatus.allocationSize(value.status)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
  * Request to unregister an existing webhook.
  */
 export type UnregisterWebhookRequest = {
@@ -15737,13 +16427,24 @@ export type UpdateUserSettingsRequest = {
    * Update the active stable balance token. `None` means no change.
    */
   stableBalanceActiveLabel: StableBalanceActiveLabel | undefined;
+  /**
+   * Designate or remove the wallet's master identity, a second public key
+   * the Spark operators accept as a reader of this wallet's balance and
+   * history while `spark_private_mode_enabled` is set. The master identity
+   * can only read: payments still require the owner's keys. `None` means no
+   * change.
+   */
+  sparkMasterIdentityPublicKey: SparkMasterIdentityPublicKey | undefined;
 };
 
 /**
  * Generated factory for {@link UpdateUserSettingsRequest} record objects.
  */
 export const UpdateUserSettingsRequest = (() => {
-  const defaults = () => ({ stableBalanceActiveLabel: undefined });
+  const defaults = () => ({
+    stableBalanceActiveLabel: undefined,
+    sparkMasterIdentityPublicKey: undefined,
+  });
   const create = (() => {
     return uniffiCreateRecord<
       UpdateUserSettingsRequest,
@@ -15779,6 +16480,8 @@ const FfiConverterTypeUpdateUserSettingsRequest = (() => {
         sparkPrivateModeEnabled: FfiConverterOptionalBool.read(from),
         stableBalanceActiveLabel:
           FfiConverterOptionalTypeStableBalanceActiveLabel.read(from),
+        sparkMasterIdentityPublicKey:
+          FfiConverterOptionalTypeSparkMasterIdentityPublicKey.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -15787,12 +16490,19 @@ const FfiConverterTypeUpdateUserSettingsRequest = (() => {
         value.stableBalanceActiveLabel,
         into
       );
+      FfiConverterOptionalTypeSparkMasterIdentityPublicKey.write(
+        value.sparkMasterIdentityPublicKey,
+        into
+      );
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterOptionalBool.allocationSize(value.sparkPrivateModeEnabled) +
         FfiConverterOptionalTypeStableBalanceActiveLabel.allocationSize(
           value.stableBalanceActiveLabel
+        ) +
+        FfiConverterOptionalTypeSparkMasterIdentityPublicKey.allocationSize(
+          value.sparkMasterIdentityPublicKey
         )
       );
     }
@@ -15880,6 +16590,11 @@ export type UserSettings = {
    * The label of the currently active stable balance token, or `None` if deactivated.
    */
   stableBalanceActiveLabel: string | undefined;
+  /**
+   * The hex encoded public key designated as this wallet's master identity
+   * key, or `None` if none is designated.
+   */
+  sparkMasterIdentityPublicKey: string | undefined;
 };
 
 /**
@@ -15919,17 +16634,25 @@ const FfiConverterTypeUserSettings = (() => {
       return {
         sparkPrivateModeEnabled: FfiConverterBool.read(from),
         stableBalanceActiveLabel: FfiConverterOptionalString.read(from),
+        sparkMasterIdentityPublicKey: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterBool.write(value.sparkPrivateModeEnabled, into);
       FfiConverterOptionalString.write(value.stableBalanceActiveLabel, into);
+      FfiConverterOptionalString.write(
+        value.sparkMasterIdentityPublicKey,
+        into
+      );
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterBool.allocationSize(value.sparkPrivateModeEnabled) +
         FfiConverterOptionalString.allocationSize(
           value.stableBalanceActiveLabel
+        ) +
+        FfiConverterOptionalString.allocationSize(
+          value.sparkMasterIdentityPublicKey
         )
       );
     }
@@ -17750,6 +18473,58 @@ const FfiConverterTypeChainServiceError = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * Whether a transaction in the exit path is already on-chain.
+ */
+export enum ConfirmationStatus {
+  /**
+   * This transaction is confirmed in a block. It needs no action.
+   */
+  Confirmed,
+  /**
+   * This transaction is not yet confirmed. Mempool state is not consulted.
+   */
+  Unconfirmed,
+  /**
+   * The on-chain status could not be determined (the chain service errored).
+   * Broadcasting may fail if a conflicting transaction already landed.
+   */
+  Unverified,
+}
+
+const FfiConverterTypeConfirmationStatus = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ConfirmationStatus;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return ConfirmationStatus.Confirmed;
+        case 2:
+          return ConfirmationStatus.Unconfirmed;
+        case 3:
+          return ConfirmationStatus.Unverified;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case ConfirmationStatus.Confirmed:
+          return ordinalConverter.write(1, into);
+        case ConfirmationStatus.Unconfirmed:
+          return ordinalConverter.write(2, into);
+        case ConfirmationStatus.Unverified:
+          return ordinalConverter.write(3, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
 // Enum: ConversionChain
 export enum ConversionChain_Tags {
   Spark = 'Spark',
@@ -19155,6 +19930,500 @@ const FfiConverterTypeConversionType = (() => {
   return new FFIConverter();
 })();
 
+// Enum: CpfpFundingKind
+export enum CpfpFundingKind_Tags {
+  P2wpkh = 'P2wpkh',
+  P2tr = 'P2tr',
+  Custom = 'Custom',
+}
+/**
+ * The kind of UTXO that will fund an exit's fees.
+ */
+export const CpfpFundingKind = (() => {
+  type P2wpkh__interface = {
+    tag: CpfpFundingKind_Tags.P2wpkh;
+  };
+
+  /**
+   * Fees paid from P2WPKH (native segwit v0) UTXOs.
+   */
+  class P2wpkh_ extends UniffiEnum implements P2wpkh__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'CpfpFundingKind';
+    readonly tag = CpfpFundingKind_Tags.P2wpkh;
+    constructor() {
+      super('CpfpFundingKind', 'P2wpkh');
+    }
+
+    static new(): P2wpkh_ {
+      return new P2wpkh_();
+    }
+
+    static instanceOf(obj: any): obj is P2wpkh_ {
+      return obj.tag === CpfpFundingKind_Tags.P2wpkh;
+    }
+  }
+
+  type P2tr__interface = {
+    tag: CpfpFundingKind_Tags.P2tr;
+  };
+
+  /**
+   * Fees paid from P2TR (taproot, key-path) UTXOs.
+   */
+  class P2tr_ extends UniffiEnum implements P2tr__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'CpfpFundingKind';
+    readonly tag = CpfpFundingKind_Tags.P2tr;
+    constructor() {
+      super('CpfpFundingKind', 'P2tr');
+    }
+
+    static new(): P2tr_ {
+      return new P2tr_();
+    }
+
+    static instanceOf(obj: any): obj is P2tr_ {
+      return obj.tag === CpfpFundingKind_Tags.P2tr;
+    }
+  }
+
+  type Custom__interface = {
+    tag: CpfpFundingKind_Tags.Custom;
+    inner: Readonly<{
+      scriptPubkeyHex: string;
+      signedInputWeight: /*u64*/ bigint;
+    }>;
+  };
+
+  /**
+   * Fees paid from a custom witness-program script (legacy scripts are
+   * rejected). `script_pubkey_hex` (the funding scriptPubKey) sizes the
+   * fan-out output and dust; `signed_input_weight` (weight units) is an upper
+   * bound on the input's signed weight, so the quote stays exact or slightly
+   * conservative.
+   */
+  class Custom_ extends UniffiEnum implements Custom__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'CpfpFundingKind';
+    readonly tag = CpfpFundingKind_Tags.Custom;
+    readonly inner: Readonly<{
+      scriptPubkeyHex: string;
+      signedInputWeight: /*u64*/ bigint;
+    }>;
+    constructor(inner: {
+      scriptPubkeyHex: string;
+      signedInputWeight: /*u64*/ bigint;
+    }) {
+      super('CpfpFundingKind', 'Custom');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      scriptPubkeyHex: string;
+      signedInputWeight: /*u64*/ bigint;
+    }): Custom_ {
+      return new Custom_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Custom_ {
+      return obj.tag === CpfpFundingKind_Tags.Custom;
+    }
+  }
+
+  function instanceOf(obj: any): obj is CpfpFundingKind {
+    return obj[uniffiTypeNameSymbol] === 'CpfpFundingKind';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    P2wpkh: P2wpkh_,
+    P2tr: P2tr_,
+    Custom: Custom_,
+  });
+})();
+
+/**
+ * The kind of UTXO that will fund an exit's fees.
+ */
+
+export type CpfpFundingKind = InstanceType<
+  (typeof CpfpFundingKind)[keyof Omit<typeof CpfpFundingKind, 'instanceOf'>]
+>;
+
+// FfiConverter for enum CpfpFundingKind
+const FfiConverterTypeCpfpFundingKind = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = CpfpFundingKind;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new CpfpFundingKind.P2wpkh();
+        case 2:
+          return new CpfpFundingKind.P2tr();
+        case 3:
+          return new CpfpFundingKind.Custom({
+            scriptPubkeyHex: FfiConverterString.read(from),
+            signedInputWeight: FfiConverterUInt64.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case CpfpFundingKind_Tags.P2wpkh: {
+          ordinalConverter.write(1, into);
+          return;
+        }
+        case CpfpFundingKind_Tags.P2tr: {
+          ordinalConverter.write(2, into);
+          return;
+        }
+        case CpfpFundingKind_Tags.Custom: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.scriptPubkeyHex, into);
+          FfiConverterUInt64.write(inner.signedInputWeight, into);
+          return;
+        }
+        default:
+          // Throwing from here means that CpfpFundingKind_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case CpfpFundingKind_Tags.P2wpkh: {
+          return ordinalConverter.allocationSize(1);
+        }
+        case CpfpFundingKind_Tags.P2tr: {
+          return ordinalConverter.allocationSize(2);
+        }
+        case CpfpFundingKind_Tags.Custom: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterString.allocationSize(inner.scriptPubkeyHex);
+          size += FfiConverterUInt64.allocationSize(inner.signedInputWeight);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: CpfpInput
+export enum CpfpInput_Tags {
+  P2wpkh = 'P2wpkh',
+  P2tr = 'P2tr',
+  Custom = 'Custom',
+}
+/**
+ * A funding UTXO that pays the on-chain fees of a unilateral exit.
+ */
+export const CpfpInput = (() => {
+  type P2wpkh__interface = {
+    tag: CpfpInput_Tags.P2wpkh;
+    inner: Readonly<{
+      txid: string;
+      vout: /*u32*/ number;
+      value: /*u64*/ bigint;
+      pubkey: string;
+    }>;
+  };
+
+  /**
+   * A P2WPKH (native segwit v0) UTXO controlled by `pubkey` (33-byte
+   * compressed, hex).
+   */
+  class P2wpkh_ extends UniffiEnum implements P2wpkh__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'CpfpInput';
+    readonly tag = CpfpInput_Tags.P2wpkh;
+    readonly inner: Readonly<{
+      txid: string;
+      vout: /*u32*/ number;
+      value: /*u64*/ bigint;
+      pubkey: string;
+    }>;
+    constructor(inner: {
+      txid: string;
+      vout: /*u32*/ number;
+      value: /*u64*/ bigint;
+      pubkey: string;
+    }) {
+      super('CpfpInput', 'P2wpkh');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      txid: string;
+      vout: /*u32*/ number;
+      value: /*u64*/ bigint;
+      pubkey: string;
+    }): P2wpkh_ {
+      return new P2wpkh_(inner);
+    }
+
+    static instanceOf(obj: any): obj is P2wpkh_ {
+      return obj.tag === CpfpInput_Tags.P2wpkh;
+    }
+  }
+
+  type P2tr__interface = {
+    tag: CpfpInput_Tags.P2tr;
+    inner: Readonly<{
+      txid: string;
+      vout: /*u32*/ number;
+      value: /*u64*/ bigint;
+      pubkey: string;
+    }>;
+  };
+
+  /**
+   * A P2TR (taproot, key-path) UTXO. `pubkey` (x-only or compressed, hex) is
+   * the **internal** (untweaked, BIP86 key-path) public key whose secret signs
+   * the input, not the tweaked on-chain output key. The SDK applies the BIP86
+   * taproot tweak itself to derive the funding scriptPubKey, so passing the
+   * already-tweaked output key here produces a scriptPubKey that does not match
+   * the UTXO and the built transaction is rejected at broadcast.
+   */
+  class P2tr_ extends UniffiEnum implements P2tr__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'CpfpInput';
+    readonly tag = CpfpInput_Tags.P2tr;
+    readonly inner: Readonly<{
+      txid: string;
+      vout: /*u32*/ number;
+      value: /*u64*/ bigint;
+      pubkey: string;
+    }>;
+    constructor(inner: {
+      txid: string;
+      vout: /*u32*/ number;
+      value: /*u64*/ bigint;
+      pubkey: string;
+    }) {
+      super('CpfpInput', 'P2tr');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      txid: string;
+      vout: /*u32*/ number;
+      value: /*u64*/ bigint;
+      pubkey: string;
+    }): P2tr_ {
+      return new P2tr_(inner);
+    }
+
+    static instanceOf(obj: any): obj is P2tr_ {
+      return obj.tag === CpfpInput_Tags.P2tr;
+    }
+  }
+
+  type Custom__interface = {
+    tag: CpfpInput_Tags.Custom;
+    inner: Readonly<{
+      txid: string;
+      vout: /*u32*/ number;
+      value: /*u64*/ bigint;
+      scriptPubkeyHex: string;
+      signedInputWeight: /*u64*/ bigint;
+    }>;
+  };
+
+  /**
+   * Any witness-program script, signed via a custom `CpfpSigner`. Legacy
+   * (non-SegWit) scripts are rejected. `signed_input_weight` (weight units)
+   * is an upper bound on the input's signed weight, so the fee stays exact,
+   * or slightly conservative if the real signature is shorter.
+   */
+  class Custom_ extends UniffiEnum implements Custom__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'CpfpInput';
+    readonly tag = CpfpInput_Tags.Custom;
+    readonly inner: Readonly<{
+      txid: string;
+      vout: /*u32*/ number;
+      value: /*u64*/ bigint;
+      scriptPubkeyHex: string;
+      signedInputWeight: /*u64*/ bigint;
+    }>;
+    constructor(inner: {
+      txid: string;
+      vout: /*u32*/ number;
+      value: /*u64*/ bigint;
+      scriptPubkeyHex: string;
+      signedInputWeight: /*u64*/ bigint;
+    }) {
+      super('CpfpInput', 'Custom');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      txid: string;
+      vout: /*u32*/ number;
+      value: /*u64*/ bigint;
+      scriptPubkeyHex: string;
+      signedInputWeight: /*u64*/ bigint;
+    }): Custom_ {
+      return new Custom_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Custom_ {
+      return obj.tag === CpfpInput_Tags.Custom;
+    }
+  }
+
+  function instanceOf(obj: any): obj is CpfpInput {
+    return obj[uniffiTypeNameSymbol] === 'CpfpInput';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    P2wpkh: P2wpkh_,
+    P2tr: P2tr_,
+    Custom: Custom_,
+  });
+})();
+
+/**
+ * A funding UTXO that pays the on-chain fees of a unilateral exit.
+ */
+
+export type CpfpInput = InstanceType<
+  (typeof CpfpInput)[keyof Omit<typeof CpfpInput, 'instanceOf'>]
+>;
+
+// FfiConverter for enum CpfpInput
+const FfiConverterTypeCpfpInput = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = CpfpInput;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new CpfpInput.P2wpkh({
+            txid: FfiConverterString.read(from),
+            vout: FfiConverterUInt32.read(from),
+            value: FfiConverterUInt64.read(from),
+            pubkey: FfiConverterString.read(from),
+          });
+        case 2:
+          return new CpfpInput.P2tr({
+            txid: FfiConverterString.read(from),
+            vout: FfiConverterUInt32.read(from),
+            value: FfiConverterUInt64.read(from),
+            pubkey: FfiConverterString.read(from),
+          });
+        case 3:
+          return new CpfpInput.Custom({
+            txid: FfiConverterString.read(from),
+            vout: FfiConverterUInt32.read(from),
+            value: FfiConverterUInt64.read(from),
+            scriptPubkeyHex: FfiConverterString.read(from),
+            signedInputWeight: FfiConverterUInt64.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case CpfpInput_Tags.P2wpkh: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.txid, into);
+          FfiConverterUInt32.write(inner.vout, into);
+          FfiConverterUInt64.write(inner.value, into);
+          FfiConverterString.write(inner.pubkey, into);
+          return;
+        }
+        case CpfpInput_Tags.P2tr: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.txid, into);
+          FfiConverterUInt32.write(inner.vout, into);
+          FfiConverterUInt64.write(inner.value, into);
+          FfiConverterString.write(inner.pubkey, into);
+          return;
+        }
+        case CpfpInput_Tags.Custom: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.txid, into);
+          FfiConverterUInt32.write(inner.vout, into);
+          FfiConverterUInt64.write(inner.value, into);
+          FfiConverterString.write(inner.scriptPubkeyHex, into);
+          FfiConverterUInt64.write(inner.signedInputWeight, into);
+          return;
+        }
+        default:
+          // Throwing from here means that CpfpInput_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case CpfpInput_Tags.P2wpkh: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterString.allocationSize(inner.txid);
+          size += FfiConverterUInt32.allocationSize(inner.vout);
+          size += FfiConverterUInt64.allocationSize(inner.value);
+          size += FfiConverterString.allocationSize(inner.pubkey);
+          return size;
+        }
+        case CpfpInput_Tags.P2tr: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner.txid);
+          size += FfiConverterUInt32.allocationSize(inner.vout);
+          size += FfiConverterUInt64.allocationSize(inner.value);
+          size += FfiConverterString.allocationSize(inner.pubkey);
+          return size;
+        }
+        case CpfpInput_Tags.Custom: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterString.allocationSize(inner.txid);
+          size += FfiConverterUInt32.allocationSize(inner.vout);
+          size += FfiConverterUInt64.allocationSize(inner.value);
+          size += FfiConverterString.allocationSize(inner.scriptPubkeyHex);
+          size += FfiConverterUInt64.allocationSize(inner.signedInputWeight);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
 export enum CrossChainAddressFamily {
   Evm,
   Solana,
@@ -20182,6 +21451,149 @@ const FfiConverterTypeErrorKind = (() => {
     }
     allocationSize(value: TypeName): number {
       return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: ExitLeafSelection
+export enum ExitLeafSelection_Tags {
+  Auto = 'Auto',
+  Specific = 'Specific',
+}
+/**
+ * Which leaves to exit.
+ */
+export const ExitLeafSelection = (() => {
+  type Auto__interface = {
+    tag: ExitLeafSelection_Tags.Auto;
+  };
+
+  /**
+   * Exit every leaf whose value exceeds its own marginal exit cost (its tree
+   * and refund CPFP fees plus its sweep input). This per-leaf test does not
+   * include the shared fan-out fee, so funding many leaves from a single UTXO
+   * adds `fanout_fee_sat` on top: compare `recoverable_value_sat` with
+   * `total_fee_sat`, or fund one UTXO per branch to avoid the fan-out. Leaves
+   * that fail the per-leaf test are skipped.
+   */
+  class Auto_ extends UniffiEnum implements Auto__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ExitLeafSelection';
+    readonly tag = ExitLeafSelection_Tags.Auto;
+    constructor() {
+      super('ExitLeafSelection', 'Auto');
+    }
+
+    static new(): Auto_ {
+      return new Auto_();
+    }
+
+    static instanceOf(obj: any): obj is Auto_ {
+      return obj.tag === ExitLeafSelection_Tags.Auto;
+    }
+  }
+
+  type Specific__interface = {
+    tag: ExitLeafSelection_Tags.Specific;
+    inner: Readonly<{ leafIds: Array<string> }>;
+  };
+
+  /**
+   * Exit exactly these leaves, regardless of profitability.
+   */
+  class Specific_ extends UniffiEnum implements Specific__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'ExitLeafSelection';
+    readonly tag = ExitLeafSelection_Tags.Specific;
+    readonly inner: Readonly<{ leafIds: Array<string> }>;
+    constructor(inner: { leafIds: Array<string> }) {
+      super('ExitLeafSelection', 'Specific');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { leafIds: Array<string> }): Specific_ {
+      return new Specific_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Specific_ {
+      return obj.tag === ExitLeafSelection_Tags.Specific;
+    }
+  }
+
+  function instanceOf(obj: any): obj is ExitLeafSelection {
+    return obj[uniffiTypeNameSymbol] === 'ExitLeafSelection';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Auto: Auto_,
+    Specific: Specific_,
+  });
+})();
+
+/**
+ * Which leaves to exit.
+ */
+
+export type ExitLeafSelection = InstanceType<
+  (typeof ExitLeafSelection)[keyof Omit<typeof ExitLeafSelection, 'instanceOf'>]
+>;
+
+// FfiConverter for enum ExitLeafSelection
+const FfiConverterTypeExitLeafSelection = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = ExitLeafSelection;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new ExitLeafSelection.Auto();
+        case 2:
+          return new ExitLeafSelection.Specific({
+            leafIds: FfiConverterArrayString.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case ExitLeafSelection_Tags.Auto: {
+          ordinalConverter.write(1, into);
+          return;
+        }
+        case ExitLeafSelection_Tags.Specific: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterArrayString.write(inner.leafIds, into);
+          return;
+        }
+        default:
+          // Throwing from here means that ExitLeafSelection_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case ExitLeafSelection_Tags.Auto: {
+          return ordinalConverter.allocationSize(1);
+        }
+        case ExitLeafSelection_Tags.Specific: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterArrayString.allocationSize(inner.leafIds);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
     }
   }
   return new FFIConverter();
@@ -22051,6 +23463,160 @@ const FfiConverterTypeOptimizationOutcome = (() => {
         }
         case OptimizationOutcome_Tags.InProgress: {
           return ordinalConverter.allocationSize(2);
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: Outspend
+export enum Outspend_Tags {
+  Unspent = 'Unspent',
+  Spent = 'Spent',
+}
+/**
+ * The spend status of a transaction output.
+ */
+export const Outspend = (() => {
+  type Unspent__interface = {
+    tag: Outspend_Tags.Unspent;
+  };
+
+  class Unspent_ extends UniffiEnum implements Unspent__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'Outspend';
+    readonly tag = Outspend_Tags.Unspent;
+    constructor() {
+      super('Outspend', 'Unspent');
+    }
+
+    static new(): Unspent_ {
+      return new Unspent_();
+    }
+
+    static instanceOf(obj: any): obj is Unspent_ {
+      return obj.tag === Outspend_Tags.Unspent;
+    }
+  }
+
+  type Spent__interface = {
+    tag: Outspend_Tags.Spent;
+    inner: Readonly<{ txid: string; vin: /*u32*/ number; status: TxStatus }>;
+  };
+
+  /**
+   * The output is spent by input `vin` of transaction `txid`; `status` is
+   * that spending transaction's confirmation status.
+   */
+  class Spent_ extends UniffiEnum implements Spent__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'Outspend';
+    readonly tag = Outspend_Tags.Spent;
+    readonly inner: Readonly<{
+      txid: string;
+      vin: /*u32*/ number;
+      status: TxStatus;
+    }>;
+    constructor(inner: {
+      txid: string;
+      vin: /*u32*/ number;
+      status: TxStatus;
+    }) {
+      super('Outspend', 'Spent');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      txid: string;
+      vin: /*u32*/ number;
+      status: TxStatus;
+    }): Spent_ {
+      return new Spent_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Spent_ {
+      return obj.tag === Outspend_Tags.Spent;
+    }
+  }
+
+  function instanceOf(obj: any): obj is Outspend {
+    return obj[uniffiTypeNameSymbol] === 'Outspend';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Unspent: Unspent_,
+    Spent: Spent_,
+  });
+})();
+
+/**
+ * The spend status of a transaction output.
+ */
+
+export type Outspend = InstanceType<
+  (typeof Outspend)[keyof Omit<typeof Outspend, 'instanceOf'>]
+>;
+
+// FfiConverter for enum Outspend
+const FfiConverterTypeOutspend = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = Outspend;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new Outspend.Unspent();
+        case 2:
+          return new Outspend.Spent({
+            txid: FfiConverterString.read(from),
+            vin: FfiConverterUInt32.read(from),
+            status: FfiConverterTypeTxStatus.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case Outspend_Tags.Unspent: {
+          ordinalConverter.write(1, into);
+          return;
+        }
+        case Outspend_Tags.Spent: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.txid, into);
+          FfiConverterUInt32.write(inner.vin, into);
+          FfiConverterTypeTxStatus.write(inner.status, into);
+          return;
+        }
+        default:
+          // Throwing from here means that Outspend_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case Outspend_Tags.Unspent: {
+          return ordinalConverter.allocationSize(1);
+        }
+        case Outspend_Tags.Spent: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner.txid);
+          size += FfiConverterUInt32.allocationSize(inner.vin);
+          size += FfiConverterTypeTxStatus.allocationSize(inner.status);
+          return size;
         }
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -25539,6 +27105,8 @@ export enum SdkError_Tags {
   Signer = 'Signer',
   OptimizationAlreadyRunning = 'OptimizationAlreadyRunning',
   OptimizationCancelled = 'OptimizationCancelled',
+  InsufficientCpfpFunds = 'InsufficientCpfpFunds',
+  FundingUtxoConflict = 'FundingUtxoConflict',
   Generic = 'Generic',
 }
 /**
@@ -26045,6 +27613,96 @@ export const SdkError = (() => {
     }
   }
 
+  type InsufficientCpfpFunds__interface = {
+    tag: SdkError_Tags.InsufficientCpfpFunds;
+    inner: Readonly<{ requiredSat: /*u64*/ bigint }>;
+  };
+
+  /**
+   * The provided CPFP funding is too low to cover the exit's on-chain fees.
+   */
+  class InsufficientCpfpFunds_
+    extends UniffiError
+    implements InsufficientCpfpFunds__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SdkError';
+    readonly tag = SdkError_Tags.InsufficientCpfpFunds;
+    readonly inner: Readonly<{ requiredSat: /*u64*/ bigint }>;
+    constructor(inner: { requiredSat: /*u64*/ bigint }) {
+      super('SdkError', 'InsufficientCpfpFunds');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { requiredSat: /*u64*/ bigint }): InsufficientCpfpFunds_ {
+      return new InsufficientCpfpFunds_(inner);
+    }
+
+    static instanceOf(obj: any): obj is InsufficientCpfpFunds_ {
+      return obj.tag === SdkError_Tags.InsufficientCpfpFunds;
+    }
+
+    static hasInner(obj: any): obj is InsufficientCpfpFunds_ {
+      return InsufficientCpfpFunds_.instanceOf(obj);
+    }
+
+    static getInner(
+      obj: InsufficientCpfpFunds_
+    ): Readonly<{ requiredSat: /*u64*/ bigint }> {
+      return obj.inner;
+    }
+  }
+
+  type FundingUtxoConflict__interface = {
+    tag: SdkError_Tags.FundingUtxoConflict;
+    inner: Readonly<{ txid: string; vout: /*u32*/ number }>;
+  };
+
+  /**
+   * A provided funding UTXO was already spent on-chain by a transaction that
+   * is not the expected fan-out, so it cannot fund this exit.
+   */
+  class FundingUtxoConflict_
+    extends UniffiError
+    implements FundingUtxoConflict__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SdkError';
+    readonly tag = SdkError_Tags.FundingUtxoConflict;
+    readonly inner: Readonly<{ txid: string; vout: /*u32*/ number }>;
+    constructor(inner: { txid: string; vout: /*u32*/ number }) {
+      super('SdkError', 'FundingUtxoConflict');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      txid: string;
+      vout: /*u32*/ number;
+    }): FundingUtxoConflict_ {
+      return new FundingUtxoConflict_(inner);
+    }
+
+    static instanceOf(obj: any): obj is FundingUtxoConflict_ {
+      return obj.tag === SdkError_Tags.FundingUtxoConflict;
+    }
+
+    static hasInner(obj: any): obj is FundingUtxoConflict_ {
+      return FundingUtxoConflict_.instanceOf(obj);
+    }
+
+    static getInner(
+      obj: FundingUtxoConflict_
+    ): Readonly<{ txid: string; vout: /*u32*/ number }> {
+      return obj.inner;
+    }
+  }
+
   type Generic__interface = {
     tag: SdkError_Tags.Generic;
     inner: Readonly<[string]>;
@@ -26099,6 +27757,8 @@ export const SdkError = (() => {
     Signer: Signer_,
     OptimizationAlreadyRunning: OptimizationAlreadyRunning_,
     OptimizationCancelled: OptimizationCancelled_,
+    InsufficientCpfpFunds: InsufficientCpfpFunds_,
+    FundingUtxoConflict: FundingUtxoConflict_,
     Generic: Generic_,
   });
 })();
@@ -26154,6 +27814,15 @@ const FfiConverterTypeSdkError = (() => {
         case 13:
           return new SdkError.OptimizationCancelled();
         case 14:
+          return new SdkError.InsufficientCpfpFunds({
+            requiredSat: FfiConverterUInt64.read(from),
+          });
+        case 15:
+          return new SdkError.FundingUtxoConflict({
+            txid: FfiConverterString.read(from),
+            vout: FfiConverterUInt32.read(from),
+          });
+        case 16:
           return new SdkError.Generic(FfiConverterString.read(from));
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -26238,8 +27907,21 @@ const FfiConverterTypeSdkError = (() => {
           ordinalConverter.write(13, into);
           return;
         }
-        case SdkError_Tags.Generic: {
+        case SdkError_Tags.InsufficientCpfpFunds: {
           ordinalConverter.write(14, into);
+          const inner = value.inner;
+          FfiConverterUInt64.write(inner.requiredSat, into);
+          return;
+        }
+        case SdkError_Tags.FundingUtxoConflict: {
+          ordinalConverter.write(15, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.txid, into);
+          FfiConverterUInt32.write(inner.vout, into);
+          return;
+        }
+        case SdkError_Tags.Generic: {
+          ordinalConverter.write(16, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
@@ -26327,9 +28009,22 @@ const FfiConverterTypeSdkError = (() => {
         case SdkError_Tags.OptimizationCancelled: {
           return ordinalConverter.allocationSize(13);
         }
-        case SdkError_Tags.Generic: {
+        case SdkError_Tags.InsufficientCpfpFunds: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(14);
+          size += FfiConverterUInt64.allocationSize(inner.requiredSat);
+          return size;
+        }
+        case SdkError_Tags.FundingUtxoConflict: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(15);
+          size += FfiConverterString.allocationSize(inner.txid);
+          size += FfiConverterUInt32.allocationSize(inner.vout);
+          return size;
+        }
+        case SdkError_Tags.Generic: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(16);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
@@ -29266,6 +30961,150 @@ const FfiConverterTypeSparkHtlcStatus = (() => {
   return new FFIConverter();
 })();
 
+// Enum: SparkMasterIdentityPublicKey
+export enum SparkMasterIdentityPublicKey_Tags {
+  Set = 'Set',
+  Unset = 'Unset',
+}
+/**
+ * Specifies how to update the wallet's Spark master identity public key.
+ */
+export const SparkMasterIdentityPublicKey = (() => {
+  type Set__interface = {
+    tag: SparkMasterIdentityPublicKey_Tags.Set;
+    inner: Readonly<{ publicKey: string }>;
+  };
+
+  /**
+   * Designate the holder of this public key as the wallet's master
+   * identity, replacing any previously designated key. Must be hex encoded
+   * in the 33-byte compressed form.
+   */
+  class Set_ extends UniffiEnum implements Set__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SparkMasterIdentityPublicKey';
+    readonly tag = SparkMasterIdentityPublicKey_Tags.Set;
+    readonly inner: Readonly<{ publicKey: string }>;
+    constructor(inner: { publicKey: string }) {
+      super('SparkMasterIdentityPublicKey', 'Set');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { publicKey: string }): Set_ {
+      return new Set_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Set_ {
+      return obj.tag === SparkMasterIdentityPublicKey_Tags.Set;
+    }
+  }
+
+  type Unset__interface = {
+    tag: SparkMasterIdentityPublicKey_Tags.Unset;
+  };
+
+  /**
+   * Remove the designated master identity, leaving the owner as the only
+   * party able to read the wallet under private mode.
+   */
+  class Unset_ extends UniffiEnum implements Unset__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SparkMasterIdentityPublicKey';
+    readonly tag = SparkMasterIdentityPublicKey_Tags.Unset;
+    constructor() {
+      super('SparkMasterIdentityPublicKey', 'Unset');
+    }
+
+    static new(): Unset_ {
+      return new Unset_();
+    }
+
+    static instanceOf(obj: any): obj is Unset_ {
+      return obj.tag === SparkMasterIdentityPublicKey_Tags.Unset;
+    }
+  }
+
+  function instanceOf(obj: any): obj is SparkMasterIdentityPublicKey {
+    return obj[uniffiTypeNameSymbol] === 'SparkMasterIdentityPublicKey';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Set: Set_,
+    Unset: Unset_,
+  });
+})();
+
+/**
+ * Specifies how to update the wallet's Spark master identity public key.
+ */
+
+export type SparkMasterIdentityPublicKey = InstanceType<
+  (typeof SparkMasterIdentityPublicKey)[keyof Omit<
+    typeof SparkMasterIdentityPublicKey,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum SparkMasterIdentityPublicKey
+const FfiConverterTypeSparkMasterIdentityPublicKey = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = SparkMasterIdentityPublicKey;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new SparkMasterIdentityPublicKey.Set({
+            publicKey: FfiConverterString.read(from),
+          });
+        case 2:
+          return new SparkMasterIdentityPublicKey.Unset();
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case SparkMasterIdentityPublicKey_Tags.Set: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.publicKey, into);
+          return;
+        }
+        case SparkMasterIdentityPublicKey_Tags.Unset: {
+          ordinalConverter.write(2, into);
+          return;
+        }
+        default:
+          // Throwing from here means that SparkMasterIdentityPublicKey_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case SparkMasterIdentityPublicKey_Tags.Set: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterString.allocationSize(inner.publicKey);
+          return size;
+        }
+        case SparkMasterIdentityPublicKey_Tags.Unset: {
+          return ordinalConverter.allocationSize(2);
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
 // Enum: StableBalanceActiveLabel
 export enum StableBalanceActiveLabel_Tags {
   Set = 'Set',
@@ -30847,6 +32686,66 @@ const FfiConverterTypeTransferTarget = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * The role of a transaction in the exit path.
+ */
+export enum UnilateralExitTxKind {
+  /**
+   * Splits the caller's funding into one output per branch. Present only
+   * when the funding couldn't be matched one-to-one to branches.
+   */
+  FanOut,
+  /**
+   * A tree node transaction (root, intermediate, or leaf node).
+   */
+  Node,
+  /**
+   * A leaf's refund transaction.
+   */
+  Refund,
+  /**
+   * The final transaction sweeping all refund outputs to the destination.
+   */
+  Sweep,
+}
+
+const FfiConverterTypeUnilateralExitTxKind = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = UnilateralExitTxKind;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return UnilateralExitTxKind.FanOut;
+        case 2:
+          return UnilateralExitTxKind.Node;
+        case 3:
+          return UnilateralExitTxKind.Refund;
+        case 4:
+          return UnilateralExitTxKind.Sweep;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case UnilateralExitTxKind.FanOut:
+          return ordinalConverter.write(1, into);
+        case UnilateralExitTxKind.Node:
+          return ordinalConverter.write(2, into);
+        case UnilateralExitTxKind.Refund:
+          return ordinalConverter.write(3, into);
+        case UnilateralExitTxKind.Sweep:
+          return ordinalConverter.write(4, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
 // Enum: UnsignedTransferPackage
 export enum UnsignedTransferPackage_Tags {
   Swap = 'Swap',
@@ -31578,6 +33477,16 @@ export interface BitcoinChainService {
     address: string,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<Array<Utxo>>;
+  /**
+   * Every output ever paid to `address`, spent or not, unlike
+   * [`get_address_utxos`](Self::get_address_utxos) which omits spent ones.
+   * Recovers an output's outpoint and value after it has been spent, so a
+   * swept refund can still be distinguished from one never broadcast.
+   */
+  getAddressTxos(
+    address: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<Array<Utxo>>;
   getTransactionStatus(
     txid: string,
     asyncOpts_?: { signal: AbortSignal }
@@ -31586,6 +33495,11 @@ export interface BitcoinChainService {
     txid: string,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<string>;
+  getOutspend(
+    txid: string,
+    vout: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<Outspend>;
   broadcastTransaction(
     tx: string,
     asyncOpts_?: { signal: AbortSignal }
@@ -31620,6 +33534,51 @@ export class BitcoinChainServiceImpl
         /*rustCaller:*/ uniffiCaller,
         /*rustFutureFunc:*/ () => {
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_address_utxos(
+            uniffiTypeBitcoinChainServiceImplObjectFactory.clonePointer(this),
+            FfiConverterString.lower(address)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterArrayTypeUtxo.lift.bind(
+          FfiConverterArrayTypeUtxo
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeChainServiceError.lift.bind(
+          FfiConverterTypeChainServiceError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Every output ever paid to `address`, spent or not, unlike
+   * [`get_address_utxos`](Self::get_address_utxos) which omits spent ones.
+   * Recovers an output's outpoint and value after it has been spent, so a
+   * swept refund can still be distinguished from one never broadcast.
+   */
+  public async getAddressTxos(
+    address: string,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<Array<Utxo>> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_address_txos(
             uniffiTypeBitcoinChainServiceImplObjectFactory.clonePointer(this),
             FfiConverterString.lower(address)
           );
@@ -31711,6 +33670,47 @@ export class BitcoinChainServiceImpl
         /*freeFunc:*/ nativeModule()
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterString.lift.bind(FfiConverterString),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeChainServiceError.lift.bind(
+          FfiConverterTypeChainServiceError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  public async getOutspend(
+    txid: string,
+    vout: /*u32*/ number,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<Outspend> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_outspend(
+            uniffiTypeBitcoinChainServiceImplObjectFactory.clonePointer(this),
+            FfiConverterString.lower(txid),
+            FfiConverterUInt32.lower(vout)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeOutspend.lift.bind(
+          FfiConverterTypeOutspend
+        ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
         /*errorHandler:*/ FfiConverterTypeChainServiceError.lift.bind(
@@ -31946,6 +33946,55 @@ const uniffiCallbackInterfaceBitcoinChainService: {
       );
       return uniffiForeignFuture;
     },
+    getAddressTxos: (
+      uniffiHandle: bigint,
+      address: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<Array<Utxo>> => {
+        const jsCallback =
+          FfiConverterTypeBitcoinChainService.lift(uniffiHandle);
+        return await jsCallback.getAddressTxos(
+          FfiConverterString.lift(address),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: Array<Utxo>) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterArrayTypeUtxo.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ ChainServiceError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeChainServiceError.lower.bind(
+          FfiConverterTypeChainServiceError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
     getTransactionStatus: (
       uniffiHandle: bigint,
       txid: Uint8Array,
@@ -32013,6 +34062,55 @@ const uniffiCallbackInterfaceBitcoinChainService: {
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterString.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ ChainServiceError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeChainServiceError.lower.bind(
+          FfiConverterTypeChainServiceError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    getOutspend: (
+      uniffiHandle: bigint,
+      txid: Uint8Array,
+      vout: number,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (signal: AbortSignal): Promise<Outspend> => {
+        const jsCallback =
+          FfiConverterTypeBitcoinChainService.lift(uniffiHandle);
+        return await jsCallback.getOutspend(
+          FfiConverterString.lift(txid),
+          FfiConverterUInt32.lift(vout),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: Outspend) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterTypeOutspend.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -32473,6 +34571,15 @@ export interface BreezSdkInterface {
     request: PrepareSendPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<PrepareSendPaymentResponse>;
+  /**
+   * Quotes a unilateral exit without any funding UTXOs: selects which leaves
+   * would exit, computes the exact fee for the given funding kind, and reports
+   * how much to fund.
+   */
+  prepareUnilateralExit(
+    request: PrepareUnilateralExitRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<PrepareUnilateralExitResponse>;
   publishSignedLnurlPayPackage(
     request: PublishSignedLnurlPayPackageRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -32496,19 +34603,20 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<RefundDepositResponse>;
   /**
-   * Runs one pass of the pending-conversion refunder.
+   * Runs one full pass of the pending-conversion refunder and returns how
+   * many conversions were refunded, skipped (held back by a safety window),
+   * or failed.
    *
-   * Iterates over payments whose conversions failed and have a refund
-   * pending, then attempts to refund each one. This is the same logic the
-   * SDK runs internally on a periodic schedule when
-   * `background_tasks_enabled` is `true`. When background tasks are
-   * disabled the periodic refunder does not run, and this method is the
-   * explicit entry point for driving the pass; when background tasks are
-   * enabled, it can be called to force an immediate refund pass.
+   * The pass has two parts: refunding locally-marked failed conversions, and
+   * reconciling against Flashnet's clawback-eligible listing to catch
+   * conversions with no local marker (e.g. a storage write that never
+   * landed). The SDK's periodic background schedule runs only the local
+   * part; the reconcile runs at SDK init and on each call to this method, so
+   * this is the explicit entry point for driving a full pass on demand.
    */
   refundPendingConversions(asyncOpts_?: {
     signal: AbortSignal;
-  }): /*throws*/ Promise<void>;
+  }): /*throws*/ Promise<RefundPendingConversionsResponse>;
   registerLightningAddress(
     request: RegisterLightningAddressRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -32567,6 +34675,23 @@ export interface BreezSdkInterface {
     request: SyncWalletRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<SyncWalletResponse>;
+  /**
+   * Builds and signs a complete unilateral exit from a `prepare_unilateral_exit`
+   * quote and the actual funding UTXOs, returning the full transaction set in
+   * topological broadcast order without broadcasting. Broadcast it over time,
+   * respecting each transaction's `depends_on` and `csv_timelock_blocks`.
+   *
+   * It resolves on-chain state first (see [`resolve_exit_observations`]): an
+   * already-confirmed fan-out or CPFP node is not rebuilt, and a leaf refund
+   * already on-chain (recognized by the leaf's refund address, so any refund
+   * variant counts) is swept directly. Re-running after partial progress
+   * therefore resumes rather than restarts.
+   */
+  unilateralExit(
+    request: UnilateralExitRequest,
+    signer: CpfpSigner,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<UnilateralExitResponse>;
   /**
    * Unregisters a previously registered webhook.
    *
@@ -34137,6 +36262,50 @@ export class BreezSdk
     }
   }
 
+  /**
+   * Quotes a unilateral exit without any funding UTXOs: selects which leaves
+   * would exit, computes the exact fee for the given funding kind, and reports
+   * how much to fund.
+   */
+  public async prepareUnilateralExit(
+    request: PrepareUnilateralExitRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<PrepareUnilateralExitResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_unilateral_exit(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypePrepareUnilateralExitRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePrepareUnilateralExitResponse.lift.bind(
+          FfiConverterTypePrepareUnilateralExitResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
   public async publishSignedLnurlPayPackage(
     request: PublishSignedLnurlPayPackageRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -34334,19 +36503,20 @@ export class BreezSdk
   }
 
   /**
-   * Runs one pass of the pending-conversion refunder.
+   * Runs one full pass of the pending-conversion refunder and returns how
+   * many conversions were refunded, skipped (held back by a safety window),
+   * or failed.
    *
-   * Iterates over payments whose conversions failed and have a refund
-   * pending, then attempts to refund each one. This is the same logic the
-   * SDK runs internally on a periodic schedule when
-   * `background_tasks_enabled` is `true`. When background tasks are
-   * disabled the periodic refunder does not run, and this method is the
-   * explicit entry point for driving the pass; when background tasks are
-   * enabled, it can be called to force an immediate refund pass.
+   * The pass has two parts: refunding locally-marked failed conversions, and
+   * reconciling against Flashnet's clawback-eligible listing to catch
+   * conversions with no local marker (e.g. a storage write that never
+   * landed). The SDK's periodic background schedule runs only the local
+   * part; the reconcile runs at SDK init and on each call to this method, so
+   * this is the explicit entry point for driving a full pass on demand.
    */
   public async refundPendingConversions(asyncOpts_?: {
     signal: AbortSignal;
-  }): Promise<void> /*throws*/ {
+  }): Promise<RefundPendingConversionsResponse> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
     try {
       return await uniffiRustCallAsync(
@@ -34357,14 +36527,16 @@ export class BreezSdk
           );
         },
         /*pollFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_poll_void,
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
         /*cancelFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_void,
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
         /*completeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_complete_void,
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
         /*freeFunc:*/ nativeModule()
-          .ubrn_ffi_breez_sdk_spark_rust_future_free_void,
-        /*liftFunc:*/ (_v) => {},
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeRefundPendingConversionsResponse.lift.bind(
+          FfiConverterTypeRefundPendingConversionsResponse
+        ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
         /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
@@ -34643,6 +36815,59 @@ export class BreezSdk
   }
 
   /**
+   * Builds and signs a complete unilateral exit from a `prepare_unilateral_exit`
+   * quote and the actual funding UTXOs, returning the full transaction set in
+   * topological broadcast order without broadcasting. Broadcast it over time,
+   * respecting each transaction's `depends_on` and `csv_timelock_blocks`.
+   *
+   * It resolves on-chain state first (see [`resolve_exit_observations`]): an
+   * already-confirmed fan-out or CPFP node is not rebuilt, and a leaf refund
+   * already on-chain (recognized by the leaf's refund address, so any refund
+   * variant counts) is swept directly. Re-running after partial progress
+   * therefore resumes rather than restarts.
+   */
+  public async unilateralExit(
+    request: UnilateralExitRequest,
+    signer: CpfpSigner,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<UnilateralExitResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_unilateral_exit(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeUnilateralExitRequest.lower(request),
+            FfiConverterTypeCpfpSigner.lower(signer)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeUnilateralExitResponse.lift.bind(
+          FfiConverterTypeUnilateralExitResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
    * Unregisters a previously registered webhook.
    *
    * After unregistering, the Spark service provider will no longer send
@@ -34866,6 +37091,233 @@ const uniffiTypeBreezSdkObjectFactory: UniffiObjectFactory<BreezSdkInterface> =
 const FfiConverterTypeBreezSdk = new FfiConverterObject(
   uniffiTypeBreezSdkObjectFactory
 );
+
+/**
+ * Signer for external UTXO inputs in CPFP fee-bumping transactions.
+ *
+ * Signs the non-finalized inputs of a PSBT (serialized as bytes) and returns the
+ * signed PSBT (also serialized as bytes).
+ */
+export interface CpfpSigner {
+  signPsbt(
+    psbtBytes: ArrayBuffer,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ArrayBuffer>;
+}
+
+/**
+ * Signer for external UTXO inputs in CPFP fee-bumping transactions.
+ *
+ * Signs the non-finalized inputs of a PSBT (serialized as bytes) and returns the
+ * signed PSBT (also serialized as bytes).
+ */
+export class CpfpSignerImpl extends UniffiAbstractObject implements CpfpSigner {
+  readonly [uniffiTypeNameSymbol] = 'CpfpSignerImpl';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypeCpfpSignerImplObjectFactory.bless(pointer);
+  }
+
+  public async signPsbt(
+    psbtBytes: ArrayBuffer,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ArrayBuffer> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_cpfpsigner_sign_psbt(
+            uniffiTypeCpfpSignerImplObjectFactory.clonePointer(this),
+            FfiConverterArrayBuffer.lower(psbtBytes)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterArrayBuffer.lift.bind(
+          FfiConverterArrayBuffer
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer = uniffiTypeCpfpSignerImplObjectFactory.pointer(this);
+      uniffiTypeCpfpSignerImplObjectFactory.freePointer(pointer);
+      uniffiTypeCpfpSignerImplObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is CpfpSignerImpl {
+    return uniffiTypeCpfpSignerImplObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypeCpfpSignerImplObjectFactory: UniffiObjectFactory<CpfpSigner> =
+  (() => {
+    return {
+      create(pointer: UnsafeMutableRawPointer): CpfpSigner {
+        const instance = Object.create(CpfpSignerImpl.prototype);
+        instance[pointerLiteralSymbol] = pointer;
+        instance[destructorGuardSymbol] = this.bless(pointer);
+        instance[uniffiTypeNameSymbol] = 'CpfpSignerImpl';
+        return instance;
+      },
+
+      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+        return uniffiCaller.rustCall(
+          /*caller:*/ (status) =>
+            nativeModule().ubrn_uniffi_internal_fn_method_cpfpsigner_ffi__bless_pointer(
+              p,
+              status
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      unbless(ptr: UniffiRustArcPtr) {
+        ptr.markDestroyed();
+      },
+
+      pointer(obj: CpfpSigner): UnsafeMutableRawPointer {
+        if ((obj as any)[destructorGuardSymbol] === undefined) {
+          throw new UniffiInternalError.UnexpectedNullPointer();
+        }
+        return (obj as any)[pointerLiteralSymbol];
+      },
+
+      clonePointer(obj: CpfpSigner): UnsafeMutableRawPointer {
+        const pointer = this.pointer(obj);
+        return uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_cpfpsigner(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      freePointer(pointer: UnsafeMutableRawPointer): void {
+        uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_cpfpsigner(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      isConcreteType(obj: any): obj is CpfpSigner {
+        return (
+          obj[destructorGuardSymbol] &&
+          obj[uniffiTypeNameSymbol] === 'CpfpSignerImpl'
+        );
+      },
+    };
+  })();
+// FfiConverter for CpfpSigner
+const FfiConverterTypeCpfpSigner = new FfiConverterObjectWithCallbacks(
+  uniffiTypeCpfpSignerImplObjectFactory
+);
+
+// Add a vtavble for the callbacks that go in CpfpSigner.
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+const uniffiCallbackInterfaceCpfpSigner: {
+  vtable: UniffiVTableCallbackInterfaceCpfpSigner;
+  register: () => void;
+} = {
+  // Create the VTable using a series of closures.
+  // ts automatically converts these into C callback functions.
+  vtable: {
+    signPsbt: (
+      uniffiHandle: bigint,
+      psbtBytes: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<ArrayBuffer> => {
+        const jsCallback = FfiConverterTypeCpfpSigner.lift(uniffiHandle);
+        return await jsCallback.signPsbt(
+          FfiConverterArrayBuffer.lift(psbtBytes),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: ArrayBuffer) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: FfiConverterArrayBuffer.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    uniffiFree: (uniffiHandle: UniffiHandle): void => {
+      // CpfpSigner: this will throw a stale handle error if the handle isn't found.
+      FfiConverterTypeCpfpSigner.drop(uniffiHandle);
+    },
+  },
+  register: () => {
+    nativeModule().ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_cpfpsigner(
+      uniffiCallbackInterfaceCpfpSigner.vtable
+    );
+  },
+};
 
 /**
  * External signer trait that can be implemented by users and passed to the SDK.
@@ -36525,6 +38977,15 @@ export interface ExternalSparkSigner {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<EcdsaSignatureBytes>;
   /**
+   * Schnorr-sign `sighash` to spend a tree leaf's P2TR refund output as a
+   * BIP341 key-path spend (empty script tree).
+   */
+  signLeafRefundSpend(
+    leafId: ExternalTreeNodeId,
+    sighash: ArrayBuffer,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<SchnorrSignatureBytes>;
+  /**
    * Produce FROST shares for a batch of jobs.
    */
   signFrost(
@@ -36827,6 +39288,51 @@ export class ExternalSparkSignerImpl
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypeEcdsaSignatureBytes.lift.bind(
           FfiConverterTypeEcdsaSignatureBytes
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSignerError.lift.bind(
+          FfiConverterTypeSignerError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Schnorr-sign `sighash` to spend a tree leaf's P2TR refund output as a
+   * BIP341 key-path spend (empty script tree).
+   */
+  public async signLeafRefundSpend(
+    leafId: ExternalTreeNodeId,
+    sighash: ArrayBuffer,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<SchnorrSignatureBytes> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_leaf_refund_spend(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            FfiConverterTypeExternalTreeNodeId.lower(leafId),
+            FfiConverterArrayBuffer.lower(sighash)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeSchnorrSignatureBytes.lift.bind(
+          FfiConverterTypeSchnorrSignatureBytes
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -37605,6 +40111,58 @@ const uniffiCallbackInterfaceExternalSparkSigner: {
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
             returnValue: FfiConverterTypeEcdsaSignatureBytes.lower(returnValue),
+            callStatus: uniffiCaller.createCallStatus(),
+          }
+        );
+      };
+      const uniffiHandleError = (code: number, errorBuf: UniffiByteArray) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue: /*empty*/ new Uint8Array(0),
+            // TODO create callstatus with error.
+            callStatus: uniffiCaller.createErrorStatus(code, errorBuf),
+          }
+        );
+      };
+      const uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*isErrorType:*/ SignerError.instanceOf,
+        /*lowerError:*/ FfiConverterTypeSignerError.lower.bind(
+          FfiConverterTypeSignerError
+        ),
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiForeignFuture;
+    },
+    signLeafRefundSpend: (
+      uniffiHandle: bigint,
+      leafId: Uint8Array,
+      sighash: Uint8Array,
+      uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+      uniffiCallbackData: bigint
+    ) => {
+      const uniffiMakeCall = async (
+        signal: AbortSignal
+      ): Promise<SchnorrSignatureBytes> => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return await jsCallback.signLeafRefundSpend(
+          FfiConverterTypeExternalTreeNodeId.lift(leafId),
+          FfiConverterArrayBuffer.lift(sighash),
+          { signal }
+        );
+      };
+      const uniffiHandleSuccess = (returnValue: SchnorrSignatureBytes) => {
+        uniffiFutureCallback.call(
+          uniffiFutureCallback,
+          uniffiCallbackData,
+          /* UniffiForeignFutureStructRustBuffer */ {
+            returnValue:
+              FfiConverterTypeSchnorrSignatureBytes.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -45969,6 +48527,11 @@ const FfiConverterArrayTypePaymentIdUpdate = new FfiConverterArray(
   FfiConverterTypePaymentIdUpdate
 );
 
+// FfiConverter for Array<PerBranchFunding>
+const FfiConverterArrayTypePerBranchFunding = new FfiConverterArray(
+  FfiConverterTypePerBranchFunding
+);
+
 // FfiConverter for Array<ProvisionalPayment>
 const FfiConverterArrayTypeProvisionalPayment = new FfiConverterArray(
   FfiConverterTypeProvisionalPayment
@@ -46005,6 +48568,16 @@ const FfiConverterArrayTypeStoredCrossChainSwap = new FfiConverterArray(
 // FfiConverter for Array<TokenMetadata>
 const FfiConverterArrayTypeTokenMetadata = new FfiConverterArray(
   FfiConverterTypeTokenMetadata
+);
+
+// FfiConverter for Array<UnilateralExitLeaf>
+const FfiConverterArrayTypeUnilateralExitLeaf = new FfiConverterArray(
+  FfiConverterTypeUnilateralExitLeaf
+);
+
+// FfiConverter for Array<UnilateralExitTransaction>
+const FfiConverterArrayTypeUnilateralExitTransaction = new FfiConverterArray(
+  FfiConverterTypeUnilateralExitTransaction
 );
 
 // FfiConverter for Array<Utxo>
@@ -46101,6 +48674,10 @@ const FfiConverterOptionalTypeSendPaymentOptions = new FfiConverterOptional(
   FfiConverterTypeSendPaymentOptions
 );
 
+// FfiConverter for SparkMasterIdentityPublicKey | undefined
+const FfiConverterOptionalTypeSparkMasterIdentityPublicKey =
+  new FfiConverterOptional(FfiConverterTypeSparkMasterIdentityPublicKey);
+
 // FfiConverter for StableBalanceActiveLabel | undefined
 const FfiConverterOptionalTypeStableBalanceActiveLabel =
   new FfiConverterOptional(FfiConverterTypeStableBalanceActiveLabel);
@@ -46138,6 +48715,11 @@ const FfiConverterOptionalArrayArrayBuffer = new FfiConverterOptional(
 // FfiConverter for Array<ExternalInputParser> | undefined
 const FfiConverterOptionalArrayTypeExternalInputParser =
   new FfiConverterOptional(FfiConverterArrayTypeExternalInputParser);
+
+// FfiConverter for Array<CpfpInput>
+const FfiConverterArrayTypeCpfpInput = new FfiConverterArray(
+  FfiConverterTypeCpfpInput
+);
 
 // FfiConverter for Array<InputType>
 const FfiConverterArrayTypeInputType = new FfiConverterArray(
@@ -46344,6 +48926,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_single_key_cpfp_signer() !==
+    28762
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_single_key_cpfp_signer'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_utxos() !==
     20959
   ) {
@@ -46352,8 +48942,16 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_txos() !==
+    10702
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_txos'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_status() !==
-    23018
+    53546
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_status'
@@ -46361,15 +48959,23 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_hex() !==
-    59376
+    16866
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_hex'
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_outspend() !==
+    42521
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_outspend'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_broadcast_transaction() !==
-    65179
+    13500
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_broadcast_transaction'
@@ -46377,7 +48983,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_recommended_fees() !==
-    43230
+    50885
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_recommended_fees'
@@ -46664,6 +49270,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_unilateral_exit() !==
+    36492
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_unilateral_exit'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_publish_signed_lnurl_pay_package() !==
     48698
   ) {
@@ -46705,7 +49319,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_pending_conversions() !==
-    24173
+    11342
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_pending_conversions'
@@ -46760,6 +49374,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_unilateral_exit() !==
+    23033
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_unilateral_exit'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_unregister_webhook() !==
     34100
   ) {
@@ -46781,6 +49403,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_update_user_settings'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_cpfpsigner_sign_psbt() !==
+    20736
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_cpfpsigner_sign_psbt'
     );
   }
   if (
@@ -46920,8 +49550,16 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_leaf_refund_spend() !==
+    62629
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_leaf_refund_spend'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_frost() !==
-    41995
+    58732
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_frost'
@@ -46929,7 +49567,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_transfer() !==
-    7663
+    29829
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_transfer'
@@ -46937,7 +49575,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_claim() !==
-    40463
+    17684
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_claim'
@@ -46945,7 +49583,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_lightning_receive() !==
-    22362
+    25306
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_lightning_receive'
@@ -46953,7 +49591,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit() !==
-    44945
+    3348
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit'
@@ -46961,7 +49599,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_static_deposit_refund() !==
-    15575
+    22709
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_static_deposit_refund'
@@ -46969,7 +49607,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_static_deposit_refund() !==
-    3082
+    52719
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_static_deposit_refund'
@@ -46977,7 +49615,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_spark_invoice() !==
-    33
+    39737
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_spark_invoice'
@@ -46985,7 +49623,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_token_transaction() !==
-    33122
+    12801
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_token_transaction'
@@ -46993,7 +49631,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit_claim() !==
-    14601
+    53174
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit_claim'
@@ -47611,6 +50249,7 @@ function uniffiEnsureInitialized() {
   uniffiCallbackInterfaceEventListener.register();
   uniffiCallbackInterfaceLogger.register();
   uniffiCallbackInterfaceBitcoinChainService.register();
+  uniffiCallbackInterfaceCpfpSigner.register();
   uniffiCallbackInterfaceExternalBreezSigner.register();
   uniffiCallbackInterfaceExternalSigningSigner.register();
   uniffiCallbackInterfaceExternalSparkSigner.register();
@@ -47667,6 +50306,7 @@ export default Object.freeze({
     FfiConverterTypeClaimHtlcPaymentResponse,
     FfiConverterTypeClaimTransferRequest,
     FfiConverterTypeConfig,
+    FfiConverterTypeConfirmationStatus,
     FfiConverterTypeConnectRequest,
     FfiConverterTypeConnectWithPasskeyRequest,
     FfiConverterTypeConnectWithPasskeyResponse,
@@ -47686,6 +50326,9 @@ export default Object.freeze({
     FfiConverterTypeConversionSide,
     FfiConverterTypeConversionStatus,
     FfiConverterTypeConversionType,
+    FfiConverterTypeCpfpFundingKind,
+    FfiConverterTypeCpfpInput,
+    FfiConverterTypeCpfpSigner,
     FfiConverterTypeCreateIssuerTokenRequest,
     FfiConverterTypeCredentials,
     FfiConverterTypeCrossChainAddressDetails,
@@ -47704,6 +50347,7 @@ export default Object.freeze({
     FfiConverterTypeDomainAssociation,
     FfiConverterTypeEcdsaSignatureBytes,
     FfiConverterTypeErrorKind,
+    FfiConverterTypeExitLeafSelection,
     FfiConverterTypeExternalBreezSigner,
     FfiConverterTypeExternalClaimLeafInput,
     FfiConverterTypeExternalFrostCommitments,
@@ -47800,6 +50444,7 @@ export default Object.freeze({
     FfiConverterTypeOptimizeLeavesRequest,
     FfiConverterTypeOptimizeLeavesResponse,
     FfiConverterTypeOutgoingChange,
+    FfiConverterTypeOutspend,
     FfiConverterTypePasskeyAvailability,
     FfiConverterTypePasskeyClient,
     FfiConverterTypePasskeyConfig,
@@ -47819,10 +50464,13 @@ export default Object.freeze({
     FfiConverterTypePaymentRequestSource,
     FfiConverterTypePaymentStatus,
     FfiConverterTypePaymentType,
+    FfiConverterTypePerBranchFunding,
     FfiConverterTypePrepareLnurlPayRequest,
     FfiConverterTypePrepareLnurlPayResponse,
     FfiConverterTypePrepareSendPaymentRequest,
     FfiConverterTypePrepareSendPaymentResponse,
+    FfiConverterTypePrepareUnilateralExitRequest,
+    FfiConverterTypePrepareUnilateralExitResponse,
     FfiConverterTypePrfProvider,
     FfiConverterTypePrfProviderError,
     FfiConverterTypeProvisionalPayment,
@@ -47844,6 +50492,7 @@ export default Object.freeze({
     FfiConverterTypeRecoverableEcdsaSignatureBytes,
     FfiConverterTypeRefundDepositRequest,
     FfiConverterTypeRefundDepositResponse,
+    FfiConverterTypeRefundPendingConversionsResponse,
     FfiConverterTypeRegisterLightningAddressRequest,
     FfiConverterTypeRegisterRequest,
     FfiConverterTypeRegisterResponse,
@@ -47889,6 +50538,7 @@ export default Object.freeze({
     FfiConverterTypeSparkHtlcStatus,
     FfiConverterTypeSparkInvoiceDetails,
     FfiConverterTypeSparkInvoicePaymentDetails,
+    FfiConverterTypeSparkMasterIdentityPublicKey,
     FfiConverterTypeSparkSigningOperator,
     FfiConverterTypeSparkSspConfig,
     FfiConverterTypeSparkStatus,
@@ -47919,6 +50569,11 @@ export default Object.freeze({
     FfiConverterTypeTxStatus,
     FfiConverterTypeUnfreezeIssuerTokenRequest,
     FfiConverterTypeUnfreezeIssuerTokenResponse,
+    FfiConverterTypeUnilateralExitLeaf,
+    FfiConverterTypeUnilateralExitRequest,
+    FfiConverterTypeUnilateralExitResponse,
+    FfiConverterTypeUnilateralExitTransaction,
+    FfiConverterTypeUnilateralExitTxKind,
     FfiConverterTypeUnregisterWebhookRequest,
     FfiConverterTypeUnsignedTransferPackage,
     FfiConverterTypeUnversionedRecordChange,

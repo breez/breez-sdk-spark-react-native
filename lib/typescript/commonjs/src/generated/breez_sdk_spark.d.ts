@@ -188,6 +188,11 @@ export declare function newSharedSdkContext(config: SdkContextConfig, asyncOpts_
     signal: AbortSignal;
 }): Promise<SdkContextInterface>;
 /**
+ * A CPFP signer backed by a single private key. Signs P2WPKH and P2TR key-path
+ * inputs only; taproot script-path spends are not supported.
+ */
+export declare function singleKeyCpfpSigner(secretKeyBytes: ArrayBuffer): CpfpSigner;
+/**
  * Trait for event listeners
  */
 export interface EventListener {
@@ -4487,6 +4492,38 @@ export declare const PaymentRequestSource: Readonly<{
      */
     defaults: () => Partial<PaymentRequestSource>;
 }>;
+/**
+ * How much to fund one branch of the exit to avoid a fan-out.
+ */
+export type PerBranchFunding = {
+    /**
+     * The leaf whose branch this funds.
+     */
+    leafId: string;
+    /**
+     * Fund a UTXO of at least this many satoshis for this branch.
+     */
+    fundingSat: bigint;
+};
+/**
+ * Generated factory for {@link PerBranchFunding} record objects.
+ */
+export declare const PerBranchFunding: Readonly<{
+    /**
+     * Create a frozen instance of {@link PerBranchFunding}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PerBranchFunding> & Required<Omit<PerBranchFunding, never>>) => PerBranchFunding;
+    /**
+     * Create a frozen instance of {@link PerBranchFunding}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PerBranchFunding> & Required<Omit<PerBranchFunding, never>>) => PerBranchFunding;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PerBranchFunding>;
+}>;
 export type PrepareLnurlPayRequest = {
     /**
      * The amount to send. Denominated in satoshis, or in token base units
@@ -4665,6 +4702,98 @@ export declare const PrepareSendPaymentResponse: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<PrepareSendPaymentResponse>;
+}>;
+/**
+ * Request for `prepare_unilateral_exit`, the exit quote.
+ */
+export type PrepareUnilateralExitRequest = {
+    /**
+     * Target fee rate in sat/vByte, applied to every CPFP child, the fan-out,
+     * and the sweep.
+     */
+    feeRateSatPerVbyte: bigint;
+    fundingKind: CpfpFundingKind;
+    /**
+     * The Bitcoin address the swept funds are sent to.
+     */
+    destination: string;
+    selection: ExitLeafSelection;
+};
+/**
+ * Generated factory for {@link PrepareUnilateralExitRequest} record objects.
+ */
+export declare const PrepareUnilateralExitRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link PrepareUnilateralExitRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PrepareUnilateralExitRequest> & Required<Omit<PrepareUnilateralExitRequest, never>>) => PrepareUnilateralExitRequest;
+    /**
+     * Create a frozen instance of {@link PrepareUnilateralExitRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PrepareUnilateralExitRequest> & Required<Omit<PrepareUnilateralExitRequest, never>>) => PrepareUnilateralExitRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PrepareUnilateralExitRequest>;
+}>;
+/**
+ * Response from `prepare_unilateral_exit`: which leaves would exit, the exact
+ * fee at the requested rate, and how much to fund.
+ */
+export type PrepareUnilateralExitResponse = {
+    leaves: Array<UnilateralExitLeaf>;
+    /**
+     * Total value of the selected leaves, in satoshis.
+     */
+    recoverableValueSat: bigint;
+    /**
+     * Total on-chain fee when funding with a single UTXO (fanned out across
+     * branches), in satoshis. Exact for the given funding kind; nodes the
+     * operators report on-chain are assumed already paid, so a partially-exited
+     * tree quotes a lower fee than a fresh one.
+     */
+    totalFeeSat: bigint;
+    /**
+     * The part of `total_fee_sat` paid for the fan-out transaction. Funding one
+     * UTXO per branch (`per_branch_funding`) avoids it. Zero for a single
+     * branch (no fan-out).
+     */
+    fanoutFeeSat: bigint;
+    /**
+     * Fund a single UTXO of at least this many satoshis to exit with a fan-out.
+     */
+    singleUtxoFundingSat: bigint;
+    /**
+     * To skip the fan-out, fund one UTXO per branch of at least the given
+     * amount (one entry per selected leaf).
+     */
+    perBranchFunding: Array<PerBranchFunding>;
+    /**
+     * The fee rate this quote was computed at, in sat/vByte.
+     */
+    feeRateSatPerVbyte: bigint;
+    destination: string;
+};
+/**
+ * Generated factory for {@link PrepareUnilateralExitResponse} record objects.
+ */
+export declare const PrepareUnilateralExitResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link PrepareUnilateralExitResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PrepareUnilateralExitResponse> & Required<Omit<PrepareUnilateralExitResponse, never>>) => PrepareUnilateralExitResponse;
+    /**
+     * Create a frozen instance of {@link PrepareUnilateralExitResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PrepareUnilateralExitResponse> & Required<Omit<PrepareUnilateralExitResponse, never>>) => PrepareUnilateralExitResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PrepareUnilateralExitResponse>;
 }>;
 export type ProvisionalPayment = {
     /**
@@ -5014,6 +5143,44 @@ export declare const RefundDepositResponse: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<RefundDepositResponse>;
+}>;
+/**
+ * Response from refunding pending conversions.
+ */
+export type RefundPendingConversionsResponse = {
+    /**
+     * Conversions successfully refunded this pass.
+     */
+    refunded: number;
+    /**
+     * Conversions intentionally deferred (eligible but held back by a
+     * safety window). The next pass will retry them.
+     */
+    skipped: number;
+    /**
+     * Conversions whose clawback did not complete this pass (rejected or
+     * errored; funds not returned). The next pass will retry them.
+     */
+    failed: number;
+};
+/**
+ * Generated factory for {@link RefundPendingConversionsResponse} record objects.
+ */
+export declare const RefundPendingConversionsResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link RefundPendingConversionsResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<RefundPendingConversionsResponse> & Required<Omit<RefundPendingConversionsResponse, never>>) => RefundPendingConversionsResponse;
+    /**
+     * Create a frozen instance of {@link RefundPendingConversionsResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<RefundPendingConversionsResponse> & Required<Omit<RefundPendingConversionsResponse, never>>) => RefundPendingConversionsResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<RefundPendingConversionsResponse>;
 }>;
 export type RegisterLightningAddressRequest = {
     username: string;
@@ -6684,6 +6851,161 @@ export declare const UnfreezeIssuerTokenResponse: Readonly<{
     defaults: () => Partial<UnfreezeIssuerTokenResponse>;
 }>;
 /**
+ * A leaf selected for exit, with its value.
+ */
+export type UnilateralExitLeaf = {
+    leafId: string;
+    /**
+     * The leaf's value in satoshis.
+     */
+    value: bigint;
+};
+/**
+ * Generated factory for {@link UnilateralExitLeaf} record objects.
+ */
+export declare const UnilateralExitLeaf: Readonly<{
+    /**
+     * Create a frozen instance of {@link UnilateralExitLeaf}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<UnilateralExitLeaf> & Required<Omit<UnilateralExitLeaf, never>>) => UnilateralExitLeaf;
+    /**
+     * Create a frozen instance of {@link UnilateralExitLeaf}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<UnilateralExitLeaf> & Required<Omit<UnilateralExitLeaf, never>>) => UnilateralExitLeaf;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<UnilateralExitLeaf>;
+}>;
+/**
+ * Request for `unilateral_exit`: a `prepare_unilateral_exit` quote plus the
+ * funding UTXOs that pay its fees. The signer is passed separately (it is not a
+ * plain data value).
+ */
+export type UnilateralExitRequest = {
+    /**
+     * The quote returned by `prepare_unilateral_exit`, naming the leaves to exit.
+     */
+    prepared: PrepareUnilateralExitResponse;
+    /**
+     * The funding UTXOs that pay the exit's on-chain fees, meeting the quote's
+     * `single_utxo_funding_sat` (one UTXO) or `per_branch_funding` (one per branch).
+     */
+    fundingInputs: Array<CpfpInput>;
+};
+/**
+ * Generated factory for {@link UnilateralExitRequest} record objects.
+ */
+export declare const UnilateralExitRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link UnilateralExitRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<UnilateralExitRequest> & Required<Omit<UnilateralExitRequest, never>>) => UnilateralExitRequest;
+    /**
+     * Create a frozen instance of {@link UnilateralExitRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<UnilateralExitRequest> & Required<Omit<UnilateralExitRequest, never>>) => UnilateralExitRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<UnilateralExitRequest>;
+}>;
+/**
+ * Result of `unilateral_exit`: a cost summary plus the complete, signed exit
+ * path.
+ */
+export type UnilateralExitResponse = {
+    /**
+     * Total value of the selected leaves, in satoshis.
+     */
+    recoverableValueSat: bigint;
+    /**
+     * The actual total on-chain fee the returned transactions pay at the
+     * requested rate, in satoshis. A resumed or partially-confirmed exit pays
+     * less because already-confirmed steps are not rebuilt.
+     */
+    totalFeeSat: bigint;
+    leaves: Array<UnilateralExitLeaf>;
+    /**
+     * The full signed transaction set, in valid topological (broadcast) order
+     * with shared ancestors appearing once and the sweep last.
+     */
+    transactions: Array<UnilateralExitTransaction>;
+};
+/**
+ * Generated factory for {@link UnilateralExitResponse} record objects.
+ */
+export declare const UnilateralExitResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link UnilateralExitResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<UnilateralExitResponse> & Required<Omit<UnilateralExitResponse, never>>) => UnilateralExitResponse;
+    /**
+     * Create a frozen instance of {@link UnilateralExitResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<UnilateralExitResponse> & Required<Omit<UnilateralExitResponse, never>>) => UnilateralExitResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<UnilateralExitResponse>;
+}>;
+/**
+ * One transaction in the unilateral exit path, with everything needed to
+ * order and broadcast it.
+ */
+export type UnilateralExitTransaction = {
+    kind: UnilateralExitTxKind;
+    /**
+     * The tree node this transaction belongs to. Unset for the fan-out and the
+     * sweep.
+     */
+    nodeId: string | undefined;
+    txid: string;
+    txHex: string;
+    /**
+     * The signed CPFP child to broadcast alongside `tx_hex` as a package.
+     * Unset for the fan-out and the sweep (no anchor to bump) and for a
+     * `Confirmed` step (its CPFP is already on-chain).
+     */
+    cpfpTxHex: string | undefined;
+    /**
+     * Relative CSV timelock, in blocks, that must mature on the spent input
+     * before this transaction can confirm. Unset when there is no timelock.
+     */
+    csvTimelockBlocks: /*u32*/ number | undefined;
+    /**
+     * Txids of other entries in this list that must be confirmed before this
+     * one can be broadcast.
+     */
+    dependsOn: Array<string>;
+    status: ConfirmationStatus;
+};
+/**
+ * Generated factory for {@link UnilateralExitTransaction} record objects.
+ */
+export declare const UnilateralExitTransaction: Readonly<{
+    /**
+     * Create a frozen instance of {@link UnilateralExitTransaction}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<UnilateralExitTransaction> & Required<Omit<UnilateralExitTransaction, never>>) => UnilateralExitTransaction;
+    /**
+     * Create a frozen instance of {@link UnilateralExitTransaction}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<UnilateralExitTransaction> & Required<Omit<UnilateralExitTransaction, never>>) => UnilateralExitTransaction;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<UnilateralExitTransaction>;
+}>;
+/**
  * Request to unregister an existing webhook.
  */
 export type UnregisterWebhookRequest = {
@@ -6771,6 +7093,14 @@ export type UpdateUserSettingsRequest = {
      * Update the active stable balance token. `None` means no change.
      */
     stableBalanceActiveLabel: StableBalanceActiveLabel | undefined;
+    /**
+     * Designate or remove the wallet's master identity, a second public key
+     * the Spark operators accept as a reader of this wallet's balance and
+     * history while `spark_private_mode_enabled` is set. The master identity
+     * can only read: payments still require the owner's keys. `None` means no
+     * change.
+     */
+    sparkMasterIdentityPublicKey: SparkMasterIdentityPublicKey | undefined;
 };
 /**
  * Generated factory for {@link UpdateUserSettingsRequest} record objects.
@@ -6780,12 +7110,12 @@ export declare const UpdateUserSettingsRequest: Readonly<{
      * Create a frozen instance of {@link UpdateUserSettingsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<UpdateUserSettingsRequest> & Required<Omit<UpdateUserSettingsRequest, "stableBalanceActiveLabel">>) => UpdateUserSettingsRequest;
+    create: (partial: Partial<UpdateUserSettingsRequest> & Required<Omit<UpdateUserSettingsRequest, "stableBalanceActiveLabel" | "sparkMasterIdentityPublicKey">>) => UpdateUserSettingsRequest;
     /**
      * Create a frozen instance of {@link UpdateUserSettingsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<UpdateUserSettingsRequest> & Required<Omit<UpdateUserSettingsRequest, "stableBalanceActiveLabel">>) => UpdateUserSettingsRequest;
+    new: (partial: Partial<UpdateUserSettingsRequest> & Required<Omit<UpdateUserSettingsRequest, "stableBalanceActiveLabel" | "sparkMasterIdentityPublicKey">>) => UpdateUserSettingsRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -6832,6 +7162,11 @@ export type UserSettings = {
      * The label of the currently active stable balance token, or `None` if deactivated.
      */
     stableBalanceActiveLabel: string | undefined;
+    /**
+     * The hex encoded public key designated as this wallet's master identity
+     * key, or `None` if none is designated.
+     */
+    sparkMasterIdentityPublicKey: string | undefined;
 };
 /**
  * Generated factory for {@link UserSettings} record objects.
@@ -7932,6 +8267,24 @@ export declare const ChainServiceError: Readonly<{
     };
 }>;
 export type ChainServiceError = InstanceType<(typeof ChainServiceError)[keyof Omit<typeof ChainServiceError, 'instanceOf'>]>;
+/**
+ * Whether a transaction in the exit path is already on-chain.
+ */
+export declare enum ConfirmationStatus {
+    /**
+     * This transaction is confirmed in a block. It needs no action.
+     */
+    Confirmed = 0,
+    /**
+     * This transaction is not yet confirmed. Mempool state is not consulted.
+     */
+    Unconfirmed = 1,
+    /**
+     * The on-chain status could not be determined (the chain service errored).
+     * Broadcasting may fail if a conflicting transaction already landed.
+     */
+    Unverified = 2
+}
 export declare enum ConversionChain_Tags {
     Spark = "Spark",
     Lightning = "Lightning",
@@ -8820,6 +9173,299 @@ export declare const ConversionType: Readonly<{
     };
 }>;
 export type ConversionType = InstanceType<(typeof ConversionType)[keyof Omit<typeof ConversionType, 'instanceOf'>]>;
+export declare enum CpfpFundingKind_Tags {
+    P2wpkh = "P2wpkh",
+    P2tr = "P2tr",
+    Custom = "Custom"
+}
+/**
+ * The kind of UTXO that will fund an exit's fees.
+ */
+export declare const CpfpFundingKind: Readonly<{
+    instanceOf: (obj: any) => obj is CpfpFundingKind;
+    P2wpkh: {
+        new (): {
+            readonly tag: CpfpFundingKind_Tags.P2wpkh;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpFundingKind";
+        };
+        "new"(): {
+            readonly tag: CpfpFundingKind_Tags.P2wpkh;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpFundingKind";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: CpfpFundingKind_Tags.P2wpkh;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpFundingKind";
+        };
+    };
+    P2tr: {
+        new (): {
+            readonly tag: CpfpFundingKind_Tags.P2tr;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpFundingKind";
+        };
+        "new"(): {
+            readonly tag: CpfpFundingKind_Tags.P2tr;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpFundingKind";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: CpfpFundingKind_Tags.P2tr;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpFundingKind";
+        };
+    };
+    Custom: {
+        new (inner: {
+            scriptPubkeyHex: string;
+            signedInputWeight: bigint;
+        }): {
+            readonly tag: CpfpFundingKind_Tags.Custom;
+            readonly inner: Readonly<{
+                scriptPubkeyHex: string;
+                signedInputWeight: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpFundingKind";
+        };
+        "new"(inner: {
+            scriptPubkeyHex: string;
+            signedInputWeight: bigint;
+        }): {
+            readonly tag: CpfpFundingKind_Tags.Custom;
+            readonly inner: Readonly<{
+                scriptPubkeyHex: string;
+                signedInputWeight: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpFundingKind";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: CpfpFundingKind_Tags.Custom;
+            readonly inner: Readonly<{
+                scriptPubkeyHex: string;
+                signedInputWeight: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpFundingKind";
+        };
+    };
+}>;
+/**
+ * The kind of UTXO that will fund an exit's fees.
+ */
+export type CpfpFundingKind = InstanceType<(typeof CpfpFundingKind)[keyof Omit<typeof CpfpFundingKind, 'instanceOf'>]>;
+export declare enum CpfpInput_Tags {
+    P2wpkh = "P2wpkh",
+    P2tr = "P2tr",
+    Custom = "Custom"
+}
+/**
+ * A funding UTXO that pays the on-chain fees of a unilateral exit.
+ */
+export declare const CpfpInput: Readonly<{
+    instanceOf: (obj: any) => obj is CpfpInput;
+    P2wpkh: {
+        new (inner: {
+            txid: string;
+            vout: number;
+            value: bigint;
+            pubkey: string;
+        }): {
+            readonly tag: CpfpInput_Tags.P2wpkh;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+                value: bigint;
+                pubkey: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpInput";
+        };
+        "new"(inner: {
+            txid: string;
+            vout: number;
+            value: bigint;
+            pubkey: string;
+        }): {
+            readonly tag: CpfpInput_Tags.P2wpkh;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+                value: bigint;
+                pubkey: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpInput";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: CpfpInput_Tags.P2wpkh;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+                value: bigint;
+                pubkey: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpInput";
+        };
+    };
+    P2tr: {
+        new (inner: {
+            txid: string;
+            vout: number;
+            value: bigint;
+            pubkey: string;
+        }): {
+            readonly tag: CpfpInput_Tags.P2tr;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+                value: bigint;
+                pubkey: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpInput";
+        };
+        "new"(inner: {
+            txid: string;
+            vout: number;
+            value: bigint;
+            pubkey: string;
+        }): {
+            readonly tag: CpfpInput_Tags.P2tr;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+                value: bigint;
+                pubkey: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpInput";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: CpfpInput_Tags.P2tr;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+                value: bigint;
+                pubkey: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpInput";
+        };
+    };
+    Custom: {
+        new (inner: {
+            txid: string;
+            vout: number;
+            value: bigint;
+            scriptPubkeyHex: string;
+            signedInputWeight: bigint;
+        }): {
+            readonly tag: CpfpInput_Tags.Custom;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+                value: bigint;
+                scriptPubkeyHex: string;
+                signedInputWeight: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpInput";
+        };
+        "new"(inner: {
+            txid: string;
+            vout: number;
+            value: bigint;
+            scriptPubkeyHex: string;
+            signedInputWeight: bigint;
+        }): {
+            readonly tag: CpfpInput_Tags.Custom;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+                value: bigint;
+                scriptPubkeyHex: string;
+                signedInputWeight: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpInput";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: CpfpInput_Tags.Custom;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+                value: bigint;
+                scriptPubkeyHex: string;
+                signedInputWeight: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "CpfpInput";
+        };
+    };
+}>;
+/**
+ * A funding UTXO that pays the on-chain fees of a unilateral exit.
+ */
+export type CpfpInput = InstanceType<(typeof CpfpInput)[keyof Omit<typeof CpfpInput, 'instanceOf'>]>;
 export declare enum CrossChainAddressFamily {
     Evm = 0,
     Solana = 1,
@@ -9412,6 +10058,85 @@ export declare enum ErrorKind {
      */
     Internal = 8
 }
+export declare enum ExitLeafSelection_Tags {
+    Auto = "Auto",
+    Specific = "Specific"
+}
+/**
+ * Which leaves to exit.
+ */
+export declare const ExitLeafSelection: Readonly<{
+    instanceOf: (obj: any) => obj is ExitLeafSelection;
+    Auto: {
+        new (): {
+            readonly tag: ExitLeafSelection_Tags.Auto;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitLeafSelection";
+        };
+        "new"(): {
+            readonly tag: ExitLeafSelection_Tags.Auto;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitLeafSelection";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExitLeafSelection_Tags.Auto;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitLeafSelection";
+        };
+    };
+    Specific: {
+        new (inner: {
+            leafIds: Array<string>;
+        }): {
+            readonly tag: ExitLeafSelection_Tags.Specific;
+            readonly inner: Readonly<{
+                leafIds: Array<string>;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitLeafSelection";
+        };
+        "new"(inner: {
+            leafIds: Array<string>;
+        }): {
+            readonly tag: ExitLeafSelection_Tags.Specific;
+            readonly inner: Readonly<{
+                leafIds: Array<string>;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitLeafSelection";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExitLeafSelection_Tags.Specific;
+            readonly inner: Readonly<{
+                leafIds: Array<string>;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitLeafSelection";
+        };
+    };
+}>;
+/**
+ * Which leaves to exit.
+ */
+export type ExitLeafSelection = InstanceType<(typeof ExitLeafSelection)[keyof Omit<typeof ExitLeafSelection, 'instanceOf'>]>;
 export declare enum ExternalFrostDerivation_Tags {
     SigningLeaf = "SigningLeaf",
     StaticDeposit = "StaticDeposit",
@@ -10488,6 +11213,95 @@ export declare const OptimizationOutcome: Readonly<{
  * ```
  */
 export type OptimizationOutcome = InstanceType<(typeof OptimizationOutcome)[keyof Omit<typeof OptimizationOutcome, 'instanceOf'>]>;
+export declare enum Outspend_Tags {
+    Unspent = "Unspent",
+    Spent = "Spent"
+}
+/**
+ * The spend status of a transaction output.
+ */
+export declare const Outspend: Readonly<{
+    instanceOf: (obj: any) => obj is Outspend;
+    Unspent: {
+        new (): {
+            readonly tag: Outspend_Tags.Unspent;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "Outspend";
+        };
+        "new"(): {
+            readonly tag: Outspend_Tags.Unspent;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "Outspend";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: Outspend_Tags.Unspent;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "Outspend";
+        };
+    };
+    Spent: {
+        new (inner: {
+            txid: string;
+            vin: number;
+            status: TxStatus;
+        }): {
+            readonly tag: Outspend_Tags.Spent;
+            readonly inner: Readonly<{
+                txid: string;
+                vin: number;
+                status: TxStatus;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "Outspend";
+        };
+        "new"(inner: {
+            txid: string;
+            vin: number;
+            status: TxStatus;
+        }): {
+            readonly tag: Outspend_Tags.Spent;
+            readonly inner: Readonly<{
+                txid: string;
+                vin: number;
+                status: TxStatus;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "Outspend";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: Outspend_Tags.Spent;
+            readonly inner: Readonly<{
+                txid: string;
+                vin: number;
+                status: TxStatus;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "Outspend";
+        };
+    };
+}>;
+/**
+ * The spend status of a transaction output.
+ */
+export type Outspend = InstanceType<(typeof Outspend)[keyof Omit<typeof Outspend, 'instanceOf'>]>;
 export declare enum PasskeyAvailability_Tags {
     Available = "Available",
     PrfUnsupported = "PrfUnsupported",
@@ -13323,6 +14137,8 @@ export declare enum SdkError_Tags {
     Signer = "Signer",
     OptimizationAlreadyRunning = "OptimizationAlreadyRunning",
     OptimizationCancelled = "OptimizationCancelled",
+    InsufficientCpfpFunds = "InsufficientCpfpFunds",
+    FundingUtxoConflict = "FundingUtxoConflict",
     Generic = "Generic"
 }
 /**
@@ -14269,6 +15085,188 @@ export declare const SdkError: Readonly<{
             stack?: string;
             cause?: unknown;
         };
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    InsufficientCpfpFunds: {
+        new (inner: {
+            requiredSat: bigint;
+        }): {
+            readonly tag: SdkError_Tags.InsufficientCpfpFunds;
+            readonly inner: Readonly<{
+                requiredSat: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(inner: {
+            requiredSat: bigint;
+        }): {
+            readonly tag: SdkError_Tags.InsufficientCpfpFunds;
+            readonly inner: Readonly<{
+                requiredSat: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkError_Tags.InsufficientCpfpFunds;
+            readonly inner: Readonly<{
+                requiredSat: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SdkError_Tags.InsufficientCpfpFunds;
+            readonly inner: Readonly<{
+                requiredSat: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SdkError_Tags.InsufficientCpfpFunds;
+            readonly inner: Readonly<{
+                requiredSat: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<{
+            requiredSat: bigint;
+        }>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    FundingUtxoConflict: {
+        new (inner: {
+            txid: string;
+            vout: number;
+        }): {
+            readonly tag: SdkError_Tags.FundingUtxoConflict;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(inner: {
+            txid: string;
+            vout: number;
+        }): {
+            readonly tag: SdkError_Tags.FundingUtxoConflict;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkError_Tags.FundingUtxoConflict;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SdkError_Tags.FundingUtxoConflict;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SdkError_Tags.FundingUtxoConflict;
+            readonly inner: Readonly<{
+                txid: string;
+                vout: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<{
+            txid: string;
+            vout: number;
+        }>;
         isError(error: unknown): error is Error;
         captureStackTrace(targetObject: object, constructorOpt?: Function): void;
         prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
@@ -16930,6 +17928,85 @@ export declare enum SparkHtlcStatus {
      */
     Returned = 2
 }
+export declare enum SparkMasterIdentityPublicKey_Tags {
+    Set = "Set",
+    Unset = "Unset"
+}
+/**
+ * Specifies how to update the wallet's Spark master identity public key.
+ */
+export declare const SparkMasterIdentityPublicKey: Readonly<{
+    instanceOf: (obj: any) => obj is SparkMasterIdentityPublicKey;
+    Set: {
+        new (inner: {
+            publicKey: string;
+        }): {
+            readonly tag: SparkMasterIdentityPublicKey_Tags.Set;
+            readonly inner: Readonly<{
+                publicKey: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SparkMasterIdentityPublicKey";
+        };
+        "new"(inner: {
+            publicKey: string;
+        }): {
+            readonly tag: SparkMasterIdentityPublicKey_Tags.Set;
+            readonly inner: Readonly<{
+                publicKey: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SparkMasterIdentityPublicKey";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SparkMasterIdentityPublicKey_Tags.Set;
+            readonly inner: Readonly<{
+                publicKey: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SparkMasterIdentityPublicKey";
+        };
+    };
+    Unset: {
+        new (): {
+            readonly tag: SparkMasterIdentityPublicKey_Tags.Unset;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SparkMasterIdentityPublicKey";
+        };
+        "new"(): {
+            readonly tag: SparkMasterIdentityPublicKey_Tags.Unset;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SparkMasterIdentityPublicKey";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SparkMasterIdentityPublicKey_Tags.Unset;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SparkMasterIdentityPublicKey";
+        };
+    };
+}>;
+/**
+ * Specifies how to update the wallet's Spark master identity public key.
+ */
+export type SparkMasterIdentityPublicKey = InstanceType<(typeof SparkMasterIdentityPublicKey)[keyof Omit<typeof SparkMasterIdentityPublicKey, 'instanceOf'>]>;
 export declare enum StableBalanceActiveLabel_Tags {
     Set = "Set",
     Unset = "Unset"
@@ -18037,6 +19114,28 @@ export declare const TransferTarget: Readonly<{
     };
 }>;
 export type TransferTarget = InstanceType<(typeof TransferTarget)[keyof Omit<typeof TransferTarget, 'instanceOf'>]>;
+/**
+ * The role of a transaction in the exit path.
+ */
+export declare enum UnilateralExitTxKind {
+    /**
+     * Splits the caller's funding into one output per branch. Present only
+     * when the funding couldn't be matched one-to-one to branches.
+     */
+    FanOut = 0,
+    /**
+     * A tree node transaction (root, intermediate, or leaf node).
+     */
+    Node = 1,
+    /**
+     * A leaf's refund transaction.
+     */
+    Refund = 2,
+    /**
+     * The final transaction sweeping all refund outputs to the destination.
+     */
+    Sweep = 3
+}
 export declare enum UnsignedTransferPackage_Tags {
     Swap = "Swap",
     Transfer = "Transfer",
@@ -18471,12 +19570,24 @@ export interface BitcoinChainService {
     getAddressUtxos(address: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Array<Utxo>>;
+    /**
+     * Every output ever paid to `address`, spent or not, unlike
+     * [`get_address_utxos`](Self::get_address_utxos) which omits spent ones.
+     * Recovers an output's outpoint and value after it has been spent, so a
+     * swept refund can still be distinguished from one never broadcast.
+     */
+    getAddressTxos(address: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<Utxo>>;
     getTransactionStatus(txid: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<TxStatus>;
     getTransactionHex(txid: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<string>;
+    getOutspend(txid: string, vout: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Outspend>;
     broadcastTransaction(tx: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
@@ -18492,12 +19603,24 @@ export declare class BitcoinChainServiceImpl extends UniffiAbstractObject implem
     getAddressUtxos(address: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<Array<Utxo>>;
+    /**
+     * Every output ever paid to `address`, spent or not, unlike
+     * [`get_address_utxos`](Self::get_address_utxos) which omits spent ones.
+     * Recovers an output's outpoint and value after it has been spent, so a
+     * swept refund can still be distinguished from one never broadcast.
+     */
+    getAddressTxos(address: string, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<Utxo>>;
     getTransactionStatus(txid: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<TxStatus>;
     getTransactionHex(txid: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<string>;
+    getOutspend(txid: string, vout: number, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Outspend>;
     broadcastTransaction(tx: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
@@ -18816,6 +19939,14 @@ export interface BreezSdkInterface {
     prepareSendPayment(request: PrepareSendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareSendPaymentResponse>;
+    /**
+     * Quotes a unilateral exit without any funding UTXOs: selects which leaves
+     * would exit, computes the exact fee for the given funding kind, and reports
+     * how much to fund.
+     */
+    prepareUnilateralExit(request: PrepareUnilateralExitRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PrepareUnilateralExitResponse>;
     publishSignedLnurlPayPackage(request: PublishSignedLnurlPayPackageRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PublishSignedLnurlPayResponse>;
@@ -18835,19 +19966,20 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<RefundDepositResponse>;
     /**
-     * Runs one pass of the pending-conversion refunder.
+     * Runs one full pass of the pending-conversion refunder and returns how
+     * many conversions were refunded, skipped (held back by a safety window),
+     * or failed.
      *
-     * Iterates over payments whose conversions failed and have a refund
-     * pending, then attempts to refund each one. This is the same logic the
-     * SDK runs internally on a periodic schedule when
-     * `background_tasks_enabled` is `true`. When background tasks are
-     * disabled the periodic refunder does not run, and this method is the
-     * explicit entry point for driving the pass; when background tasks are
-     * enabled, it can be called to force an immediate refund pass.
+     * The pass has two parts: refunding locally-marked failed conversions, and
+     * reconciling against Flashnet's clawback-eligible listing to catch
+     * conversions with no local marker (e.g. a storage write that never
+     * landed). The SDK's periodic background schedule runs only the local
+     * part; the reconcile runs at SDK init and on each call to this method, so
+     * this is the explicit entry point for driving a full pass on demand.
      */
     refundPendingConversions(asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<void>;
+    }): Promise<RefundPendingConversionsResponse>;
     registerLightningAddress(request: RegisterLightningAddressRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LightningAddressInfo>;
@@ -18900,6 +20032,21 @@ export interface BreezSdkInterface {
     syncWallet(request: SyncWalletRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SyncWalletResponse>;
+    /**
+     * Builds and signs a complete unilateral exit from a `prepare_unilateral_exit`
+     * quote and the actual funding UTXOs, returning the full transaction set in
+     * topological broadcast order without broadcasting. Broadcast it over time,
+     * respecting each transaction's `depends_on` and `csv_timelock_blocks`.
+     *
+     * It resolves on-chain state first (see [`resolve_exit_observations`]): an
+     * already-confirmed fan-out or CPFP node is not rebuilt, and a leaf refund
+     * already on-chain (recognized by the leaf's refund address, so any refund
+     * variant counts) is swept directly. Re-running after partial progress
+     * therefore resumes rather than restarts.
+     */
+    unilateralExit(request: UnilateralExitRequest, signer: CpfpSigner, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<UnilateralExitResponse>;
     /**
      * Unregisters a previously registered webhook.
      *
@@ -19246,6 +20393,14 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     prepareSendPayment(request: PrepareSendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareSendPaymentResponse>;
+    /**
+     * Quotes a unilateral exit without any funding UTXOs: selects which leaves
+     * would exit, computes the exact fee for the given funding kind, and reports
+     * how much to fund.
+     */
+    prepareUnilateralExit(request: PrepareUnilateralExitRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PrepareUnilateralExitResponse>;
     publishSignedLnurlPayPackage(request: PublishSignedLnurlPayPackageRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PublishSignedLnurlPayResponse>;
@@ -19265,19 +20420,20 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<RefundDepositResponse>;
     /**
-     * Runs one pass of the pending-conversion refunder.
+     * Runs one full pass of the pending-conversion refunder and returns how
+     * many conversions were refunded, skipped (held back by a safety window),
+     * or failed.
      *
-     * Iterates over payments whose conversions failed and have a refund
-     * pending, then attempts to refund each one. This is the same logic the
-     * SDK runs internally on a periodic schedule when
-     * `background_tasks_enabled` is `true`. When background tasks are
-     * disabled the periodic refunder does not run, and this method is the
-     * explicit entry point for driving the pass; when background tasks are
-     * enabled, it can be called to force an immediate refund pass.
+     * The pass has two parts: refunding locally-marked failed conversions, and
+     * reconciling against Flashnet's clawback-eligible listing to catch
+     * conversions with no local marker (e.g. a storage write that never
+     * landed). The SDK's periodic background schedule runs only the local
+     * part; the reconcile runs at SDK init and on each call to this method, so
+     * this is the explicit entry point for driving a full pass on demand.
      */
     refundPendingConversions(asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<void>;
+    }): Promise<RefundPendingConversionsResponse>;
     registerLightningAddress(request: RegisterLightningAddressRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<LightningAddressInfo>;
@@ -19331,6 +20487,21 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<SyncWalletResponse>;
     /**
+     * Builds and signs a complete unilateral exit from a `prepare_unilateral_exit`
+     * quote and the actual funding UTXOs, returning the full transaction set in
+     * topological broadcast order without broadcasting. Broadcast it over time,
+     * respecting each transaction's `depends_on` and `csv_timelock_blocks`.
+     *
+     * It resolves on-chain state first (see [`resolve_exit_observations`]): an
+     * already-confirmed fan-out or CPFP node is not rebuilt, and a leaf refund
+     * already on-chain (recognized by the leaf's refund address, so any refund
+     * variant counts) is swept directly. Re-running after partial progress
+     * therefore resumes rather than restarts.
+     */
+    unilateralExit(request: UnilateralExitRequest, signer: CpfpSigner, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<UnilateralExitResponse>;
+    /**
      * Unregisters a previously registered webhook.
      *
      * After unregistering, the Spark service provider will no longer send
@@ -19370,6 +20541,37 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
      */
     uniffiDestroy(): void;
     static instanceOf(obj: any): obj is BreezSdk;
+}
+/**
+ * Signer for external UTXO inputs in CPFP fee-bumping transactions.
+ *
+ * Signs the non-finalized inputs of a PSBT (serialized as bytes) and returns the
+ * signed PSBT (also serialized as bytes).
+ */
+export interface CpfpSigner {
+    signPsbt(psbtBytes: ArrayBuffer, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ArrayBuffer>;
+}
+/**
+ * Signer for external UTXO inputs in CPFP fee-bumping transactions.
+ *
+ * Signs the non-finalized inputs of a PSBT (serialized as bytes) and returns the
+ * signed PSBT (also serialized as bytes).
+ */
+export declare class CpfpSignerImpl extends UniffiAbstractObject implements CpfpSigner {
+    readonly [uniffiTypeNameSymbol] = "CpfpSignerImpl";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    signPsbt(psbtBytes: ArrayBuffer, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<ArrayBuffer>;
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is CpfpSignerImpl;
 }
 /**
  * External signer trait that can be implemented by users and passed to the SDK.
@@ -19797,6 +20999,13 @@ export interface ExternalSparkSigner {
         signal: AbortSignal;
     }): Promise<EcdsaSignatureBytes>;
     /**
+     * Schnorr-sign `sighash` to spend a tree leaf's P2TR refund output as a
+     * BIP341 key-path spend (empty script tree).
+     */
+    signLeafRefundSpend(leafId: ExternalTreeNodeId, sighash: ArrayBuffer, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SchnorrSignatureBytes>;
+    /**
      * Produce FROST shares for a batch of jobs.
      */
     signFrost(jobs: Array<ExternalFrostJob>, asyncOpts_?: {
@@ -19902,6 +21111,13 @@ export declare class ExternalSparkSignerImpl extends UniffiAbstractObject implem
     signMessage(message: ArrayBuffer, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<EcdsaSignatureBytes>;
+    /**
+     * Schnorr-sign `sighash` to spend a tree leaf's P2TR refund output as a
+     * BIP341 key-path spend (empty script tree).
+     */
+    signLeafRefundSpend(leafId: ExternalTreeNodeId, sighash: ArrayBuffer, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SchnorrSignatureBytes>;
     /**
      * Produce FROST shares for a batch of jobs.
      */
@@ -21929,6 +23145,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): Config;
             lower(value: Config): UniffiByteArray;
         };
+        FfiConverterTypeConfirmationStatus: {
+            read(from: RustBuffer): ConfirmationStatus;
+            write(value: ConfirmationStatus, into: RustBuffer): void;
+            allocationSize(value: ConfirmationStatus): number;
+            lift(value: UniffiByteArray): ConfirmationStatus;
+            lower(value: ConfirmationStatus): UniffiByteArray;
+        };
         FfiConverterTypeConnectRequest: {
             read(from: RustBuffer): ConnectRequest;
             write(value: ConnectRequest, into: RustBuffer): void;
@@ -22062,6 +23285,21 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ConversionType;
             lower(value: ConversionType): UniffiByteArray;
         };
+        FfiConverterTypeCpfpFundingKind: {
+            read(from: RustBuffer): CpfpFundingKind;
+            write(value: CpfpFundingKind, into: RustBuffer): void;
+            allocationSize(value: CpfpFundingKind): number;
+            lift(value: UniffiByteArray): CpfpFundingKind;
+            lower(value: CpfpFundingKind): UniffiByteArray;
+        };
+        FfiConverterTypeCpfpInput: {
+            read(from: RustBuffer): CpfpInput;
+            write(value: CpfpInput, into: RustBuffer): void;
+            allocationSize(value: CpfpInput): number;
+            lift(value: UniffiByteArray): CpfpInput;
+            lower(value: CpfpInput): UniffiByteArray;
+        };
+        FfiConverterTypeCpfpSigner: FfiConverterObjectWithCallbacks<CpfpSigner>;
         FfiConverterTypeCreateIssuerTokenRequest: {
             read(from: RustBuffer): CreateIssuerTokenRequest;
             write(value: CreateIssuerTokenRequest, into: RustBuffer): void;
@@ -22187,6 +23425,13 @@ declare const _default: Readonly<{
             allocationSize(value: ErrorKind): number;
             lift(value: UniffiByteArray): ErrorKind;
             lower(value: ErrorKind): UniffiByteArray;
+        };
+        FfiConverterTypeExitLeafSelection: {
+            read(from: RustBuffer): ExitLeafSelection;
+            write(value: ExitLeafSelection, into: RustBuffer): void;
+            allocationSize(value: ExitLeafSelection): number;
+            lift(value: UniffiByteArray): ExitLeafSelection;
+            lower(value: ExitLeafSelection): UniffiByteArray;
         };
         FfiConverterTypeExternalBreezSigner: FfiConverterObjectWithCallbacks<ExternalBreezSigner>;
         FfiConverterTypeExternalClaimLeafInput: {
@@ -22836,6 +24081,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): OutgoingChange;
             lower(value: OutgoingChange): UniffiByteArray;
         };
+        FfiConverterTypeOutspend: {
+            read(from: RustBuffer): Outspend;
+            write(value: Outspend, into: RustBuffer): void;
+            allocationSize(value: Outspend): number;
+            lift(value: UniffiByteArray): Outspend;
+            lower(value: Outspend): UniffiByteArray;
+        };
         FfiConverterTypePasskeyAvailability: {
             read(from: RustBuffer): PasskeyAvailability;
             write(value: PasskeyAvailability, into: RustBuffer): void;
@@ -22951,6 +24203,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): PaymentType;
             lower(value: PaymentType): UniffiByteArray;
         };
+        FfiConverterTypePerBranchFunding: {
+            read(from: RustBuffer): PerBranchFunding;
+            write(value: PerBranchFunding, into: RustBuffer): void;
+            allocationSize(value: PerBranchFunding): number;
+            lift(value: UniffiByteArray): PerBranchFunding;
+            lower(value: PerBranchFunding): UniffiByteArray;
+        };
         FfiConverterTypePrepareLnurlPayRequest: {
             read(from: RustBuffer): PrepareLnurlPayRequest;
             write(value: PrepareLnurlPayRequest, into: RustBuffer): void;
@@ -22978,6 +24237,20 @@ declare const _default: Readonly<{
             allocationSize(value: PrepareSendPaymentResponse): number;
             lift(value: UniffiByteArray): PrepareSendPaymentResponse;
             lower(value: PrepareSendPaymentResponse): UniffiByteArray;
+        };
+        FfiConverterTypePrepareUnilateralExitRequest: {
+            read(from: RustBuffer): PrepareUnilateralExitRequest;
+            write(value: PrepareUnilateralExitRequest, into: RustBuffer): void;
+            allocationSize(value: PrepareUnilateralExitRequest): number;
+            lift(value: UniffiByteArray): PrepareUnilateralExitRequest;
+            lower(value: PrepareUnilateralExitRequest): UniffiByteArray;
+        };
+        FfiConverterTypePrepareUnilateralExitResponse: {
+            read(from: RustBuffer): PrepareUnilateralExitResponse;
+            write(value: PrepareUnilateralExitResponse, into: RustBuffer): void;
+            allocationSize(value: PrepareUnilateralExitResponse): number;
+            lift(value: UniffiByteArray): PrepareUnilateralExitResponse;
+            lower(value: PrepareUnilateralExitResponse): UniffiByteArray;
         };
         FfiConverterTypePrfProvider: FfiConverterObjectWithCallbacks<PrfProvider>;
         FfiConverterTypePrfProviderError: {
@@ -23113,6 +24386,13 @@ declare const _default: Readonly<{
             allocationSize(value: RefundDepositResponse): number;
             lift(value: UniffiByteArray): RefundDepositResponse;
             lower(value: RefundDepositResponse): UniffiByteArray;
+        };
+        FfiConverterTypeRefundPendingConversionsResponse: {
+            read(from: RustBuffer): RefundPendingConversionsResponse;
+            write(value: RefundPendingConversionsResponse, into: RustBuffer): void;
+            allocationSize(value: RefundPendingConversionsResponse): number;
+            lift(value: UniffiByteArray): RefundPendingConversionsResponse;
+            lower(value: RefundPendingConversionsResponse): UniffiByteArray;
         };
         FfiConverterTypeRegisterLightningAddressRequest: {
             read(from: RustBuffer): RegisterLightningAddressRequest;
@@ -23399,6 +24679,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SparkInvoicePaymentDetails;
             lower(value: SparkInvoicePaymentDetails): UniffiByteArray;
         };
+        FfiConverterTypeSparkMasterIdentityPublicKey: {
+            read(from: RustBuffer): SparkMasterIdentityPublicKey;
+            write(value: SparkMasterIdentityPublicKey, into: RustBuffer): void;
+            allocationSize(value: SparkMasterIdentityPublicKey): number;
+            lift(value: UniffiByteArray): SparkMasterIdentityPublicKey;
+            lower(value: SparkMasterIdentityPublicKey): UniffiByteArray;
+        };
         FfiConverterTypeSparkSigningOperator: {
             read(from: RustBuffer): SparkSigningOperator;
             write(value: SparkSigningOperator, into: RustBuffer): void;
@@ -23590,6 +24877,41 @@ declare const _default: Readonly<{
             allocationSize(value: UnfreezeIssuerTokenResponse): number;
             lift(value: UniffiByteArray): UnfreezeIssuerTokenResponse;
             lower(value: UnfreezeIssuerTokenResponse): UniffiByteArray;
+        };
+        FfiConverterTypeUnilateralExitLeaf: {
+            read(from: RustBuffer): UnilateralExitLeaf;
+            write(value: UnilateralExitLeaf, into: RustBuffer): void;
+            allocationSize(value: UnilateralExitLeaf): number;
+            lift(value: UniffiByteArray): UnilateralExitLeaf;
+            lower(value: UnilateralExitLeaf): UniffiByteArray;
+        };
+        FfiConverterTypeUnilateralExitRequest: {
+            read(from: RustBuffer): UnilateralExitRequest;
+            write(value: UnilateralExitRequest, into: RustBuffer): void;
+            allocationSize(value: UnilateralExitRequest): number;
+            lift(value: UniffiByteArray): UnilateralExitRequest;
+            lower(value: UnilateralExitRequest): UniffiByteArray;
+        };
+        FfiConverterTypeUnilateralExitResponse: {
+            read(from: RustBuffer): UnilateralExitResponse;
+            write(value: UnilateralExitResponse, into: RustBuffer): void;
+            allocationSize(value: UnilateralExitResponse): number;
+            lift(value: UniffiByteArray): UnilateralExitResponse;
+            lower(value: UnilateralExitResponse): UniffiByteArray;
+        };
+        FfiConverterTypeUnilateralExitTransaction: {
+            read(from: RustBuffer): UnilateralExitTransaction;
+            write(value: UnilateralExitTransaction, into: RustBuffer): void;
+            allocationSize(value: UnilateralExitTransaction): number;
+            lift(value: UniffiByteArray): UnilateralExitTransaction;
+            lower(value: UnilateralExitTransaction): UniffiByteArray;
+        };
+        FfiConverterTypeUnilateralExitTxKind: {
+            read(from: RustBuffer): UnilateralExitTxKind;
+            write(value: UnilateralExitTxKind, into: RustBuffer): void;
+            allocationSize(value: UnilateralExitTxKind): number;
+            lift(value: UniffiByteArray): UnilateralExitTxKind;
+            lower(value: UnilateralExitTxKind): UniffiByteArray;
         };
         FfiConverterTypeUnregisterWebhookRequest: {
             read(from: RustBuffer): UnregisterWebhookRequest;
