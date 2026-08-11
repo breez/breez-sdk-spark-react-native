@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_plugins_1 = require("@expo/config-plugins");
+// `@expo/config-plugins` is nested under `expo/` from SDK 56 onward and is not
+// resolvable from this package. `expo/config-plugins` re-exports it.
+const config_plugins_1 = require("expo/config-plugins");
 const withBinaryArtifacts_1 = require("./withBinaryArtifacts");
 const withAndroid_1 = require("./withAndroid");
 const withIOS_1 = require("./withIOS");

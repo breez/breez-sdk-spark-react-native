@@ -82,6 +82,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_batch_package(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_lnurl_pay_package(
     ptr: bigint,
     request: Uint8Array
@@ -199,6 +203,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_batch(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_payment(
     ptr: bigint,
     request: Uint8Array
@@ -240,6 +248,10 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(
     ptr: bigint,
     id: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_batch(
+    ptr: bigint,
+    request: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment(
     ptr: bigint,
@@ -541,7 +553,8 @@ interface NativeModuleInterface {
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_create_passkey(
     ptr: bigint,
-    excludeCredentials: Uint8Array
+    excludeCredentials: Uint8Array,
+    salts: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_check_domain_association(
     ptr: bigint
@@ -1103,6 +1116,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_add_contact(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_authorize_lightning_address_transfer(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_batch_package(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_lnurl_pay_package(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_transfer_package(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin(): number;
@@ -1134,6 +1148,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_optimize_leaves(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_parse(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_lnurl_pay(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_batch(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_unilateral_exit(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_publish_signed_lnurl_pay_package(): number;
@@ -1145,6 +1160,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_register_lightning_address(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_register_webhook(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_batch(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet(): number;
@@ -1727,6 +1743,7 @@ type UniffiCallbackInterfacePrfProviderMethod1 = (
 type UniffiCallbackInterfacePrfProviderMethod2 = (
   uniffiHandle: bigint,
   excludeCredentials: Uint8Array,
+  salts: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;

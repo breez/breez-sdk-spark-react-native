@@ -1096,6 +1096,149 @@ const FfiConverterTypeAuthorizeTransferRequest = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * A single payee in a batch send.
+ */
+export type BatchRecipient = {
+  /**
+   * Spark address or Spark invoice identifying the payee.
+   */
+  paymentRequest: string;
+  /**
+   * Amount to send, in the base units of the asset being sent. Required
+   * unless `payment_request` is an invoice that carries its own amount.
+   */
+  amount: U128 | undefined;
+  /**
+   * Token to send. Unset means sats, which a batch cannot send yet, so a
+   * plain address needs this set. An invoice that names a token does not.
+   */
+  tokenIdentifier: string | undefined;
+};
+
+/**
+ * Generated factory for {@link BatchRecipient} record objects.
+ */
+export const BatchRecipient = (() => {
+  const defaults = () => ({ amount: undefined, tokenIdentifier: undefined });
+  const create = (() => {
+    return uniffiCreateRecord<BatchRecipient, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link BatchRecipient}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link BatchRecipient}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<BatchRecipient>,
+  });
+})();
+
+const FfiConverterTypeBatchRecipient = (() => {
+  type TypeName = BatchRecipient;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        paymentRequest: FfiConverterString.read(from),
+        amount: FfiConverterOptionalTypeu128.read(from),
+        tokenIdentifier: FfiConverterOptionalString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.paymentRequest, into);
+      FfiConverterOptionalTypeu128.write(value.amount, into);
+      FfiConverterOptionalString.write(value.tokenIdentifier, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.paymentRequest) +
+        FfiConverterOptionalTypeu128.allocationSize(value.amount) +
+        FfiConverterOptionalString.allocationSize(value.tokenIdentifier)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * What a batch debits for one asset.
+ */
+export type BatchTotal = {
+  /**
+   * The token debited. Unset means sats, which a batch cannot send yet.
+   */
+  tokenIdentifier: string | undefined;
+  /**
+   * Amount in the asset's base units.
+   */
+  amount: U128;
+};
+
+/**
+ * Generated factory for {@link BatchTotal} record objects.
+ */
+export const BatchTotal = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<BatchTotal, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link BatchTotal}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link BatchTotal}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<BatchTotal>,
+  });
+})();
+
+const FfiConverterTypeBatchTotal = (() => {
+  type TypeName = BatchTotal;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        tokenIdentifier: FfiConverterOptionalString.read(from),
+        amount: FfiConverterTypeu128.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalString.write(value.tokenIdentifier, into);
+      FfiConverterTypeu128.write(value.amount, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalString.allocationSize(value.tokenIdentifier) +
+        FfiConverterTypeu128.allocationSize(value.amount)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type Bip21Details = {
   amountSat: /*u64*/ bigint | undefined;
   assetId: string | undefined;
@@ -1957,6 +2100,65 @@ const FfiConverterTypeBolt12OfferDetails = (() => {
           value.paths
         ) +
         FfiConverterOptionalString.allocationSize(value.signingPubkey)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type BuildUnsignedBatchPackageRequest = {
+  prepareResponse: PrepareSendBatchResponse;
+};
+
+/**
+ * Generated factory for {@link BuildUnsignedBatchPackageRequest} record objects.
+ */
+export const BuildUnsignedBatchPackageRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      BuildUnsignedBatchPackageRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link BuildUnsignedBatchPackageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link BuildUnsignedBatchPackageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<BuildUnsignedBatchPackageRequest>,
+  });
+})();
+
+const FfiConverterTypeBuildUnsignedBatchPackageRequest = (() => {
+  type TypeName = BuildUnsignedBatchPackageRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        prepareResponse: FfiConverterTypePrepareSendBatchResponse.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypePrepareSendBatchResponse.write(
+        value.prepareResponse,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterTypePrepareSendBatchResponse.allocationSize(
+        value.prepareResponse
       );
     }
   }
@@ -3980,6 +4182,77 @@ const FfiConverterTypeCreateIssuerTokenRequest = (() => {
         FfiConverterUInt32.allocationSize(value.decimals) +
         FfiConverterBool.allocationSize(value.isFreezable) +
         FfiConverterTypeu128.allocationSize(value.maxSupply)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * A newly created credential, plus the PRF outputs when the platform
+ * evaluated them during the create ceremony itself.
+ *
+ * `seeds` present means no assertion is needed: the caller skips the
+ * second ceremony, and with it the window in which a credential exists
+ * but is not yet resolvable. Absent means the platform returned no PRF
+ * results at create (or dropped one of a pair), so the caller derives
+ * through [`super::PrfProvider::derive_seeds`] as before.
+ */
+export type CreatePasskeyOutput = {
+  credential: PasskeyCredential;
+  /**
+   * One output per requested salt, in request order.
+   */
+  seeds: Array<ArrayBuffer> | undefined;
+};
+
+/**
+ * Generated factory for {@link CreatePasskeyOutput} record objects.
+ */
+export const CreatePasskeyOutput = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<CreatePasskeyOutput, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link CreatePasskeyOutput}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link CreatePasskeyOutput}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<CreatePasskeyOutput>,
+  });
+})();
+
+const FfiConverterTypeCreatePasskeyOutput = (() => {
+  type TypeName = CreatePasskeyOutput;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        credential: FfiConverterTypePasskeyCredential.read(from),
+        seeds: FfiConverterOptionalArrayArrayBuffer.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypePasskeyCredential.write(value.credential, into);
+      FfiConverterOptionalArrayArrayBuffer.write(value.seeds, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypePasskeyCredential.allocationSize(value.credential) +
+        FfiConverterOptionalArrayArrayBuffer.allocationSize(value.seeds)
       );
     }
   }
@@ -10956,6 +11229,135 @@ const FfiConverterTypePrepareLnurlPayResponse = (() => {
   return new FFIConverter();
 })();
 
+export type PrepareSendBatchRequest = {
+  /**
+   * The payees, all paid by one transaction. They may span several tokens,
+   * and may mix Spark addresses with Spark invoices. Once a Spark invoice is
+   * among them, every recipient must be paid in the same token.
+   */
+  recipients: Array<BatchRecipient>;
+};
+
+/**
+ * Generated factory for {@link PrepareSendBatchRequest} record objects.
+ */
+export const PrepareSendBatchRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      PrepareSendBatchRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PrepareSendBatchRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PrepareSendBatchRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<PrepareSendBatchRequest>,
+  });
+})();
+
+const FfiConverterTypePrepareSendBatchRequest = (() => {
+  type TypeName = PrepareSendBatchRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        recipients: FfiConverterArrayTypeBatchRecipient.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayTypeBatchRecipient.write(value.recipients, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayTypeBatchRecipient.allocationSize(
+        value.recipients
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type PrepareSendBatchResponse = {
+  /**
+   * The payees in the order they were requested, which is the order their
+   * payments come back in.
+   */
+  recipients: Array<ResolvedBatchRecipient>;
+  /**
+   * What the batch debits, one entry per distinct asset.
+   */
+  totals: Array<BatchTotal>;
+};
+
+/**
+ * Generated factory for {@link PrepareSendBatchResponse} record objects.
+ */
+export const PrepareSendBatchResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      PrepareSendBatchResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PrepareSendBatchResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PrepareSendBatchResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<PrepareSendBatchResponse>,
+  });
+})();
+
+const FfiConverterTypePrepareSendBatchResponse = (() => {
+  type TypeName = PrepareSendBatchResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        recipients: FfiConverterArrayTypeResolvedBatchRecipient.read(from),
+        totals: FfiConverterArrayTypeBatchTotal.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayTypeResolvedBatchRecipient.write(value.recipients, into);
+      FfiConverterArrayTypeBatchTotal.write(value.totals, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterArrayTypeResolvedBatchRecipient.allocationSize(
+          value.recipients
+        ) + FfiConverterArrayTypeBatchTotal.allocationSize(value.totals)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type PrepareSendPaymentRequest = {
   paymentRequest: PaymentRequest;
   /**
@@ -12627,6 +13029,80 @@ const FfiConverterTypeRegisterWebhookResponse = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * A recipient after prepare has resolved the asset and amount it is owed.
+ */
+export type ResolvedBatchRecipient = {
+  destination: BatchDestination;
+  /**
+   * Amount in the base units of the asset this recipient is paid in.
+   */
+  amount: U128;
+  /**
+   * The token this recipient is paid in. Unset means sats, which a batch
+   * cannot send yet.
+   */
+  tokenIdentifier: string | undefined;
+};
+
+/**
+ * Generated factory for {@link ResolvedBatchRecipient} record objects.
+ */
+export const ResolvedBatchRecipient = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ResolvedBatchRecipient,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ResolvedBatchRecipient}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ResolvedBatchRecipient}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ResolvedBatchRecipient>,
+  });
+})();
+
+const FfiConverterTypeResolvedBatchRecipient = (() => {
+  type TypeName = ResolvedBatchRecipient;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        destination: FfiConverterTypeBatchDestination.read(from),
+        amount: FfiConverterTypeu128.read(from),
+        tokenIdentifier: FfiConverterOptionalString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeBatchDestination.write(value.destination, into);
+      FfiConverterTypeu128.write(value.amount, into);
+      FfiConverterOptionalString.write(value.tokenIdentifier, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeBatchDestination.allocationSize(value.destination) +
+        FfiConverterTypeu128.allocationSize(value.amount) +
+        FfiConverterOptionalString.allocationSize(value.tokenIdentifier)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type RestResponse = {
   status: /*u16*/ number;
   body: string;
@@ -12892,6 +13368,119 @@ const FfiConverterTypeSecretBytes = (() => {
     }
     allocationSize(value: TypeName): number {
       return FfiConverterArrayBuffer.allocationSize(value.bytes);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type SendBatchRequest = {
+  prepareResponse: PrepareSendBatchResponse;
+};
+
+/**
+ * Generated factory for {@link SendBatchRequest} record objects.
+ */
+export const SendBatchRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<SendBatchRequest, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SendBatchRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SendBatchRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<SendBatchRequest>,
+  });
+})();
+
+const FfiConverterTypeSendBatchRequest = (() => {
+  type TypeName = SendBatchRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        prepareResponse: FfiConverterTypePrepareSendBatchResponse.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypePrepareSendBatchResponse.write(
+        value.prepareResponse,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterTypePrepareSendBatchResponse.allocationSize(
+        value.prepareResponse
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type SendBatchResponse = {
+  /**
+   * One payment per recipient, in recipient order, all sharing a transaction
+   * hash.
+   */
+  payments: Array<Payment>;
+};
+
+/**
+ * Generated factory for {@link SendBatchResponse} record objects.
+ */
+export const SendBatchResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<SendBatchResponse, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link SendBatchResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link SendBatchResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<SendBatchResponse>,
+  });
+})();
+
+const FfiConverterTypeSendBatchResponse = (() => {
+  type TypeName = SendBatchResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        payments: FfiConverterArrayTypePayment.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayTypePayment.write(value.payments, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayTypePayment.allocationSize(value.payments);
     }
   }
   return new FFIConverter();
@@ -17799,6 +18388,150 @@ const FfiConverterTypeAutoOptimizationEvent = (() => {
         }
         case AutoOptimizationEvent_Tags.Skipped: {
           return ordinalConverter.allocationSize(6);
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: BatchDestination
+export enum BatchDestination_Tags {
+  SparkAddress = 'SparkAddress',
+  SparkInvoice = 'SparkInvoice',
+}
+/**
+ * Where a batch recipient is paid, once prepare has decoded its payment request.
+ */
+export const BatchDestination = (() => {
+  type SparkAddress__interface = {
+    tag: BatchDestination_Tags.SparkAddress;
+    inner: Readonly<{ address: string }>;
+  };
+
+  class SparkAddress_ extends UniffiEnum implements SparkAddress__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'BatchDestination';
+    readonly tag = BatchDestination_Tags.SparkAddress;
+    readonly inner: Readonly<{ address: string }>;
+    constructor(inner: { address: string }) {
+      super('BatchDestination', 'SparkAddress');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { address: string }): SparkAddress_ {
+      return new SparkAddress_(inner);
+    }
+
+    static instanceOf(obj: any): obj is SparkAddress_ {
+      return obj.tag === BatchDestination_Tags.SparkAddress;
+    }
+  }
+
+  type SparkInvoice__interface = {
+    tag: BatchDestination_Tags.SparkInvoice;
+    inner: Readonly<{ invoiceDetails: SparkInvoiceDetails }>;
+  };
+
+  class SparkInvoice_ extends UniffiEnum implements SparkInvoice__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'BatchDestination';
+    readonly tag = BatchDestination_Tags.SparkInvoice;
+    readonly inner: Readonly<{ invoiceDetails: SparkInvoiceDetails }>;
+    constructor(inner: { invoiceDetails: SparkInvoiceDetails }) {
+      super('BatchDestination', 'SparkInvoice');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { invoiceDetails: SparkInvoiceDetails }): SparkInvoice_ {
+      return new SparkInvoice_(inner);
+    }
+
+    static instanceOf(obj: any): obj is SparkInvoice_ {
+      return obj.tag === BatchDestination_Tags.SparkInvoice;
+    }
+  }
+
+  function instanceOf(obj: any): obj is BatchDestination {
+    return obj[uniffiTypeNameSymbol] === 'BatchDestination';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    SparkAddress: SparkAddress_,
+    SparkInvoice: SparkInvoice_,
+  });
+})();
+
+/**
+ * Where a batch recipient is paid, once prepare has decoded its payment request.
+ */
+
+export type BatchDestination = InstanceType<
+  (typeof BatchDestination)[keyof Omit<typeof BatchDestination, 'instanceOf'>]
+>;
+
+// FfiConverter for enum BatchDestination
+const FfiConverterTypeBatchDestination = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = BatchDestination;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new BatchDestination.SparkAddress({
+            address: FfiConverterString.read(from),
+          });
+        case 2:
+          return new BatchDestination.SparkInvoice({
+            invoiceDetails: FfiConverterTypeSparkInvoiceDetails.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case BatchDestination_Tags.SparkAddress: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.address, into);
+          return;
+        }
+        case BatchDestination_Tags.SparkInvoice: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterTypeSparkInvoiceDetails.write(inner.invoiceDetails, into);
+          return;
+        }
+        default:
+          // Throwing from here means that BatchDestination_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case BatchDestination_Tags.SparkAddress: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterString.allocationSize(inner.address);
+          return size;
+        }
+        case BatchDestination_Tags.SparkInvoice: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterTypeSparkInvoiceDetails.allocationSize(
+            inner.invoiceDetails
+          );
+          return size;
         }
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -23884,6 +24617,7 @@ export enum PasskeyError_Tags {
   InvalidPrfOutput = 'InvalidPrfOutput',
   MnemonicError = 'MnemonicError',
   InvalidSalt = 'InvalidSalt',
+  CreatedButNotDerived = 'CreatedButNotDerived',
   Generic = 'Generic',
 }
 /**
@@ -24191,6 +24925,66 @@ export const PasskeyError = (() => {
     }
   }
 
+  type CreatedButNotDerived__interface = {
+    tag: PasskeyError_Tags.CreatedButNotDerived;
+    inner: Readonly<{ credentialId: ArrayBuffer; source: PrfProviderError }>;
+  };
+
+  /**
+   * Registration created the credential, then the derive that
+   * followed it failed. The passkey exists on the device: recover by
+   * signing in pinned to `credential_id`. Registering again would
+   * leave this one behind, owning a wallet nothing points to.
+   *
+   * Only wraps a [`PrfProviderError`], so hosts unwrap once and keep
+   * the arms they already have. Failures that are not the
+   * authenticator's (mnemonic, key derivation, invalid PRF output)
+   * propagate as their own variant, unwrapped.
+   */
+  class CreatedButNotDerived_
+    extends UniffiError
+    implements CreatedButNotDerived__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PasskeyError';
+    readonly tag = PasskeyError_Tags.CreatedButNotDerived;
+    readonly inner: Readonly<{
+      credentialId: ArrayBuffer;
+      source: PrfProviderError;
+    }>;
+    constructor(inner: {
+      credentialId: ArrayBuffer;
+      source: PrfProviderError;
+    }) {
+      super('PasskeyError', 'CreatedButNotDerived');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      credentialId: ArrayBuffer;
+      source: PrfProviderError;
+    }): CreatedButNotDerived_ {
+      return new CreatedButNotDerived_(inner);
+    }
+
+    static instanceOf(obj: any): obj is CreatedButNotDerived_ {
+      return obj.tag === PasskeyError_Tags.CreatedButNotDerived;
+    }
+
+    static hasInner(obj: any): obj is CreatedButNotDerived_ {
+      return CreatedButNotDerived_.instanceOf(obj);
+    }
+
+    static getInner(
+      obj: CreatedButNotDerived_
+    ): Readonly<{ credentialId: ArrayBuffer; source: PrfProviderError }> {
+      return obj.inner;
+    }
+  }
+
   type Generic__interface = {
     tag: PasskeyError_Tags.Generic;
     inner: Readonly<[string]>;
@@ -24240,6 +25034,7 @@ export const PasskeyError = (() => {
     InvalidPrfOutput: InvalidPrfOutput_,
     MnemonicError: MnemonicError_,
     InvalidSalt: InvalidSalt_,
+    CreatedButNotDerived: CreatedButNotDerived_,
     Generic: Generic_,
   });
 })();
@@ -24288,6 +25083,11 @@ const FfiConverterTypePasskeyError = (() => {
         case 8:
           return new PasskeyError.InvalidSalt(FfiConverterString.read(from));
         case 9:
+          return new PasskeyError.CreatedButNotDerived({
+            credentialId: FfiConverterArrayBuffer.read(from),
+            source: FfiConverterTypePrfProviderError.read(from),
+          });
+        case 10:
           return new PasskeyError.Generic(FfiConverterString.read(from));
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -24343,8 +25143,15 @@ const FfiConverterTypePasskeyError = (() => {
           FfiConverterString.write(inner[0], into);
           return;
         }
-        case PasskeyError_Tags.Generic: {
+        case PasskeyError_Tags.CreatedButNotDerived: {
           ordinalConverter.write(9, into);
+          const inner = value.inner;
+          FfiConverterArrayBuffer.write(inner.credentialId, into);
+          FfiConverterTypePrfProviderError.write(inner.source, into);
+          return;
+        }
+        case PasskeyError_Tags.Generic: {
+          ordinalConverter.write(10, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
@@ -24404,9 +25211,16 @@ const FfiConverterTypePasskeyError = (() => {
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
-        case PasskeyError_Tags.Generic: {
+        case PasskeyError_Tags.CreatedButNotDerived: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(9);
+          size += FfiConverterArrayBuffer.allocationSize(inner.credentialId);
+          size += FfiConverterTypePrfProviderError.allocationSize(inner.source);
+          return size;
+        }
+        case PasskeyError_Tags.Generic: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(10);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
@@ -26626,6 +27440,7 @@ const FfiConverterTypePublishSignedLnurlPayResponse = (() => {
 export enum PublishSignedTransferPackageResponse_Tags {
   SwapCompleted = 'SwapCompleted',
   PaymentSent = 'PaymentSent',
+  PaymentsSent = 'PaymentsSent',
 }
 export const PublishSignedTransferPackageResponse = (() => {
   type SwapCompleted__interface = {
@@ -26681,6 +27496,37 @@ export const PublishSignedTransferPackageResponse = (() => {
     }
   }
 
+  type PaymentsSent__interface = {
+    tag: PublishSignedTransferPackageResponse_Tags.PaymentsSent;
+    inner: Readonly<{ payments: Array<Payment> }>;
+  };
+
+  /**
+   * Returned for a batch package: one payment per recipient, in recipient
+   * order.
+   */
+  class PaymentsSent_ extends UniffiEnum implements PaymentsSent__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'PublishSignedTransferPackageResponse';
+    readonly tag = PublishSignedTransferPackageResponse_Tags.PaymentsSent;
+    readonly inner: Readonly<{ payments: Array<Payment> }>;
+    constructor(inner: { payments: Array<Payment> }) {
+      super('PublishSignedTransferPackageResponse', 'PaymentsSent');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { payments: Array<Payment> }): PaymentsSent_ {
+      return new PaymentsSent_(inner);
+    }
+
+    static instanceOf(obj: any): obj is PaymentsSent_ {
+      return obj.tag === PublishSignedTransferPackageResponse_Tags.PaymentsSent;
+    }
+  }
+
   function instanceOf(obj: any): obj is PublishSignedTransferPackageResponse {
     return obj[uniffiTypeNameSymbol] === 'PublishSignedTransferPackageResponse';
   }
@@ -26689,6 +27535,7 @@ export const PublishSignedTransferPackageResponse = (() => {
     instanceOf,
     SwapCompleted: SwapCompleted_,
     PaymentSent: PaymentSent_,
+    PaymentsSent: PaymentsSent_,
   });
 })();
 
@@ -26712,6 +27559,10 @@ const FfiConverterTypePublishSignedTransferPackageResponse = (() => {
           return new PublishSignedTransferPackageResponse.PaymentSent({
             payment: FfiConverterTypePayment.read(from),
           });
+        case 3:
+          return new PublishSignedTransferPackageResponse.PaymentsSent({
+            payments: FfiConverterArrayTypePayment.read(from),
+          });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
@@ -26728,6 +27579,12 @@ const FfiConverterTypePublishSignedTransferPackageResponse = (() => {
           FfiConverterTypePayment.write(inner.payment, into);
           return;
         }
+        case PublishSignedTransferPackageResponse_Tags.PaymentsSent: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterArrayTypePayment.write(inner.payments, into);
+          return;
+        }
         default:
           // Throwing from here means that PublishSignedTransferPackageResponse_Tags hasn't matched an ordinal.
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -26742,6 +27599,12 @@ const FfiConverterTypePublishSignedTransferPackageResponse = (() => {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
           size += FfiConverterTypePayment.allocationSize(inner.payment);
+          return size;
+        }
+        case PublishSignedTransferPackageResponse_Tags.PaymentsSent: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterArrayTypePayment.allocationSize(inner.payments);
           return size;
         }
         default:
@@ -27150,6 +28013,7 @@ export const SdkError = (() => {
 
   type InsufficientFunds__interface = {
     tag: SdkError_Tags.InsufficientFunds;
+    inner: Readonly<{ tokenIdentifier: string | undefined }>;
   };
 
   class InsufficientFunds_
@@ -27162,12 +28026,24 @@ export const SdkError = (() => {
      */
     readonly [uniffiTypeNameSymbol] = 'SdkError';
     readonly tag = SdkError_Tags.InsufficientFunds;
-    constructor() {
+    readonly inner: Readonly<{ tokenIdentifier: string | undefined }>;
+    constructor(inner: {
+      /**
+       * The token that cannot cover the payment. Unset when the shortfall is
+       * in sats or when no single token can be named.
+       */ tokenIdentifier: string | undefined;
+    }) {
       super('SdkError', 'InsufficientFunds');
+      this.inner = Object.freeze(inner);
     }
 
-    static new(): InsufficientFunds_ {
-      return new InsufficientFunds_();
+    static new(inner: {
+      /**
+       * The token that cannot cover the payment. Unset when the shortfall is
+       * in sats or when no single token can be named.
+       */ tokenIdentifier: string | undefined;
+    }): InsufficientFunds_ {
+      return new InsufficientFunds_(inner);
     }
 
     static instanceOf(obj: any): obj is InsufficientFunds_ {
@@ -27175,7 +28051,13 @@ export const SdkError = (() => {
     }
 
     static hasInner(obj: any): obj is InsufficientFunds_ {
-      return false;
+      return InsufficientFunds_.instanceOf(obj);
+    }
+
+    static getInner(
+      obj: InsufficientFunds_
+    ): Readonly<{ tokenIdentifier: string | undefined }> {
+      return obj.inner;
     }
   }
 
@@ -27781,7 +28663,9 @@ const FfiConverterTypeSdkError = (() => {
         case 1:
           return new SdkError.SparkError(FfiConverterString.read(from));
         case 2:
-          return new SdkError.InsufficientFunds();
+          return new SdkError.InsufficientFunds({
+            tokenIdentifier: FfiConverterOptionalString.read(from),
+          });
         case 3:
           return new SdkError.InvalidUuid(FfiConverterString.read(from));
         case 4:
@@ -27838,6 +28722,8 @@ const FfiConverterTypeSdkError = (() => {
         }
         case SdkError_Tags.InsufficientFunds: {
           ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterOptionalString.write(inner.tokenIdentifier, into);
           return;
         }
         case SdkError_Tags.InvalidUuid: {
@@ -27940,7 +28826,12 @@ const FfiConverterTypeSdkError = (() => {
           return size;
         }
         case SdkError_Tags.InsufficientFunds: {
-          return ordinalConverter.allocationSize(2);
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterOptionalString.allocationSize(
+            inner.tokenIdentifier
+          );
+          return size;
         }
         case SdkError_Tags.InvalidUuid: {
           const inner = value.inner;
@@ -32751,6 +33642,7 @@ export enum UnsignedTransferPackage_Tags {
   Swap = 'Swap',
   Transfer = 'Transfer',
   Token = 'Token',
+  TokenBatch = 'TokenBatch',
 }
 export const UnsignedTransferPackage = (() => {
   type Swap__interface = {
@@ -32910,6 +33802,71 @@ export const UnsignedTransferPackage = (() => {
     }
   }
 
+  type TokenBatch__interface = {
+    tag: UnsignedTransferPackage_Tags.TokenBatch;
+    inner: Readonly<{
+      prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+      tokenContext: ArrayBuffer;
+      totals: Array<BatchTotal>;
+      isSwap: boolean;
+    }>;
+  };
+
+  /**
+   * One token transaction paying several recipients. Publishing it returns
+   * `PaymentsSent` with one payment per recipient.
+   */
+  class TokenBatch_ extends UniffiEnum implements TokenBatch__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'UnsignedTransferPackage';
+    readonly tag = UnsignedTransferPackage_Tags.TokenBatch;
+    readonly inner: Readonly<{
+      prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+      tokenContext: ArrayBuffer;
+      totals: Array<BatchTotal>;
+      isSwap: boolean;
+    }>;
+    constructor(inner: {
+      prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+      tokenContext: ArrayBuffer;
+      /**
+       * What the batch debits, per token. A batch spanning tokens has no
+       * single amount to report.
+       */ totals: Array<BatchTotal>;
+      /**
+       * When set, this package re-shapes the wallet's token outputs instead of
+       * sending a payment. Publishing it returns `SwapCompleted`: rebuild the
+       * original send from the same prepare response and submit again.
+       */ isSwap: boolean;
+    }) {
+      super('UnsignedTransferPackage', 'TokenBatch');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+      tokenContext: ArrayBuffer;
+      /**
+       * What the batch debits, per token. A batch spanning tokens has no
+       * single amount to report.
+       */ totals: Array<BatchTotal>;
+      /**
+       * When set, this package re-shapes the wallet's token outputs instead of
+       * sending a payment. Publishing it returns `SwapCompleted`: rebuild the
+       * original send from the same prepare response and submit again.
+       */ isSwap: boolean;
+    }): TokenBatch_ {
+      return new TokenBatch_(inner);
+    }
+
+    static instanceOf(obj: any): obj is TokenBatch_ {
+      return obj.tag === UnsignedTransferPackage_Tags.TokenBatch;
+    }
+  }
+
   function instanceOf(obj: any): obj is UnsignedTransferPackage {
     return obj[uniffiTypeNameSymbol] === 'UnsignedTransferPackage';
   }
@@ -32919,6 +33876,7 @@ export const UnsignedTransferPackage = (() => {
     Swap: Swap_,
     Transfer: Transfer_,
     Token: Token_,
+    TokenBatch: TokenBatch_,
   });
 })();
 
@@ -32960,6 +33918,14 @@ const FfiConverterTypeUnsignedTransferPackage = (() => {
             tokenIdentifier: FfiConverterString.read(from),
             amount: FfiConverterTypeu128.read(from),
             fee: FfiConverterTypeu128.read(from),
+            isSwap: FfiConverterBool.read(from),
+          });
+        case 4:
+          return new UnsignedTransferPackage.TokenBatch({
+            prepareTokenTransaction:
+              FfiConverterTypeExternalPrepareTokenTransactionRequest.read(from),
+            tokenContext: FfiConverterArrayBuffer.read(from),
+            totals: FfiConverterArrayTypeBatchTotal.read(from),
             isSwap: FfiConverterBool.read(from),
           });
         default:
@@ -33006,6 +33972,18 @@ const FfiConverterTypeUnsignedTransferPackage = (() => {
           FfiConverterBool.write(inner.isSwap, into);
           return;
         }
+        case UnsignedTransferPackage_Tags.TokenBatch: {
+          ordinalConverter.write(4, into);
+          const inner = value.inner;
+          FfiConverterTypeExternalPrepareTokenTransactionRequest.write(
+            inner.prepareTokenTransaction,
+            into
+          );
+          FfiConverterArrayBuffer.write(inner.tokenContext, into);
+          FfiConverterArrayTypeBatchTotal.write(inner.totals, into);
+          FfiConverterBool.write(inner.isSwap, into);
+          return;
+        }
         default:
           // Throwing from here means that UnsignedTransferPackage_Tags hasn't matched an ordinal.
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -33046,6 +34024,18 @@ const FfiConverterTypeUnsignedTransferPackage = (() => {
           size += FfiConverterString.allocationSize(inner.tokenIdentifier);
           size += FfiConverterTypeu128.allocationSize(inner.amount);
           size += FfiConverterTypeu128.allocationSize(inner.fee);
+          size += FfiConverterBool.allocationSize(inner.isSwap);
+          return size;
+        }
+        case UnsignedTransferPackage_Tags.TokenBatch: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(4);
+          size +=
+            FfiConverterTypeExternalPrepareTokenTransactionRequest.allocationSize(
+              inner.prepareTokenTransaction
+            );
+          size += FfiConverterArrayBuffer.allocationSize(inner.tokenContext);
+          size += FfiConverterArrayTypeBatchTotal.allocationSize(inner.totals);
           size += FfiConverterBool.allocationSize(inner.isSwap);
           return size;
         }
@@ -34291,6 +35281,17 @@ export interface BreezSdkInterface {
     request: AuthorizeTransferRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<TransferAuthorization>;
+  /**
+   * Builds the unsigned package for the batch prepared by
+   * [`BreezSdk::prepare_send_batch`], for signing outside the SDK.
+   *
+   * Publish the signed package with
+   * [`BreezSdk::publish_signed_transfer_package`], which returns every payment.
+   */
+  buildUnsignedBatchPackage(
+    request: BuildUnsignedBatchPackageRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<UnsignedTransferPackage>;
   buildUnsignedLnurlPayPackage(
     request: BuildUnsignedLnurlPayPackageRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -34567,6 +35568,24 @@ export interface BreezSdkInterface {
     request: PrepareLnurlPayRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<PrepareLnurlPayResponse>;
+  /**
+   * Prepares a send to several payees, all paid by one transaction.
+   *
+   * Each recipient is a Spark address or a Spark invoice, and one batch may
+   * span several tokens. The response resolves every invoice into the asset
+   * and amount it requests, and reports what the batch debits per asset.
+   *
+   * A batch pays tokens: sending sats to several payees at once is not
+   * supported yet, so a recipient that resolves to sats is rejected.
+   *
+   * A batch that pays a Spark invoice is limited to a single token: the
+   * operators reject a transaction that carries an invoice and pays more
+   * than one. Send those as one batch per token.
+   */
+  prepareSendBatch(
+    request: PrepareSendBatchRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<PrepareSendBatchResponse>;
   prepareSendPayment(
     request: PrepareSendPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -34655,6 +35674,20 @@ export interface BreezSdkInterface {
     id: string,
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<boolean>;
+  /**
+   * Sends the batch prepared by [`BreezSdk::prepare_send_batch`], returning
+   * one payment per recipient in recipient order.
+   *
+   * Retrying after a failure that leaves the outcome unknown may pay twice:
+   * a token transfer has no idempotency key, since the operator can only be
+   * asked about a transaction by a hash that is computed while broadcasting.
+   * Look for the batch with a `Token` payment details filter on the
+   * transaction hash before sending it again.
+   */
+  sendBatch(
+    request: SendBatchRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<SendBatchResponse>;
   sendPayment(
     request: SendPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -34882,6 +35915,52 @@ export class BreezSdk
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypeTransferAuthorization.lift.bind(
           FfiConverterTypeTransferAuthorization
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Builds the unsigned package for the batch prepared by
+   * [`BreezSdk::prepare_send_batch`], for signing outside the SDK.
+   *
+   * Publish the signed package with
+   * [`BreezSdk::publish_signed_transfer_package`], which returns every payment.
+   */
+  public async buildUnsignedBatchPackage(
+    request: BuildUnsignedBatchPackageRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<UnsignedTransferPackage> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_batch_package(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeBuildUnsignedBatchPackageRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeUnsignedTransferPackage.lift.bind(
+          FfiConverterTypeUnsignedTransferPackage
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -36223,6 +37302,59 @@ export class BreezSdk
     }
   }
 
+  /**
+   * Prepares a send to several payees, all paid by one transaction.
+   *
+   * Each recipient is a Spark address or a Spark invoice, and one batch may
+   * span several tokens. The response resolves every invoice into the asset
+   * and amount it requests, and reports what the batch debits per asset.
+   *
+   * A batch pays tokens: sending sats to several payees at once is not
+   * supported yet, so a recipient that resolves to sats is rejected.
+   *
+   * A batch that pays a Spark invoice is limited to a single token: the
+   * operators reject a transaction that carries an invoice and pays more
+   * than one. Send those as one batch per token.
+   */
+  public async prepareSendBatch(
+    request: PrepareSendBatchRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<PrepareSendBatchResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_batch(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypePrepareSendBatchRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePrepareSendBatchResponse.lift.bind(
+          FfiConverterTypePrepareSendBatchResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
   public async prepareSendPayment(
     request: PrepareSendPaymentRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -36680,6 +37812,55 @@ export class BreezSdk
         /*liftFunc:*/ FfiConverterBool.lift.bind(FfiConverterBool),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Sends the batch prepared by [`BreezSdk::prepare_send_batch`], returning
+   * one payment per recipient in recipient order.
+   *
+   * Retrying after a failure that leaves the outcome unknown may pay twice:
+   * a token transfer has no idempotency key, since the operator can only be
+   * asked about a transaction by a hash that is computed while broadcasting.
+   * Look for the batch with a `Token` payment details filter on the
+   * transaction hash before sending it again.
+   */
+  public async sendBatch(
+    request: SendBatchRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<SendBatchResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_batch(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeSendBatchRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeSendBatchResponse.lift.bind(
+          FfiConverterTypeSendBatchResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
       );
     } catch (__error: any) {
       if (uniffiIsDebug && __error instanceof Error) {
@@ -41092,10 +42273,12 @@ export interface PasskeyClientInterface {
    */
   labels(): PasskeyLabelsInterface;
   /**
-   * First-time setup. Drives [`PrfProvider::create_passkey`] (one
-   * ceremony) followed by the wallet-derivation flow that backs
-   * [`Passkey::setup_wallet`] (one ceremony, dual-salt where
-   * supported). The label is always published on success.
+   * First-time setup. Drives [`PrfProvider::create_passkey`], which
+   * returns the seeds inline where the platform evaluates PRF during
+   * the create ceremony; otherwise the wallet-derivation flow behind
+   * [`Passkey::setup_wallet`] runs as a second ceremony. The label is
+   * validated before anything is created, and published in the
+   * background: it may still be in flight when this returns `Ok`.
    */
   register(
     request: RegisterRequest,
@@ -41281,10 +42464,12 @@ export class PasskeyClient
   }
 
   /**
-   * First-time setup. Drives [`PrfProvider::create_passkey`] (one
-   * ceremony) followed by the wallet-derivation flow that backs
-   * [`Passkey::setup_wallet`] (one ceremony, dual-salt where
-   * supported). The label is always published on success.
+   * First-time setup. Drives [`PrfProvider::create_passkey`], which
+   * returns the seeds inline where the platform evaluates PRF during
+   * the create ceremony; otherwise the wallet-derivation flow behind
+   * [`Passkey::setup_wallet`] runs as a second ceremony. The label is
+   * validated before anything is created, and published in the
+   * background: it may still be in flight when this returns `Ok`.
    */
   public async register(
     request: RegisterRequest,
@@ -42022,20 +43207,35 @@ export interface PrfProvider {
     signal: AbortSignal;
   }): /*throws*/ Promise<boolean>;
   /**
-   * Explicit registration. Platform passkey providers override this to
-   * drive the OS create ceremony and surface the credential metadata
-   * hosts need for `exclude_credentials` bookkeeping. CLI / hardware
-   * providers register lazily in [`Self::derive_seeds`] and inherit the
-   * default `PrfNotSupported`.
+   * Explicit registration: drive the OS create ceremony, and where the
+   * platform supports it, evaluate PRF for `salts` in the same
+   * ceremony. Platform passkey providers override this to surface the
+   * credential metadata hosts need for `exclude_credentials`
+   * bookkeeping. CLI / hardware providers register lazily in
+   * [`Self::derive_seeds`] and inherit the default `PrfNotSupported`.
    *
    * `exclude_credentials` lists already-registered IDs and surfaces
    * duplicates as `CredentialAlreadyExists`. The `user.id` is always
    * provider-minted and returned on `PasskeyCredential.user_id`.
+   *
+   * Returning seeds removes the assertion that would otherwise follow
+   * a create, and with it the window where the new credential exists
+   * but the platform cannot yet resolve it. Return `seeds: None` for
+   * anything short of one output per salt (some authenticators drop
+   * `prf.eval.second`): a partial result is not usable, and the caller
+   * falls back to [`Self::derive_seeds`]. Empty `salts` means the
+   * caller wants the credential only.
+   *
+   * Seeds returned here must equal what [`Self::derive_seeds`] would
+   * return for the same salts. The wallet is derived from them either
+   * way, so a mismatch means register and sign-in land on different
+   * wallets, and the one register created is unreachable.
    */
   createPasskey(
     excludeCredentials: Array<ArrayBuffer>,
+    salts: Array<string>,
     asyncOpts_?: { signal: AbortSignal }
-  ): /*throws*/ Promise<PasskeyCredential>;
+  ): /*throws*/ Promise<CreatePasskeyOutput>;
   /**
    * Advisory check against the platform's out-of-band verification
    * source (iOS AASA / Android assetlinks / browser rpId scope).
@@ -42172,20 +43372,35 @@ export class PrfProviderImpl
   }
 
   /**
-   * Explicit registration. Platform passkey providers override this to
-   * drive the OS create ceremony and surface the credential metadata
-   * hosts need for `exclude_credentials` bookkeeping. CLI / hardware
-   * providers register lazily in [`Self::derive_seeds`] and inherit the
-   * default `PrfNotSupported`.
+   * Explicit registration: drive the OS create ceremony, and where the
+   * platform supports it, evaluate PRF for `salts` in the same
+   * ceremony. Platform passkey providers override this to surface the
+   * credential metadata hosts need for `exclude_credentials`
+   * bookkeeping. CLI / hardware providers register lazily in
+   * [`Self::derive_seeds`] and inherit the default `PrfNotSupported`.
    *
    * `exclude_credentials` lists already-registered IDs and surfaces
    * duplicates as `CredentialAlreadyExists`. The `user.id` is always
    * provider-minted and returned on `PasskeyCredential.user_id`.
+   *
+   * Returning seeds removes the assertion that would otherwise follow
+   * a create, and with it the window where the new credential exists
+   * but the platform cannot yet resolve it. Return `seeds: None` for
+   * anything short of one output per salt (some authenticators drop
+   * `prf.eval.second`): a partial result is not usable, and the caller
+   * falls back to [`Self::derive_seeds`]. Empty `salts` means the
+   * caller wants the credential only.
+   *
+   * Seeds returned here must equal what [`Self::derive_seeds`] would
+   * return for the same salts. The wallet is derived from them either
+   * way, so a mismatch means register and sign-in land on different
+   * wallets, and the one register created is unreachable.
    */
   public async createPasskey(
     excludeCredentials: Array<ArrayBuffer>,
+    salts: Array<string>,
     asyncOpts_?: { signal: AbortSignal }
-  ): Promise<PasskeyCredential> /*throws*/ {
+  ): Promise<CreatePasskeyOutput> /*throws*/ {
     const __stack = uniffiIsDebug ? new Error().stack : undefined;
     try {
       return await uniffiRustCallAsync(
@@ -42193,7 +43408,8 @@ export class PrfProviderImpl
         /*rustFutureFunc:*/ () => {
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_create_passkey(
             uniffiTypePrfProviderImplObjectFactory.clonePointer(this),
-            FfiConverterArrayArrayBuffer.lower(excludeCredentials)
+            FfiConverterArrayArrayBuffer.lower(excludeCredentials),
+            FfiConverterArrayString.lower(salts)
           );
         },
         /*pollFunc:*/ nativeModule()
@@ -42204,8 +43420,8 @@ export class PrfProviderImpl
           .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
         /*freeFunc:*/ nativeModule()
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
-        /*liftFunc:*/ FfiConverterTypePasskeyCredential.lift.bind(
-          FfiConverterTypePasskeyCredential
+        /*liftFunc:*/ FfiConverterTypeCreatePasskeyOutput.lift.bind(
+          FfiConverterTypeCreatePasskeyOutput
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -42462,24 +43678,26 @@ const uniffiCallbackInterfacePrfProvider: {
     createPasskey: (
       uniffiHandle: bigint,
       excludeCredentials: Uint8Array,
+      salts: Uint8Array,
       uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
       uniffiCallbackData: bigint
     ) => {
       const uniffiMakeCall = async (
         signal: AbortSignal
-      ): Promise<PasskeyCredential> => {
+      ): Promise<CreatePasskeyOutput> => {
         const jsCallback = FfiConverterTypePrfProvider.lift(uniffiHandle);
         return await jsCallback.createPasskey(
           FfiConverterArrayArrayBuffer.lift(excludeCredentials),
+          FfiConverterArrayString.lift(salts),
           { signal }
         );
       };
-      const uniffiHandleSuccess = (returnValue: PasskeyCredential) => {
+      const uniffiHandleSuccess = (returnValue: CreatePasskeyOutput) => {
         uniffiFutureCallback.call(
           uniffiFutureCallback,
           uniffiCallbackData,
           /* UniffiForeignFutureStructRustBuffer */ {
-            returnValue: FfiConverterTypePasskeyCredential.lower(returnValue),
+            returnValue: FfiConverterTypeCreatePasskeyOutput.lower(returnValue),
             callStatus: uniffiCaller.createCallStatus(),
           }
         );
@@ -48397,6 +49615,16 @@ const FfiConverterArrayArrayBuffer = new FfiConverterArray(
   FfiConverterArrayBuffer
 );
 
+// FfiConverter for Array<BatchRecipient>
+const FfiConverterArrayTypeBatchRecipient = new FfiConverterArray(
+  FfiConverterTypeBatchRecipient
+);
+
+// FfiConverter for Array<BatchTotal>
+const FfiConverterArrayTypeBatchTotal = new FfiConverterArray(
+  FfiConverterTypeBatchTotal
+);
+
 // FfiConverter for Array<Bip21Extra>
 const FfiConverterArrayTypeBip21Extra = new FfiConverterArray(
   FfiConverterTypeBip21Extra
@@ -48543,6 +49771,11 @@ const FfiConverterArrayTypeRate = new FfiConverterArray(FfiConverterTypeRate);
 // FfiConverter for Array<Record>
 const FfiConverterArrayTypeRecord = new FfiConverterArray(
   FfiConverterTypeRecord
+);
+
+// FfiConverter for Array<ResolvedBatchRecipient>
+const FfiConverterArrayTypeResolvedBatchRecipient = new FfiConverterArray(
+  FfiConverterTypeResolvedBatchRecipient
 );
 
 // FfiConverter for Array<SetLnurlMetadataItem>
@@ -49014,6 +50247,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_batch_package() !==
+    52999
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_batch_package'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_lnurl_pay_package() !==
     23822
   ) {
@@ -49262,6 +50503,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_batch() !==
+    59347
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_batch'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_payment() !==
     34185
   ) {
@@ -49347,6 +50596,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_batch() !==
+    34563
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_send_batch'
     );
   }
   if (
@@ -49679,7 +50936,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_passkeyclient_register() !==
-    18330
+    27748
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_passkeyclient_register'
@@ -49743,7 +51000,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_prfprovider_create_passkey() !==
-    1967
+    61235
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_prfprovider_create_passkey'
@@ -50273,6 +51530,9 @@ export default Object.freeze({
     FfiConverterTypeAssetFilter,
     FfiConverterTypeAuthorizeTransferRequest,
     FfiConverterTypeAutoOptimizationEvent,
+    FfiConverterTypeBatchDestination,
+    FfiConverterTypeBatchRecipient,
+    FfiConverterTypeBatchTotal,
     FfiConverterTypeBip21Details,
     FfiConverterTypeBip21Extra,
     FfiConverterTypeBitcoinAddressDetails,
@@ -50290,6 +51550,7 @@ export default Object.freeze({
     FfiConverterTypeBolt12OfferDetails,
     FfiConverterTypeBreezSdk,
     FfiConverterTypeBuildTransferPackageOptions,
+    FfiConverterTypeBuildUnsignedBatchPackageRequest,
     FfiConverterTypeBuildUnsignedLnurlPayPackageRequest,
     FfiConverterTypeBuildUnsignedTransferPackageRequest,
     FfiConverterTypeBurnIssuerTokenRequest,
@@ -50330,6 +51591,7 @@ export default Object.freeze({
     FfiConverterTypeCpfpInput,
     FfiConverterTypeCpfpSigner,
     FfiConverterTypeCreateIssuerTokenRequest,
+    FfiConverterTypeCreatePasskeyOutput,
     FfiConverterTypeCredentials,
     FfiConverterTypeCrossChainAddressDetails,
     FfiConverterTypeCrossChainAddressFamily,
@@ -50467,6 +51729,8 @@ export default Object.freeze({
     FfiConverterTypePerBranchFunding,
     FfiConverterTypePrepareLnurlPayRequest,
     FfiConverterTypePrepareLnurlPayResponse,
+    FfiConverterTypePrepareSendBatchRequest,
+    FfiConverterTypePrepareSendBatchResponse,
     FfiConverterTypePrepareSendPaymentRequest,
     FfiConverterTypePrepareSendPaymentResponse,
     FfiConverterTypePrepareUnilateralExitRequest,
@@ -50498,6 +51762,7 @@ export default Object.freeze({
     FfiConverterTypeRegisterResponse,
     FfiConverterTypeRegisterWebhookRequest,
     FfiConverterTypeRegisterWebhookResponse,
+    FfiConverterTypeResolvedBatchRecipient,
     FfiConverterTypeResolvedStores,
     FfiConverterTypeRestClient,
     FfiConverterTypeRestResponse,
@@ -50509,6 +51774,8 @@ export default Object.freeze({
     FfiConverterTypeSdkEvent,
     FfiConverterTypeSecretBytes,
     FfiConverterTypeSeed,
+    FfiConverterTypeSendBatchRequest,
+    FfiConverterTypeSendBatchResponse,
     FfiConverterTypeSendOnchainFeeQuote,
     FfiConverterTypeSendOnchainSpeedFeeQuote,
     FfiConverterTypeSendPaymentMethod,

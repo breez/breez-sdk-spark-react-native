@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.withBreezSdkIOS = void 0;
-const config_plugins_1 = require("@expo/config-plugins");
+const config_plugins_1 = require("expo/config-plugins");
 /**
  * Configure iOS build settings for Breez SDK
  * The podspec already defines the minimum iOS version via min_ios_version_supported

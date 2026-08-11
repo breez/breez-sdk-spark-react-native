@@ -275,7 +275,7 @@ typedef void (*UniffiCallbackInterfacePrfProviderMethod1)(
     UniffiForeignFutureCompleteI8 uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef void (*UniffiCallbackInterfacePrfProviderMethod2)(
-    uint64_t uniffi_handle, RustBuffer exclude_credentials,
+    uint64_t uniffi_handle, RustBuffer exclude_credentials, RustBuffer salts,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef void (*UniffiCallbackInterfacePrfProviderMethod3)(
@@ -596,6 +596,9 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_add_event_listener(void *ptr,
 uniffi_breez_sdk_spark_fn_method_breezsdk_authorize_lightning_address_transfer(
     void *ptr, RustBuffer request);
 /*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_batch_package(
+    void *ptr, RustBuffer request);
+/*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_lnurl_pay_package(
     void *ptr, RustBuffer request);
 /*handle*/ uint64_t
@@ -680,6 +683,9 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_parse(void *ptr, RustBuffer input);
 uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_lnurl_pay(void *ptr,
                                                             RustBuffer request);
 /*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_batch(
+    void *ptr, RustBuffer request);
+/*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_payment(
     void *ptr, RustBuffer request);
 /*handle*/ uint64_t
@@ -710,6 +716,9 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_register_webhook(void *ptr,
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(void *ptr,
                                                                 RustBuffer id);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_send_batch(void *ptr,
+                                                     RustBuffer request);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment(void *ptr,
                                                        RustBuffer request);
@@ -909,7 +918,7 @@ uniffi_breez_sdk_spark_fn_method_prfprovider_derive_seeds(void *ptr,
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_prfprovider_is_supported(void *ptr);
 /*handle*/ uint64_t uniffi_breez_sdk_spark_fn_method_prfprovider_create_passkey(
-    void *ptr, RustBuffer exclude_credentials);
+    void *ptr, RustBuffer exclude_credentials, RustBuffer salts);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_prfprovider_check_domain_association(
     void *ptr);
@@ -1324,6 +1333,8 @@ uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_authorize_lightning_address_transfer();
 uint16_t
+uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_batch_package();
+uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_lnurl_pay_package();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_transfer_package();
@@ -1363,6 +1374,7 @@ uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_withdraw();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_optimize_leaves();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_parse();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_lnurl_pay();
+uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_batch();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_payment();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_unilateral_exit();
@@ -1380,6 +1392,7 @@ uniffi_breez_sdk_spark_checksum_method_breezsdk_register_lightning_address();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_register_webhook();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener();
+uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_send_batch();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet();
@@ -10909,7 +10922,7 @@ using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
 // a function pointer. The function pointer is passed to Rust.
-static std::function<void(uint64_t, RustBuffer,
+static std::function<void(uint64_t, RustBuffer, RustBuffer,
                           UniffiForeignFutureCompleteRustBuffer, uint64_t,
                           UniffiForeignFuture *)>
     rsLambda = nullptr;
@@ -10920,6 +10933,7 @@ static void body(jsi::Runtime &rt,
                  std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
                  std::shared_ptr<jsi::Value> callbackValue,
                  uint64_t rs_uniffiHandle, RustBuffer rs_excludeCredentials,
+                 RustBuffer rs_salts,
                  UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
                  uint64_t rs_uniffiCallbackData,
                  UniffiForeignFuture *rs_uniffiOutReturn) {
@@ -10931,6 +10945,8 @@ static void body(jsi::Runtime &rt,
   auto js_excludeCredentials =
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
           rt, callInvoker, rs_excludeCredentials);
+  auto js_salts = uniffi::breez_sdk_spark::Bridging<RustBuffer>::toJs(
+      rt, callInvoker, rs_salts);
   auto js_uniffiFutureCallback = uniffi::breez_sdk_spark::Bridging<
       UniffiForeignFutureCompleteRustBuffer>::toJs(rt, callInvoker,
                                                    rs_uniffiFutureCallback);
@@ -10943,8 +10959,9 @@ static void body(jsi::Runtime &rt,
   try {
     // Getting the callback function
     auto cb = callbackValue->asObject(rt).asFunction(rt);
-    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_excludeCredentials,
-                                js_uniffiFutureCallback, js_uniffiCallbackData);
+    auto uniffiResult =
+        cb.call(rt, js_uniffiHandle, js_excludeCredentials, js_salts,
+                js_uniffiFutureCallback, js_uniffiCallbackData);
 
     // return type is MutReference(Struct("ForeignFuture"))
     // Finally, we need to copy the return value back into the Rust pointer.
@@ -10960,6 +10977,7 @@ static void body(jsi::Runtime &rt,
 
 static void
 callback(uint64_t rs_uniffiHandle, RustBuffer rs_excludeCredentials,
+         RustBuffer rs_salts,
          UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
          uint64_t rs_uniffiCallbackData,
          UniffiForeignFuture *rs_uniffiOutReturn) {
@@ -10978,8 +10996,8 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_excludeCredentials,
 
   // The runtime, the actual callback jsi::funtion, and the callInvoker
   // are all in the lambda.
-  rsLambda(rs_uniffiHandle, rs_excludeCredentials, rs_uniffiFutureCallback,
-           rs_uniffiCallbackData, rs_uniffiOutReturn);
+  rsLambda(rs_uniffiHandle, rs_excludeCredentials, rs_salts,
+           rs_uniffiFutureCallback, rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
 static UniffiCallbackInterfacePrfProviderMethod2
@@ -11003,6 +11021,7 @@ makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovid
   auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
   rsLambda = [&rt, callInvoker, callbackValue](
                  uint64_t rs_uniffiHandle, RustBuffer rs_excludeCredentials,
+                 RustBuffer rs_salts,
                  UniffiForeignFutureCompleteRustBuffer rs_uniffiFutureCallback,
                  uint64_t rs_uniffiCallbackData,
                  UniffiForeignFuture *rs_uniffiOutReturn) {
@@ -11010,10 +11029,10 @@ makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfaceprfprovid
     // arguments into JSI values and calling the callback.
     uniffi_runtime::UniffiCallFunc jsLambda =
         [callInvoker, callbackValue, rs_uniffiHandle, rs_excludeCredentials,
-         rs_uniffiFutureCallback, rs_uniffiCallbackData,
+         rs_salts, rs_uniffiFutureCallback, rs_uniffiCallbackData,
          rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
           body(rt, callInvoker, callbackValue, rs_uniffiHandle,
-               rs_excludeCredentials, rs_uniffiFutureCallback,
+               rs_excludeCredentials, rs_salts, rs_uniffiFutureCallback,
                rs_uniffiCallbackData, rs_uniffiOutReturn);
         };
     // We'll then call that lambda from the callInvoker which will
@@ -17298,6 +17317,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_authorize_lightning_address_transfer(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_batch_"
+        "package"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "breezsdk_build_unsigned_batch_package"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_batch_package(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_lnurl_"
         "pay_package"] = jsi::Function::createFromHostFunction(
       rt,
@@ -17680,6 +17711,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_lnurl_pay(
                     rt, thisVal, args, count);
           });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_batch"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                        "breezsdk_prepare_send_batch"),
+          2,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_batch(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_payment"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -17815,6 +17858,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_batch"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(
+              rt, "ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_batch"),
+          2,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_send_batch(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -18729,7 +18784,7 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
           rt,
           jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
                                         "prfprovider_create_passkey"),
-          2,
+          3,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
@@ -20774,6 +20829,19 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_"
+        "batch_package"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "breezsdk_build_unsigned_batch_package"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_batch_package(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_"
         "lnurl_pay_package"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt,
@@ -21152,6 +21220,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_"
+        "batch"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_breezsdk_prepare_send_batch"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_batch(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_"
         "payment"] = jsi::Function::createFromHostFunction(
       rt,
       jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
@@ -21287,6 +21367,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_batch"] =
+      jsi::Function::createFromHostFunction(
+          rt,
+          jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                        "method_breezsdk_send_batch"),
+          0,
+          [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+                 const jsi::Value *args, size_t count) -> jsi::Value {
+            return this
+                ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_batch(
+                    rt, thisVal, args, count);
+          });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment"] =
       jsi::Function::createFromHostFunction(
           rt,
@@ -23703,6 +23795,19 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_batch_package(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_batch_package(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_lnurl_pay_package(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -24069,6 +24174,18 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_batch(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_batch(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_payment(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -24194,6 +24311,18 @@ jsi::Value NativeBreezSdkSpark::
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
   auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[1]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value
+NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_send_batch(
+    jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+    size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_breezsdk_send_batch(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[1]));
@@ -25186,7 +25315,9 @@ jsi::Value NativeBreezSdkSpark::
   auto value = uniffi_breez_sdk_spark_fn_method_prfprovider_create_passkey(
       uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[1]));
+                                                            args[1]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[2]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
@@ -27259,6 +27390,15 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_batch_package(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_batch_package();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_lnurl_pay_package(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -27524,6 +27664,15 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_batch(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_batch();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_payment(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -27618,6 +27767,14 @@ jsi::Value NativeBreezSdkSpark::
         size_t count) {
   auto value =
       uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_batch(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_checksum_method_breezsdk_send_batch();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }

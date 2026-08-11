@@ -1,4 +1,4 @@
-import { type ConfigPlugin } from '@expo/config-plugins';
+import { type ConfigPlugin } from 'expo/config-plugins';
 export type BreezSdkPluginOptions = {
     /**
      * Skip downloading binary artifacts (default: false)

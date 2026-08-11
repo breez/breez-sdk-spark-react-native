@@ -14,6 +14,20 @@ export interface PasskeyCredential {
     backupEligible: boolean | null;
 }
 /**
+ * Result of {@link PasskeyProvider.createPasskey}: the new credential, plus
+ * the PRF outputs when the authenticator evaluated them during the create
+ * ceremony. `seeds` null means it did not, so the caller derives through
+ * {@link PasskeyProvider.deriveSeeds}.
+ *
+ * Seeds returned here must equal what `deriveSeeds` returns for the same
+ * salts: the wallet is derived from them either way, so a mismatch means
+ * register and sign-in land on different wallets.
+ */
+export interface CreatePasskeyOutput {
+    credential: PasskeyCredential;
+    seeds: Uint8Array[] | null;
+}
+/**
  * Result of {@link PasskeyProvider.checkDomainAssociation}. Switch on `kind`
  * to handle each outcome.
  */
@@ -75,13 +89,17 @@ export declare class PasskeyProvider {
         credentialId?: Uint8Array;
     }>;
     /**
-     * Register a new PRF-capable passkey (one prompt, no seed derivation): use
-     * it to split credential creation from derivation in multi-step onboarding.
-     * `excludeCredentials` blocks re-registering a device that already holds a
-     * credential, surfaced as a `credentialAlreadyExists` failure. The returned
-     * user handle is minted fresh per call (never host-supplied).
+     * Register a new PRF-capable passkey. `excludeCredentials` blocks
+     * re-registering a device that already holds a credential, surfaced as a
+     * `credentialAlreadyExists` failure. The returned user handle is minted
+     * fresh per call (never host-supplied).
+     *
+     * Asking the create ceremony to evaluate PRF for `salts` removes the
+     * assertion that would otherwise follow it. `seeds` is null when the
+     * authenticator reported PRF support without evaluating, or returned
+     * fewer outputs than salts; the caller then derives as before.
      */
-    createPasskey(excludeCredentials?: Uint8Array[]): Promise<PasskeyCredential>;
+    createPasskey(excludeCredentials?: Uint8Array[], salts?: string[]): Promise<CreatePasskeyOutput>;
     /** Whether this device supports passkeys with the PRF extension. */
     isSupported(): Promise<boolean>;
     /**

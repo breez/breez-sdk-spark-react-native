@@ -18,6 +18,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_add_contact(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_add_event_listener(ptr: bigint, listener: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_authorize_lightning_address_transfer(ptr: bigint, request: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_batch_package(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_lnurl_pay_package(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_transfer_package(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_buy_bitcoin(ptr: bigint, request: Uint8Array): bigint;
@@ -49,6 +50,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_optimize_leaves(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_parse(ptr: bigint, input: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_lnurl_pay(ptr: bigint, request: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_batch(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_payment(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_unilateral_exit(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_publish_signed_lnurl_pay_package(ptr: bigint, request: Uint8Array): bigint;
@@ -60,6 +62,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_register_lightning_address(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_register_webhook(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_remove_event_listener(ptr: bigint, id: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_batch(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_payment(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_sign_message(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(ptr: bigint, request: Uint8Array): bigint;
@@ -135,7 +138,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_init_callback_vtable_prfprovider(vtable: UniffiVTableCallbackInterfacePrfProvider): void;
     ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_derive_seeds(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_is_supported(ptr: bigint): bigint;
-    ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_create_passkey(ptr: bigint, excludeCredentials: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_create_passkey(ptr: bigint, excludeCredentials: Uint8Array, salts: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_prfprovider_check_domain_association(ptr: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_clone_resolvedstores(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_free_resolvedstores(ptr: bigint, uniffi_out_err: UniffiRustCallStatus): void;
@@ -310,6 +313,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_add_contact(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_authorize_lightning_address_transfer(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_batch_package(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_lnurl_pay_package(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_transfer_package(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin(): number;
@@ -341,6 +345,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_optimize_leaves(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_parse(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_lnurl_pay(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_batch(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_payment(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_unilateral_exit(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_publish_signed_lnurl_pay_package(): number;
@@ -352,6 +357,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_register_lightning_address(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_register_webhook(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_batch(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet(): number;
@@ -602,7 +608,7 @@ type UniffiCallbackInterfacePaymentObserverMethod0 = (uniffiHandle: bigint, paym
 type UniffiCallbackInterfacePaymentObserverMethod1 = (uniffiHandle: bigint, updates: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiForeignFuture;
 type UniffiCallbackInterfacePrfProviderMethod0 = (uniffiHandle: bigint, request: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
 type UniffiCallbackInterfacePrfProviderMethod1 = (uniffiHandle: bigint, uniffiFutureCallback: UniffiForeignFutureCompleteI8, uniffiCallbackData: bigint) => UniffiForeignFuture;
-type UniffiCallbackInterfacePrfProviderMethod2 = (uniffiHandle: bigint, excludeCredentials: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
+type UniffiCallbackInterfacePrfProviderMethod2 = (uniffiHandle: bigint, excludeCredentials: Uint8Array, salts: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
 type UniffiCallbackInterfacePrfProviderMethod3 = (uniffiHandle: bigint, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
 type UniffiCallbackInterfaceRestClientMethod0 = (uniffiHandle: bigint, url: Uint8Array, headers: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
 type UniffiCallbackInterfaceRestClientMethod1 = (uniffiHandle: bigint, url: Uint8Array, headers: Uint8Array, body: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;

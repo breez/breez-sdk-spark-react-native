@@ -335,6 +335,76 @@ export declare const AuthorizeTransferRequest: Readonly<{
      */
     defaults: () => Partial<AuthorizeTransferRequest>;
 }>;
+/**
+ * A single payee in a batch send.
+ */
+export type BatchRecipient = {
+    /**
+     * Spark address or Spark invoice identifying the payee.
+     */
+    paymentRequest: string;
+    /**
+     * Amount to send, in the base units of the asset being sent. Required
+     * unless `payment_request` is an invoice that carries its own amount.
+     */
+    amount: U128 | undefined;
+    /**
+     * Token to send. Unset means sats, which a batch cannot send yet, so a
+     * plain address needs this set. An invoice that names a token does not.
+     */
+    tokenIdentifier: string | undefined;
+};
+/**
+ * Generated factory for {@link BatchRecipient} record objects.
+ */
+export declare const BatchRecipient: Readonly<{
+    /**
+     * Create a frozen instance of {@link BatchRecipient}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<BatchRecipient> & Required<Omit<BatchRecipient, "amount" | "tokenIdentifier">>) => BatchRecipient;
+    /**
+     * Create a frozen instance of {@link BatchRecipient}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<BatchRecipient> & Required<Omit<BatchRecipient, "amount" | "tokenIdentifier">>) => BatchRecipient;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<BatchRecipient>;
+}>;
+/**
+ * What a batch debits for one asset.
+ */
+export type BatchTotal = {
+    /**
+     * The token debited. Unset means sats, which a batch cannot send yet.
+     */
+    tokenIdentifier: string | undefined;
+    /**
+     * Amount in the asset's base units.
+     */
+    amount: U128;
+};
+/**
+ * Generated factory for {@link BatchTotal} record objects.
+ */
+export declare const BatchTotal: Readonly<{
+    /**
+     * Create a frozen instance of {@link BatchTotal}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<BatchTotal> & Required<Omit<BatchTotal, never>>) => BatchTotal;
+    /**
+     * Create a frozen instance of {@link BatchTotal}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<BatchTotal> & Required<Omit<BatchTotal, never>>) => BatchTotal;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<BatchTotal>;
+}>;
 export type Bip21Details = {
     amountSat: /*u64*/ bigint | undefined;
     assetId: string | undefined;
@@ -673,6 +743,28 @@ export declare const Bolt12OfferDetails: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<Bolt12OfferDetails>;
+}>;
+export type BuildUnsignedBatchPackageRequest = {
+    prepareResponse: PrepareSendBatchResponse;
+};
+/**
+ * Generated factory for {@link BuildUnsignedBatchPackageRequest} record objects.
+ */
+export declare const BuildUnsignedBatchPackageRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link BuildUnsignedBatchPackageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<BuildUnsignedBatchPackageRequest> & Required<Omit<BuildUnsignedBatchPackageRequest, never>>) => BuildUnsignedBatchPackageRequest;
+    /**
+     * Create a frozen instance of {@link BuildUnsignedBatchPackageRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<BuildUnsignedBatchPackageRequest> & Required<Omit<BuildUnsignedBatchPackageRequest, never>>) => BuildUnsignedBatchPackageRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<BuildUnsignedBatchPackageRequest>;
 }>;
 export type BuildUnsignedLnurlPayPackageRequest = {
     prepareResponse: PrepareLnurlPayResponse;
@@ -1608,6 +1700,42 @@ export declare const CreateIssuerTokenRequest: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<CreateIssuerTokenRequest>;
+}>;
+/**
+ * A newly created credential, plus the PRF outputs when the platform
+ * evaluated them during the create ceremony itself.
+ *
+ * `seeds` present means no assertion is needed: the caller skips the
+ * second ceremony, and with it the window in which a credential exists
+ * but is not yet resolvable. Absent means the platform returned no PRF
+ * results at create (or dropped one of a pair), so the caller derives
+ * through [`super::PrfProvider::derive_seeds`] as before.
+ */
+export type CreatePasskeyOutput = {
+    credential: PasskeyCredential;
+    /**
+     * One output per requested salt, in request order.
+     */
+    seeds: Array<ArrayBuffer> | undefined;
+};
+/**
+ * Generated factory for {@link CreatePasskeyOutput} record objects.
+ */
+export declare const CreatePasskeyOutput: Readonly<{
+    /**
+     * Create a frozen instance of {@link CreatePasskeyOutput}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CreatePasskeyOutput> & Required<Omit<CreatePasskeyOutput, never>>) => CreatePasskeyOutput;
+    /**
+     * Create a frozen instance of {@link CreatePasskeyOutput}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CreatePasskeyOutput> & Required<Omit<CreatePasskeyOutput, never>>) => CreatePasskeyOutput;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CreatePasskeyOutput>;
 }>;
 export type Credentials = {
     username: string;
@@ -4612,6 +4740,63 @@ export declare const PrepareLnurlPayResponse: Readonly<{
      */
     defaults: () => Partial<PrepareLnurlPayResponse>;
 }>;
+export type PrepareSendBatchRequest = {
+    /**
+     * The payees, all paid by one transaction. They may span several tokens,
+     * and may mix Spark addresses with Spark invoices. Once a Spark invoice is
+     * among them, every recipient must be paid in the same token.
+     */
+    recipients: Array<BatchRecipient>;
+};
+/**
+ * Generated factory for {@link PrepareSendBatchRequest} record objects.
+ */
+export declare const PrepareSendBatchRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link PrepareSendBatchRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PrepareSendBatchRequest> & Required<Omit<PrepareSendBatchRequest, never>>) => PrepareSendBatchRequest;
+    /**
+     * Create a frozen instance of {@link PrepareSendBatchRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PrepareSendBatchRequest> & Required<Omit<PrepareSendBatchRequest, never>>) => PrepareSendBatchRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PrepareSendBatchRequest>;
+}>;
+export type PrepareSendBatchResponse = {
+    /**
+     * The payees in the order they were requested, which is the order their
+     * payments come back in.
+     */
+    recipients: Array<ResolvedBatchRecipient>;
+    /**
+     * What the batch debits, one entry per distinct asset.
+     */
+    totals: Array<BatchTotal>;
+};
+/**
+ * Generated factory for {@link PrepareSendBatchResponse} record objects.
+ */
+export declare const PrepareSendBatchResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link PrepareSendBatchResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PrepareSendBatchResponse> & Required<Omit<PrepareSendBatchResponse, never>>) => PrepareSendBatchResponse;
+    /**
+     * Create a frozen instance of {@link PrepareSendBatchResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PrepareSendBatchResponse> & Required<Omit<PrepareSendBatchResponse, never>>) => PrepareSendBatchResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PrepareSendBatchResponse>;
+}>;
 export type PrepareSendPaymentRequest = {
     paymentRequest: PaymentRequest;
     /**
@@ -5343,6 +5528,40 @@ export declare const RegisterWebhookResponse: Readonly<{
      */
     defaults: () => Partial<RegisterWebhookResponse>;
 }>;
+/**
+ * A recipient after prepare has resolved the asset and amount it is owed.
+ */
+export type ResolvedBatchRecipient = {
+    destination: BatchDestination;
+    /**
+     * Amount in the base units of the asset this recipient is paid in.
+     */
+    amount: U128;
+    /**
+     * The token this recipient is paid in. Unset means sats, which a batch
+     * cannot send yet.
+     */
+    tokenIdentifier: string | undefined;
+};
+/**
+ * Generated factory for {@link ResolvedBatchRecipient} record objects.
+ */
+export declare const ResolvedBatchRecipient: Readonly<{
+    /**
+     * Create a frozen instance of {@link ResolvedBatchRecipient}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ResolvedBatchRecipient> & Required<Omit<ResolvedBatchRecipient, never>>) => ResolvedBatchRecipient;
+    /**
+     * Create a frozen instance of {@link ResolvedBatchRecipient}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ResolvedBatchRecipient> & Required<Omit<ResolvedBatchRecipient, never>>) => ResolvedBatchRecipient;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ResolvedBatchRecipient>;
+}>;
 export type RestResponse = {
     status: number;
     body: string;
@@ -5469,6 +5688,54 @@ export declare const SecretBytes: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<SecretBytes>;
+}>;
+export type SendBatchRequest = {
+    prepareResponse: PrepareSendBatchResponse;
+};
+/**
+ * Generated factory for {@link SendBatchRequest} record objects.
+ */
+export declare const SendBatchRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link SendBatchRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SendBatchRequest> & Required<Omit<SendBatchRequest, never>>) => SendBatchRequest;
+    /**
+     * Create a frozen instance of {@link SendBatchRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SendBatchRequest> & Required<Omit<SendBatchRequest, never>>) => SendBatchRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SendBatchRequest>;
+}>;
+export type SendBatchResponse = {
+    /**
+     * One payment per recipient, in recipient order, all sharing a transaction
+     * hash.
+     */
+    payments: Array<Payment>;
+};
+/**
+ * Generated factory for {@link SendBatchResponse} record objects.
+ */
+export declare const SendBatchResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link SendBatchResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<SendBatchResponse> & Required<Omit<SendBatchResponse, never>>) => SendBatchResponse;
+    /**
+     * Create a frozen instance of {@link SendBatchResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<SendBatchResponse> & Required<Omit<SendBatchResponse, never>>) => SendBatchResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<SendBatchResponse>;
 }>;
 export type SendOnchainFeeQuote = {
     id: string;
@@ -7817,6 +8084,98 @@ export declare const AutoOptimizationEvent: Readonly<{
     };
 }>;
 export type AutoOptimizationEvent = InstanceType<(typeof AutoOptimizationEvent)[keyof Omit<typeof AutoOptimizationEvent, 'instanceOf'>]>;
+export declare enum BatchDestination_Tags {
+    SparkAddress = "SparkAddress",
+    SparkInvoice = "SparkInvoice"
+}
+/**
+ * Where a batch recipient is paid, once prepare has decoded its payment request.
+ */
+export declare const BatchDestination: Readonly<{
+    instanceOf: (obj: any) => obj is BatchDestination;
+    SparkAddress: {
+        new (inner: {
+            address: string;
+        }): {
+            readonly tag: BatchDestination_Tags.SparkAddress;
+            readonly inner: Readonly<{
+                address: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BatchDestination";
+        };
+        "new"(inner: {
+            address: string;
+        }): {
+            readonly tag: BatchDestination_Tags.SparkAddress;
+            readonly inner: Readonly<{
+                address: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BatchDestination";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: BatchDestination_Tags.SparkAddress;
+            readonly inner: Readonly<{
+                address: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BatchDestination";
+        };
+    };
+    SparkInvoice: {
+        new (inner: {
+            invoiceDetails: SparkInvoiceDetails;
+        }): {
+            readonly tag: BatchDestination_Tags.SparkInvoice;
+            readonly inner: Readonly<{
+                invoiceDetails: SparkInvoiceDetails;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BatchDestination";
+        };
+        "new"(inner: {
+            invoiceDetails: SparkInvoiceDetails;
+        }): {
+            readonly tag: BatchDestination_Tags.SparkInvoice;
+            readonly inner: Readonly<{
+                invoiceDetails: SparkInvoiceDetails;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BatchDestination";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: BatchDestination_Tags.SparkInvoice;
+            readonly inner: Readonly<{
+                invoiceDetails: SparkInvoiceDetails;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "BatchDestination";
+        };
+    };
+}>;
+/**
+ * Where a batch recipient is paid, once prepare has decoded its payment request.
+ */
+export type BatchDestination = InstanceType<(typeof BatchDestination)[keyof Omit<typeof BatchDestination, 'instanceOf'>]>;
 export declare enum BitcoinNetwork {
     /**
      * Mainnet
@@ -11468,6 +11827,7 @@ export declare enum PasskeyError_Tags {
     InvalidPrfOutput = "InvalidPrfOutput",
     MnemonicError = "MnemonicError",
     InvalidSalt = "InvalidSalt",
+    CreatedButNotDerived = "CreatedButNotDerived",
     Generic = "Generic"
 }
 /**
@@ -12038,6 +12398,101 @@ export declare const PasskeyError: Readonly<{
             stack?: string;
             cause?: unknown;
         }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    CreatedButNotDerived: {
+        new (inner: {
+            credentialId: ArrayBuffer;
+            source: PrfProviderError;
+        }): {
+            readonly tag: PasskeyError_Tags.CreatedButNotDerived;
+            readonly inner: Readonly<{
+                credentialId: ArrayBuffer;
+                source: PrfProviderError;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(inner: {
+            credentialId: ArrayBuffer;
+            source: PrfProviderError;
+        }): {
+            readonly tag: PasskeyError_Tags.CreatedButNotDerived;
+            readonly inner: Readonly<{
+                credentialId: ArrayBuffer;
+                source: PrfProviderError;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.CreatedButNotDerived;
+            readonly inner: Readonly<{
+                credentialId: ArrayBuffer;
+                source: PrfProviderError;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.CreatedButNotDerived;
+            readonly inner: Readonly<{
+                credentialId: ArrayBuffer;
+                source: PrfProviderError;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyError_Tags.CreatedButNotDerived;
+            readonly inner: Readonly<{
+                credentialId: ArrayBuffer;
+                source: PrfProviderError;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<{
+            credentialId: ArrayBuffer;
+            source: PrfProviderError;
+        }>;
         isError(error: unknown): error is Error;
         captureStackTrace(targetObject: object, constructorOpt?: Function): void;
         prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
@@ -13822,7 +14277,8 @@ export declare const PublishSignedLnurlPayResponse: Readonly<{
 export type PublishSignedLnurlPayResponse = InstanceType<(typeof PublishSignedLnurlPayResponse)[keyof Omit<typeof PublishSignedLnurlPayResponse, 'instanceOf'>]>;
 export declare enum PublishSignedTransferPackageResponse_Tags {
     SwapCompleted = "SwapCompleted",
-    PaymentSent = "PaymentSent"
+    PaymentSent = "PaymentSent",
+    PaymentsSent = "PaymentsSent"
 }
 export declare const PublishSignedTransferPackageResponse: Readonly<{
     instanceOf: (obj: any) => obj is PublishSignedTransferPackageResponse;
@@ -13883,6 +14339,45 @@ export declare const PublishSignedTransferPackageResponse: Readonly<{
             readonly tag: PublishSignedTransferPackageResponse_Tags.PaymentSent;
             readonly inner: Readonly<{
                 payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedTransferPackageResponse";
+        };
+    };
+    PaymentsSent: {
+        new (inner: {
+            payments: Array<Payment>;
+        }): {
+            readonly tag: PublishSignedTransferPackageResponse_Tags.PaymentsSent;
+            readonly inner: Readonly<{
+                payments: Array<Payment>;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedTransferPackageResponse";
+        };
+        "new"(inner: {
+            payments: Array<Payment>;
+        }): {
+            readonly tag: PublishSignedTransferPackageResponse_Tags.PaymentsSent;
+            readonly inner: Readonly<{
+                payments: Array<Payment>;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PublishSignedTransferPackageResponse";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PublishSignedTransferPackageResponse_Tags.PaymentsSent;
+            readonly inner: Readonly<{
+                payments: Array<Payment>;
             }>;
             /**
              * @private
@@ -14218,8 +14713,16 @@ export declare const SdkError: Readonly<{
         stackTraceLimit: number;
     };
     InsufficientFunds: {
-        new (): {
+        new (inner: {
+            /**
+             * The token that cannot cover the payment. Unset when the shortfall is
+             * in sats or when no single token can be named.
+             */ tokenIdentifier: string | undefined;
+        }): {
             readonly tag: SdkError_Tags.InsufficientFunds;
+            readonly inner: Readonly<{
+                tokenIdentifier: string | undefined;
+            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -14230,8 +14733,16 @@ export declare const SdkError: Readonly<{
             stack?: string;
             cause?: unknown;
         };
-        "new"(): {
+        "new"(inner: {
+            /**
+             * The token that cannot cover the payment. Unset when the shortfall is
+             * in sats or when no single token can be named.
+             */ tokenIdentifier: string | undefined;
+        }): {
             readonly tag: SdkError_Tags.InsufficientFunds;
+            readonly inner: Readonly<{
+                tokenIdentifier: string | undefined;
+            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -14244,6 +14755,9 @@ export declare const SdkError: Readonly<{
         };
         instanceOf(obj: any): obj is {
             readonly tag: SdkError_Tags.InsufficientFunds;
+            readonly inner: Readonly<{
+                tokenIdentifier: string | undefined;
+            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -14256,6 +14770,9 @@ export declare const SdkError: Readonly<{
         };
         hasInner(obj: any): obj is {
             readonly tag: SdkError_Tags.InsufficientFunds;
+            readonly inner: Readonly<{
+                tokenIdentifier: string | undefined;
+            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -14266,6 +14783,23 @@ export declare const SdkError: Readonly<{
             stack?: string;
             cause?: unknown;
         };
+        getInner(obj: {
+            readonly tag: SdkError_Tags.InsufficientFunds;
+            readonly inner: Readonly<{
+                tokenIdentifier: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<{
+            tokenIdentifier: string | undefined;
+        }>;
         isError(error: unknown): error is Error;
         captureStackTrace(targetObject: object, constructorOpt?: Function): void;
         prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
@@ -19139,7 +19673,8 @@ export declare enum UnilateralExitTxKind {
 export declare enum UnsignedTransferPackage_Tags {
     Swap = "Swap",
     Transfer = "Transfer",
-    Token = "Token"
+    Token = "Token",
+    TokenBatch = "TokenBatch"
 }
 export declare const UnsignedTransferPackage: Readonly<{
     instanceOf: (obj: any) => obj is UnsignedTransferPackage;
@@ -19314,6 +19849,74 @@ export declare const UnsignedTransferPackage: Readonly<{
                 tokenIdentifier: string;
                 amount: U128;
                 fee: U128;
+                isSwap: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnsignedTransferPackage";
+        };
+    };
+    TokenBatch: {
+        new (inner: {
+            prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+            tokenContext: ArrayBuffer;
+            /**
+             * What the batch debits, per token. A batch spanning tokens has no
+             * single amount to report.
+             */ totals: Array<BatchTotal>;
+            /**
+             * When set, this package re-shapes the wallet's token outputs instead of
+             * sending a payment. Publishing it returns `SwapCompleted`: rebuild the
+             * original send from the same prepare response and submit again.
+             */ isSwap: boolean;
+        }): {
+            readonly tag: UnsignedTransferPackage_Tags.TokenBatch;
+            readonly inner: Readonly<{
+                prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+                tokenContext: ArrayBuffer;
+                totals: Array<BatchTotal>;
+                isSwap: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnsignedTransferPackage";
+        };
+        "new"(inner: {
+            prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+            tokenContext: ArrayBuffer;
+            /**
+             * What the batch debits, per token. A batch spanning tokens has no
+             * single amount to report.
+             */ totals: Array<BatchTotal>;
+            /**
+             * When set, this package re-shapes the wallet's token outputs instead of
+             * sending a payment. Publishing it returns `SwapCompleted`: rebuild the
+             * original send from the same prepare response and submit again.
+             */ isSwap: boolean;
+        }): {
+            readonly tag: UnsignedTransferPackage_Tags.TokenBatch;
+            readonly inner: Readonly<{
+                prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+                tokenContext: ArrayBuffer;
+                totals: Array<BatchTotal>;
+                isSwap: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnsignedTransferPackage";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: UnsignedTransferPackage_Tags.TokenBatch;
+            readonly inner: Readonly<{
+                prepareTokenTransaction: ExternalPrepareTokenTransactionRequest;
+                tokenContext: ArrayBuffer;
+                totals: Array<BatchTotal>;
                 isSwap: boolean;
             }>;
             /**
@@ -19681,6 +20284,16 @@ export interface BreezSdkInterface {
     authorizeLightningAddressTransfer(request: AuthorizeTransferRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<TransferAuthorization>;
+    /**
+     * Builds the unsigned package for the batch prepared by
+     * [`BreezSdk::prepare_send_batch`], for signing outside the SDK.
+     *
+     * Publish the signed package with
+     * [`BreezSdk::publish_signed_transfer_package`], which returns every payment.
+     */
+    buildUnsignedBatchPackage(request: BuildUnsignedBatchPackageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<UnsignedTransferPackage>;
     buildUnsignedLnurlPayPackage(request: BuildUnsignedLnurlPayPackageRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<UnsignedTransferPackage>;
@@ -19936,6 +20549,23 @@ export interface BreezSdkInterface {
     prepareLnurlPay(request: PrepareLnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareLnurlPayResponse>;
+    /**
+     * Prepares a send to several payees, all paid by one transaction.
+     *
+     * Each recipient is a Spark address or a Spark invoice, and one batch may
+     * span several tokens. The response resolves every invoice into the asset
+     * and amount it requests, and reports what the batch debits per asset.
+     *
+     * A batch pays tokens: sending sats to several payees at once is not
+     * supported yet, so a recipient that resolves to sats is rejected.
+     *
+     * A batch that pays a Spark invoice is limited to a single token: the
+     * operators reject a transaction that carries an invoice and pays more
+     * than one. Send those as one batch per token.
+     */
+    prepareSendBatch(request: PrepareSendBatchRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PrepareSendBatchResponse>;
     prepareSendPayment(request: PrepareSendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareSendPaymentResponse>;
@@ -20015,6 +20645,19 @@ export interface BreezSdkInterface {
     removeEventListener(id: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
+    /**
+     * Sends the batch prepared by [`BreezSdk::prepare_send_batch`], returning
+     * one payment per recipient in recipient order.
+     *
+     * Retrying after a failure that leaves the outcome unknown may pay twice:
+     * a token transfer has no idempotency key, since the operator can only be
+     * asked about a transaction by a hash that is computed while broadcasting.
+     * Look for the batch with a `Token` payment details filter on the
+     * transaction hash before sending it again.
+     */
+    sendBatch(request: SendBatchRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SendBatchResponse>;
     sendPayment(request: SendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SendPaymentResponse>;
@@ -20135,6 +20778,16 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     authorizeLightningAddressTransfer(request: AuthorizeTransferRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<TransferAuthorization>;
+    /**
+     * Builds the unsigned package for the batch prepared by
+     * [`BreezSdk::prepare_send_batch`], for signing outside the SDK.
+     *
+     * Publish the signed package with
+     * [`BreezSdk::publish_signed_transfer_package`], which returns every payment.
+     */
+    buildUnsignedBatchPackage(request: BuildUnsignedBatchPackageRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<UnsignedTransferPackage>;
     buildUnsignedLnurlPayPackage(request: BuildUnsignedLnurlPayPackageRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<UnsignedTransferPackage>;
@@ -20390,6 +21043,23 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     prepareLnurlPay(request: PrepareLnurlPayRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareLnurlPayResponse>;
+    /**
+     * Prepares a send to several payees, all paid by one transaction.
+     *
+     * Each recipient is a Spark address or a Spark invoice, and one batch may
+     * span several tokens. The response resolves every invoice into the asset
+     * and amount it requests, and reports what the batch debits per asset.
+     *
+     * A batch pays tokens: sending sats to several payees at once is not
+     * supported yet, so a recipient that resolves to sats is rejected.
+     *
+     * A batch that pays a Spark invoice is limited to a single token: the
+     * operators reject a transaction that carries an invoice and pays more
+     * than one. Send those as one batch per token.
+     */
+    prepareSendBatch(request: PrepareSendBatchRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<PrepareSendBatchResponse>;
     prepareSendPayment(request: PrepareSendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<PrepareSendPaymentResponse>;
@@ -20469,6 +21139,19 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     removeEventListener(id: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<boolean>;
+    /**
+     * Sends the batch prepared by [`BreezSdk::prepare_send_batch`], returning
+     * one payment per recipient in recipient order.
+     *
+     * Retrying after a failure that leaves the outcome unknown may pay twice:
+     * a token transfer has no idempotency key, since the operator can only be
+     * asked about a transaction by a hash that is computed while broadcasting.
+     * Look for the batch with a `Token` payment details filter on the
+     * transaction hash before sending it again.
+     */
+    sendBatch(request: SendBatchRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<SendBatchResponse>;
     sendPayment(request: SendPaymentRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<SendPaymentResponse>;
@@ -21281,10 +21964,12 @@ export interface PasskeyClientInterface {
      */
     labels(): PasskeyLabelsInterface;
     /**
-     * First-time setup. Drives [`PrfProvider::create_passkey`] (one
-     * ceremony) followed by the wallet-derivation flow that backs
-     * [`Passkey::setup_wallet`] (one ceremony, dual-salt where
-     * supported). The label is always published on success.
+     * First-time setup. Drives [`PrfProvider::create_passkey`], which
+     * returns the seeds inline where the platform evaluates PRF during
+     * the create ceremony; otherwise the wallet-derivation flow behind
+     * [`Passkey::setup_wallet`] runs as a second ceremony. The label is
+     * validated before anything is created, and published in the
+     * background: it may still be in flight when this returns `Ok`.
      */
     register(request: RegisterRequest, asyncOpts_?: {
         signal: AbortSignal;
@@ -21360,10 +22045,12 @@ export declare class PasskeyClient extends UniffiAbstractObject implements Passk
      */
     labels(): PasskeyLabelsInterface;
     /**
-     * First-time setup. Drives [`PrfProvider::create_passkey`] (one
-     * ceremony) followed by the wallet-derivation flow that backs
-     * [`Passkey::setup_wallet`] (one ceremony, dual-salt where
-     * supported). The label is always published on success.
+     * First-time setup. Drives [`PrfProvider::create_passkey`], which
+     * returns the seeds inline where the platform evaluates PRF during
+     * the create ceremony; otherwise the wallet-derivation flow behind
+     * [`Passkey::setup_wallet`] runs as a second ceremony. The label is
+     * validated before anything is created, and published in the
+     * background: it may still be in flight when this returns `Ok`.
      */
     register(request: RegisterRequest, asyncOpts_?: {
         signal: AbortSignal;
@@ -21516,19 +22203,33 @@ export interface PrfProvider {
         signal: AbortSignal;
     }): Promise<boolean>;
     /**
-     * Explicit registration. Platform passkey providers override this to
-     * drive the OS create ceremony and surface the credential metadata
-     * hosts need for `exclude_credentials` bookkeeping. CLI / hardware
-     * providers register lazily in [`Self::derive_seeds`] and inherit the
-     * default `PrfNotSupported`.
+     * Explicit registration: drive the OS create ceremony, and where the
+     * platform supports it, evaluate PRF for `salts` in the same
+     * ceremony. Platform passkey providers override this to surface the
+     * credential metadata hosts need for `exclude_credentials`
+     * bookkeeping. CLI / hardware providers register lazily in
+     * [`Self::derive_seeds`] and inherit the default `PrfNotSupported`.
      *
      * `exclude_credentials` lists already-registered IDs and surfaces
      * duplicates as `CredentialAlreadyExists`. The `user.id` is always
      * provider-minted and returned on `PasskeyCredential.user_id`.
+     *
+     * Returning seeds removes the assertion that would otherwise follow
+     * a create, and with it the window where the new credential exists
+     * but the platform cannot yet resolve it. Return `seeds: None` for
+     * anything short of one output per salt (some authenticators drop
+     * `prf.eval.second`): a partial result is not usable, and the caller
+     * falls back to [`Self::derive_seeds`]. Empty `salts` means the
+     * caller wants the credential only.
+     *
+     * Seeds returned here must equal what [`Self::derive_seeds`] would
+     * return for the same salts. The wallet is derived from them either
+     * way, so a mismatch means register and sign-in land on different
+     * wallets, and the one register created is unreachable.
      */
-    createPasskey(excludeCredentials: Array<ArrayBuffer>, asyncOpts_?: {
+    createPasskey(excludeCredentials: Array<ArrayBuffer>, salts: Array<string>, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<PasskeyCredential>;
+    }): Promise<CreatePasskeyOutput>;
     /**
      * Advisory check against the platform's out-of-band verification
      * source (iOS AASA / Android assetlinks / browser rpId scope).
@@ -21586,19 +22287,33 @@ export declare class PrfProviderImpl extends UniffiAbstractObject implements Prf
         signal: AbortSignal;
     }): Promise<boolean>;
     /**
-     * Explicit registration. Platform passkey providers override this to
-     * drive the OS create ceremony and surface the credential metadata
-     * hosts need for `exclude_credentials` bookkeeping. CLI / hardware
-     * providers register lazily in [`Self::derive_seeds`] and inherit the
-     * default `PrfNotSupported`.
+     * Explicit registration: drive the OS create ceremony, and where the
+     * platform supports it, evaluate PRF for `salts` in the same
+     * ceremony. Platform passkey providers override this to surface the
+     * credential metadata hosts need for `exclude_credentials`
+     * bookkeeping. CLI / hardware providers register lazily in
+     * [`Self::derive_seeds`] and inherit the default `PrfNotSupported`.
      *
      * `exclude_credentials` lists already-registered IDs and surfaces
      * duplicates as `CredentialAlreadyExists`. The `user.id` is always
      * provider-minted and returned on `PasskeyCredential.user_id`.
+     *
+     * Returning seeds removes the assertion that would otherwise follow
+     * a create, and with it the window where the new credential exists
+     * but the platform cannot yet resolve it. Return `seeds: None` for
+     * anything short of one output per salt (some authenticators drop
+     * `prf.eval.second`): a partial result is not usable, and the caller
+     * falls back to [`Self::derive_seeds`]. Empty `salts` means the
+     * caller wants the credential only.
+     *
+     * Seeds returned here must equal what [`Self::derive_seeds`] would
+     * return for the same salts. The wallet is derived from them either
+     * way, so a mismatch means register and sign-in land on different
+     * wallets, and the one register created is unreachable.
      */
-    createPasskey(excludeCredentials: Array<ArrayBuffer>, asyncOpts_?: {
+    createPasskey(excludeCredentials: Array<ArrayBuffer>, salts: Array<string>, asyncOpts_?: {
         signal: AbortSignal;
-    }): Promise<PasskeyCredential>;
+    }): Promise<CreatePasskeyOutput>;
     /**
      * Advisory check against the platform's out-of-band verification
      * source (iOS AASA / Android assetlinks / browser rpId scope).
@@ -22926,6 +23641,27 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): AutoOptimizationEvent;
             lower(value: AutoOptimizationEvent): UniffiByteArray;
         };
+        FfiConverterTypeBatchDestination: {
+            read(from: RustBuffer): BatchDestination;
+            write(value: BatchDestination, into: RustBuffer): void;
+            allocationSize(value: BatchDestination): number;
+            lift(value: UniffiByteArray): BatchDestination;
+            lower(value: BatchDestination): UniffiByteArray;
+        };
+        FfiConverterTypeBatchRecipient: {
+            read(from: RustBuffer): BatchRecipient;
+            write(value: BatchRecipient, into: RustBuffer): void;
+            allocationSize(value: BatchRecipient): number;
+            lift(value: UniffiByteArray): BatchRecipient;
+            lower(value: BatchRecipient): UniffiByteArray;
+        };
+        FfiConverterTypeBatchTotal: {
+            read(from: RustBuffer): BatchTotal;
+            write(value: BatchTotal, into: RustBuffer): void;
+            allocationSize(value: BatchTotal): number;
+            lift(value: UniffiByteArray): BatchTotal;
+            lower(value: BatchTotal): UniffiByteArray;
+        };
         FfiConverterTypeBip21Details: {
             read(from: RustBuffer): Bip21Details;
             write(value: Bip21Details, into: RustBuffer): void;
@@ -23032,6 +23768,13 @@ declare const _default: Readonly<{
             allocationSize(value: BuildTransferPackageOptions): number;
             lift(value: UniffiByteArray): BuildTransferPackageOptions;
             lower(value: BuildTransferPackageOptions): UniffiByteArray;
+        };
+        FfiConverterTypeBuildUnsignedBatchPackageRequest: {
+            read(from: RustBuffer): BuildUnsignedBatchPackageRequest;
+            write(value: BuildUnsignedBatchPackageRequest, into: RustBuffer): void;
+            allocationSize(value: BuildUnsignedBatchPackageRequest): number;
+            lift(value: UniffiByteArray): BuildUnsignedBatchPackageRequest;
+            lower(value: BuildUnsignedBatchPackageRequest): UniffiByteArray;
         };
         FfiConverterTypeBuildUnsignedLnurlPayPackageRequest: {
             read(from: RustBuffer): BuildUnsignedLnurlPayPackageRequest;
@@ -23306,6 +24049,13 @@ declare const _default: Readonly<{
             allocationSize(value: CreateIssuerTokenRequest): number;
             lift(value: UniffiByteArray): CreateIssuerTokenRequest;
             lower(value: CreateIssuerTokenRequest): UniffiByteArray;
+        };
+        FfiConverterTypeCreatePasskeyOutput: {
+            read(from: RustBuffer): CreatePasskeyOutput;
+            write(value: CreatePasskeyOutput, into: RustBuffer): void;
+            allocationSize(value: CreatePasskeyOutput): number;
+            lift(value: UniffiByteArray): CreatePasskeyOutput;
+            lower(value: CreatePasskeyOutput): UniffiByteArray;
         };
         FfiConverterTypeCredentials: {
             read(from: RustBuffer): Credentials;
@@ -24224,6 +24974,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): PrepareLnurlPayResponse;
             lower(value: PrepareLnurlPayResponse): UniffiByteArray;
         };
+        FfiConverterTypePrepareSendBatchRequest: {
+            read(from: RustBuffer): PrepareSendBatchRequest;
+            write(value: PrepareSendBatchRequest, into: RustBuffer): void;
+            allocationSize(value: PrepareSendBatchRequest): number;
+            lift(value: UniffiByteArray): PrepareSendBatchRequest;
+            lower(value: PrepareSendBatchRequest): UniffiByteArray;
+        };
+        FfiConverterTypePrepareSendBatchResponse: {
+            read(from: RustBuffer): PrepareSendBatchResponse;
+            write(value: PrepareSendBatchResponse, into: RustBuffer): void;
+            allocationSize(value: PrepareSendBatchResponse): number;
+            lift(value: UniffiByteArray): PrepareSendBatchResponse;
+            lower(value: PrepareSendBatchResponse): UniffiByteArray;
+        };
         FfiConverterTypePrepareSendPaymentRequest: {
             read(from: RustBuffer): PrepareSendPaymentRequest;
             write(value: PrepareSendPaymentRequest, into: RustBuffer): void;
@@ -24429,6 +25193,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): RegisterWebhookResponse;
             lower(value: RegisterWebhookResponse): UniffiByteArray;
         };
+        FfiConverterTypeResolvedBatchRecipient: {
+            read(from: RustBuffer): ResolvedBatchRecipient;
+            write(value: ResolvedBatchRecipient, into: RustBuffer): void;
+            allocationSize(value: ResolvedBatchRecipient): number;
+            lift(value: UniffiByteArray): ResolvedBatchRecipient;
+            lower(value: ResolvedBatchRecipient): UniffiByteArray;
+        };
         FfiConverterTypeResolvedStores: FfiConverterObject<ResolvedStoresInterface>;
         FfiConverterTypeRestClient: FfiConverterObjectWithCallbacks<RestClient>;
         FfiConverterTypeRestResponse: {
@@ -24481,6 +25252,20 @@ declare const _default: Readonly<{
             allocationSize(value: Seed): number;
             lift(value: UniffiByteArray): Seed;
             lower(value: Seed): UniffiByteArray;
+        };
+        FfiConverterTypeSendBatchRequest: {
+            read(from: RustBuffer): SendBatchRequest;
+            write(value: SendBatchRequest, into: RustBuffer): void;
+            allocationSize(value: SendBatchRequest): number;
+            lift(value: UniffiByteArray): SendBatchRequest;
+            lower(value: SendBatchRequest): UniffiByteArray;
+        };
+        FfiConverterTypeSendBatchResponse: {
+            read(from: RustBuffer): SendBatchResponse;
+            write(value: SendBatchResponse, into: RustBuffer): void;
+            allocationSize(value: SendBatchResponse): number;
+            lift(value: UniffiByteArray): SendBatchResponse;
+            lower(value: SendBatchResponse): UniffiByteArray;
         };
         FfiConverterTypeSendOnchainFeeQuote: {
             read(from: RustBuffer): SendOnchainFeeQuote;
