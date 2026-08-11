@@ -1,6 +1,6 @@
 {
   "name": "@breeztech/breez-sdk-spark-react-native",
-  "version": "0.21.0",
+  "version": "0.21.1",
   "description": "React Native bindings for the Breez SDK - Nodeless (Spark Implementation)",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
@@ -37,6 +37,8 @@
     "cpp",
     "*.podspec",
     "app.plugin.js",
+    "passkey-prf-provider.js",
+    "passkey-prf-provider.d.ts",
     "react-native.config.js",
     "swift",
     "scripts",
@@ -209,7 +211,7 @@
     "version": "0.49.0"
   },
   "checksums": {
-    "android": "ae83553d8bec3229c120d13ad13850715d426c80fa6b255bf1d1ecd8c9beb895",
-    "ios": "0f9ff4edda8e2c8147f2f2bbda79e07458f9180774edcf34e59661586951e2f4"
+    "android": "79713a56bab0aa1f9071709780051816438b5d55cca0574b4748f79e9056655d",
+    "ios": "2f84c07585c8be34dcbe324e594bf4d9351cbca3e6c8e666f9b6cfa711646240"
   }
 }
