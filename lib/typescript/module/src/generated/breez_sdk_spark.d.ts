@@ -5338,8 +5338,8 @@ export type RefundPendingConversionsResponse = {
      */
     refunded: number;
     /**
-     * Conversions intentionally deferred (eligible but held back by a
-     * safety window). The next pass will retry them.
+     * Conversions not clawed back this pass: held back by a safety window, or
+     * found to have executed after all. Only the former are retried.
      */
     skipped: number;
     /**
@@ -8824,6 +8824,10 @@ export declare const ConversionInfo: Readonly<{
             /**
              * The reason the conversion amount was adjusted, if applicable.
              */ amountAdjustment: AmountAdjustmentReason | undefined;
+            /**
+             * How the swap departed from the signed terms, if it did. Set on a
+             * conversion that completed without delivering what was signed for.
+             */ degradation: SwapDegradation | undefined;
         }): {
             readonly tag: ConversionInfo_Tags.Amm;
             readonly inner: Readonly<{
@@ -8833,6 +8837,7 @@ export declare const ConversionInfo: Readonly<{
                 fee: U128 | undefined;
                 purpose: ConversionPurpose | undefined;
                 amountAdjustment: AmountAdjustmentReason | undefined;
+                degradation: SwapDegradation | undefined;
             }>;
             /**
              * @private
@@ -8860,6 +8865,10 @@ export declare const ConversionInfo: Readonly<{
             /**
              * The reason the conversion amount was adjusted, if applicable.
              */ amountAdjustment: AmountAdjustmentReason | undefined;
+            /**
+             * How the swap departed from the signed terms, if it did. Set on a
+             * conversion that completed without delivering what was signed for.
+             */ degradation: SwapDegradation | undefined;
         }): {
             readonly tag: ConversionInfo_Tags.Amm;
             readonly inner: Readonly<{
@@ -8869,6 +8878,7 @@ export declare const ConversionInfo: Readonly<{
                 fee: U128 | undefined;
                 purpose: ConversionPurpose | undefined;
                 amountAdjustment: AmountAdjustmentReason | undefined;
+                degradation: SwapDegradation | undefined;
             }>;
             /**
              * @private
@@ -8885,6 +8895,7 @@ export declare const ConversionInfo: Readonly<{
                 fee: U128 | undefined;
                 purpose: ConversionPurpose | undefined;
                 amountAdjustment: AmountAdjustmentReason | undefined;
+                degradation: SwapDegradation | undefined;
             }>;
             /**
              * @private
@@ -19401,6 +19412,27 @@ export declare const SuccessActionProcessed: Readonly<{
  * Contents are identical to [`SuccessAction`], except for AES where the ciphertext is decrypted.
  */
 export type SuccessActionProcessed = InstanceType<(typeof SuccessActionProcessed)[keyof Omit<typeof SuccessActionProcessed, 'instanceOf'>]>;
+/**
+ * How an executed swap departed from the terms the client signed.
+ *
+ * The input is spent either way, so the conversion completes rather than being
+ * refunded. This records that it did not deliver what was signed for.
+ */
+export declare enum SwapDegradation {
+    /**
+     * Delivered less than the minimum the intent signed.
+     */
+    BelowMinimum = 0,
+    /**
+     * Delivered an asset other than the one the intent named.
+     */
+    UnexpectedAsset = 1,
+    /**
+     * Accepted without naming the amount, the asset, or the transfer carrying
+     * it.
+     */
+    MissingInfo = 2
+}
 export declare enum TokenTransactionType {
     Transfer = 0,
     Mint = 1,
@@ -25556,6 +25588,13 @@ declare const _default: Readonly<{
             allocationSize(value: SuccessActionProcessed): number;
             lift(value: UniffiByteArray): SuccessActionProcessed;
             lower(value: SuccessActionProcessed): UniffiByteArray;
+        };
+        FfiConverterTypeSwapDegradation: {
+            read(from: RustBuffer): SwapDegradation;
+            write(value: SwapDegradation, into: RustBuffer): void;
+            allocationSize(value: SwapDegradation): number;
+            lift(value: UniffiByteArray): SwapDegradation;
+            lower(value: SwapDegradation): UniffiByteArray;
         };
         FfiConverterTypeSymbol: {
             read(from: RustBuffer): Symbol;

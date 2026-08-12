@@ -12613,8 +12613,8 @@ export type RefundPendingConversionsResponse = {
    */
   refunded: /*u32*/ number;
   /**
-   * Conversions intentionally deferred (eligible but held back by a
-   * safety window). The next pass will retry them.
+   * Conversions not clawed back this pass: held back by a safety window, or
+   * found to have executed after all. Only the former are retried.
    */
   skipped: /*u32*/ number;
   /**
@@ -19534,6 +19534,7 @@ export const ConversionInfo = (() => {
       fee: U128 | undefined;
       purpose: ConversionPurpose | undefined;
       amountAdjustment: AmountAdjustmentReason | undefined;
+      degradation: SwapDegradation | undefined;
     }>;
   };
 
@@ -19554,6 +19555,7 @@ export const ConversionInfo = (() => {
       fee: U128 | undefined;
       purpose: ConversionPurpose | undefined;
       amountAdjustment: AmountAdjustmentReason | undefined;
+      degradation: SwapDegradation | undefined;
     }>;
     constructor(inner: {
       /**
@@ -19575,6 +19577,10 @@ export const ConversionInfo = (() => {
       /**
        * The reason the conversion amount was adjusted, if applicable.
        */ amountAdjustment: AmountAdjustmentReason | undefined;
+      /**
+       * How the swap departed from the signed terms, if it did. Set on a
+       * conversion that completed without delivering what was signed for.
+       */ degradation: SwapDegradation | undefined;
     }) {
       super('ConversionInfo', 'Amm');
       this.inner = Object.freeze(inner);
@@ -19600,6 +19606,10 @@ export const ConversionInfo = (() => {
       /**
        * The reason the conversion amount was adjusted, if applicable.
        */ amountAdjustment: AmountAdjustmentReason | undefined;
+      /**
+       * How the swap departed from the signed terms, if it did. Set on a
+       * conversion that completed without delivering what was signed for.
+       */ degradation: SwapDegradation | undefined;
     }): Amm_ {
       return new Amm_(inner);
     }
@@ -20019,6 +20029,7 @@ const FfiConverterTypeConversionInfo = (() => {
             purpose: FfiConverterOptionalTypeConversionPurpose.read(from),
             amountAdjustment:
               FfiConverterOptionalTypeAmountAdjustmentReason.read(from),
+            degradation: FfiConverterOptionalTypeSwapDegradation.read(from),
           });
         case 2:
           return new ConversionInfo.Orchestra({
@@ -20077,6 +20088,10 @@ const FfiConverterTypeConversionInfo = (() => {
           FfiConverterOptionalTypeConversionPurpose.write(inner.purpose, into);
           FfiConverterOptionalTypeAmountAdjustmentReason.write(
             inner.amountAdjustment,
+            into
+          );
+          FfiConverterOptionalTypeSwapDegradation.write(
+            inner.degradation,
             into
           );
           return;
@@ -20145,6 +20160,9 @@ const FfiConverterTypeConversionInfo = (() => {
           );
           size += FfiConverterOptionalTypeAmountAdjustmentReason.allocationSize(
             inner.amountAdjustment
+          );
+          size += FfiConverterOptionalTypeSwapDegradation.allocationSize(
+            inner.degradation
           );
           return size;
         }
@@ -33138,6 +33156,61 @@ const FfiConverterTypeSuccessActionProcessed = (() => {
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * How an executed swap departed from the terms the client signed.
+ *
+ * The input is spent either way, so the conversion completes rather than being
+ * refunded. This records that it did not deliver what was signed for.
+ */
+export enum SwapDegradation {
+  /**
+   * Delivered less than the minimum the intent signed.
+   */
+  BelowMinimum,
+  /**
+   * Delivered an asset other than the one the intent named.
+   */
+  UnexpectedAsset,
+  /**
+   * Accepted without naming the amount, the asset, or the transfer carrying
+   * it.
+   */
+  MissingInfo,
+}
+
+const FfiConverterTypeSwapDegradation = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = SwapDegradation;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return SwapDegradation.BelowMinimum;
+        case 2:
+          return SwapDegradation.UnexpectedAsset;
+        case 3:
+          return SwapDegradation.MissingInfo;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case SwapDegradation.BelowMinimum:
+          return ordinalConverter.write(1, into);
+        case SwapDegradation.UnexpectedAsset:
+          return ordinalConverter.write(2, into);
+        case SwapDegradation.MissingInfo:
+          return ordinalConverter.write(3, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
     }
   }
   return new FFIConverter();
@@ -49925,6 +49998,11 @@ const FfiConverterOptionalTypeSuccessActionProcessed = new FfiConverterOptional(
   FfiConverterTypeSuccessActionProcessed
 );
 
+// FfiConverter for SwapDegradation | undefined
+const FfiConverterOptionalTypeSwapDegradation = new FfiConverterOptional(
+  FfiConverterTypeSwapDegradation
+);
+
 // FfiConverter for TokenTransactionType | undefined
 const FfiConverterOptionalTypeTokenTransactionType = new FfiConverterOptional(
   FfiConverterTypeTokenTransactionType
@@ -51820,6 +51898,7 @@ export default Object.freeze({
     FfiConverterTypeStoredCrossChainSwap,
     FfiConverterTypeSuccessAction,
     FfiConverterTypeSuccessActionProcessed,
+    FfiConverterTypeSwapDegradation,
     FfiConverterTypeSymbol,
     FfiConverterTypeSyncWalletRequest,
     FfiConverterTypeSyncWalletResponse,
