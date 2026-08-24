@@ -2588,13 +2588,20 @@ export type ClaimDepositRequest = {
   txid: string;
   vout: /*u32*/ number;
   maxFee: MaxFee | undefined;
+  /**
+   * Set to request an instant (0-conf) claim instead of waiting for the
+   * deposit to mature, bounding the SSP spread at this many basis points of
+   * the deposit value (100 bps = 1%). When set, the call takes the instant
+   * path and `max_fee` is ignored.
+   */
+  maxInstantFeeBps: /*u32*/ number | undefined;
 };
 
 /**
  * Generated factory for {@link ClaimDepositRequest} record objects.
  */
 export const ClaimDepositRequest = (() => {
-  const defaults = () => ({ maxFee: undefined });
+  const defaults = () => ({ maxFee: undefined, maxInstantFeeBps: undefined });
   const create = (() => {
     return uniffiCreateRecord<ClaimDepositRequest, ReturnType<typeof defaults>>(
       defaults
@@ -2628,18 +2635,21 @@ const FfiConverterTypeClaimDepositRequest = (() => {
         txid: FfiConverterString.read(from),
         vout: FfiConverterUInt32.read(from),
         maxFee: FfiConverterOptionalTypeMaxFee.read(from),
+        maxInstantFeeBps: FfiConverterOptionalUInt32.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterString.write(value.txid, into);
       FfiConverterUInt32.write(value.vout, into);
       FfiConverterOptionalTypeMaxFee.write(value.maxFee, into);
+      FfiConverterOptionalUInt32.write(value.maxInstantFeeBps, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterString.allocationSize(value.txid) +
         FfiConverterUInt32.allocationSize(value.vout) +
-        FfiConverterOptionalTypeMaxFee.allocationSize(value.maxFee)
+        FfiConverterOptionalTypeMaxFee.allocationSize(value.maxFee) +
+        FfiConverterOptionalUInt32.allocationSize(value.maxInstantFeeBps)
       );
     }
   }
@@ -2647,7 +2657,12 @@ const FfiConverterTypeClaimDepositRequest = (() => {
 })();
 
 export type ClaimDepositResponse = {
-  payment: Payment;
+  /**
+   * The settled claim payment. Present for a standard claim, which completes
+   * synchronously. Absent for an instant claim, whose transfer settles
+   * asynchronously: watch for the payment via events or `list_payments`.
+   */
+  payment: Payment | undefined;
 };
 
 /**
@@ -2686,14 +2701,14 @@ const FfiConverterTypeClaimDepositResponse = (() => {
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
-        payment: FfiConverterTypePayment.read(from),
+        payment: FfiConverterOptionalTypePayment.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
-      FfiConverterTypePayment.write(value.payment, into);
+      FfiConverterOptionalTypePayment.write(value.payment, into);
     }
     allocationSize(value: TypeName): number {
-      return FfiConverterTypePayment.allocationSize(value.payment);
+      return FfiConverterOptionalTypePayment.allocationSize(value.payment);
     }
   }
   return new FFIConverter();
@@ -2885,6 +2900,13 @@ export type Config = {
   syncIntervalSecs: /*u32*/ number;
   maxDepositClaimFee: MaxFee | undefined;
   /**
+   * Maximum instant (0-conf) static deposit claim fee, as basis points of the
+   * deposit value (100 bps = 1%), capping the SSP spread for the instant
+   * credit. Opt-in: while unset, no 0-conf claim is attempted. Small deposits,
+   * whose spread is proportionally larger, fall through to the normal claim.
+   */
+  maxInstantDepositClaimFeeBps: /*u32*/ number | undefined;
+  /**
    * The domain used for receiving through lnurl-pay and lightning address.
    */
   lnurlDomain: string | undefined;
@@ -2894,6 +2916,21 @@ export type Config = {
    * but is at the cost of privacy.
    */
   preferSparkOverLightning: boolean;
+  /**
+   * Whether the data needed to exit a payment unilaterally, without the Spark
+   * operators, is collected as funds arrive. Collection runs in the background,
+   * and a sync waits for a collection pass before returning, so syncing is how
+   * to make that happen at a moment of your choosing. A leaf the operators
+   * cannot complete stays un-exitable until a later attempt succeeds.
+   *
+   * Leave this on unless bandwidth matters more than being able to recover funds
+   * when the operators are unreachable. With it off, chains are only collected
+   * when an exit is prepared, which needs the operators reachable at that
+   * moment: a leaf cannot be exited without them until one is collected.
+   *
+   * Default value is true.
+   */
+  exitChainAutoFetchEnabled: boolean;
   /**
    * A set of external input parsers that are used by [`BreezSdk::parse`](crate::sdk::BreezSdk::parse) when the input
    * is not recognized. See [`ExternalInputParser`] for more details on how to configure
@@ -3038,8 +3075,10 @@ const FfiConverterTypeConfig = (() => {
         network: FfiConverterTypeNetwork.read(from),
         syncIntervalSecs: FfiConverterUInt32.read(from),
         maxDepositClaimFee: FfiConverterOptionalTypeMaxFee.read(from),
+        maxInstantDepositClaimFeeBps: FfiConverterOptionalUInt32.read(from),
         lnurlDomain: FfiConverterOptionalString.read(from),
         preferSparkOverLightning: FfiConverterBool.read(from),
+        exitChainAutoFetchEnabled: FfiConverterBool.read(from),
         externalInputParsers:
           FfiConverterOptionalArrayTypeExternalInputParser.read(from),
         useDefaultExternalInputParsers: FfiConverterBool.read(from),
@@ -3062,8 +3101,13 @@ const FfiConverterTypeConfig = (() => {
       FfiConverterTypeNetwork.write(value.network, into);
       FfiConverterUInt32.write(value.syncIntervalSecs, into);
       FfiConverterOptionalTypeMaxFee.write(value.maxDepositClaimFee, into);
+      FfiConverterOptionalUInt32.write(
+        value.maxInstantDepositClaimFeeBps,
+        into
+      );
       FfiConverterOptionalString.write(value.lnurlDomain, into);
       FfiConverterBool.write(value.preferSparkOverLightning, into);
+      FfiConverterBool.write(value.exitChainAutoFetchEnabled, into);
       FfiConverterOptionalArrayTypeExternalInputParser.write(
         value.externalInputParsers,
         into
@@ -3099,8 +3143,12 @@ const FfiConverterTypeConfig = (() => {
         FfiConverterOptionalTypeMaxFee.allocationSize(
           value.maxDepositClaimFee
         ) +
+        FfiConverterOptionalUInt32.allocationSize(
+          value.maxInstantDepositClaimFeeBps
+        ) +
         FfiConverterOptionalString.allocationSize(value.lnurlDomain) +
         FfiConverterBool.allocationSize(value.preferSparkOverLightning) +
+        FfiConverterBool.allocationSize(value.exitChainAutoFetchEnabled) +
         FfiConverterOptionalArrayTypeExternalInputParser.allocationSize(
           value.externalInputParsers
         ) +
@@ -4514,6 +4562,15 @@ export type CrossChainRoutePair = {
    * may be fronted by multiple source variants on Orchestra).
    */
   supportedSources: Array<SourceAsset>;
+  /**
+   * The chains this route can be paid over, orthogonal to
+   * `supported_sources` (the asset moved).
+   *
+   * This is the actual funding rail, which differs by provider: Boltz routes
+   * are always paid over Lightning. Orchestra send routes report Spark, and
+   * Orchestra payment-link routes report Lightning.
+   */
+  supportedSourceChains: Array<SourceChain>;
 };
 
 /**
@@ -4559,6 +4616,7 @@ const FfiConverterTypeCrossChainRoutePair = (() => {
         decimals: FfiConverterUInt8.read(from),
         exactOutEligible: FfiConverterBool.read(from),
         supportedSources: FfiConverterArrayTypeSourceAsset.read(from),
+        supportedSourceChains: FfiConverterArrayTypeSourceChain.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -4570,6 +4628,7 @@ const FfiConverterTypeCrossChainRoutePair = (() => {
       FfiConverterUInt8.write(value.decimals, into);
       FfiConverterBool.write(value.exactOutEligible, into);
       FfiConverterArrayTypeSourceAsset.write(value.supportedSources, into);
+      FfiConverterArrayTypeSourceChain.write(value.supportedSourceChains, into);
     }
     allocationSize(value: TypeName): number {
       return (
@@ -4580,7 +4639,12 @@ const FfiConverterTypeCrossChainRoutePair = (() => {
         FfiConverterOptionalString.allocationSize(value.contractAddress) +
         FfiConverterUInt8.allocationSize(value.decimals) +
         FfiConverterBool.allocationSize(value.exactOutEligible) +
-        FfiConverterArrayTypeSourceAsset.allocationSize(value.supportedSources)
+        FfiConverterArrayTypeSourceAsset.allocationSize(
+          value.supportedSources
+        ) +
+        FfiConverterArrayTypeSourceChain.allocationSize(
+          value.supportedSourceChains
+        )
       );
     }
   }
@@ -4671,13 +4735,38 @@ const FfiConverterTypeCurrencyInfo = (() => {
 })();
 
 export type DepositInfo = {
+  /**
+   * Transaction id of the on-chain output the deposit came from.
+   */
   txid: string;
+  /**
+   * Index of that output within its transaction.
+   */
   vout: /*u32*/ number;
+  /**
+   * Deposit value in satoshis.
+   */
   amountSats: /*u64*/ bigint;
+  /**
+   * Whether the deposit has enough confirmations to be claimed.
+   */
   isMature: boolean;
+  /**
+   * Raw refund transaction, once one has been created.
+   */
   refundTx: string | undefined;
+  /**
+   * Transaction id of the refund, once one has been created.
+   */
   refundTxId: string | undefined;
+  /**
+   * Why the last claim attempt failed. Unset while none has failed.
+   */
   claimError: DepositClaimError | undefined;
+  /**
+   * Unset when no instant claim has been attempted.
+   */
+  instantClaimStatus: InstantClaimStatus | undefined;
 };
 
 /**
@@ -4722,6 +4811,8 @@ const FfiConverterTypeDepositInfo = (() => {
         refundTx: FfiConverterOptionalString.read(from),
         refundTxId: FfiConverterOptionalString.read(from),
         claimError: FfiConverterOptionalTypeDepositClaimError.read(from),
+        instantClaimStatus:
+          FfiConverterOptionalTypeInstantClaimStatus.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -4732,6 +4823,10 @@ const FfiConverterTypeDepositInfo = (() => {
       FfiConverterOptionalString.write(value.refundTx, into);
       FfiConverterOptionalString.write(value.refundTxId, into);
       FfiConverterOptionalTypeDepositClaimError.write(value.claimError, into);
+      FfiConverterOptionalTypeInstantClaimStatus.write(
+        value.instantClaimStatus,
+        into
+      );
     }
     allocationSize(value: TypeName): number {
       return (
@@ -4743,6 +4838,9 @@ const FfiConverterTypeDepositInfo = (() => {
         FfiConverterOptionalString.allocationSize(value.refundTxId) +
         FfiConverterOptionalTypeDepositClaimError.allocationSize(
           value.claimError
+        ) +
+        FfiConverterOptionalTypeInstantClaimStatus.allocationSize(
+          value.instantClaimStatus
         )
       );
     }
@@ -4959,6 +5057,68 @@ const FfiConverterTypeEcdsaSignatureBytes = (() => {
     }
     allocationSize(value: TypeName): number {
       return FfiConverterArrayBuffer.allocationSize(value.bytes);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Result of `export_unilateral_exit_state`: a self-contained copy of the
+ * wallet's exit state, ready to be stored outside the wallet.
+ */
+export type ExportUnilateralExitStateResponse = {
+  /**
+   * The serialized exit state, to be handed back to
+   * `import_unilateral_exit_state` unmodified.
+   */
+  exitState: string;
+};
+
+/**
+ * Generated factory for {@link ExportUnilateralExitStateResponse} record objects.
+ */
+export const ExportUnilateralExitStateResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ExportUnilateralExitStateResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ExportUnilateralExitStateResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ExportUnilateralExitStateResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ExportUnilateralExitStateResponse>,
+  });
+})();
+
+const FfiConverterTypeExportUnilateralExitStateResponse = (() => {
+  type TypeName = ExportUnilateralExitStateResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        exitState: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.exitState, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterString.allocationSize(value.exitState);
     }
   }
   return new FFIConverter();
@@ -8132,6 +8292,155 @@ const FfiConverterTypeIdentifierSignaturePair = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * Request for `import_unilateral_exit_state`.
+ */
+export type ImportUnilateralExitStateRequest = {
+  /**
+   * An exit state as returned by `export_unilateral_exit_state`.
+   */
+  exitState: string;
+};
+
+/**
+ * Generated factory for {@link ImportUnilateralExitStateRequest} record objects.
+ */
+export const ImportUnilateralExitStateRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ImportUnilateralExitStateRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ImportUnilateralExitStateRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ImportUnilateralExitStateRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ImportUnilateralExitStateRequest>,
+  });
+})();
+
+const FfiConverterTypeImportUnilateralExitStateRequest = (() => {
+  type TypeName = ImportUnilateralExitStateRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        exitState: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.exitState, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterString.allocationSize(value.exitState);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Result of `import_unilateral_exit_state`.
+ */
+export type ImportUnilateralExitStateResponse = {
+  /**
+   * Leaves merged into the wallet's exit state, whether or not their exit
+   * data was taken with them.
+   */
+  importedLeaves: /*u32*/ number;
+  /**
+   * Leaves left out because the exit state does not record this wallet as
+   * their owner.
+   */
+  skippedForeignLeaves: /*u32*/ number;
+  /**
+   * Leaves left out because their exit data disagrees with what the wallet
+   * already holds, so none of it could be trusted. The wallet is left without
+   * these leaves.
+   */
+  skippedConflictingLeaves: /*u32*/ number;
+  /**
+   * Leaves the wallet holds whose imported exit data was left out: it is
+   * incomplete, the wallet's own copy can already back an exit, or the leaf
+   * was named more than once. The leaf itself is in the wallet either way.
+   */
+  skippedChains: /*u32*/ number;
+};
+
+/**
+ * Generated factory for {@link ImportUnilateralExitStateResponse} record objects.
+ */
+export const ImportUnilateralExitStateResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      ImportUnilateralExitStateResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link ImportUnilateralExitStateResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link ImportUnilateralExitStateResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<ImportUnilateralExitStateResponse>,
+  });
+})();
+
+const FfiConverterTypeImportUnilateralExitStateResponse = (() => {
+  type TypeName = ImportUnilateralExitStateResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        importedLeaves: FfiConverterUInt32.read(from),
+        skippedForeignLeaves: FfiConverterUInt32.read(from),
+        skippedConflictingLeaves: FfiConverterUInt32.read(from),
+        skippedChains: FfiConverterUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterUInt32.write(value.importedLeaves, into);
+      FfiConverterUInt32.write(value.skippedForeignLeaves, into);
+      FfiConverterUInt32.write(value.skippedConflictingLeaves, into);
+      FfiConverterUInt32.write(value.skippedChains, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterUInt32.allocationSize(value.importedLeaves) +
+        FfiConverterUInt32.allocationSize(value.skippedForeignLeaves) +
+        FfiConverterUInt32.allocationSize(value.skippedConflictingLeaves) +
+        FfiConverterUInt32.allocationSize(value.skippedChains)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type IncomingChange = {
   newState: Record;
   oldState: Record | undefined;
@@ -11223,6 +11532,218 @@ const FfiConverterTypePrepareLnurlPayResponse = (() => {
           value.conversionEstimate
         ) +
         FfiConverterTypeFeePolicy.allocationSize(value.feePolicy)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Request for a payment link that sends USDC/USDT to an external-chain
+ * recipient, funded by Cash App over Lightning.
+ *
+ * The user pays the returned URL, and the cross-chain provider delivers the
+ * stablecoin to `address`. No funds move through the Spark wallet. Only
+ * available on mainnet.
+ */
+export type PreparePaymentLinkRequest = {
+  /**
+   * Recipient address on the destination chain (e.g. an EVM `0x...` address).
+   */
+  address: string;
+  /**
+   * The destination route from calling `get_cross_chain_routes()` with the
+   * `CrossChainRouteFilter::PaymentLink` filter. Selects the destination chain
+   * + asset (e.g. USDC on Base).
+   */
+  route: CrossChainRoutePair;
+  /**
+   * Amount in the destination asset's base units, per the route's
+   * `decimals`. These routes deliver USD-pegged stablecoins, so at parity
+   * this is the USD value: `1_000_000` is 1 USDC (6 decimals), about $1.
+   *
+   * With the default fee policy the recipient receives this net amount.
+   * With `FeesIncluded` it is the amount the payer deposits.
+   */
+  amount: U128;
+  /**
+   * Whether fees are added on top of `amount` (`FeesExcluded`, the default)
+   * or deducted from it (`FeesIncluded`).
+   */
+  feePolicy: FeePolicy | undefined;
+  /**
+   * Maximum slippage tolerance in basis points. Falls back to the SDK
+   * default when unset.
+   */
+  maxSlippageBps: /*u32*/ number | undefined;
+};
+
+/**
+ * Generated factory for {@link PreparePaymentLinkRequest} record objects.
+ */
+export const PreparePaymentLinkRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      PreparePaymentLinkRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PreparePaymentLinkRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PreparePaymentLinkRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<PreparePaymentLinkRequest>,
+  });
+})();
+
+const FfiConverterTypePreparePaymentLinkRequest = (() => {
+  type TypeName = PreparePaymentLinkRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        address: FfiConverterString.read(from),
+        route: FfiConverterTypeCrossChainRoutePair.read(from),
+        amount: FfiConverterTypeu128.read(from),
+        feePolicy: FfiConverterOptionalTypeFeePolicy.read(from),
+        maxSlippageBps: FfiConverterOptionalUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.address, into);
+      FfiConverterTypeCrossChainRoutePair.write(value.route, into);
+      FfiConverterTypeu128.write(value.amount, into);
+      FfiConverterOptionalTypeFeePolicy.write(value.feePolicy, into);
+      FfiConverterOptionalUInt32.write(value.maxSlippageBps, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.address) +
+        FfiConverterTypeCrossChainRoutePair.allocationSize(value.route) +
+        FfiConverterTypeu128.allocationSize(value.amount) +
+        FfiConverterOptionalTypeFeePolicy.allocationSize(value.feePolicy) +
+        FfiConverterOptionalUInt32.allocationSize(value.maxSlippageBps)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Response to a [`PreparePaymentLinkRequest`]. Mirrors `BuyBitcoinResponse`
+ * (a payable `url`) plus the quote so the caller can display the expected
+ * delivery and fees.
+ */
+export type PreparePaymentLinkResponse = {
+  /**
+   * The URL to open in a browser; paying it delivers the stablecoin.
+   */
+  url: string;
+  /**
+   * Sats the payer deposits through the fiat rail.
+   */
+  amountSats: /*u64*/ bigint;
+  /**
+   * Estimated amount delivered to the recipient, in `asset` base units.
+   */
+  estimatedOut: U128;
+  /**
+   * The destination stablecoin symbol (e.g. `USDC`). `estimated_out` is
+   * denominated in it.
+   */
+  asset: string;
+  /**
+   * Provider service fee, in `service_fee_asset` base units.
+   */
+  serviceFeeAmount: U128;
+  /**
+   * Denomination of `service_fee_amount`. `None` means sats: Boltz
+   * denominates its fee in sats, Orchestra in the stablecoin.
+   */
+  serviceFeeAsset: string | undefined;
+  /**
+   * RFC3339 timestamp after which the quote is no longer valid.
+   */
+  expiresAt: string;
+};
+
+/**
+ * Generated factory for {@link PreparePaymentLinkResponse} record objects.
+ */
+export const PreparePaymentLinkResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      PreparePaymentLinkResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PreparePaymentLinkResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PreparePaymentLinkResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<PreparePaymentLinkResponse>,
+  });
+})();
+
+const FfiConverterTypePreparePaymentLinkResponse = (() => {
+  type TypeName = PreparePaymentLinkResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        url: FfiConverterString.read(from),
+        amountSats: FfiConverterUInt64.read(from),
+        estimatedOut: FfiConverterTypeu128.read(from),
+        asset: FfiConverterString.read(from),
+        serviceFeeAmount: FfiConverterTypeu128.read(from),
+        serviceFeeAsset: FfiConverterOptionalString.read(from),
+        expiresAt: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.url, into);
+      FfiConverterUInt64.write(value.amountSats, into);
+      FfiConverterTypeu128.write(value.estimatedOut, into);
+      FfiConverterString.write(value.asset, into);
+      FfiConverterTypeu128.write(value.serviceFeeAmount, into);
+      FfiConverterOptionalString.write(value.serviceFeeAsset, into);
+      FfiConverterString.write(value.expiresAt, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.url) +
+        FfiConverterUInt64.allocationSize(value.amountSats) +
+        FfiConverterTypeu128.allocationSize(value.estimatedOut) +
+        FfiConverterString.allocationSize(value.asset) +
+        FfiConverterTypeu128.allocationSize(value.serviceFeeAmount) +
+        FfiConverterOptionalString.allocationSize(value.serviceFeeAsset) +
+        FfiConverterString.allocationSize(value.expiresAt)
       );
     }
   }
@@ -16021,6 +16542,18 @@ export type TransferAuthorization = {
    * The current owner's signature authorizing the transfer.
    */
   signature: string;
+  /**
+   * The lightning-address domain the authorization is for, taken from the
+   * address being handed over. The signed message names this domain, so an
+   * authorization made for one server does not verify at another.
+   */
+  domain: string;
+  /**
+   * When the authorization was produced, in seconds since the Unix epoch.
+   * Covered by the signature, and valid for 10 minutes: the transferee has
+   * to claim within that window or the current owner authorizes again.
+   */
+  timestamp: /*u64*/ bigint;
 };
 
 /**
@@ -16062,18 +16595,24 @@ const FfiConverterTypeTransferAuthorization = (() => {
         username: FfiConverterString.read(from),
         pubkey: FfiConverterString.read(from),
         signature: FfiConverterString.read(from),
+        domain: FfiConverterString.read(from),
+        timestamp: FfiConverterUInt64.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterString.write(value.username, into);
       FfiConverterString.write(value.pubkey, into);
       FfiConverterString.write(value.signature, into);
+      FfiConverterString.write(value.domain, into);
+      FfiConverterUInt64.write(value.timestamp, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterString.allocationSize(value.username) +
         FfiConverterString.allocationSize(value.pubkey) +
-        FfiConverterString.allocationSize(value.signature)
+        FfiConverterString.allocationSize(value.signature) +
+        FfiConverterString.allocationSize(value.domain) +
+        FfiConverterUInt64.allocationSize(value.timestamp)
       );
     }
   }
@@ -21522,6 +22061,7 @@ const FfiConverterTypeCrossChainProviderContext = (() => {
 export enum CrossChainRouteFilter_Tags {
   Send = 'Send',
   Receive = 'Receive',
+  PaymentLink = 'PaymentLink',
 }
 /**
  * Filter for [`CrossChainService::get_routes`] and the public
@@ -21534,7 +22074,7 @@ export const CrossChainRouteFilter = (() => {
   };
 
   /**
-   * Routes for sending from Spark to another chain.
+   * Routes for sending from the Spark wallet to another chain.
    * Filtered by the parsed recipient address details.
    */
   class Send_ extends UniffiEnum implements Send__interface {
@@ -21590,6 +22130,40 @@ export const CrossChainRouteFilter = (() => {
     }
   }
 
+  type PaymentLink__interface = {
+    tag: CrossChainRouteFilter_Tags.PaymentLink;
+    inner: Readonly<{ addressDetails: CrossChainAddressDetails }>;
+  };
+
+  /**
+   * Routes for a payment link that sends a stablecoin funded by an external
+   * rail (Cash App over Lightning) rather than the Spark wallet.
+   * Filtered by the parsed recipient address details.
+   */
+  class PaymentLink_ extends UniffiEnum implements PaymentLink__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'CrossChainRouteFilter';
+    readonly tag = CrossChainRouteFilter_Tags.PaymentLink;
+    readonly inner: Readonly<{ addressDetails: CrossChainAddressDetails }>;
+    constructor(inner: { addressDetails: CrossChainAddressDetails }) {
+      super('CrossChainRouteFilter', 'PaymentLink');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      addressDetails: CrossChainAddressDetails;
+    }): PaymentLink_ {
+      return new PaymentLink_(inner);
+    }
+
+    static instanceOf(obj: any): obj is PaymentLink_ {
+      return obj.tag === CrossChainRouteFilter_Tags.PaymentLink;
+    }
+  }
+
   function instanceOf(obj: any): obj is CrossChainRouteFilter {
     return obj[uniffiTypeNameSymbol] === 'CrossChainRouteFilter';
   }
@@ -21598,6 +22172,7 @@ export const CrossChainRouteFilter = (() => {
     instanceOf,
     Send: Send_,
     Receive: Receive_,
+    PaymentLink: PaymentLink_,
   });
 })();
 
@@ -21628,6 +22203,10 @@ const FfiConverterTypeCrossChainRouteFilter = (() => {
           return new CrossChainRouteFilter.Receive({
             contractAddress: FfiConverterOptionalString.read(from),
           });
+        case 3:
+          return new CrossChainRouteFilter.PaymentLink({
+            addressDetails: FfiConverterTypeCrossChainAddressDetails.read(from),
+          });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
@@ -21647,6 +22226,15 @@ const FfiConverterTypeCrossChainRouteFilter = (() => {
           ordinalConverter.write(2, into);
           const inner = value.inner;
           FfiConverterOptionalString.write(inner.contractAddress, into);
+          return;
+        }
+        case CrossChainRouteFilter_Tags.PaymentLink: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterTypeCrossChainAddressDetails.write(
+            inner.addressDetails,
+            into
+          );
           return;
         }
         default:
@@ -21669,6 +22257,14 @@ const FfiConverterTypeCrossChainRouteFilter = (() => {
           let size = ordinalConverter.allocationSize(2);
           size += FfiConverterOptionalString.allocationSize(
             inner.contractAddress
+          );
+          return size;
+        }
+        case CrossChainRouteFilter_Tags.PaymentLink: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterTypeCrossChainAddressDetails.allocationSize(
+            inner.addressDetails
           );
           return size;
         }
@@ -23579,6 +24175,369 @@ const FfiConverterTypeInputType = (() => {
           size += FfiConverterTypeCrossChainAddressDetails.allocationSize(
             inner[0]
           );
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: InstantClaimDeclineReason
+export enum InstantClaimDeclineReason_Tags {
+  NoPlan = 'NoPlan',
+  FeeExceeded = 'FeeExceeded',
+  SubmissionFailed = 'SubmissionFailed',
+}
+/**
+ * Why an instant (0-conf) claim was declined.
+ */
+export const InstantClaimDeclineReason = (() => {
+  type NoPlan__interface = {
+    tag: InstantClaimDeclineReason_Tags.NoPlan;
+  };
+
+  /**
+   * The SSP offered no 0-conf fulfillment plan for the deposit.
+   */
+  class NoPlan_ extends UniffiEnum implements NoPlan__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'InstantClaimDeclineReason';
+    readonly tag = InstantClaimDeclineReason_Tags.NoPlan;
+    constructor() {
+      super('InstantClaimDeclineReason', 'NoPlan');
+    }
+
+    static new(): NoPlan_ {
+      return new NoPlan_();
+    }
+
+    static instanceOf(obj: any): obj is NoPlan_ {
+      return obj.tag === InstantClaimDeclineReason_Tags.NoPlan;
+    }
+  }
+
+  type FeeExceeded__interface = {
+    tag: InstantClaimDeclineReason_Tags.FeeExceeded;
+    inner: Readonly<{
+      maxBps: /*u32*/ number;
+      quotedBps: /*u32*/ number;
+      quotedSats: /*u64*/ bigint;
+    }>;
+  };
+
+  /**
+   * The SSP spread exceeded the ceiling (`max_bps`). The instant claim can be
+   * retried with a higher ceiling. `quoted_bps` / `quoted_sats` are the spread
+   * the SSP quoted at the time.
+   */
+  class FeeExceeded_ extends UniffiEnum implements FeeExceeded__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'InstantClaimDeclineReason';
+    readonly tag = InstantClaimDeclineReason_Tags.FeeExceeded;
+    readonly inner: Readonly<{
+      maxBps: /*u32*/ number;
+      quotedBps: /*u32*/ number;
+      quotedSats: /*u64*/ bigint;
+    }>;
+    constructor(inner: {
+      maxBps: /*u32*/ number;
+      quotedBps: /*u32*/ number;
+      quotedSats: /*u64*/ bigint;
+    }) {
+      super('InstantClaimDeclineReason', 'FeeExceeded');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: {
+      maxBps: /*u32*/ number;
+      quotedBps: /*u32*/ number;
+      quotedSats: /*u64*/ bigint;
+    }): FeeExceeded_ {
+      return new FeeExceeded_(inner);
+    }
+
+    static instanceOf(obj: any): obj is FeeExceeded_ {
+      return obj.tag === InstantClaimDeclineReason_Tags.FeeExceeded;
+    }
+  }
+
+  type SubmissionFailed__interface = {
+    tag: InstantClaimDeclineReason_Tags.SubmissionFailed;
+  };
+
+  /**
+   * The claim submission failed with an unknown outcome.
+   */
+  class SubmissionFailed_
+    extends UniffiEnum
+    implements SubmissionFailed__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'InstantClaimDeclineReason';
+    readonly tag = InstantClaimDeclineReason_Tags.SubmissionFailed;
+    constructor() {
+      super('InstantClaimDeclineReason', 'SubmissionFailed');
+    }
+
+    static new(): SubmissionFailed_ {
+      return new SubmissionFailed_();
+    }
+
+    static instanceOf(obj: any): obj is SubmissionFailed_ {
+      return obj.tag === InstantClaimDeclineReason_Tags.SubmissionFailed;
+    }
+  }
+
+  function instanceOf(obj: any): obj is InstantClaimDeclineReason {
+    return obj[uniffiTypeNameSymbol] === 'InstantClaimDeclineReason';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    NoPlan: NoPlan_,
+    FeeExceeded: FeeExceeded_,
+    SubmissionFailed: SubmissionFailed_,
+  });
+})();
+
+/**
+ * Why an instant (0-conf) claim was declined.
+ */
+
+export type InstantClaimDeclineReason = InstanceType<
+  (typeof InstantClaimDeclineReason)[keyof Omit<
+    typeof InstantClaimDeclineReason,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum InstantClaimDeclineReason
+const FfiConverterTypeInstantClaimDeclineReason = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = InstantClaimDeclineReason;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new InstantClaimDeclineReason.NoPlan();
+        case 2:
+          return new InstantClaimDeclineReason.FeeExceeded({
+            maxBps: FfiConverterUInt32.read(from),
+            quotedBps: FfiConverterUInt32.read(from),
+            quotedSats: FfiConverterUInt64.read(from),
+          });
+        case 3:
+          return new InstantClaimDeclineReason.SubmissionFailed();
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case InstantClaimDeclineReason_Tags.NoPlan: {
+          ordinalConverter.write(1, into);
+          return;
+        }
+        case InstantClaimDeclineReason_Tags.FeeExceeded: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterUInt32.write(inner.maxBps, into);
+          FfiConverterUInt32.write(inner.quotedBps, into);
+          FfiConverterUInt64.write(inner.quotedSats, into);
+          return;
+        }
+        case InstantClaimDeclineReason_Tags.SubmissionFailed: {
+          ordinalConverter.write(3, into);
+          return;
+        }
+        default:
+          // Throwing from here means that InstantClaimDeclineReason_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case InstantClaimDeclineReason_Tags.NoPlan: {
+          return ordinalConverter.allocationSize(1);
+        }
+        case InstantClaimDeclineReason_Tags.FeeExceeded: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterUInt32.allocationSize(inner.maxBps);
+          size += FfiConverterUInt32.allocationSize(inner.quotedBps);
+          size += FfiConverterUInt64.allocationSize(inner.quotedSats);
+          return size;
+        }
+        case InstantClaimDeclineReason_Tags.SubmissionFailed: {
+          return ordinalConverter.allocationSize(3);
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: InstantClaimStatus
+export enum InstantClaimStatus_Tags {
+  Declined = 'Declined',
+  Submitted = 'Submitted',
+}
+/**
+ * State of an instant (0-conf) claim attempt on a deposit.
+ */
+export const InstantClaimStatus = (() => {
+  type Declined__interface = {
+    tag: InstantClaimStatus_Tags.Declined;
+    inner: Readonly<{ reason: InstantClaimDeclineReason }>;
+  };
+
+  /**
+   * The instant claim was declined. The deposit falls through to the normal
+   * claim once it matures; the background sync may re-attempt an instant claim
+   * only when the reason permits (see [`InstantClaimDeclineReason`]).
+   */
+  class Declined_ extends UniffiEnum implements Declined__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'InstantClaimStatus';
+    readonly tag = InstantClaimStatus_Tags.Declined;
+    readonly inner: Readonly<{ reason: InstantClaimDeclineReason }>;
+    constructor(inner: { reason: InstantClaimDeclineReason }) {
+      super('InstantClaimStatus', 'Declined');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { reason: InstantClaimDeclineReason }): Declined_ {
+      return new Declined_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Declined_ {
+      return obj.tag === InstantClaimStatus_Tags.Declined;
+    }
+  }
+
+  type Submitted__interface = {
+    tag: InstantClaimStatus_Tags.Submitted;
+    inner: Readonly<{ claimId: string }>;
+  };
+
+  /**
+   * An instant claim was submitted and is settling. The deposit must not be
+   * re-claimed (instant or normal) until the claim settles and it is reconciled
+   * out. Carries the SSP claim id.
+   */
+  class Submitted_ extends UniffiEnum implements Submitted__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'InstantClaimStatus';
+    readonly tag = InstantClaimStatus_Tags.Submitted;
+    readonly inner: Readonly<{ claimId: string }>;
+    constructor(inner: { claimId: string }) {
+      super('InstantClaimStatus', 'Submitted');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { claimId: string }): Submitted_ {
+      return new Submitted_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Submitted_ {
+      return obj.tag === InstantClaimStatus_Tags.Submitted;
+    }
+  }
+
+  function instanceOf(obj: any): obj is InstantClaimStatus {
+    return obj[uniffiTypeNameSymbol] === 'InstantClaimStatus';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Declined: Declined_,
+    Submitted: Submitted_,
+  });
+})();
+
+/**
+ * State of an instant (0-conf) claim attempt on a deposit.
+ */
+
+export type InstantClaimStatus = InstanceType<
+  (typeof InstantClaimStatus)[keyof Omit<
+    typeof InstantClaimStatus,
+    'instanceOf'
+  >]
+>;
+
+// FfiConverter for enum InstantClaimStatus
+const FfiConverterTypeInstantClaimStatus = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = InstantClaimStatus;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new InstantClaimStatus.Declined({
+            reason: FfiConverterTypeInstantClaimDeclineReason.read(from),
+          });
+        case 2:
+          return new InstantClaimStatus.Submitted({
+            claimId: FfiConverterString.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case InstantClaimStatus_Tags.Declined: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterTypeInstantClaimDeclineReason.write(inner.reason, into);
+          return;
+        }
+        case InstantClaimStatus_Tags.Submitted: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.claimId, into);
+          return;
+        }
+        default:
+          // Throwing from here means that InstantClaimStatus_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case InstantClaimStatus_Tags.Declined: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterTypeInstantClaimDeclineReason.allocationSize(
+            inner.reason
+          );
+          return size;
+        }
+        case InstantClaimStatus_Tags.Submitted: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner.claimId);
           return size;
         }
         default:
@@ -27787,6 +28746,7 @@ export const ReceivePaymentMethod = (() => {
       amountSats: /*u64*/ bigint | undefined;
       expirySecs: /*u32*/ number | undefined;
       paymentHash: string | undefined;
+      receiverIdentityPublicKey: string | undefined;
     }>;
   };
 
@@ -27802,6 +28762,7 @@ export const ReceivePaymentMethod = (() => {
       amountSats: /*u64*/ bigint | undefined;
       expirySecs: /*u32*/ number | undefined;
       paymentHash: string | undefined;
+      receiverIdentityPublicKey: string | undefined;
     }>;
     constructor(inner: {
       description: string;
@@ -27814,6 +28775,10 @@ export const ReceivePaymentMethod = (() => {
        * The payer's HTLC will be held until the preimage is provided via
        * `claim_htlc_payment` or the HTLC expires.
        */ paymentHash: string | undefined;
+      /**
+       * Spark identity public key that will receive the payment.
+       * If absent, the connected wallet's identity public key is used.
+       */ receiverIdentityPublicKey: string | undefined;
     }) {
       super('ReceivePaymentMethod', 'Bolt11Invoice');
       this.inner = Object.freeze(inner);
@@ -27830,6 +28795,10 @@ export const ReceivePaymentMethod = (() => {
        * The payer's HTLC will be held until the preimage is provided via
        * `claim_htlc_payment` or the HTLC expires.
        */ paymentHash: string | undefined;
+      /**
+       * Spark identity public key that will receive the payment.
+       * If absent, the connected wallet's identity public key is used.
+       */ receiverIdentityPublicKey: string | undefined;
     }): Bolt11Invoice_ {
       return new Bolt11Invoice_(inner);
     }
@@ -27886,6 +28855,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
             amountSats: FfiConverterOptionalUInt64.read(from),
             expirySecs: FfiConverterOptionalUInt32.read(from),
             paymentHash: FfiConverterOptionalString.read(from),
+            receiverIdentityPublicKey: FfiConverterOptionalString.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -27920,6 +28890,10 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
           FfiConverterOptionalUInt64.write(inner.amountSats, into);
           FfiConverterOptionalUInt32.write(inner.expirySecs, into);
           FfiConverterOptionalString.write(inner.paymentHash, into);
+          FfiConverterOptionalString.write(
+            inner.receiverIdentityPublicKey,
+            into
+          );
           return;
         }
         default:
@@ -27959,6 +28933,9 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
           size += FfiConverterOptionalUInt64.allocationSize(inner.amountSats);
           size += FfiConverterOptionalUInt32.allocationSize(inner.expirySecs);
           size += FfiConverterOptionalString.allocationSize(inner.paymentHash);
+          size += FfiConverterOptionalString.allocationSize(
+            inner.receiverIdentityPublicKey
+          );
           return size;
         }
         default:
@@ -28956,6 +29933,7 @@ export enum SdkEvent_Tags {
   AutoOptimization = 'AutoOptimization',
   LightningAddressChanged = 'LightningAddressChanged',
   NewDeposits = 'NewDeposits',
+  UnilateralExitStateChanged = 'UnilateralExitStateChanged',
 }
 /**
  * Events emitted by the SDK
@@ -28994,7 +29972,8 @@ export const SdkEvent = (() => {
   };
 
   /**
-   * Emitted when the SDK was unable to claim deposits
+   * Emitted when the SDK was unable to claim deposits. Each deposit carries a
+   * `claim_error` with the reason.
    */
   class UnclaimedDeposits_
     extends UniffiEnum
@@ -29028,6 +30007,10 @@ export const SdkEvent = (() => {
     inner: Readonly<{ claimedDeposits: Array<DepositInfo> }>;
   };
 
+  /**
+   * Emitted when deposits were claimed into the wallet. The resulting payment
+   * is emitted separately as `PaymentSucceeded`.
+   */
   class ClaimedDeposits_
     extends UniffiEnum
     implements ClaimedDeposits__interface
@@ -29060,6 +30043,10 @@ export const SdkEvent = (() => {
     inner: Readonly<{ payment: Payment }>;
   };
 
+  /**
+   * Emitted when a payment completed. The cached balance is refreshed before
+   * this event, so `get_info` returns the new value.
+   */
   class PaymentSucceeded_
     extends UniffiEnum
     implements PaymentSucceeded__interface
@@ -29090,6 +30077,10 @@ export const SdkEvent = (() => {
     inner: Readonly<{ payment: Payment }>;
   };
 
+  /**
+   * Emitted when a payment is in flight. The same payment is emitted again as
+   * succeeded or failed once it settles.
+   */
   class PaymentPending_
     extends UniffiEnum
     implements PaymentPending__interface
@@ -29120,6 +30111,9 @@ export const SdkEvent = (() => {
     inner: Readonly<{ payment: Payment }>;
   };
 
+  /**
+   * Emitted when a payment failed.
+   */
   class PaymentFailed_ extends UniffiEnum implements PaymentFailed__interface {
     /**
      * @private
@@ -29152,7 +30146,7 @@ export const SdkEvent = (() => {
    *
    * Only fired from the auto path (enabled via
    * `LeafOptimizationConfig::auto_enabled`). Manually-triggered runs
-   * via `BreezSdk::optimize_leaves` do not emit events — they return an
+   * via `BreezSdk::optimize_leaves` do not emit events: they return an
    * `OptimizationOutcome` instead.
    */
   class AutoOptimization_
@@ -29187,6 +30181,10 @@ export const SdkEvent = (() => {
     inner: Readonly<{ lightningAddress: LightningAddressInfo | undefined }>;
   };
 
+  /**
+   * Emitted when the Lightning address changed on another device. The address
+   * is unset when it was deleted.
+   */
   class LightningAddressChanged_
     extends UniffiEnum
     implements LightningAddressChanged__interface
@@ -29221,6 +30219,10 @@ export const SdkEvent = (() => {
     inner: Readonly<{ newDeposits: Array<DepositInfo> }>;
   };
 
+  /**
+   * Emitted when on-chain deposits are detected. Only deposits whose
+   * `is_mature` is set have enough confirmations to be claimed.
+   */
   class NewDeposits_ extends UniffiEnum implements NewDeposits__interface {
     /**
      * @private
@@ -29243,6 +30245,37 @@ export const SdkEvent = (() => {
     }
   }
 
+  type UnilateralExitStateChanged__interface = {
+    tag: SdkEvent_Tags.UnilateralExitStateChanged;
+  };
+
+  /**
+   * Emitted when the data a unilateral exit is built from has changed, so an
+   * exit state exported earlier is out of date and should be exported again.
+   */
+  class UnilateralExitStateChanged_
+    extends UniffiEnum
+    implements UnilateralExitStateChanged__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SdkEvent';
+    readonly tag = SdkEvent_Tags.UnilateralExitStateChanged;
+    constructor() {
+      super('SdkEvent', 'UnilateralExitStateChanged');
+    }
+
+    static new(): UnilateralExitStateChanged_ {
+      return new UnilateralExitStateChanged_();
+    }
+
+    static instanceOf(obj: any): obj is UnilateralExitStateChanged_ {
+      return obj.tag === SdkEvent_Tags.UnilateralExitStateChanged;
+    }
+  }
+
   function instanceOf(obj: any): obj is SdkEvent {
     return obj[uniffiTypeNameSymbol] === 'SdkEvent';
   }
@@ -29258,6 +30291,7 @@ export const SdkEvent = (() => {
     AutoOptimization: AutoOptimization_,
     LightningAddressChanged: LightningAddressChanged_,
     NewDeposits: NewDeposits_,
+    UnilateralExitStateChanged: UnilateralExitStateChanged_,
   });
 })();
 
@@ -29311,6 +30345,8 @@ const FfiConverterTypeSdkEvent = (() => {
           return new SdkEvent.NewDeposits({
             newDeposits: FfiConverterArrayTypeDepositInfo.read(from),
           });
+        case 10:
+          return new SdkEvent.UnilateralExitStateChanged();
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
@@ -29373,6 +30409,10 @@ const FfiConverterTypeSdkEvent = (() => {
           ordinalConverter.write(9, into);
           const inner = value.inner;
           FfiConverterArrayTypeDepositInfo.write(inner.newDeposits, into);
+          return;
+        }
+        case SdkEvent_Tags.UnilateralExitStateChanged: {
+          ordinalConverter.write(10, into);
           return;
         }
         default:
@@ -29442,6 +30482,9 @@ const FfiConverterTypeSdkEvent = (() => {
             inner.newDeposits
           );
           return size;
+        }
+        case SdkEvent_Tags.UnilateralExitStateChanged: {
+          return ordinalConverter.allocationSize(10);
         }
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -31822,6 +32865,58 @@ const FfiConverterTypeSourceAsset = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * The chain a cross-chain route is funded from, orthogonal to the
+ * [`SourceAsset`] that moves.
+ */
+export enum SourceChain {
+  /**
+   * Paid over Spark, using a Bitcoin or token source asset.
+   */
+  Spark,
+  /**
+   * Paid over Lightning, using a Bitcoin source asset.
+   */
+  Lightning,
+  /**
+   * Paid on-chain to Bitcoin (L1), using a Bitcoin source asset.
+   */
+  Bitcoin,
+}
+
+const FfiConverterTypeSourceChain = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = SourceChain;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return SourceChain.Spark;
+        case 2:
+          return SourceChain.Lightning;
+        case 3:
+          return SourceChain.Bitcoin;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case SourceChain.Spark:
+          return ordinalConverter.write(1, into);
+        case SourceChain.Lightning:
+          return ordinalConverter.write(2, into);
+        case SourceChain.Bitcoin:
+          return ordinalConverter.write(3, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
 export enum SparkHtlcStatus {
   /**
    * The HTLC is waiting for the preimage to be shared by the receiver
@@ -34124,6 +35219,7 @@ const FfiConverterTypeUnsignedTransferPackage = (() => {
 export enum UpdateDepositPayload_Tags {
   ClaimError = 'ClaimError',
   Refund = 'Refund',
+  InstantClaim = 'InstantClaim',
 }
 export const UpdateDepositPayload = (() => {
   type ClaimError__interface = {
@@ -34180,6 +35276,33 @@ export const UpdateDepositPayload = (() => {
     }
   }
 
+  type InstantClaim__interface = {
+    tag: UpdateDepositPayload_Tags.InstantClaim;
+    inner: Readonly<{ status: InstantClaimStatus }>;
+  };
+
+  class InstantClaim_ extends UniffiEnum implements InstantClaim__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'UpdateDepositPayload';
+    readonly tag = UpdateDepositPayload_Tags.InstantClaim;
+    readonly inner: Readonly<{ status: InstantClaimStatus }>;
+    constructor(inner: { status: InstantClaimStatus }) {
+      super('UpdateDepositPayload', 'InstantClaim');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { status: InstantClaimStatus }): InstantClaim_ {
+      return new InstantClaim_(inner);
+    }
+
+    static instanceOf(obj: any): obj is InstantClaim_ {
+      return obj.tag === UpdateDepositPayload_Tags.InstantClaim;
+    }
+  }
+
   function instanceOf(obj: any): obj is UpdateDepositPayload {
     return obj[uniffiTypeNameSymbol] === 'UpdateDepositPayload';
   }
@@ -34188,6 +35311,7 @@ export const UpdateDepositPayload = (() => {
     instanceOf,
     ClaimError: ClaimError_,
     Refund: Refund_,
+    InstantClaim: InstantClaim_,
   });
 })();
 
@@ -34214,6 +35338,10 @@ const FfiConverterTypeUpdateDepositPayload = (() => {
             refundTxid: FfiConverterString.read(from),
             refundTx: FfiConverterString.read(from),
           });
+        case 3:
+          return new UpdateDepositPayload.InstantClaim({
+            status: FfiConverterTypeInstantClaimStatus.read(from),
+          });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
@@ -34231,6 +35359,12 @@ const FfiConverterTypeUpdateDepositPayload = (() => {
           const inner = value.inner;
           FfiConverterString.write(inner.refundTxid, into);
           FfiConverterString.write(inner.refundTx, into);
+          return;
+        }
+        case UpdateDepositPayload_Tags.InstantClaim: {
+          ordinalConverter.write(3, into);
+          const inner = value.inner;
+          FfiConverterTypeInstantClaimStatus.write(inner.status, into);
           return;
         }
         default:
@@ -34251,6 +35385,14 @@ const FfiConverterTypeUpdateDepositPayload = (() => {
           let size = ordinalConverter.allocationSize(2);
           size += FfiConverterString.allocationSize(inner.refundTxid);
           size += FfiConverterString.allocationSize(inner.refundTx);
+          return size;
+        }
+        case UpdateDepositPayload_Tags.InstantClaim: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(3);
+          size += FfiConverterTypeInstantClaimStatus.allocationSize(
+            inner.status
+          );
           return size;
         }
         default:
@@ -35386,6 +36528,13 @@ export interface BreezSdkInterface {
     request: BuyBitcoinRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<BuyBitcoinResponse>;
+  /**
+   * Check whether a username is free for this wallet to register.
+   *
+   * The check is signed with the wallet's identity key, so every call costs
+   * a signing operation and a server round trip: run it when the user
+   * finishes typing, not on every keystroke.
+   */
   checkLightningAddressAvailable(
     req: CheckLightningAddressRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -35432,6 +36581,14 @@ export interface BreezSdkInterface {
     id: string,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<void>;
+  /**
+   * Give up this wallet's lightning address.
+   *
+   * The server holds the address for this wallet afterwards: while the hold
+   * stands only this wallet can register it, so payers who kept the old
+   * address are not redirected to someone else. How long a hold stands is
+   * the server's policy.
+   */
   deleteLightningAddress(asyncOpts_?: {
     signal: AbortSignal;
   }): /*throws*/ Promise<void>;
@@ -35449,6 +36606,17 @@ export interface BreezSdkInterface {
    * Result containing either success or an `SdkError` if the background task couldn't be stopped
    */
   disconnect(asyncOpts_?: { signal: AbortSignal }): /*throws*/ Promise<void>;
+  /**
+   * Serializes everything needed to unilaterally exit this wallet's funds
+   * while the Spark operators are unreachable, so it can be kept somewhere
+   * the wallet's own storage cannot take with it.
+   *
+   * The state goes stale as the wallet is used: export again whenever a
+   * `UnilateralExitStateChanged` event arrives.
+   */
+  exportUnilateralExitState(asyncOpts_?: {
+    signal: AbortSignal;
+  }): /*throws*/ Promise<ExportUnilateralExitStateResponse>;
   fetchConversionLimits(
     request: FetchConversionLimitsRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -35457,7 +36625,9 @@ export interface BreezSdkInterface {
    * Returns the available cross-chain routes.
    *
    * Use [`CrossChainRouteFilter::Send`] to get routes for sending from Spark
-   * (filtered by the parsed recipient address), or
+   * (filtered by the parsed recipient address),
+   * [`CrossChainRouteFilter::PaymentLink`] for routes fundable by an external
+   * fiat rail (`prepare_payment_link`), or
    * [`CrossChainRouteFilter::Receive`] to get routes for receiving into Spark
    * (optionally filtered by a source contract address).
    */
@@ -35503,6 +36673,27 @@ export interface BreezSdkInterface {
   getUserSettings(asyncOpts_?: {
     signal: AbortSignal;
   }): /*throws*/ Promise<UserSettings>;
+  /**
+   * Merges a previously exported exit state back into the wallet, without
+   * contacting the Spark operators. A leaf the exit state does not record
+   * this wallet as the owner of is skipped.
+   *
+   * A leaf the wallet can already exit keeps the data it has: an exit state
+   * carries no mark of when it was taken, so the imported copy is used only
+   * where the wallet has nothing that works. Importing an out of date state
+   * therefore never costs the wallet the ability to exit a leaf.
+   *
+   * The exit state must come from the same network the SDK is configured
+   * for.
+   *
+   * An out of date exit state can restore funds that have since been spent,
+   * so the balance may read high until the next sync reconciles it with the
+   * Spark operators.
+   */
+  importUnilateralExitState(
+    request: ImportUnilateralExitStateRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<ImportUnilateralExitStateResponse>;
   /**
    * Lists contacts with optional pagination.
    *
@@ -35642,6 +36833,18 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<PrepareLnurlPayResponse>;
   /**
+   * Prepare a payment link that sends USDC/USDT to an external-chain
+   * recipient, funded by Cash App over Lightning.
+   *
+   * Creates a cross-chain order and returns a `cash.app` deep link the payer
+   * opens. Once paid, the provider delivers the stablecoin to `address`. No
+   * funds move through the Spark wallet. Only available on mainnet.
+   */
+  preparePaymentLink(
+    request: PreparePaymentLinkRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<PreparePaymentLinkResponse>;
+  /**
    * Prepares a send to several payees, all paid by one transaction.
    *
    * Each recipient is a Spark address or a Spark invoice, and one batch may
@@ -35769,6 +36972,9 @@ export interface BreezSdkInterface {
    * Signs a message with the wallet's identity key. The message is SHA256
    * hashed before signing. The returned signature will be hex encoded in
    * DER format by default, or compact format if specified.
+   *
+   * Messages in the `breez-lnurl:` namespace are refused: it is reserved for
+   * the SDK's own requests to the Lightning address server.
    */
   signMessage(
     request: SignMessageRequest,
@@ -36175,6 +37381,13 @@ export class BreezSdk
     }
   }
 
+  /**
+   * Check whether a username is free for this wallet to register.
+   *
+   * The check is signed with the wallet's identity key, so every call costs
+   * a signing operation and a server round trip: run it when the user
+   * finishes typing, not on every keystroke.
+   */
   public async checkLightningAddressAvailable(
     req: CheckLightningAddressRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -36427,6 +37640,14 @@ export class BreezSdk
     }
   }
 
+  /**
+   * Give up this wallet's lightning address.
+   *
+   * The server holds the address for this wallet afterwards: while the hold
+   * stands only this wallet can register it, so payers who kept the old
+   * address are not redirected to someone else. How long a hold stands is
+   * the server's policy.
+   */
   public async deleteLightningAddress(asyncOpts_?: {
     signal: AbortSignal;
   }): Promise<void> /*throws*/ {
@@ -36510,6 +37731,51 @@ export class BreezSdk
     }
   }
 
+  /**
+   * Serializes everything needed to unilaterally exit this wallet's funds
+   * while the Spark operators are unreachable, so it can be kept somewhere
+   * the wallet's own storage cannot take with it.
+   *
+   * The state goes stale as the wallet is used: export again whenever a
+   * `UnilateralExitStateChanged` event arrives.
+   */
+  public async exportUnilateralExitState(asyncOpts_?: {
+    signal: AbortSignal;
+  }): Promise<ExportUnilateralExitStateResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_export_unilateral_exit_state(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeExportUnilateralExitStateResponse.lift.bind(
+          FfiConverterTypeExportUnilateralExitStateResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
   public async fetchConversionLimits(
     request: FetchConversionLimitsRequest,
     asyncOpts_?: { signal: AbortSignal }
@@ -36553,7 +37819,9 @@ export class BreezSdk
    * Returns the available cross-chain routes.
    *
    * Use [`CrossChainRouteFilter::Send`] to get routes for sending from Spark
-   * (filtered by the parsed recipient address), or
+   * (filtered by the parsed recipient address),
+   * [`CrossChainRouteFilter::PaymentLink`] for routes fundable by an external
+   * fiat rail (`prepare_payment_link`), or
    * [`CrossChainRouteFilter::Receive`] to get routes for receiving into Spark
    * (optionally filtered by a source contract address).
    */
@@ -36805,6 +38073,62 @@ export class BreezSdk
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypeUserSettings.lift.bind(
           FfiConverterTypeUserSettings
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Merges a previously exported exit state back into the wallet, without
+   * contacting the Spark operators. A leaf the exit state does not record
+   * this wallet as the owner of is skipped.
+   *
+   * A leaf the wallet can already exit keeps the data it has: an exit state
+   * carries no mark of when it was taken, so the imported copy is used only
+   * where the wallet has nothing that works. Importing an out of date state
+   * therefore never costs the wallet the ability to exit a leaf.
+   *
+   * The exit state must come from the same network the SDK is configured
+   * for.
+   *
+   * An out of date exit state can restore funds that have since been spent,
+   * so the balance may read high until the next sync reconciles it with the
+   * Spark operators.
+   */
+  public async importUnilateralExitState(
+    request: ImportUnilateralExitStateRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<ImportUnilateralExitStateResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_import_unilateral_exit_state(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeImportUnilateralExitStateRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeImportUnilateralExitStateResponse.lift.bind(
+          FfiConverterTypeImportUnilateralExitStateResponse
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -37360,6 +38684,53 @@ export class BreezSdk
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypePrepareLnurlPayResponse.lift.bind(
           FfiConverterTypePrepareLnurlPayResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Prepare a payment link that sends USDC/USDT to an external-chain
+   * recipient, funded by Cash App over Lightning.
+   *
+   * Creates a cross-chain order and returns a `cash.app` deep link the payer
+   * opens. Once paid, the provider delivers the stablecoin to `address`. No
+   * funds move through the Spark wallet. Only available on mainnet.
+   */
+  public async preparePaymentLink(
+    request: PreparePaymentLinkRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<PreparePaymentLinkResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_payment_link(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypePreparePaymentLinkRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypePreparePaymentLinkResponse.lift.bind(
+          FfiConverterTypePreparePaymentLinkResponse
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -37986,6 +39357,9 @@ export class BreezSdk
    * Signs a message with the wallet's identity key. The message is SHA256
    * hashed before signing. The returned signature will be hex encoded in
    * DER format by default, or compact format if specified.
+   *
+   * Messages in the `breez-lnurl:` namespace are refused: it is reserved for
+   * the SDK's own requests to the Lightning address server.
    */
   public async signMessage(
     request: SignMessageRequest,
@@ -49965,6 +51339,11 @@ const FfiConverterOptionalTypeFeePolicy = new FfiConverterOptional(
   FfiConverterTypeFeePolicy
 );
 
+// FfiConverter for InstantClaimStatus | undefined
+const FfiConverterOptionalTypeInstantClaimStatus = new FfiConverterOptional(
+  FfiConverterTypeInstantClaimStatus
+);
+
 // FfiConverter for MaxFee | undefined
 const FfiConverterOptionalTypeMaxFee = new FfiConverterOptional(
   FfiConverterTypeMaxFee
@@ -50055,6 +51434,11 @@ const FfiConverterArrayTypePaymentType = new FfiConverterArray(
 // FfiConverter for Array<SourceAsset>
 const FfiConverterArrayTypeSourceAsset = new FfiConverterArray(
   FfiConverterTypeSourceAsset
+);
+
+// FfiConverter for Array<SourceChain>
+const FfiConverterArrayTypeSourceChain = new FfiConverterArray(
+  FfiConverterTypeSourceChain
 );
 
 // FfiConverter for Array<SparkHtlcStatus>
@@ -50358,7 +51742,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_lightning_address_available() !==
-    31624
+    3632
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_check_lightning_address_available'
@@ -50406,7 +51790,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_lightning_address() !==
-    44132
+    55630
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_lightning_address'
@@ -50421,6 +51805,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_export_unilateral_exit_state() !==
+    63178
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_export_unilateral_exit_state'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits() !==
     50958
   ) {
@@ -50430,7 +51822,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_cross_chain_routes() !==
-    25164
+    50302
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_get_cross_chain_routes'
@@ -50482,6 +51874,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_get_user_settings'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_import_unilateral_exit_state() !==
+    62008
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_import_unilateral_exit_state'
     );
   }
   if (
@@ -50578,6 +51978,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_lnurl_pay'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_payment_link() !==
+    15201
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_payment_link'
     );
   }
   if (
@@ -50694,7 +52102,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message() !==
-    57563
+    47976
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message'
@@ -51688,6 +53096,7 @@ export default Object.freeze({
     FfiConverterTypeEcdsaSignatureBytes,
     FfiConverterTypeErrorKind,
     FfiConverterTypeExitLeafSelection,
+    FfiConverterTypeExportUnilateralExitStateResponse,
     FfiConverterTypeExternalBreezSigner,
     FfiConverterTypeExternalClaimLeafInput,
     FfiConverterTypeExternalFrostCommitments,
@@ -51744,8 +53153,12 @@ export default Object.freeze({
     FfiConverterTypeIdentifierCommitmentPair,
     FfiConverterTypeIdentifierPublicKeyPair,
     FfiConverterTypeIdentifierSignaturePair,
+    FfiConverterTypeImportUnilateralExitStateRequest,
+    FfiConverterTypeImportUnilateralExitStateResponse,
     FfiConverterTypeIncomingChange,
     FfiConverterTypeInputType,
+    FfiConverterTypeInstantClaimDeclineReason,
+    FfiConverterTypeInstantClaimStatus,
     FfiConverterTypeLeafOptimizationConfig,
     FfiConverterTypeLightningAddressDetails,
     FfiConverterTypeLightningAddressInfo,
@@ -51807,6 +53220,8 @@ export default Object.freeze({
     FfiConverterTypePerBranchFunding,
     FfiConverterTypePrepareLnurlPayRequest,
     FfiConverterTypePrepareLnurlPayResponse,
+    FfiConverterTypePreparePaymentLinkRequest,
+    FfiConverterTypePreparePaymentLinkResponse,
     FfiConverterTypePrepareSendBatchRequest,
     FfiConverterTypePrepareSendBatchResponse,
     FfiConverterTypePrepareSendPaymentRequest,
@@ -51876,6 +53291,7 @@ export default Object.freeze({
     FfiConverterTypeSigningOnlyExternalSigners,
     FfiConverterTypeSilentPaymentAddressDetails,
     FfiConverterTypeSourceAsset,
+    FfiConverterTypeSourceChain,
     FfiConverterTypeSparkAddressDetails,
     FfiConverterTypeSparkConfig,
     FfiConverterTypeSparkHtlcDetails,
