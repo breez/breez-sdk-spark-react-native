@@ -9,6 +9,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_address_utxos(ptr: bigint, address: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_address_txos(ptr: bigint, address: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_transaction_status(ptr: bigint, txid: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_tip_height(ptr: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_transaction_hex(ptr: bigint, txid: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_outspend(ptr: bigint, txid: Uint8Array, vout: number): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_broadcast_transaction(ptr: bigint, tx: Uint8Array): bigint;
@@ -31,6 +32,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_delete_lightning_address(ptr: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(ptr: bigint): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_export_unilateral_exit_state(ptr: bigint): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_claim_deposit_quote(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_conversion_limits(ptr: bigint, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_cross_chain_routes(ptr: bigint, filter: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_info(ptr: bigint, request: Uint8Array): bigint;
@@ -233,9 +235,9 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_func_default_server_config(network: Uint8Array, uniffi_out_err: UniffiRustCallStatus): Uint8Array;
     ubrn_uniffi_breez_sdk_spark_fn_func_default_session_store(backend: bigint, network: Uint8Array, identity: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_default_storage(storageDir: Uint8Array, uniffi_out_err: UniffiRustCallStatus): bigint;
-    ubrn_uniffi_breez_sdk_spark_fn_func_get_spark_status(): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_func_get_spark_status(request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_init_logging(logDir: Uint8Array, appLogger: Uint8Array, logFilter: Uint8Array, uniffi_out_err: UniffiRustCallStatus): void;
-    ubrn_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(url: Uint8Array, network: Uint8Array, apiType: Uint8Array, credentials: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(url: Uint8Array, network: Uint8Array, apiType: Uint8Array, credentials: Uint8Array, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_new_shared_sdk_context(config: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_single_key_cpfp_signer(secretKeyBytes: Uint8Array, uniffi_out_err: UniffiRustCallStatus): bigint;
     ubrn_ffi_breez_sdk_spark_rust_future_poll_u8(handle: bigint, callback: UniffiRustFutureContinuationCallback, callbackData: bigint): void;
@@ -309,6 +311,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_utxos(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_txos(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_status(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_tip_height(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_hex(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_outspend(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_broadcast_transaction(): number;
@@ -329,6 +332,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_lightning_address(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_export_unilateral_exit_state(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_claim_deposit_quote(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_cross_chain_routes(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info(): number;
@@ -575,10 +579,11 @@ type UniffiCallbackInterfaceLoggerMethod0 = (uniffiHandle: bigint, l: Uint8Array
 type UniffiCallbackInterfaceBitcoinChainServiceMethod0 = (uniffiHandle: bigint, address: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
 type UniffiCallbackInterfaceBitcoinChainServiceMethod1 = (uniffiHandle: bigint, address: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
 type UniffiCallbackInterfaceBitcoinChainServiceMethod2 = (uniffiHandle: bigint, txid: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
-type UniffiCallbackInterfaceBitcoinChainServiceMethod3 = (uniffiHandle: bigint, txid: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
-type UniffiCallbackInterfaceBitcoinChainServiceMethod4 = (uniffiHandle: bigint, txid: Uint8Array, vout: number, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
-type UniffiCallbackInterfaceBitcoinChainServiceMethod5 = (uniffiHandle: bigint, tx: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiForeignFuture;
-type UniffiCallbackInterfaceBitcoinChainServiceMethod6 = (uniffiHandle: bigint, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
+type UniffiCallbackInterfaceBitcoinChainServiceMethod3 = (uniffiHandle: bigint, uniffiFutureCallback: UniffiForeignFutureCompleteU32, uniffiCallbackData: bigint) => UniffiForeignFuture;
+type UniffiCallbackInterfaceBitcoinChainServiceMethod4 = (uniffiHandle: bigint, txid: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
+type UniffiCallbackInterfaceBitcoinChainServiceMethod5 = (uniffiHandle: bigint, txid: Uint8Array, vout: number, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
+type UniffiCallbackInterfaceBitcoinChainServiceMethod6 = (uniffiHandle: bigint, tx: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteVoid, uniffiCallbackData: bigint) => UniffiForeignFuture;
+type UniffiCallbackInterfaceBitcoinChainServiceMethod7 = (uniffiHandle: bigint, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
 type UniffiCallbackInterfaceCpfpSignerMethod0 = (uniffiHandle: bigint, psbtBytes: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalBreezSignerMethod0 = (uniffiHandle: bigint, path: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalBreezSignerMethod1 = (uniffiHandle: bigint, message: Uint8Array, path: Uint8Array, uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer, uniffiCallbackData: bigint) => UniffiForeignFuture;
@@ -664,10 +669,11 @@ export type UniffiVTableCallbackInterfaceBitcoinChainService = {
     getAddressUtxos: UniffiCallbackInterfaceBitcoinChainServiceMethod0;
     getAddressTxos: UniffiCallbackInterfaceBitcoinChainServiceMethod1;
     getTransactionStatus: UniffiCallbackInterfaceBitcoinChainServiceMethod2;
-    getTransactionHex: UniffiCallbackInterfaceBitcoinChainServiceMethod3;
-    getOutspend: UniffiCallbackInterfaceBitcoinChainServiceMethod4;
-    broadcastTransaction: UniffiCallbackInterfaceBitcoinChainServiceMethod5;
-    recommendedFees: UniffiCallbackInterfaceBitcoinChainServiceMethod6;
+    tipHeight: UniffiCallbackInterfaceBitcoinChainServiceMethod3;
+    getTransactionHex: UniffiCallbackInterfaceBitcoinChainServiceMethod4;
+    getOutspend: UniffiCallbackInterfaceBitcoinChainServiceMethod5;
+    broadcastTransaction: UniffiCallbackInterfaceBitcoinChainServiceMethod6;
+    recommendedFees: UniffiCallbackInterfaceBitcoinChainServiceMethod7;
     uniffiFree: UniffiCallbackInterfaceFree;
 };
 export type UniffiVTableCallbackInterfaceCpfpSigner = {

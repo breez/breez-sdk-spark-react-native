@@ -120,18 +120,22 @@ typedef void (*UniffiCallbackInterfaceBitcoinChainServiceMethod2)(
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
 typedef void (*UniffiCallbackInterfaceBitcoinChainServiceMethod3)(
+    uint64_t uniffi_handle,
+    UniffiForeignFutureCompleteU32 uniffi_future_callback,
+    uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
+typedef void (*UniffiCallbackInterfaceBitcoinChainServiceMethod4)(
     uint64_t uniffi_handle, RustBuffer txid,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceBitcoinChainServiceMethod4)(
+typedef void (*UniffiCallbackInterfaceBitcoinChainServiceMethod5)(
     uint64_t uniffi_handle, RustBuffer txid, uint32_t vout,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceBitcoinChainServiceMethod5)(
+typedef void (*UniffiCallbackInterfaceBitcoinChainServiceMethod6)(
     uint64_t uniffi_handle, RustBuffer tx,
     UniffiForeignFutureCompleteVoid uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
-typedef void (*UniffiCallbackInterfaceBitcoinChainServiceMethod6)(
+typedef void (*UniffiCallbackInterfaceBitcoinChainServiceMethod7)(
     uint64_t uniffi_handle,
     UniffiForeignFutureCompleteRustBuffer uniffi_future_callback,
     uint64_t uniffi_callback_data, UniffiForeignFuture *uniffi_out_return);
@@ -439,10 +443,11 @@ typedef struct UniffiVTableCallbackInterfaceBitcoinChainService {
   UniffiCallbackInterfaceBitcoinChainServiceMethod0 get_address_utxos;
   UniffiCallbackInterfaceBitcoinChainServiceMethod1 get_address_txos;
   UniffiCallbackInterfaceBitcoinChainServiceMethod2 get_transaction_status;
-  UniffiCallbackInterfaceBitcoinChainServiceMethod3 get_transaction_hex;
-  UniffiCallbackInterfaceBitcoinChainServiceMethod4 get_outspend;
-  UniffiCallbackInterfaceBitcoinChainServiceMethod5 broadcast_transaction;
-  UniffiCallbackInterfaceBitcoinChainServiceMethod6 recommended_fees;
+  UniffiCallbackInterfaceBitcoinChainServiceMethod3 tip_height;
+  UniffiCallbackInterfaceBitcoinChainServiceMethod4 get_transaction_hex;
+  UniffiCallbackInterfaceBitcoinChainServiceMethod5 get_outspend;
+  UniffiCallbackInterfaceBitcoinChainServiceMethod6 broadcast_transaction;
+  UniffiCallbackInterfaceBitcoinChainServiceMethod7 recommended_fees;
   UniffiCallbackInterfaceFree uniffi_free;
 } UniffiVTableCallbackInterfaceBitcoinChainService;
 typedef struct UniffiVTableCallbackInterfaceCpfpSigner {
@@ -571,6 +576,8 @@ uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_address_txos(
 uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_transaction_status(
     void *ptr, RustBuffer txid);
 /*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_tip_height(void *ptr);
+/*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_transaction_hex(
     void *ptr, RustBuffer txid);
 /*handle*/ uint64_t
@@ -632,6 +639,9 @@ uniffi_breez_sdk_spark_fn_method_breezsdk_disconnect(void *ptr);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_export_unilateral_exit_state(
     void *ptr);
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_claim_deposit_quote(
+    void *ptr, RustBuffer request);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_conversion_limits(
     void *ptr, RustBuffer request);
@@ -1167,13 +1177,14 @@ RustBuffer uniffi_breez_sdk_spark_fn_func_default_server_config(
 void *
 uniffi_breez_sdk_spark_fn_func_default_storage(RustBuffer storage_dir,
                                                RustCallStatus *uniffi_out_err);
-/*handle*/ uint64_t uniffi_breez_sdk_spark_fn_func_get_spark_status();
+/*handle*/ uint64_t
+uniffi_breez_sdk_spark_fn_func_get_spark_status(RustBuffer request);
 void uniffi_breez_sdk_spark_fn_func_init_logging(
     RustBuffer log_dir, RustBuffer app_logger, RustBuffer log_filter,
     RustCallStatus *uniffi_out_err);
 /*handle*/ uint64_t uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
     RustBuffer url, RustBuffer network, RustBuffer api_type,
-    RustBuffer credentials);
+    RustBuffer credentials, RustBuffer request);
 /*handle*/ uint64_t
 uniffi_breez_sdk_spark_fn_func_new_shared_sdk_context(RustBuffer config);
 void *uniffi_breez_sdk_spark_fn_func_single_key_cpfp_signer(
@@ -1330,6 +1341,8 @@ uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_txos();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_status();
 uint16_t
+uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_tip_height();
+uint16_t
 uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_hex();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_outspend();
@@ -1361,6 +1374,8 @@ uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_lightning_address();
 uint16_t uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_export_unilateral_exit_state();
+uint16_t
+uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_claim_deposit_quote();
 uint16_t
 uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits();
 uint16_t
@@ -5257,6 +5272,147 @@ using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
 // a function pointer. The function pointer is passed to Rust.
+static std::function<void(uint64_t, UniffiForeignFutureCompleteU32, uint64_t,
+                          UniffiForeignFuture *)>
+    rsLambda = nullptr;
+
+// This is the main body of the callback. It's called from the lambda,
+// which itself is called from the callback function which is passed to Rust.
+static void body(jsi::Runtime &rt,
+                 std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+                 std::shared_ptr<jsi::Value> callbackValue,
+                 uint64_t rs_uniffiHandle,
+                 UniffiForeignFutureCompleteU32 rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+
+  // Convert the arguments from Rust, into jsi::Values.
+  // We'll use the Bridging class to do this…
+  auto js_uniffiHandle =
+      uniffi_jsi::Bridging<uint64_t>::toJs(rt, callInvoker, rs_uniffiHandle);
+  auto js_uniffiFutureCallback =
+      uniffi::breez_sdk_spark::Bridging<UniffiForeignFutureCompleteU32>::toJs(
+          rt, callInvoker, rs_uniffiFutureCallback);
+  auto js_uniffiCallbackData = uniffi_jsi::Bridging<uint64_t>::toJs(
+      rt, callInvoker, rs_uniffiCallbackData);
+
+  // Now we are ready to call the callback.
+  // We are already on the JS thread, because this `body` function was
+  // invoked from the CallInvoker.
+  try {
+    // Getting the callback function
+    auto cb = callbackValue->asObject(rt).asFunction(rt);
+    auto uniffiResult = cb.call(rt, js_uniffiHandle, js_uniffiFutureCallback,
+                                js_uniffiCallbackData);
+
+    // return type is MutReference(Struct("ForeignFuture"))
+    // Finally, we need to copy the return value back into the Rust pointer.
+    *rs_uniffiOutReturn =
+        uniffi::breez_sdk_spark::Bridging<UniffiForeignFuture>::fromJs(
+            rt, callInvoker, uniffiResult);
+  } catch (const jsi::JSError &error) {
+    std::cout << "Error in callback "
+                 "UniffiCallbackInterfaceBitcoinChainServiceMethod3: "
+              << error.what() << std::endl;
+    throw error;
+  }
+}
+
+static void callback(uint64_t rs_uniffiHandle,
+                     UniffiForeignFutureCompleteU32 rs_uniffiFutureCallback,
+                     uint64_t rs_uniffiCallbackData,
+                     UniffiForeignFuture *rs_uniffiOutReturn) {
+  // If the runtime has shutdown, then there is no point in trying to
+  // call into Javascript. BUT how do we tell if the runtime has shutdown?
+  //
+  // Answer: the module destructor calls into callback `cleanup` method,
+  // which nulls out the rsLamda.
+  //
+  // If rsLamda is null, then there is no runtime to call into.
+  if (rsLambda == nullptr) {
+    // This only occurs when destructors are calling into Rust free/drop,
+    // which causes the JS callback to be dropped.
+    return;
+  }
+
+  // The runtime, the actual callback jsi::funtion, and the callInvoker
+  // are all in the lambda.
+  rsLambda(rs_uniffiHandle, rs_uniffiFutureCallback, rs_uniffiCallbackData,
+           rs_uniffiOutReturn);
+}
+
+static UniffiCallbackInterfaceBitcoinChainServiceMethod3
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod3
+    jsi::Runtime &rt,
+    std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
+    const jsi::Value &value) {
+  if (rsLambda != nullptr) {
+    // `makeCallbackFunction` is called in two circumstances:
+    //
+    // 1. at startup, when initializing callback interface vtables.
+    // 2. when polling futures. This happens at least once per future that is
+    //    exposed to Javascript. We know that this is always the same function,
+    //    `uniffiFutureContinuationCallback` in `async-rust-calls.ts`.
+    //
+    // We can therefore return the callback function without making anything
+    // new if we've been initialized already.
+    return callback;
+  }
+  auto callbackFunction = value.asObject(rt).asFunction(rt);
+  auto callbackValue = std::make_shared<jsi::Value>(rt, callbackFunction);
+  rsLambda = [&rt, callInvoker, callbackValue](
+                 uint64_t rs_uniffiHandle,
+                 UniffiForeignFutureCompleteU32 rs_uniffiFutureCallback,
+                 uint64_t rs_uniffiCallbackData,
+                 UniffiForeignFuture *rs_uniffiOutReturn) {
+    // We immediately make a lambda which will do the work of transforming the
+    // arguments into JSI values and calling the callback.
+    uniffi_runtime::UniffiCallFunc jsLambda =
+        [callInvoker, callbackValue, rs_uniffiHandle, rs_uniffiFutureCallback,
+         rs_uniffiCallbackData, rs_uniffiOutReturn](jsi::Runtime &rt) mutable {
+          body(rt, callInvoker, callbackValue, rs_uniffiHandle,
+               rs_uniffiFutureCallback, rs_uniffiCallbackData,
+               rs_uniffiOutReturn);
+        };
+    // We'll then call that lambda from the callInvoker which will
+    // look after calling it on the correct thread.
+    callInvoker->invokeBlocking(rt, jsLambda);
+  };
+  return callback;
+}
+
+// This method is called from the destructor of NativeBreezSdkSpark, which only
+// happens when the jsi::Runtime is being destroyed.
+static void cleanup() {
+  // The lambda holds a reference to the the Runtime, so when this is nulled
+  // out, then the pointer will no longer be left dangling.
+  rsLambda = nullptr;
+}
+} // namespace
+  // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod3
+  // Implementation of callback function calling from Rust to JS
+  // CallbackInterfaceBitcoinChainServiceMethod4
+
+// Callback function:
+// uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod4::UniffiCallbackInterfaceBitcoinChainServiceMethod4
+//
+// We have the following constraints:
+// - we need to pass a function pointer to Rust.
+// - we need a jsi::Runtime and jsi::Function to call into JS.
+// - function pointers can't store state, so we can't use a lamda.
+//
+// For this, we store a lambda as a global, as `rsLambda`. The `callback`
+// function calls the lambda, which itself calls the `body` which then calls
+// into JS.
+//
+// We then give the `callback` function pointer to Rust which will call the
+// lambda sometime in the future.
+namespace uniffi::breez_sdk_spark::cb::
+    callbackinterfacebitcoinchainservicemethod4 {
+using namespace facebook;
+
+// We need to store a lambda in a global so we can call it from
+// a function pointer. The function pointer is passed to Rust.
 static std::function<void(uint64_t, RustBuffer,
                           UniffiForeignFutureCompleteRustBuffer, uint64_t,
                           UniffiForeignFuture *)>
@@ -5300,7 +5456,7 @@ static void body(jsi::Runtime &rt,
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
     std::cout << "Error in callback "
-                 "UniffiCallbackInterfaceBitcoinChainServiceMethod3: "
+                 "UniffiCallbackInterfaceBitcoinChainServiceMethod4: "
               << error.what() << std::endl;
     throw error;
   }
@@ -5330,8 +5486,8 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_txid,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceBitcoinChainServiceMethod3
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod3
+static UniffiCallbackInterfaceBitcoinChainServiceMethod4
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod4
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -5379,12 +5535,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod3
+  // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod4
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceBitcoinChainServiceMethod4
+  // CallbackInterfaceBitcoinChainServiceMethod5
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod4::UniffiCallbackInterfaceBitcoinChainServiceMethod4
+// uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod5::UniffiCallbackInterfaceBitcoinChainServiceMethod5
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -5398,7 +5554,7 @@ static void cleanup() {
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
 namespace uniffi::breez_sdk_spark::cb::
-    callbackinterfacebitcoinchainservicemethod4 {
+    callbackinterfacebitcoinchainservicemethod5 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -5447,7 +5603,7 @@ static void body(jsi::Runtime &rt,
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
     std::cout << "Error in callback "
-                 "UniffiCallbackInterfaceBitcoinChainServiceMethod4: "
+                 "UniffiCallbackInterfaceBitcoinChainServiceMethod5: "
               << error.what() << std::endl;
     throw error;
   }
@@ -5477,8 +5633,8 @@ callback(uint64_t rs_uniffiHandle, RustBuffer rs_txid, uint32_t rs_vout,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceBitcoinChainServiceMethod4
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod4
+static UniffiCallbackInterfaceBitcoinChainServiceMethod5
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod5
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -5526,12 +5682,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod4
+  // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod5
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceBitcoinChainServiceMethod5
+  // CallbackInterfaceBitcoinChainServiceMethod6
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod5::UniffiCallbackInterfaceBitcoinChainServiceMethod5
+// uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod6::UniffiCallbackInterfaceBitcoinChainServiceMethod6
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -5545,7 +5701,7 @@ static void cleanup() {
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
 namespace uniffi::breez_sdk_spark::cb::
-    callbackinterfacebitcoinchainservicemethod5 {
+    callbackinterfacebitcoinchainservicemethod6 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -5592,7 +5748,7 @@ static void body(jsi::Runtime &rt,
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
     std::cout << "Error in callback "
-                 "UniffiCallbackInterfaceBitcoinChainServiceMethod5: "
+                 "UniffiCallbackInterfaceBitcoinChainServiceMethod6: "
               << error.what() << std::endl;
     throw error;
   }
@@ -5621,8 +5777,8 @@ static void callback(uint64_t rs_uniffiHandle, RustBuffer rs_tx,
            rs_uniffiCallbackData, rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceBitcoinChainServiceMethod5
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod5
+static UniffiCallbackInterfaceBitcoinChainServiceMethod6
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod6
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -5670,12 +5826,12 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod5
+  // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod6
   // Implementation of callback function calling from Rust to JS
-  // CallbackInterfaceBitcoinChainServiceMethod6
+  // CallbackInterfaceBitcoinChainServiceMethod7
 
 // Callback function:
-// uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod6::UniffiCallbackInterfaceBitcoinChainServiceMethod6
+// uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod7::UniffiCallbackInterfaceBitcoinChainServiceMethod7
 //
 // We have the following constraints:
 // - we need to pass a function pointer to Rust.
@@ -5689,7 +5845,7 @@ static void cleanup() {
 // We then give the `callback` function pointer to Rust which will call the
 // lambda sometime in the future.
 namespace uniffi::breez_sdk_spark::cb::
-    callbackinterfacebitcoinchainservicemethod6 {
+    callbackinterfacebitcoinchainservicemethod7 {
 using namespace facebook;
 
 // We need to store a lambda in a global so we can call it from
@@ -5734,7 +5890,7 @@ static void body(jsi::Runtime &rt,
             rt, callInvoker, uniffiResult);
   } catch (const jsi::JSError &error) {
     std::cout << "Error in callback "
-                 "UniffiCallbackInterfaceBitcoinChainServiceMethod6: "
+                 "UniffiCallbackInterfaceBitcoinChainServiceMethod7: "
               << error.what() << std::endl;
     throw error;
   }
@@ -5764,8 +5920,8 @@ callback(uint64_t rs_uniffiHandle,
            rs_uniffiOutReturn);
 }
 
-static UniffiCallbackInterfaceBitcoinChainServiceMethod6
-makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod6
+static UniffiCallbackInterfaceBitcoinChainServiceMethod7
+makeCallbackFunction( // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod7
     jsi::Runtime &rt,
     std::shared_ptr<uniffi_runtime::UniffiCallInvoker> callInvoker,
     const jsi::Value &value) {
@@ -5812,7 +5968,7 @@ static void cleanup() {
   rsLambda = nullptr;
 }
 } // namespace
-  // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod6
+  // uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod7
   // Implementation of callback function calling from Rust to JS
   // CallbackInterfaceCpfpSignerMethod0
 
@@ -16486,17 +16642,20 @@ template <> struct Bridging<UniffiVTableCallbackInterfaceBitcoinChainService> {
     rsObject.get_transaction_status = uniffi::breez_sdk_spark::cb::
         callbackinterfacebitcoinchainservicemethod2::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "getTransactionStatus"));
-    rsObject.get_transaction_hex = uniffi::breez_sdk_spark::cb::
+    rsObject.tip_height = uniffi::breez_sdk_spark::cb::
         callbackinterfacebitcoinchainservicemethod3::makeCallbackFunction(
+            rt, callInvoker, jsObject.getProperty(rt, "tipHeight"));
+    rsObject.get_transaction_hex = uniffi::breez_sdk_spark::cb::
+        callbackinterfacebitcoinchainservicemethod4::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "getTransactionHex"));
     rsObject.get_outspend = uniffi::breez_sdk_spark::cb::
-        callbackinterfacebitcoinchainservicemethod4::makeCallbackFunction(
+        callbackinterfacebitcoinchainservicemethod5::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "getOutspend"));
     rsObject.broadcast_transaction = uniffi::breez_sdk_spark::cb::
-        callbackinterfacebitcoinchainservicemethod5::makeCallbackFunction(
+        callbackinterfacebitcoinchainservicemethod6::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "broadcastTransaction"));
     rsObject.recommended_fees = uniffi::breez_sdk_spark::cb::
-        callbackinterfacebitcoinchainservicemethod6::makeCallbackFunction(
+        callbackinterfacebitcoinchainservicemethod7::makeCallbackFunction(
             rt, callInvoker, jsObject.getProperty(rt, "recommendedFees"));
     rsObject.uniffi_free = uniffi::breez_sdk_spark::st::
         vtablecallbackinterfacebitcoinchainservice::
@@ -17223,6 +17382,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_transaction_status(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_tip_"
+        "height"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "bitcoinchainservice_tip_height"),
+      1,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_tip_height(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_"
         "transaction_hex"] = jsi::Function::createFromHostFunction(
       rt,
@@ -17491,6 +17662,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
             ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_export_unilateral_exit_state(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_claim_deposit_"
+        "quote"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_fn_method_"
+                                    "breezsdk_fetch_claim_deposit_quote"),
+      2,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_claim_deposit_quote(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_conversion_"
@@ -19934,7 +20117,7 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
           rt,
           jsi::PropNameID::forAscii(
               rt, "ubrn_uniffi_breez_sdk_spark_fn_func_get_spark_status"),
-          0,
+          1,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this->cpp_uniffi_breez_sdk_spark_fn_func_get_spark_status(
@@ -19956,7 +20139,7 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
           rt,
           jsi::PropNameID::forAscii(
               rt, "ubrn_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service"),
-          4,
+          5,
           [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                  const jsi::Value *args, size_t count) -> jsi::Value {
             return this
@@ -20790,6 +20973,18 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
             ->cpp_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_status(
                 rt, thisVal, args, count);
       });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_tip_"
+        "height"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "ubrn_uniffi_breez_sdk_spark_checksum_"
+                                    "method_bitcoinchainservice_tip_height"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_tip_height(
+                rt, thisVal, args, count);
+      });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_"
         "transaction_hex"] = jsi::Function::createFromHostFunction(
       rt,
@@ -21038,6 +21233,19 @@ NativeBreezSdkSpark::NativeBreezSdkSpark(
              const jsi::Value *args, size_t count) -> jsi::Value {
         return this
             ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_export_unilateral_exit_state(
+                rt, thisVal, args, count);
+      });
+  props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_claim_"
+        "deposit_quote"] = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt,
+                                "ubrn_uniffi_breez_sdk_spark_checksum_method_"
+                                "breezsdk_fetch_claim_deposit_quote"),
+      0,
+      [this](jsi::Runtime &rt, const jsi::Value &thisVal,
+             const jsi::Value *args, size_t count) -> jsi::Value {
+        return this
+            ->cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_claim_deposit_quote(
                 rt, thisVal, args, count);
       });
   props["ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_"
@@ -23185,6 +23393,9 @@ NativeBreezSdkSpark::~NativeBreezSdkSpark() {
   // Cleanup for callback function CallbackInterfaceBitcoinChainServiceMethod6
   uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod6::
       cleanup();
+  // Cleanup for callback function CallbackInterfaceBitcoinChainServiceMethod7
+  uniffi::breez_sdk_spark::cb::callbackinterfacebitcoinchainservicemethod7::
+      cleanup();
   // Cleanup for callback function CallbackInterfaceCpfpSignerMethod0
   uniffi::breez_sdk_spark::cb::callbackinterfacecpfpsignermethod0::cleanup();
   // Cleanup for callback function CallbackInterfaceExternalBreezSignerMethod0
@@ -23772,6 +23983,16 @@ jsi::Value NativeBreezSdkSpark::
                                                          value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_tip_height(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value = uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_tip_height(
+      uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_fn_method_bitcoinchainservice_get_transaction_hex(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -24035,6 +24256,19 @@ jsi::Value NativeBreezSdkSpark::
   auto value =
       uniffi_breez_sdk_spark_fn_method_breezsdk_export_unilateral_exit_state(
           uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]));
+
+  return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
+                                                         value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_claim_deposit_quote(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_claim_deposit_quote(
+          uniffi_jsi::Bridging<void *>::fromJs(rt, callInvoker, args[0]),
+          uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                                args[1]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
@@ -26612,7 +26846,9 @@ jsi::Value
 NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_get_spark_status(
     jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
     size_t count) {
-  auto value = uniffi_breez_sdk_spark_fn_func_get_spark_status();
+  auto value = uniffi_breez_sdk_spark_fn_func_get_spark_status(
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[0]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
@@ -26647,7 +26883,9 @@ NativeBreezSdkSpark::cpp_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
                                                             args[2]),
       uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
-                                                            args[3]));
+                                                            args[3]),
+      uniffi::breez_sdk_spark::Bridging<RustBuffer>::fromJs(rt, callInvoker,
+                                                            args[4]));
 
   return uniffi_jsi::Bridging</*handle*/ uint64_t>::toJs(rt, callInvoker,
                                                          value);
@@ -27452,6 +27690,15 @@ jsi::Value NativeBreezSdkSpark::
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }
 jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_tip_height(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_tip_height();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
     cpp_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_transaction_hex(
         jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
         size_t count) {
@@ -27622,6 +27869,15 @@ jsi::Value NativeBreezSdkSpark::
         size_t count) {
   auto value =
       uniffi_breez_sdk_spark_checksum_method_breezsdk_export_unilateral_exit_state();
+
+  return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
+}
+jsi::Value NativeBreezSdkSpark::
+    cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_claim_deposit_quote(
+        jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+        size_t count) {
+  auto value =
+      uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_claim_deposit_quote();
 
   return uniffi_jsi::Bridging<uint16_t>::toJs(rt, callInvoker, value);
 }

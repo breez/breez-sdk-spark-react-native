@@ -160,7 +160,7 @@ export declare function defaultStorage(storageDir: string): StorageBackend;
  * This function queries the Spark status API and returns the worst status
  * across the Spark Operators and SSP services.
  */
-export declare function getSparkStatus(asyncOpts_?: {
+export declare function getSparkStatus(request: GetSparkStatusRequest, asyncOpts_?: {
     signal: AbortSignal;
 }): Promise<SparkStatus>;
 export declare function initLogging(logDir: string | undefined, appLogger: Logger | undefined, logFilter: string | undefined): void;
@@ -173,9 +173,10 @@ export declare function initLogging(logDir: string | undefined, appLogger: Logge
  * SDK instances. All SDKs sharing the service must use the same `network`.
  *
  * For one-off, non-shared use, prefer
- * [`SdkBuilder::with_rest_chain_service`](crate::SdkBuilder::with_rest_chain_service).
+ * [`SdkBuilder::with_rest_chain_service`](crate::SdkBuilder::with_rest_chain_service),
+ * which builds on the SDK's own client and inherits its proxy automatically.
  */
-export declare function newRestChainService(url: string, network: Network, apiType: ChainApiType, credentials: Credentials | undefined, asyncOpts_?: {
+export declare function newRestChainService(url: string, network: Network, apiType: ChainApiType, credentials: Credentials | undefined, request: NewRestChainServiceRequest, asyncOpts_?: {
     signal: AbortSignal;
 }): Promise<BitcoinChainService>;
 /**
@@ -938,17 +939,63 @@ export declare const CheckMessageResponse: Readonly<{
      */
     defaults: () => Partial<CheckMessageResponse>;
 }>;
+/**
+ * What one way of claiming a deposit costs.
+ */
+export type ClaimDepositQuote = {
+    /**
+     * The depth this becomes claimable at, as a total confirmation count on the
+     * deposit tx and not a number still to wait. A deposit already at or past
+     * this depth can be claimed.
+     */
+    confirmationsRequired: number;
+    /**
+     * What reaches the balance.
+     */
+    creditAmountSats: bigint;
+    /**
+     * The deposit value less the credit.
+     */
+    feeSats: bigint;
+    /**
+     * `fee_sats` as a fee rate over the claim transaction, so it is comparable
+     * with a max fee expressed as a rate.
+     */
+    feeRateSatPerVbyte: bigint;
+    /**
+     * The provider would not quote this yet, so the fee is derived from current
+     * on-chain fees and the real one may differ.
+     */
+    isEstimate: boolean;
+};
+/**
+ * Generated factory for {@link ClaimDepositQuote} record objects.
+ */
+export declare const ClaimDepositQuote: Readonly<{
+    /**
+     * Create a frozen instance of {@link ClaimDepositQuote}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ClaimDepositQuote> & Required<Omit<ClaimDepositQuote, never>>) => ClaimDepositQuote;
+    /**
+     * Create a frozen instance of {@link ClaimDepositQuote}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ClaimDepositQuote> & Required<Omit<ClaimDepositQuote, never>>) => ClaimDepositQuote;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ClaimDepositQuote>;
+}>;
 export type ClaimDepositRequest = {
     txid: string;
     vout: number;
-    maxFee: MaxFee | undefined;
     /**
-     * Set to request an instant (0-conf) claim instead of waiting for the
-     * deposit to mature, bounding the SSP spread at this many basis points of
-     * the deposit value (100 bps = 1%). When set, the call takes the instant
-     * path and `max_fee` is ignored.
+     * Caps what the claim may cost. A deposit that has not matured is claimed
+     * instantly when the provider's spread fits within this, so the same ceiling
+     * governs both. Falls back to the configured max deposit claim fee.
      */
-    maxInstantFeeBps: /*u32*/ number | undefined;
+    maxFee: MaxFee | undefined;
 };
 /**
  * Generated factory for {@link ClaimDepositRequest} record objects.
@@ -958,12 +1005,12 @@ export declare const ClaimDepositRequest: Readonly<{
      * Create a frozen instance of {@link ClaimDepositRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<ClaimDepositRequest> & Required<Omit<ClaimDepositRequest, "maxFee" | "maxInstantFeeBps">>) => ClaimDepositRequest;
+    create: (partial: Partial<ClaimDepositRequest> & Required<Omit<ClaimDepositRequest, "maxFee">>) => ClaimDepositRequest;
     /**
      * Create a frozen instance of {@link ClaimDepositRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<ClaimDepositRequest> & Required<Omit<ClaimDepositRequest, "maxFee" | "maxInstantFeeBps">>) => ClaimDepositRequest;
+    new: (partial: Partial<ClaimDepositRequest> & Required<Omit<ClaimDepositRequest, "maxFee">>) => ClaimDepositRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -971,9 +1018,12 @@ export declare const ClaimDepositRequest: Readonly<{
 }>;
 export type ClaimDepositResponse = {
     /**
-     * The settled claim payment. Present for a standard claim, which completes
-     * synchronously. Absent for an instant claim, whose transfer settles
-     * asynchronously: watch for the payment via events or `list_payments`.
+     * The settled claim payment, present when the deposit was claimed at maturity,
+     * which completes synchronously. Absent when it was claimed before maturity,
+     * whose transfer settles asynchronously: watch for the payment via events or
+     * `list_payments`. Which of the two happens follows from the deposit's maturity
+     * and the fee ceiling, not from anything the caller asks for, so treat the
+     * payment as optional on every claim.
      */
     payment: Payment | undefined;
 };
@@ -1079,14 +1129,13 @@ export type Config = {
     apiKey: string | undefined;
     network: Network;
     syncIntervalSecs: number;
-    maxDepositClaimFee: MaxFee | undefined;
     /**
-     * Maximum instant (0-conf) static deposit claim fee, as basis points of the
-     * deposit value (100 bps = 1%), capping the SSP spread for the instant
-     * credit. Opt-in: while unset, no 0-conf claim is attempted. Small deposits,
-     * whose spread is proportionally larger, fall through to the normal claim.
+     * The maximum fee that can be paid to claim an on-chain deposit. It also caps
+     * the provider's spread for crediting a deposit before it matures, so raising
+     * it is what allows deposits to be claimed early. Unset disables claiming
+     * rather than allowing any fee.
      */
-    maxInstantDepositClaimFeeBps: /*u32*/ number | undefined;
+    maxDepositClaimFee: MaxFee | undefined;
     /**
      * The domain used for receiving through lnurl-pay and lightning address.
      */
@@ -1207,6 +1256,17 @@ export type Config = {
      * `default_server_config` already sets these compatible values.
      */
     backgroundTasksEnabled: boolean;
+    /**
+     * Routes the connections the SDK opens through a SOCKS5 proxy.
+     *
+     * Covers HTTP and gRPC alike, and resolves hostnames at the proxy so no
+     * DNS query leaks the destination. `None` (default) connects directly.
+     *
+     * When an [`SdkContext`](crate::SdkContext) is supplied to the builder,
+     * its proxy must match this one: the context owns the shared clients, so
+     * a disagreement would mean part of the traffic bypassed the proxy.
+     */
+    proxy: ProxyConfig | undefined;
     /**
      * Configuration for cross-chain sends via Orchestra and Boltz.
      *
@@ -1990,6 +2050,11 @@ export type DepositInfo = {
      * Transaction id of the refund, once one has been created.
      */
     refundTxId: string | undefined;
+    /**
+     * How far the refund has got towards the network. Unset when no refund has
+     * been created, and on refunds created before this field existed.
+     */
+    refundState: RefundState | undefined;
     /**
      * Why the last claim attempt failed. Unset while none has failed.
      */
@@ -3102,6 +3167,75 @@ export declare const ExternalTreeNodeId: Readonly<{
      */
     defaults: () => Partial<ExternalTreeNodeId>;
 }>;
+export type FetchClaimDepositQuoteRequest = {
+    txid: string;
+    vout: number;
+};
+/**
+ * Generated factory for {@link FetchClaimDepositQuoteRequest} record objects.
+ */
+export declare const FetchClaimDepositQuoteRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link FetchClaimDepositQuoteRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<FetchClaimDepositQuoteRequest> & Required<Omit<FetchClaimDepositQuoteRequest, never>>) => FetchClaimDepositQuoteRequest;
+    /**
+     * Create a frozen instance of {@link FetchClaimDepositQuoteRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<FetchClaimDepositQuoteRequest> & Required<Omit<FetchClaimDepositQuoteRequest, never>>) => FetchClaimDepositQuoteRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<FetchClaimDepositQuoteRequest>;
+}>;
+export type FetchClaimDepositQuoteResponse = {
+    amountSats: bigint;
+    /**
+     * Confirmations the deposit has now, 0 while unconfirmed.
+     */
+    confirmations: number;
+    /**
+     * Claiming ahead of maturity, for a spread. Absent when the provider offers
+     * no such option for this deposit, and when claiming early would not actually
+     * be earlier: a deposit that has already matured, or a plan crediting no
+     * sooner than maturity would, is only ever the more expensive way to wait.
+     *
+     * Also absent when the provider could not be reached for a quote, which is not
+     * distinguished here from having nothing to offer: both mean there is no early
+     * claim to show right now, and the one worth retrying is the transient one.
+     *
+     * Priced regardless of the configured maximum claim fee, which is usually far
+     * below a spread. It is quoted so it can be offered, so claiming it needs a max
+     * fee of at least its `fee_sats`. Below that the claim fails with
+     * `MaxDepositClaimFeeExceeded` and the deposit waits for maturity.
+     */
+    instant: ClaimDepositQuote | undefined;
+    /**
+     * Claiming once the deposit matures.
+     */
+    mature: ClaimDepositQuote;
+};
+/**
+ * Generated factory for {@link FetchClaimDepositQuoteResponse} record objects.
+ */
+export declare const FetchClaimDepositQuoteResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link FetchClaimDepositQuoteResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<FetchClaimDepositQuoteResponse> & Required<Omit<FetchClaimDepositQuoteResponse, never>>) => FetchClaimDepositQuoteResponse;
+    /**
+     * Create a frozen instance of {@link FetchClaimDepositQuoteResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<FetchClaimDepositQuoteResponse> & Required<Omit<FetchClaimDepositQuoteResponse, never>>) => FetchClaimDepositQuoteResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<FetchClaimDepositQuoteResponse>;
+}>;
 export type FetchConversionLimitsRequest = {
     /**
      * The type of conversion, either from or to Bitcoin.
@@ -3345,6 +3479,36 @@ export declare const GetPaymentResponse: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<GetPaymentResponse>;
+}>;
+/**
+ * Options for [`get_spark_status`].
+ */
+export type GetSparkStatusRequest = {
+    /**
+     * Routes the status request through a SOCKS5 proxy. Pass the same value as
+     * [`Config::proxy`]: this call runs without an SDK instance, so it cannot
+     * pick the setting up on its own.
+     */
+    proxy: ProxyConfig | undefined;
+};
+/**
+ * Generated factory for {@link GetSparkStatusRequest} record objects.
+ */
+export declare const GetSparkStatusRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link GetSparkStatusRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<GetSparkStatusRequest> & Required<Omit<GetSparkStatusRequest, "proxy">>) => GetSparkStatusRequest;
+    /**
+     * Create a frozen instance of {@link GetSparkStatusRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<GetSparkStatusRequest> & Required<Omit<GetSparkStatusRequest, "proxy">>) => GetSparkStatusRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<GetSparkStatusRequest>;
 }>;
 export type GetTokensMetadataRequest = {
     tokenIdentifiers: Array<string>;
@@ -3883,7 +4047,7 @@ export declare const ListUnclaimedDepositsResponse: Readonly<{
     defaults: () => Partial<ListUnclaimedDepositsResponse>;
 }>;
 /**
- * Wrapped in a [`InputType::LnurlAuth`], this is the result of [`parse`](breez_sdk_common::input::parse) when given a LNURL-auth endpoint.
+ * Wrapped in a [`InputType::LnurlAuth`], this is the result of parsing a LNURL-auth endpoint.
  *
  * It represents the endpoint's parameters for the LNURL workflow.
  *
@@ -4242,6 +4406,13 @@ export type LnurlWithdrawRequestDetails = {
      * The maximum amount, in millisats, that this LNURL-withdraw endpoint accepts
      */
     maxWithdrawable: bigint;
+    /**
+     * The URL of the LNURL-withdraw endpoint these details were fetched from.
+     * Set when the details come from parsing an input; determines how far the
+     * withdraw flow trusts the endpoint-chosen `callback`. Absent or empty
+     * means no exemption: the callback is held to the public-host rules.
+     */
+    url: string;
 };
 /**
  * Generated factory for {@link LnurlWithdrawRequestDetails} record objects.
@@ -4251,12 +4422,12 @@ export declare const LnurlWithdrawRequestDetails: Readonly<{
      * Create a frozen instance of {@link LnurlWithdrawRequestDetails}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<LnurlWithdrawRequestDetails> & Required<Omit<LnurlWithdrawRequestDetails, never>>) => LnurlWithdrawRequestDetails;
+    create: (partial: Partial<LnurlWithdrawRequestDetails> & Required<Omit<LnurlWithdrawRequestDetails, "url">>) => LnurlWithdrawRequestDetails;
     /**
      * Create a frozen instance of {@link LnurlWithdrawRequestDetails}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<LnurlWithdrawRequestDetails> & Required<Omit<LnurlWithdrawRequestDetails, never>>) => LnurlWithdrawRequestDetails;
+    new: (partial: Partial<LnurlWithdrawRequestDetails> & Required<Omit<LnurlWithdrawRequestDetails, "url">>) => LnurlWithdrawRequestDetails;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -4434,6 +4605,36 @@ export declare const MintIssuerTokenRequest: Readonly<{
     defaults: () => Partial<MintIssuerTokenRequest>;
 }>;
 /**
+ * Options for [`new_rest_chain_service`].
+ */
+export type NewRestChainServiceRequest = {
+    /**
+     * Routes the chain service through a SOCKS5 proxy. Pass the same value as
+     * [`Config::proxy`](crate::Config::proxy): this service is built outside
+     * the SDK, so it cannot pick the setting up on its own.
+     */
+    proxy: ProxyConfig | undefined;
+};
+/**
+ * Generated factory for {@link NewRestChainServiceRequest} record objects.
+ */
+export declare const NewRestChainServiceRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link NewRestChainServiceRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<NewRestChainServiceRequest> & Required<Omit<NewRestChainServiceRequest, "proxy">>) => NewRestChainServiceRequest;
+    /**
+     * Create a frozen instance of {@link NewRestChainServiceRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<NewRestChainServiceRequest> & Required<Omit<NewRestChainServiceRequest, "proxy">>) => NewRestChainServiceRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<NewRestChainServiceRequest>;
+}>;
+/**
  * Request for [`BreezSdk::optimize_leaves`]. Defaults to
  * [`OptimizationMode::Full`].
  */
@@ -4528,6 +4729,17 @@ export type PasskeyConfig = {
      * provider.
      */
     providerOptions: PasskeyProviderOptions | undefined;
+    /**
+     * Routes the Nostr relay connections that store wallet labels through a
+     * SOCKS5 proxy. Pass the same value as [`Config::proxy`](crate::Config::proxy):
+     * the passkey client is built before the SDK, so it cannot pick the setting
+     * up on its own.
+     *
+     * Relay connections do not support proxy authentication, so a proxy
+     * carrying a username and password is rejected when the client is
+     * built.
+     */
+    proxy: ProxyConfig | undefined;
 };
 /**
  * Generated factory for {@link PasskeyConfig} record objects.
@@ -4537,12 +4749,12 @@ export declare const PasskeyConfig: Readonly<{
      * Create a frozen instance of {@link PasskeyConfig}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<PasskeyConfig> & Required<Omit<PasskeyConfig, "defaultLabel" | "providerOptions">>) => PasskeyConfig;
+    create: (partial: Partial<PasskeyConfig> & Required<Omit<PasskeyConfig, "proxy" | "defaultLabel" | "providerOptions">>) => PasskeyConfig;
     /**
      * Create a frozen instance of {@link PasskeyConfig}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<PasskeyConfig> & Required<Omit<PasskeyConfig, "defaultLabel" | "providerOptions">>) => PasskeyConfig;
+    new: (partial: Partial<PasskeyConfig> & Required<Omit<PasskeyConfig, "proxy" | "defaultLabel" | "providerOptions">>) => PasskeyConfig;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -5300,6 +5512,51 @@ export declare const ProvisionalPayment: Readonly<{
     defaults: () => Partial<ProvisionalPayment>;
 }>;
 /**
+ * A SOCKS5 proxy carrying the connections the SDK opens.
+ *
+ * Hostnames are resolved by the proxy rather than locally, so a DNS query
+ * never discloses which host is being reached. A connection that cannot be
+ * established through the proxy fails: the SDK never falls back to a direct
+ * one.
+ *
+ * Not supported on WASM, where the browser owns connection setup and exposes
+ * no proxy control. In Node, route the SDK by installing a proxy dispatcher
+ * on the global `fetch` instead.
+ */
+export type ProxyConfig = {
+    /**
+     * Proxy host. An IP address, or a name resolvable locally: reaching the
+     * proxy is the one lookup that cannot itself go through the proxy.
+     */
+    host: string;
+    port: number;
+    /**
+     * Username for SOCKS5 username/password authentication. Authentication is
+     * only offered when both this and `password` are set.
+     */
+    username: string | undefined;
+    password: string | undefined;
+};
+/**
+ * Generated factory for {@link ProxyConfig} record objects.
+ */
+export declare const ProxyConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link ProxyConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ProxyConfig> & Required<Omit<ProxyConfig, "username" | "password">>) => ProxyConfig;
+    /**
+     * Create a frozen instance of {@link ProxyConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ProxyConfig> & Required<Omit<ProxyConfig, "username" | "password">>) => ProxyConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ProxyConfig>;
+}>;
+/**
  * FFI-safe representation of a secp256k1 public key (33 bytes compressed)
  */
 export type PublicKeyBytes = {
@@ -5921,6 +6178,12 @@ export type SdkContextConfig = {
      */
     connectionsPerOperator: /*u32*/ number | undefined;
     /**
+     * Routes the connections opened by this context's shared clients through
+     * a SOCKS5 proxy. Must match the `proxy` on the `Config` of every SDK
+     * built from this context.
+     */
+    proxy: ProxyConfig | undefined;
+    /**
      * Shared storage backend for SDKs built from this context. When set,
      * every SDK built from the context reuses it (and its database
      * connection pool). Construct via
@@ -5939,12 +6202,12 @@ export declare const SdkContextConfig: Readonly<{
      * Create a frozen instance of {@link SdkContextConfig}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<SdkContextConfig> & Required<Omit<SdkContextConfig, "apiKey" | "connectionsPerOperator" | "storage">>) => SdkContextConfig;
+    create: (partial: Partial<SdkContextConfig> & Required<Omit<SdkContextConfig, "apiKey" | "proxy" | "connectionsPerOperator" | "storage">>) => SdkContextConfig;
     /**
      * Create a frozen instance of {@link SdkContextConfig}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<SdkContextConfig> & Required<Omit<SdkContextConfig, "apiKey" | "connectionsPerOperator" | "storage">>) => SdkContextConfig;
+    new: (partial: Partial<SdkContextConfig> & Required<Omit<SdkContextConfig, "apiKey" | "proxy" | "connectionsPerOperator" | "storage">>) => SdkContextConfig;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -7277,6 +7540,12 @@ export type TurnkeyConfig = {
      * greater than 0 when set: 0 is rejected at connect.
      */
     maxRps: /*u32*/ number | undefined;
+    /**
+     * Routes Turnkey requests through a SOCKS5 proxy. Pass the same value as
+     * [`Config::proxy`](crate::Config::proxy): the signer is built before the
+     * SDK, so it cannot pick the setting up on its own.
+     */
+    proxy: ProxyConfig | undefined;
 };
 /**
  * Generated factory for {@link TurnkeyConfig} record objects.
@@ -7286,12 +7555,12 @@ export declare const TurnkeyConfig: Readonly<{
      * Create a frozen instance of {@link TurnkeyConfig}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<TurnkeyConfig> & Required<Omit<TurnkeyConfig, "maxRps">>) => TurnkeyConfig;
+    create: (partial: Partial<TurnkeyConfig> & Required<Omit<TurnkeyConfig, "proxy" | "maxRps">>) => TurnkeyConfig;
     /**
      * Create a frozen instance of {@link TurnkeyConfig}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<TurnkeyConfig> & Required<Omit<TurnkeyConfig, "maxRps">>) => TurnkeyConfig;
+    new: (partial: Partial<TurnkeyConfig> & Required<Omit<TurnkeyConfig, "proxy" | "maxRps">>) => TurnkeyConfig;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -11571,138 +11840,24 @@ export declare const InputType: Readonly<{
     };
 }>;
 export type InputType = InstanceType<(typeof InputType)[keyof Omit<typeof InputType, 'instanceOf'>]>;
-export declare enum InstantClaimDeclineReason_Tags {
-    NoPlan = "NoPlan",
-    FeeExceeded = "FeeExceeded",
-    SubmissionFailed = "SubmissionFailed"
-}
-/**
- * Why an instant (0-conf) claim was declined.
- */
-export declare const InstantClaimDeclineReason: Readonly<{
-    instanceOf: (obj: any) => obj is InstantClaimDeclineReason;
-    NoPlan: {
-        new (): {
-            readonly tag: InstantClaimDeclineReason_Tags.NoPlan;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "InstantClaimDeclineReason";
-        };
-        "new"(): {
-            readonly tag: InstantClaimDeclineReason_Tags.NoPlan;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "InstantClaimDeclineReason";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: InstantClaimDeclineReason_Tags.NoPlan;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "InstantClaimDeclineReason";
-        };
-    };
-    FeeExceeded: {
-        new (inner: {
-            maxBps: number;
-            quotedBps: number;
-            quotedSats: bigint;
-        }): {
-            readonly tag: InstantClaimDeclineReason_Tags.FeeExceeded;
-            readonly inner: Readonly<{
-                maxBps: number;
-                quotedBps: number;
-                quotedSats: bigint;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "InstantClaimDeclineReason";
-        };
-        "new"(inner: {
-            maxBps: number;
-            quotedBps: number;
-            quotedSats: bigint;
-        }): {
-            readonly tag: InstantClaimDeclineReason_Tags.FeeExceeded;
-            readonly inner: Readonly<{
-                maxBps: number;
-                quotedBps: number;
-                quotedSats: bigint;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "InstantClaimDeclineReason";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: InstantClaimDeclineReason_Tags.FeeExceeded;
-            readonly inner: Readonly<{
-                maxBps: number;
-                quotedBps: number;
-                quotedSats: bigint;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "InstantClaimDeclineReason";
-        };
-    };
-    SubmissionFailed: {
-        new (): {
-            readonly tag: InstantClaimDeclineReason_Tags.SubmissionFailed;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "InstantClaimDeclineReason";
-        };
-        "new"(): {
-            readonly tag: InstantClaimDeclineReason_Tags.SubmissionFailed;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "InstantClaimDeclineReason";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: InstantClaimDeclineReason_Tags.SubmissionFailed;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "InstantClaimDeclineReason";
-        };
-    };
-}>;
-/**
- * Why an instant (0-conf) claim was declined.
- */
-export type InstantClaimDeclineReason = InstanceType<(typeof InstantClaimDeclineReason)[keyof Omit<typeof InstantClaimDeclineReason, 'instanceOf'>]>;
 export declare enum InstantClaimStatus_Tags {
     Declined = "Declined",
     Submitted = "Submitted"
 }
 /**
- * State of an instant (0-conf) claim attempt on a deposit.
+ * State of an instant claim attempt on a deposit.
  */
 export declare const InstantClaimStatus: Readonly<{
     instanceOf: (obj: any) => obj is InstantClaimStatus;
     Declined: {
         new (inner: {
-            reason: InstantClaimDeclineReason;
+            maxFeeSats: /*u64*/ bigint | undefined;
+            confirmations: number;
         }): {
             readonly tag: InstantClaimStatus_Tags.Declined;
             readonly inner: Readonly<{
-                reason: InstantClaimDeclineReason;
+                maxFeeSats: /*u64*/ bigint | undefined;
+                confirmations: number;
             }>;
             /**
              * @private
@@ -11711,11 +11866,13 @@ export declare const InstantClaimStatus: Readonly<{
             readonly [uniffiTypeNameSymbol]: "InstantClaimStatus";
         };
         "new"(inner: {
-            reason: InstantClaimDeclineReason;
+            maxFeeSats: /*u64*/ bigint | undefined;
+            confirmations: number;
         }): {
             readonly tag: InstantClaimStatus_Tags.Declined;
             readonly inner: Readonly<{
-                reason: InstantClaimDeclineReason;
+                maxFeeSats: /*u64*/ bigint | undefined;
+                confirmations: number;
             }>;
             /**
              * @private
@@ -11726,7 +11883,8 @@ export declare const InstantClaimStatus: Readonly<{
         instanceOf(obj: any): obj is {
             readonly tag: InstantClaimStatus_Tags.Declined;
             readonly inner: Readonly<{
-                reason: InstantClaimDeclineReason;
+                maxFeeSats: /*u64*/ bigint | undefined;
+                confirmations: number;
             }>;
             /**
              * @private
@@ -11776,7 +11934,7 @@ export declare const InstantClaimStatus: Readonly<{
     };
 }>;
 /**
- * State of an instant (0-conf) claim attempt on a deposit.
+ * State of an instant claim attempt on a deposit.
  */
 export type InstantClaimStatus = InstanceType<(typeof InstantClaimStatus)[keyof Omit<typeof InstantClaimStatus, 'instanceOf'>]>;
 export declare enum LnurlCallbackStatus_Tags {
@@ -12385,6 +12543,7 @@ export declare enum PasskeyError_Tags {
     MnemonicError = "MnemonicError",
     InvalidSalt = "InvalidSalt",
     CreatedButNotDerived = "CreatedButNotDerived",
+    InvalidConfig = "InvalidConfig",
     Generic = "Generic"
 }
 /**
@@ -13050,6 +13209,77 @@ export declare const PasskeyError: Readonly<{
             credentialId: ArrayBuffer;
             source: PrfProviderError;
         }>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    InvalidConfig: {
+        new (v0: string): {
+            readonly tag: PasskeyError_Tags.InvalidConfig;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: PasskeyError_Tags.InvalidConfig;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.InvalidConfig;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: PasskeyError_Tags.InvalidConfig;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: PasskeyError_Tags.InvalidConfig;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "PasskeyError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
         isError(error: unknown): error is Error;
         captureStackTrace(targetObject: object, constructorOpt?: Function): void;
         prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
@@ -15186,6 +15416,85 @@ export declare const ReceivePaymentMethod: Readonly<{
     };
 }>;
 export type ReceivePaymentMethod = InstanceType<(typeof ReceivePaymentMethod)[keyof Omit<typeof ReceivePaymentMethod, 'instanceOf'>]>;
+export declare enum RefundState_Tags {
+    BroadcastPending = "BroadcastPending",
+    Broadcast = "Broadcast"
+}
+/**
+ * State of the deposit refund broadcast.
+ */
+export declare const RefundState: Readonly<{
+    instanceOf: (obj: any) => obj is RefundState;
+    BroadcastPending: {
+        new (inner: {
+            lastError: string | undefined;
+        }): {
+            readonly tag: RefundState_Tags.BroadcastPending;
+            readonly inner: Readonly<{
+                lastError: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "RefundState";
+        };
+        "new"(inner: {
+            lastError: string | undefined;
+        }): {
+            readonly tag: RefundState_Tags.BroadcastPending;
+            readonly inner: Readonly<{
+                lastError: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "RefundState";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: RefundState_Tags.BroadcastPending;
+            readonly inner: Readonly<{
+                lastError: string | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "RefundState";
+        };
+    };
+    Broadcast: {
+        new (): {
+            readonly tag: RefundState_Tags.Broadcast;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "RefundState";
+        };
+        "new"(): {
+            readonly tag: RefundState_Tags.Broadcast;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "RefundState";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: RefundState_Tags.Broadcast;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "RefundState";
+        };
+    };
+}>;
+/**
+ * State of the deposit refund broadcast.
+ */
+export type RefundState = InstanceType<(typeof RefundState)[keyof Omit<typeof RefundState, 'instanceOf'>]>;
 export declare enum SdkError_Tags {
     SparkError = "SparkError",
     InsufficientFunds = "InsufficientFunds",
@@ -15196,6 +15505,8 @@ export declare enum SdkError_Tags {
     ChainServiceError = "ChainServiceError",
     MaxDepositClaimFeeExceeded = "MaxDepositClaimFeeExceeded",
     MissingUtxo = "MissingUtxo",
+    DepositClaimInProgress = "DepositClaimInProgress",
+    RefundReplacementFeeTooLow = "RefundReplacementFeeTooLow",
     LnurlError = "LnurlError",
     Signer = "Signer",
     OptimizationAlreadyRunning = "OptimizationAlreadyRunning",
@@ -15936,6 +16247,196 @@ export declare const SdkError: Readonly<{
         }): Readonly<{
             tx: string;
             vout: number;
+        }>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    DepositClaimInProgress: {
+        new (inner: {
+            tx: string;
+            vout: number;
+        }): {
+            readonly tag: SdkError_Tags.DepositClaimInProgress;
+            readonly inner: Readonly<{
+                tx: string;
+                vout: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(inner: {
+            tx: string;
+            vout: number;
+        }): {
+            readonly tag: SdkError_Tags.DepositClaimInProgress;
+            readonly inner: Readonly<{
+                tx: string;
+                vout: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkError_Tags.DepositClaimInProgress;
+            readonly inner: Readonly<{
+                tx: string;
+                vout: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SdkError_Tags.DepositClaimInProgress;
+            readonly inner: Readonly<{
+                tx: string;
+                vout: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SdkError_Tags.DepositClaimInProgress;
+            readonly inner: Readonly<{
+                tx: string;
+                vout: number;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<{
+            tx: string;
+            vout: number;
+        }>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    RefundReplacementFeeTooLow: {
+        new (inner: {
+            pendingFeeSats: bigint;
+            requiredFeeSats: bigint;
+        }): {
+            readonly tag: SdkError_Tags.RefundReplacementFeeTooLow;
+            readonly inner: Readonly<{
+                pendingFeeSats: bigint;
+                requiredFeeSats: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(inner: {
+            pendingFeeSats: bigint;
+            requiredFeeSats: bigint;
+        }): {
+            readonly tag: SdkError_Tags.RefundReplacementFeeTooLow;
+            readonly inner: Readonly<{
+                pendingFeeSats: bigint;
+                requiredFeeSats: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkError_Tags.RefundReplacementFeeTooLow;
+            readonly inner: Readonly<{
+                pendingFeeSats: bigint;
+                requiredFeeSats: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SdkError_Tags.RefundReplacementFeeTooLow;
+            readonly inner: Readonly<{
+                pendingFeeSats: bigint;
+                requiredFeeSats: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SdkError_Tags.RefundReplacementFeeTooLow;
+            readonly inner: Readonly<{
+                pendingFeeSats: bigint;
+                requiredFeeSats: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<{
+            pendingFeeSats: bigint;
+            requiredFeeSats: bigint;
         }>;
         isError(error: unknown): error is Error;
         captureStackTrace(targetObject: object, constructorOpt?: Function): void;
@@ -20565,7 +21066,8 @@ export type UnsignedTransferPackage = InstanceType<(typeof UnsignedTransferPacka
 export declare enum UpdateDepositPayload_Tags {
     ClaimError = "ClaimError",
     Refund = "Refund",
-    InstantClaim = "InstantClaim"
+    InstantClaim = "InstantClaim",
+    RefundBroadcastState = "RefundBroadcastState"
 }
 export declare const UpdateDepositPayload: Readonly<{
     instanceOf: (obj: any) => obj is UpdateDepositPayload;
@@ -20612,11 +21114,13 @@ export declare const UpdateDepositPayload: Readonly<{
         new (inner: {
             refundTxid: string;
             refundTx: string;
+            state: RefundState;
         }): {
             readonly tag: UpdateDepositPayload_Tags.Refund;
             readonly inner: Readonly<{
                 refundTxid: string;
                 refundTx: string;
+                state: RefundState;
             }>;
             /**
              * @private
@@ -20627,11 +21131,13 @@ export declare const UpdateDepositPayload: Readonly<{
         "new"(inner: {
             refundTxid: string;
             refundTx: string;
+            state: RefundState;
         }): {
             readonly tag: UpdateDepositPayload_Tags.Refund;
             readonly inner: Readonly<{
                 refundTxid: string;
                 refundTx: string;
+                state: RefundState;
             }>;
             /**
              * @private
@@ -20644,6 +21150,7 @@ export declare const UpdateDepositPayload: Readonly<{
             readonly inner: Readonly<{
                 refundTxid: string;
                 refundTx: string;
+                state: RefundState;
             }>;
             /**
              * @private
@@ -20683,6 +21190,50 @@ export declare const UpdateDepositPayload: Readonly<{
             readonly tag: UpdateDepositPayload_Tags.InstantClaim;
             readonly inner: Readonly<{
                 status: InstantClaimStatus;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateDepositPayload";
+        };
+    };
+    RefundBroadcastState: {
+        new (inner: {
+            refundTxid: string;
+            state: RefundState;
+        }): {
+            readonly tag: UpdateDepositPayload_Tags.RefundBroadcastState;
+            readonly inner: Readonly<{
+                refundTxid: string;
+                state: RefundState;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateDepositPayload";
+        };
+        "new"(inner: {
+            refundTxid: string;
+            state: RefundState;
+        }): {
+            readonly tag: UpdateDepositPayload_Tags.RefundBroadcastState;
+            readonly inner: Readonly<{
+                refundTxid: string;
+                state: RefundState;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateDepositPayload";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: UpdateDepositPayload_Tags.RefundBroadcastState;
+            readonly inner: Readonly<{
+                refundTxid: string;
+                state: RefundState;
             }>;
             /**
              * @private
@@ -20859,6 +21410,14 @@ export interface BitcoinChainService {
     getTransactionStatus(txid: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<TxStatus>;
+    /**
+     * Height of the chain tip. Paired with a transaction's
+     * [`TxStatus::block_height`] it gives that transaction's confirmation count,
+     * which no single call reports.
+     */
+    tipHeight(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise</*u32*/ number>;
     getTransactionHex(txid: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<string>;
@@ -20892,6 +21451,14 @@ export declare class BitcoinChainServiceImpl extends UniffiAbstractObject implem
     getTransactionStatus(txid: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<TxStatus>;
+    /**
+     * Height of the chain tip. Paired with a transaction's
+     * [`TxStatus::block_height`] it gives that transaction's confirmation count,
+     * which no single call reports.
+     */
+    tipHeight(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise</*u32*/ number>;
     getTransactionHex(txid: string, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<string>;
@@ -21071,6 +21638,17 @@ export interface BreezSdkInterface {
     exportUnilateralExitState(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ExportUnilateralExitStateResponse>;
+    /**
+     * Quotes both ways of claiming a deposit, so the caller can offer a choice
+     * between claiming ahead of maturity for a spread and waiting for the cheaper
+     * claim at maturity.
+     *
+     * The early quote is requested from the provider on each call rather than read
+     * from cache, so call this when a user is deciding, not on a timer.
+     */
+    fetchClaimDepositQuote(request: FetchClaimDepositQuoteRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<FetchClaimDepositQuoteResponse>;
     fetchConversionLimits(request: FetchConversionLimitsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<FetchConversionLimitsResponse>;
@@ -21627,6 +22205,17 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     exportUnilateralExitState(asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ExportUnilateralExitStateResponse>;
+    /**
+     * Quotes both ways of claiming a deposit, so the caller can offer a choice
+     * between claiming ahead of maturity for a spread and waiting for the cheaper
+     * claim at maturity.
+     *
+     * The early quote is requested from the provider on each call rather than read
+     * from cache, so call this when a user is deciding, not on a timer.
+     */
+    fetchClaimDepositQuote(request: FetchClaimDepositQuoteRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<FetchClaimDepositQuoteResponse>;
     fetchConversionLimits(request: FetchConversionLimitsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<FetchConversionLimitsResponse>;
@@ -22805,6 +23394,10 @@ export declare class PasskeyClient extends UniffiAbstractObject implements Passk
     readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
     /**
      * Construct with the default Nostr-backed label store.
+     *
+     * Fails when `config` carries a proxy the relay transport cannot
+     * honour, rather than letting a wallet be created whose label can
+     * never be published.
      */
     constructor(prfProvider: PrfProvider, breezApiKey: string | undefined, config: PasskeyConfig | undefined);
     /**
@@ -24644,6 +25237,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): CheckMessageResponse;
             lower(value: CheckMessageResponse): UniffiByteArray;
         };
+        FfiConverterTypeClaimDepositQuote: {
+            read(from: RustBuffer): ClaimDepositQuote;
+            write(value: ClaimDepositQuote, into: RustBuffer): void;
+            allocationSize(value: ClaimDepositQuote): number;
+            lift(value: UniffiByteArray): ClaimDepositQuote;
+            lower(value: ClaimDepositQuote): UniffiByteArray;
+        };
         FfiConverterTypeClaimDepositRequest: {
             read(from: RustBuffer): ClaimDepositRequest;
             write(value: ClaimDepositRequest, into: RustBuffer): void;
@@ -25250,6 +25850,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): FeePolicy;
             lower(value: FeePolicy): UniffiByteArray;
         };
+        FfiConverterTypeFetchClaimDepositQuoteRequest: {
+            read(from: RustBuffer): FetchClaimDepositQuoteRequest;
+            write(value: FetchClaimDepositQuoteRequest, into: RustBuffer): void;
+            allocationSize(value: FetchClaimDepositQuoteRequest): number;
+            lift(value: UniffiByteArray): FetchClaimDepositQuoteRequest;
+            lower(value: FetchClaimDepositQuoteRequest): UniffiByteArray;
+        };
+        FfiConverterTypeFetchClaimDepositQuoteResponse: {
+            read(from: RustBuffer): FetchClaimDepositQuoteResponse;
+            write(value: FetchClaimDepositQuoteResponse, into: RustBuffer): void;
+            allocationSize(value: FetchClaimDepositQuoteResponse): number;
+            lift(value: UniffiByteArray): FetchClaimDepositQuoteResponse;
+            lower(value: FetchClaimDepositQuoteResponse): UniffiByteArray;
+        };
         FfiConverterTypeFetchConversionLimitsRequest: {
             read(from: RustBuffer): FetchConversionLimitsRequest;
             write(value: FetchConversionLimitsRequest, into: RustBuffer): void;
@@ -25313,6 +25927,13 @@ declare const _default: Readonly<{
             allocationSize(value: GetPaymentResponse): number;
             lift(value: UniffiByteArray): GetPaymentResponse;
             lower(value: GetPaymentResponse): UniffiByteArray;
+        };
+        FfiConverterTypeGetSparkStatusRequest: {
+            read(from: RustBuffer): GetSparkStatusRequest;
+            write(value: GetSparkStatusRequest, into: RustBuffer): void;
+            allocationSize(value: GetSparkStatusRequest): number;
+            lift(value: UniffiByteArray): GetSparkStatusRequest;
+            lower(value: GetSparkStatusRequest): UniffiByteArray;
         };
         FfiConverterTypeGetTokensMetadataRequest: {
             read(from: RustBuffer): GetTokensMetadataRequest;
@@ -25383,13 +26004,6 @@ declare const _default: Readonly<{
             allocationSize(value: InputType): number;
             lift(value: UniffiByteArray): InputType;
             lower(value: InputType): UniffiByteArray;
-        };
-        FfiConverterTypeInstantClaimDeclineReason: {
-            read(from: RustBuffer): InstantClaimDeclineReason;
-            write(value: InstantClaimDeclineReason, into: RustBuffer): void;
-            allocationSize(value: InstantClaimDeclineReason): number;
-            lift(value: UniffiByteArray): InstantClaimDeclineReason;
-            lower(value: InstantClaimDeclineReason): UniffiByteArray;
         };
         FfiConverterTypeInstantClaimStatus: {
             read(from: RustBuffer): InstantClaimStatus;
@@ -25621,6 +26235,13 @@ declare const _default: Readonly<{
             allocationSize(value: Network): number;
             lift(value: UniffiByteArray): Network;
             lower(value: Network): UniffiByteArray;
+        };
+        FfiConverterTypeNewRestChainServiceRequest: {
+            read(from: RustBuffer): NewRestChainServiceRequest;
+            write(value: NewRestChainServiceRequest, into: RustBuffer): void;
+            allocationSize(value: NewRestChainServiceRequest): number;
+            lift(value: UniffiByteArray): NewRestChainServiceRequest;
+            lower(value: NewRestChainServiceRequest): UniffiByteArray;
         };
         FfiConverterTypeOnchainConfirmationSpeed: {
             read(from: RustBuffer): OnchainConfirmationSpeed;
@@ -25885,6 +26506,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ProvisionalPaymentDetails;
             lower(value: ProvisionalPaymentDetails): UniffiByteArray;
         };
+        FfiConverterTypeProxyConfig: {
+            read(from: RustBuffer): ProxyConfig;
+            write(value: ProxyConfig, into: RustBuffer): void;
+            allocationSize(value: ProxyConfig): number;
+            lift(value: UniffiByteArray): ProxyConfig;
+            lower(value: ProxyConfig): UniffiByteArray;
+        };
         FfiConverterTypePublicKey: FfiConverter<UniffiByteArray, string>;
         FfiConverterTypePublicKeyBytes: {
             read(from: RustBuffer): PublicKeyBytes;
@@ -26004,6 +26632,13 @@ declare const _default: Readonly<{
             allocationSize(value: RefundPendingConversionsResponse): number;
             lift(value: UniffiByteArray): RefundPendingConversionsResponse;
             lower(value: RefundPendingConversionsResponse): UniffiByteArray;
+        };
+        FfiConverterTypeRefundState: {
+            read(from: RustBuffer): RefundState;
+            write(value: RefundState, into: RustBuffer): void;
+            allocationSize(value: RefundState): number;
+            lift(value: UniffiByteArray): RefundState;
+            lower(value: RefundState): UniffiByteArray;
         };
         FfiConverterTypeRegisterLightningAddressRequest: {
             read(from: RustBuffer): RegisterLightningAddressRequest;
