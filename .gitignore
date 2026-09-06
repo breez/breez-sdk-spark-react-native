@@ -74,3 +74,5 @@ rust_modules/
 
 # React Native Nitro Modules
 nitrogen/
+
+.planning/debug/
