@@ -109,6 +109,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_check_unilateral_exit(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_claim_deposit(
     ptr: bigint,
     request: Uint8Array
@@ -1144,6 +1148,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_lightning_address_available(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_message(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_unilateral_exit(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_deposit(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_htlc_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_lightning_address_transfer(): number;

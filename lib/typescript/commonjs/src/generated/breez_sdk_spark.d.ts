@@ -940,6 +940,63 @@ export declare const CheckMessageResponse: Readonly<{
     defaults: () => Partial<CheckMessageResponse>;
 }>;
 /**
+ * Request for `check_unilateral_exit`: the exit you kept from a previous
+ * `unilateral_exit`, as you last stored it.
+ */
+export type CheckUnilateralExitRequest = {
+    exit: UnilateralExitResponse;
+};
+/**
+ * Generated factory for {@link CheckUnilateralExitRequest} record objects.
+ */
+export declare const CheckUnilateralExitRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link CheckUnilateralExitRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CheckUnilateralExitRequest> & Required<Omit<CheckUnilateralExitRequest, never>>) => CheckUnilateralExitRequest;
+    /**
+     * Create a frozen instance of {@link CheckUnilateralExitRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CheckUnilateralExitRequest> & Required<Omit<CheckUnilateralExitRequest, never>>) => CheckUnilateralExitRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CheckUnilateralExitRequest>;
+}>;
+/**
+ * Result of `check_unilateral_exit`: the same exit, read back against the
+ * chain.
+ */
+export type CheckUnilateralExitResponse = {
+    /**
+     * The exit with each transaction's status brought up to date. Store it in
+     * place of the copy you passed in.
+     */
+    exit: UnilateralExitResponse;
+    verdict: UnilateralExitVerdict;
+};
+/**
+ * Generated factory for {@link CheckUnilateralExitResponse} record objects.
+ */
+export declare const CheckUnilateralExitResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link CheckUnilateralExitResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CheckUnilateralExitResponse> & Required<Omit<CheckUnilateralExitResponse, never>>) => CheckUnilateralExitResponse;
+    /**
+     * Create a frozen instance of {@link CheckUnilateralExitResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CheckUnilateralExitResponse> & Required<Omit<CheckUnilateralExitResponse, never>>) => CheckUnilateralExitResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CheckUnilateralExitResponse>;
+}>;
+/**
  * What one way of claiming a deposit costs.
  */
 export type ClaimDepositQuote = {
@@ -1296,6 +1353,37 @@ export declare const Config: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<Config>;
+}>;
+/**
+ * A node of the exit tree that is already on-chain.
+ */
+export type ConfirmedExitNode = {
+    nodeId: string;
+    confirmedBy: ExitNodeConfirmation;
+    /**
+     * The block it is in, where that is known. Unset for a node put in a block
+     * by a descendant's confirmation rather than read directly.
+     */
+    blockHeight: /*u32*/ number | undefined;
+};
+/**
+ * Generated factory for {@link ConfirmedExitNode} record objects.
+ */
+export declare const ConfirmedExitNode: Readonly<{
+    /**
+     * Create a frozen instance of {@link ConfirmedExitNode}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ConfirmedExitNode> & Required<Omit<ConfirmedExitNode, never>>) => ConfirmedExitNode;
+    /**
+     * Create a frozen instance of {@link ConfirmedExitNode}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ConfirmedExitNode> & Required<Omit<ConfirmedExitNode, never>>) => ConfirmedExitNode;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ConfirmedExitNode>;
 }>;
 export type ConnectRequest = {
     config: Config;
@@ -1890,16 +1978,16 @@ export type CrossChainConfig = {
     /**
      * Default maximum slippage in basis points used when
      * [`PaymentRequest::CrossChain::max_slippage_bps`] is not set on the
-     * prepare request. Must be in `10..=500`. Falls back to 100 bps (1%)
-     * when this field is `None`.
+     * prepare request. Must be in 10 to 500. Falls back to 100 bps (1%)
+     * when this field is unset.
      */
     defaultSlippageBps: /*u32*/ number | undefined;
     /**
      * Default target-overpay pad in basis points applied to the user's
      * destination amount on `FeesExcluded` conversion sends. Bumps the
      * target upward before quoting so the recipient lands at or above the
-     * requested amount despite provider slippage. Must be in `0..=500`.
-     * Falls back to 15 bps when `None`.
+     * requested amount despite provider slippage. Must be in 0 to 500.
+     * Falls back to 15 bps when unset.
      */
     defaultTargetOverpayBps: /*u32*/ number | undefined;
 };
@@ -1923,6 +2011,73 @@ export declare const CrossChainConfig: Readonly<{
     defaults: () => Partial<CrossChainConfig>;
 }>;
 /**
+ * Information about the cross-chain receive quote.
+ */
+export type CrossChainReceiveInfo = {
+    /**
+     * Bare external deposit address the sender pays to.
+     */
+    depositAddress: string;
+    /**
+     * Amount the sender must deposit, in source-asset base units
+     * (`route.decimals`). On `FeesExcluded` this may differ from the
+     * request's `amount` because the SDK inflates the deposit to absorb
+     * provider fees. Render this value to the sender.
+     */
+    depositAmount: U128;
+    /**
+     * Amount the receiver will see, net of provider fees, in
+     * destination-asset base units. Sats when receiving BTC into Spark,
+     * or token base units when receiving a Spark token (e.g. USDB). The
+     * final delivered amount may move within the slippage tolerance.
+     */
+    expectedReceivedAmount: U128;
+    /**
+     * Symbol of the Spark-side asset `expected_received_amount` is
+     * denominated in, as the provider reports it: `"BTC"` for sats, or the
+     * token symbol (e.g. `"USDB"`).
+     */
+    destinationAsset: string;
+    /**
+     * Spark token identifier when the destination is a token. Absent when
+     * the destination is BTC and the receiver will see sats.
+     */
+    tokenIdentifier: string | undefined;
+    /**
+     * Provider-quoted total fee for this receive, in `service_fee_asset`
+     * units.
+     */
+    serviceFeeAmount: U128;
+    /**
+     * Ticker for `service_fee_amount`. Absent when the fee is denominated
+     * in sats.
+     */
+    serviceFeeAsset: string | undefined;
+    /**
+     * Quote expiry as a unix timestamp in seconds.
+     */
+    expiresAt: bigint;
+};
+/**
+ * Generated factory for {@link CrossChainReceiveInfo} record objects.
+ */
+export declare const CrossChainReceiveInfo: Readonly<{
+    /**
+     * Create a frozen instance of {@link CrossChainReceiveInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CrossChainReceiveInfo> & Required<Omit<CrossChainReceiveInfo, never>>) => CrossChainReceiveInfo;
+    /**
+     * Create a frozen instance of {@link CrossChainReceiveInfo}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CrossChainReceiveInfo> & Required<Omit<CrossChainReceiveInfo, never>>) => CrossChainReceiveInfo;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CrossChainReceiveInfo>;
+}>;
+/**
  * A single route available for cross-chain transfers, tagged with the provider
  * that offers it. Returned by `get_cross_chain_routes()`.
  */
@@ -1932,17 +2087,17 @@ export type CrossChainRoutePair = {
      */
     provider: CrossChainProvider;
     /**
-     * Destination blockchain (e.g. `"base"`, `"solana"`, `"tron"`).
+     * External blockchain (e.g. `"base"`, `"solana"`, `"tron"`).
      */
     chain: string;
     /**
-     * Stable chain identifier (e.g. EVM `chainId` as a decimal string).
+     * External chain identifier (e.g. EVM `chainId` as a decimal string).
      * `None` for non-EVM chains that don't expose one, or when the
      * provider doesn't surface it.
      */
     chainId: string | undefined;
     /**
-     * Destination asset symbol (e.g. `"USDC"`, `"USDT"`).
+     * External asset symbol (e.g. `"USDC"`, `"USDT"`).
      */
     asset: string;
     /**
@@ -1958,22 +2113,14 @@ export type CrossChainRoutePair = {
      */
     exactOutEligible: boolean;
     /**
-     * The source assets this route accepts on the Spark side.
-     *
-     * Boltz routes accept `[SourceAsset::Bitcoin]`. Orchestra routes accept
-     * one or more of `Bitcoin` / `Token(...)` (a given destination endpoint
-     * may be fronted by multiple source variants on Orchestra).
+     * Spark-side assets this route accepts.
      */
-    supportedSources: Array<SourceAsset>;
+    acceptedAssets: Array<SparkAsset>;
     /**
-     * The chains this route can be paid over, orthogonal to
-     * `supported_sources` (the asset moved).
-     *
-     * This is the actual funding rail, which differs by provider: Boltz routes
-     * are always paid over Lightning. Orchestra send routes report Spark, and
-     * Orchestra payment-link routes report Lightning.
+     * Rails this route can be delivered over, orthogonal to
+     * `accepted_assets` (the asset moved vs the rail moved on).
      */
-    supportedSourceChains: Array<SourceChain>;
+    deliveryMethods: Array<DeliveryMethod>;
 };
 /**
  * Generated factory for {@link CrossChainRoutePair} record objects.
@@ -2184,6 +2331,83 @@ export declare const EcdsaSignatureBytes: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<EcdsaSignatureBytes>;
+}>;
+/**
+ * What the chain has already done to an exit's leaves, as
+ * `prepare_unilateral_exit` found it. Pass it back to `unilateral_exit`, which
+ * builds only the steps it does not cover.
+ */
+export type ExitChainState = {
+    /**
+     * Nodes whose transaction is on-chain.
+     */
+    confirmedNodes: Array<ConfirmedExitNode>;
+    /**
+     * Leaves whose refund reached the chain.
+     */
+    refunds: Array<ExitRefund>;
+    /**
+     * Leaves whose lineage was taken on-chain by a transaction the exit cannot
+     * continue from. Nothing further can be driven for them.
+     */
+    stoppedLeafIds: Array<string>;
+    /**
+     * Nodes a chain lookup could not read, so their state is unknown rather
+     * than absent. Transactions depending on them come back
+     * `ExitTransactionStatus::Unverified`.
+     */
+    unverifiedNodeIds: Array<string>;
+    /**
+     * Nodes taken to be on-chain on the operators' word, the chain itself being
+     * unreadable. Their spend is invisible, so anything built over them risks
+     * double-spending an output that is already gone.
+     */
+    unverifiableConfirmedNodeIds: Array<string>;
+};
+/**
+ * Generated factory for {@link ExitChainState} record objects.
+ */
+export declare const ExitChainState: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExitChainState}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExitChainState> & Required<Omit<ExitChainState, never>>) => ExitChainState;
+    /**
+     * Create a frozen instance of {@link ExitChainState}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExitChainState> & Required<Omit<ExitChainState, never>>) => ExitChainState;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExitChainState>;
+}>;
+/**
+ * A leaf's refund as the chain shows it.
+ */
+export type ExitRefund = {
+    leafId: string;
+    state: ExitRefundState;
+};
+/**
+ * Generated factory for {@link ExitRefund} record objects.
+ */
+export declare const ExitRefund: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExitRefund}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExitRefund> & Required<Omit<ExitRefund, never>>) => ExitRefund;
+    /**
+     * Create a frozen instance of {@link ExitRefund}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExitRefund> & Required<Omit<ExitRefund, never>>) => ExitRefund;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExitRefund>;
 }>;
 /**
  * Result of `export_unilateral_exit_state`: a self-contained copy of the
@@ -5436,16 +5660,34 @@ export type PrepareUnilateralExitResponse = {
      * branches), in satoshis. Exact for the given funding kind; nodes the
      * operators report on-chain are assumed already paid, so a partially-exited
      * tree quotes a lower fee than a fresh one.
+     *
+     * The sum of the three components below, which say who pays what:
+     * `cpfp_fee_sat + fanout_fee_sat + sweep_fee_sat`. The first two come from
+     * your funding UTXO, the third off the value being recovered.
      */
     totalFeeSat: bigint;
     /**
-     * The part of `total_fee_sat` paid for the fan-out transaction. Funding one
-     * UTXO per branch (`per_branch_funding`) avoids it. Zero for a single
-     * branch (no fan-out).
+     * The part of `total_fee_sat` the CPFP children pay, funded by your UTXOs.
+     * It does not reduce what the exit recovers.
+     */
+    cpfpFeeSat: bigint;
+    /**
+     * The part of `total_fee_sat` paid for the fan-out transaction, funded by
+     * your UTXO. Funding one UTXO per branch (`per_branch_funding`) avoids it.
+     * Zero for a single branch (no fan-out).
      */
     fanoutFeeSat: bigint;
     /**
+     * The part of `total_fee_sat` the final sweep pays. The sweep takes its fee
+     * from the value it moves, so this is the one component subtracted from
+     * what reaches `destination`.
+     */
+    sweepFeeSat: bigint;
+    /**
      * Fund a single UTXO of at least this many satoshis to exit with a fan-out.
+     * Above `cpfp_fee_sat + fanout_fee_sat` by design: it carries the sweep fee
+     * and a per-branch dust allowance as headroom, both of which come back to
+     * you in the sweep.
      */
     singleUtxoFundingSat: bigint;
     /**
@@ -5458,6 +5700,12 @@ export type PrepareUnilateralExitResponse = {
      */
     feeRateSatPerVbyte: bigint;
     destination: string;
+    /**
+     * What the chain has already done to these leaves, read while preparing.
+     * Pass it back to `unilateral_exit`, which builds only the steps it does
+     * not already cover.
+     */
+    exitChainState: ExitChainState;
 };
 /**
  * Generated factory for {@link PrepareUnilateralExitResponse} record objects.
@@ -5680,6 +5928,10 @@ export type ReceivePaymentResponse = {
      * Denominated in sats or token base units
      */
     fee: U128;
+    /**
+     * Optional information populated only for cross-chain receives.
+     */
+    crossChainInfo: CrossChainReceiveInfo | undefined;
 };
 /**
  * Generated factory for {@link ReceivePaymentResponse} record objects.
@@ -6287,11 +6539,26 @@ export declare const SendBatchResponse: Readonly<{
     defaults: () => Partial<SendBatchResponse>;
 }>;
 export type SendOnchainFeeQuote = {
+    /**
+     * Identifies the quote to the provider when the payment is sent. Empty on
+     * an estimate, which no provider has issued.
+     */
     id: string;
+    /**
+     * When the quote stops being honoured, as a Unix timestamp in seconds.
+     * Zero on an estimate.
+     */
     expiresAt: bigint;
     speedFast: SendOnchainSpeedFeeQuote;
     speedMedium: SendOnchainSpeedFeeQuote;
     speedSlow: SendOnchainSpeedFeeQuote;
+    /**
+     * Set when the wallet holds no bitcoin and a token conversion will fund the
+     * send, because the provider will not quote without funds to price against.
+     * The estimate is an upper bound: the payment quotes for real once the
+     * conversion lands, and fails rather than spending more than this.
+     */
+    isEstimate: boolean;
 };
 /**
  * Generated factory for {@link SendOnchainFeeQuote} record objects.
@@ -7051,9 +7318,8 @@ export declare const SparkStatus: Readonly<{
  * Configuration for automatic conversion of Bitcoin to stable tokens.
  *
  * When configured, the SDK automatically monitors the Bitcoin balance after each
- * wallet sync. When the balance exceeds the configured threshold plus the reserved
- * amount, the SDK automatically converts the excess balance (above the reserve)
- * to the active stable token.
+ * wallet sync. Once the balance reaches the configured threshold, the SDK converts
+ * the whole Bitcoin balance to the active stable token.
  *
  * When the balance is held in a stable token, Bitcoin payments can still be sent.
  * The SDK automatically detects when there's not enough Bitcoin balance to cover a
@@ -7761,14 +8027,43 @@ export type UnilateralExitResponse = {
      * The actual total on-chain fee the returned transactions pay at the
      * requested rate, in satoshis. A resumed or partially-confirmed exit pays
      * less because already-confirmed steps are not rebuilt.
+     *
+     * The sum of the three components below, which say who pays what:
+     * `cpfp_fee_sat + fanout_fee_sat + sweep_fee_sat`. The first two come from
+     * your funding UTXOs, the third off the value being recovered.
      */
     totalFeeSat: bigint;
+    /**
+     * The part of `total_fee_sat` the CPFP children pay, funded by your UTXOs.
+     * It does not reduce what the exit recovers.
+     */
+    cpfpFeeSat: bigint;
+    /**
+     * The part of `total_fee_sat` the fan-out pays, funded by your UTXO. Zero
+     * when this exit needed no fan-out, and when an earlier attempt's fan-out
+     * had already confirmed.
+     */
+    fanoutFeeSat: bigint;
+    /**
+     * The part of `total_fee_sat` the sweep pays, taken from the value it
+     * moves, so this is the one component subtracted from what reaches the
+     * destination. Zero while no refund is on-chain yet and the set carries no
+     * sweep.
+     */
+    sweepFeeSat: bigint;
     leaves: Array<UnilateralExitLeaf>;
     /**
      * The full signed transaction set, in valid topological (broadcast) order
      * with shared ancestors appearing once and the sweep last.
      */
     transactions: Array<UnilateralExitTransaction>;
+    /**
+     * The funding UTXOs this exit was built from, as you supplied them. Hand
+     * them back when you build the exit again and they are followed to whatever
+     * they have since become, so an outpoint an earlier attempt already spent
+     * still funds the rest.
+     */
+    fundingInputs: Array<CpfpInput>;
 };
 /**
  * Generated factory for {@link UnilateralExitResponse} record objects.
@@ -7818,7 +8113,12 @@ export type UnilateralExitTransaction = {
      * one can be broadcast.
      */
     dependsOn: Array<string>;
-    status: ConfirmationStatus;
+    /**
+     * Whether this transaction is on-chain, can go out now, or is waiting on
+     * something. Resolved against the chain tip, so it accounts for
+     * `csv_timelock_blocks` as well as `depends_on`.
+     */
+    status: ExitTransactionStatus;
 };
 /**
  * Generated factory for {@link UnilateralExitTransaction} record objects.
@@ -9193,24 +9493,6 @@ export declare const ChainServiceError: Readonly<{
     };
 }>;
 export type ChainServiceError = InstanceType<(typeof ChainServiceError)[keyof Omit<typeof ChainServiceError, 'instanceOf'>]>;
-/**
- * Whether a transaction in the exit path is already on-chain.
- */
-export declare enum ConfirmationStatus {
-    /**
-     * This transaction is confirmed in a block. It needs no action.
-     */
-    Confirmed = 0,
-    /**
-     * This transaction is not yet confirmed. Mempool state is not consulted.
-     */
-    Unconfirmed = 1,
-    /**
-     * The on-chain status could not be determined (the chain service errored).
-     * Broadcasting may fail if a conflicting transaction already landed.
-     */
-    Unverified = 2
-}
 export declare enum ConversionChain_Tags {
     Spark = "Spark",
     Lightning = "Lightning",
@@ -9364,8 +9646,9 @@ export declare enum ConversionInfo_Tags {
  *
  * The variant identifies which provider handled the conversion:
  * - [`ConversionInfo::Amm`] for Spark token swaps via Flashnet AMM pools.
- * - [`ConversionInfo::Orchestra`] for cross-chain sends via Flashnet
- * Orchestra (Spark → external chain).
+ * - [`ConversionInfo::Orchestra`] for cross-chain transfers via Flashnet
+ * Orchestra, in either direction (Spark → external chain, or external
+ * chain → Spark).
  * - [`ConversionInfo::Boltz`] for sats → stable-coin reverse swaps via Boltz.
  */
 export declare const ConversionInfo: Readonly<{
@@ -9494,21 +9777,33 @@ export declare const ConversionInfo: Readonly<{
              * Asset ticker (e.g. `"USDC"`, `"USDT"`).
              */ asset: string;
             /**
-             * Recipient address on the target chain.
+             * The target-chain address on a send, the receiving Spark address
+             * on a receive.
              */ recipientAddress: string;
             /**
-             * Amount in expressed in the cross-chain asset's base units, via
-             * the rate the SDK used at prepare time.
+             * Amount paid in, in `asset` base units. On a send it is the Spark
+             * amount expressed in `asset` via the rate the SDK used at prepare
+             * time. On a receive it is the deposit the sender made on `chain`.
              */ assetAmountIn: U128 | undefined;
             /**
-             * Estimated recipient amount, frozen at prepare time.
+             * Estimated amount delivered to the receiving end, frozen at prepare
+             * time. In `asset` base units on a send, and in Spark-side units on
+             * a receive (sats for Bitcoin, token base units for a token).
              */ estimatedOut: U128;
             /**
-             * Actual delivered amount, Unset until the order reaches a terminal state.
+             * Actual delivered amount, in the same units as `estimated_out`.
+             * Unset until the order reaches a terminal state.
              */ deliveredAmount: U128 | undefined;
+            /**
+             * Transaction on `chain`, the non-Spark side of the conversion: the
+             * delivery on a send, the funding deposit on a receive. Format follows
+             * the chain (e.g. `0x`-prefixed hex on EVM, a base58 signature on
+             * Solana). Unset until that transaction exists, and on orders that
+             * failed or were refunded.
+             */ externalTxHash: string | undefined;
             status: ConversionStatus;
             /**
-             * Best-available total fee in destination asset base units.
+             * Best-available total fee, in `asset` base units.
              * Prepare-time estimate while pending, realized fee when Completed.
              */ feeAmount: U128 | undefined;
             /**
@@ -9521,7 +9816,8 @@ export declare const ConversionInfo: Readonly<{
              * Asset decimals (e.g. 6 for USDC).
              */ assetDecimals: number;
             /**
-             * Token contract / mint address. Unset for native-asset destinations.
+             * Token contract / mint address on `chain`. Unset when that side is
+             * the chain's native asset.
              */ assetContract: string | undefined;
         }): {
             readonly tag: ConversionInfo_Tags.Orchestra;
@@ -9536,6 +9832,7 @@ export declare const ConversionInfo: Readonly<{
                 assetAmountIn: U128 | undefined;
                 estimatedOut: U128;
                 deliveredAmount: U128 | undefined;
+                externalTxHash: string | undefined;
                 status: ConversionStatus;
                 feeAmount: U128 | undefined;
                 serviceFeeAmount: U128 | undefined;
@@ -9571,21 +9868,33 @@ export declare const ConversionInfo: Readonly<{
              * Asset ticker (e.g. `"USDC"`, `"USDT"`).
              */ asset: string;
             /**
-             * Recipient address on the target chain.
+             * The target-chain address on a send, the receiving Spark address
+             * on a receive.
              */ recipientAddress: string;
             /**
-             * Amount in expressed in the cross-chain asset's base units, via
-             * the rate the SDK used at prepare time.
+             * Amount paid in, in `asset` base units. On a send it is the Spark
+             * amount expressed in `asset` via the rate the SDK used at prepare
+             * time. On a receive it is the deposit the sender made on `chain`.
              */ assetAmountIn: U128 | undefined;
             /**
-             * Estimated recipient amount, frozen at prepare time.
+             * Estimated amount delivered to the receiving end, frozen at prepare
+             * time. In `asset` base units on a send, and in Spark-side units on
+             * a receive (sats for Bitcoin, token base units for a token).
              */ estimatedOut: U128;
             /**
-             * Actual delivered amount, Unset until the order reaches a terminal state.
+             * Actual delivered amount, in the same units as `estimated_out`.
+             * Unset until the order reaches a terminal state.
              */ deliveredAmount: U128 | undefined;
+            /**
+             * Transaction on `chain`, the non-Spark side of the conversion: the
+             * delivery on a send, the funding deposit on a receive. Format follows
+             * the chain (e.g. `0x`-prefixed hex on EVM, a base58 signature on
+             * Solana). Unset until that transaction exists, and on orders that
+             * failed or were refunded.
+             */ externalTxHash: string | undefined;
             status: ConversionStatus;
             /**
-             * Best-available total fee in destination asset base units.
+             * Best-available total fee, in `asset` base units.
              * Prepare-time estimate while pending, realized fee when Completed.
              */ feeAmount: U128 | undefined;
             /**
@@ -9598,7 +9907,8 @@ export declare const ConversionInfo: Readonly<{
              * Asset decimals (e.g. 6 for USDC).
              */ assetDecimals: number;
             /**
-             * Token contract / mint address. Unset for native-asset destinations.
+             * Token contract / mint address on `chain`. Unset when that side is
+             * the chain's native asset.
              */ assetContract: string | undefined;
         }): {
             readonly tag: ConversionInfo_Tags.Orchestra;
@@ -9613,6 +9923,7 @@ export declare const ConversionInfo: Readonly<{
                 assetAmountIn: U128 | undefined;
                 estimatedOut: U128;
                 deliveredAmount: U128 | undefined;
+                externalTxHash: string | undefined;
                 status: ConversionStatus;
                 feeAmount: U128 | undefined;
                 serviceFeeAmount: U128 | undefined;
@@ -9639,6 +9950,7 @@ export declare const ConversionInfo: Readonly<{
                 assetAmountIn: U128 | undefined;
                 estimatedOut: U128;
                 deliveredAmount: U128 | undefined;
+                externalTxHash: string | undefined;
                 status: ConversionStatus;
                 feeAmount: U128 | undefined;
                 serviceFeeAmount: U128 | undefined;
@@ -9716,7 +10028,8 @@ export declare const ConversionInfo: Readonly<{
              * Asset decimals (e.g. 6 for USDT).
              */ assetDecimals: number;
             /**
-             * Token contract / mint address. Unset for native-asset destinations.
+             * Token contract / mint address on `chain`. Unset when that side is
+             * the chain's native asset.
              */ assetContract: string | undefined;
         }): {
             readonly tag: ConversionInfo_Tags.Boltz;
@@ -9809,7 +10122,8 @@ export declare const ConversionInfo: Readonly<{
              * Asset decimals (e.g. 6 for USDT).
              */ assetDecimals: number;
             /**
-             * Token contract / mint address. Unset for native-asset destinations.
+             * Token contract / mint address on `chain`. Unset when that side is
+             * the chain's native asset.
              */ assetContract: string | undefined;
         }): {
             readonly tag: ConversionInfo_Tags.Boltz;
@@ -9877,8 +10191,9 @@ export declare const ConversionInfo: Readonly<{
  *
  * The variant identifies which provider handled the conversion:
  * - [`ConversionInfo::Amm`] for Spark token swaps via Flashnet AMM pools.
- * - [`ConversionInfo::Orchestra`] for cross-chain sends via Flashnet
- * Orchestra (Spark → external chain).
+ * - [`ConversionInfo::Orchestra`] for cross-chain transfers via Flashnet
+ * Orchestra, in either direction (Spark → external chain, or external
+ * chain → Spark).
  * - [`ConversionInfo::Boltz`] for sats → stable-coin reverse swaps via Boltz.
  */
 export type ConversionInfo = InstanceType<(typeof ConversionInfo)[keyof Omit<typeof ConversionInfo, 'instanceOf'>]>;
@@ -10409,19 +10724,34 @@ export declare enum CrossChainAddressFamily {
     Tron = 2
 }
 /**
- * How the caller wants fees handled against the request `amount`.
- *
- * - `FeesExcluded`: `amount` is the provider invoice/deposit target; the
- * wallet pays `amount + source_transfer_fee_sats` in total.
- * - `FeesIncluded`: `amount` is the wallet's total sats budget; the provider
- * leg is sized so `amount_in + source_transfer_fee_sats <= amount`.
+ * Which side of the transfer the request `amount` sizes: what leaves the
+ * payer, or what reaches the receiver.
  */
 export declare enum CrossChainFeeMode {
+    /**
+     * `amount` sizes the receiving end, and fees are paid on top.
+     *
+     * Sending: `amount` is the provider invoice/deposit target, and the
+     * wallet pays `amount + source_transfer_fee_sats` in total.
+     * Receiving: `amount` is what the wallet ends up with, and the deposit
+     * the sender is asked for is sized above it to cover fees.
+     */
     FeesExcluded = 0,
+    /**
+     * `amount` sizes the paying end, and fees come out of it.
+     *
+     * Sending: `amount` is the wallet's total sats budget, and the provider
+     * leg is sized so `amount_in + source_transfer_fee_sats <= amount`.
+     * Receiving: `amount` is the deposit the sender makes, and the wallet
+     * ends up with that minus fees.
+     */
     FeesIncluded = 1
 }
 export declare enum CrossChainProvider {
     Orchestra = 0,
+    /**
+     * Not operational: no routes are currently offered under this provider.
+     */
     Boltz = 1
 }
 export declare enum CrossChainProviderContext_Tags {
@@ -10707,6 +11037,23 @@ export declare const CrossChainRouteFilter: Readonly<{
  * `get_cross_chain_routes()` API.
  */
 export type CrossChainRouteFilter = InstanceType<(typeof CrossChainRouteFilter)[keyof Omit<typeof CrossChainRouteFilter, 'instanceOf'>]>;
+/**
+ * The rail a cross-chain payment is delivered over.
+ */
+export declare enum DeliveryMethod {
+    /**
+     * Delivered over the Spark network.
+     */
+    Spark = 0,
+    /**
+     * Delivered over Lightning.
+     */
+    Lightning = 1,
+    /**
+     * Delivered on-chain over Bitcoin.
+     */
+    Bitcoin = 2
+}
 export declare enum DepositClaimError_Tags {
     MaxDepositClaimFeeExceeded = "MaxDepositClaimFeeExceeded",
     MissingUtxo = "MissingUtxo",
@@ -11114,6 +11461,283 @@ export declare const ExitLeafSelection: Readonly<{
  * Which leaves to exit.
  */
 export type ExitLeafSelection = InstanceType<(typeof ExitLeafSelection)[keyof Omit<typeof ExitLeafSelection, 'instanceOf'>]>;
+/**
+ * Which of a node's two pre-signed spends took it on-chain.
+ */
+export declare enum ExitNodeConfirmation {
+    /**
+     * The CPFP transaction, whose fee a child paid.
+     */
+    Cpfp = 0,
+    /**
+     * The direct transaction, which pays its own fee. A leaf that went out this
+     * way is refunded by its direct refund transaction.
+     */
+    Direct = 1
+}
+export declare enum ExitRefundState_Tags {
+    OnChain = "OnChain",
+    Swept = "Swept"
+}
+export declare const ExitRefundState: Readonly<{
+    instanceOf: (obj: any) => obj is ExitRefundState;
+    OnChain: {
+        new (inner: {
+            txHex: string;
+            vout: number;
+            valueSat: bigint;
+            blockHeight: /*u32*/ number | undefined;
+        }): {
+            readonly tag: ExitRefundState_Tags.OnChain;
+            readonly inner: Readonly<{
+                txHex: string;
+                vout: number;
+                valueSat: bigint;
+                blockHeight: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitRefundState";
+        };
+        "new"(inner: {
+            txHex: string;
+            vout: number;
+            valueSat: bigint;
+            blockHeight: /*u32*/ number | undefined;
+        }): {
+            readonly tag: ExitRefundState_Tags.OnChain;
+            readonly inner: Readonly<{
+                txHex: string;
+                vout: number;
+                valueSat: bigint;
+                blockHeight: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitRefundState";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExitRefundState_Tags.OnChain;
+            readonly inner: Readonly<{
+                txHex: string;
+                vout: number;
+                valueSat: bigint;
+                blockHeight: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitRefundState";
+        };
+    };
+    Swept: {
+        new (): {
+            readonly tag: ExitRefundState_Tags.Swept;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitRefundState";
+        };
+        "new"(): {
+            readonly tag: ExitRefundState_Tags.Swept;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitRefundState";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExitRefundState_Tags.Swept;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitRefundState";
+        };
+    };
+}>;
+export type ExitRefundState = InstanceType<(typeof ExitRefundState)[keyof Omit<typeof ExitRefundState, 'instanceOf'>]>;
+export declare enum ExitTransactionStatus_Tags {
+    Confirmed = "Confirmed",
+    Ready = "Ready",
+    WaitingForDependencies = "WaitingForDependencies",
+    WaitingForTimelock = "WaitingForTimelock",
+    Unverified = "Unverified"
+}
+/**
+ * Where a transaction in the exit path stands: on-chain, ready to send, or
+ * waiting for something.
+ */
+export declare const ExitTransactionStatus: Readonly<{
+    instanceOf: (obj: any) => obj is ExitTransactionStatus;
+    Confirmed: {
+        new (inner: {
+            blockHeight: /*u32*/ number | undefined;
+        }): {
+            readonly tag: ExitTransactionStatus_Tags.Confirmed;
+            readonly inner: Readonly<{
+                blockHeight: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+        "new"(inner: {
+            blockHeight: /*u32*/ number | undefined;
+        }): {
+            readonly tag: ExitTransactionStatus_Tags.Confirmed;
+            readonly inner: Readonly<{
+                blockHeight: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExitTransactionStatus_Tags.Confirmed;
+            readonly inner: Readonly<{
+                blockHeight: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+    };
+    Ready: {
+        new (): {
+            readonly tag: ExitTransactionStatus_Tags.Ready;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+        "new"(): {
+            readonly tag: ExitTransactionStatus_Tags.Ready;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExitTransactionStatus_Tags.Ready;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+    };
+    WaitingForDependencies: {
+        new (): {
+            readonly tag: ExitTransactionStatus_Tags.WaitingForDependencies;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+        "new"(): {
+            readonly tag: ExitTransactionStatus_Tags.WaitingForDependencies;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExitTransactionStatus_Tags.WaitingForDependencies;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+    };
+    WaitingForTimelock: {
+        new (inner: {
+            spendableAtHeight: /*u32*/ number | undefined;
+        }): {
+            readonly tag: ExitTransactionStatus_Tags.WaitingForTimelock;
+            readonly inner: Readonly<{
+                spendableAtHeight: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+        "new"(inner: {
+            spendableAtHeight: /*u32*/ number | undefined;
+        }): {
+            readonly tag: ExitTransactionStatus_Tags.WaitingForTimelock;
+            readonly inner: Readonly<{
+                spendableAtHeight: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExitTransactionStatus_Tags.WaitingForTimelock;
+            readonly inner: Readonly<{
+                spendableAtHeight: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+    };
+    Unverified: {
+        new (): {
+            readonly tag: ExitTransactionStatus_Tags.Unverified;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+        "new"(): {
+            readonly tag: ExitTransactionStatus_Tags.Unverified;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ExitTransactionStatus_Tags.Unverified;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ExitTransactionStatus";
+        };
+    };
+}>;
+/**
+ * Where a transaction in the exit path stands: on-chain, ready to send, or
+ * waiting for something.
+ */
+export type ExitTransactionStatus = InstanceType<(typeof ExitTransactionStatus)[keyof Omit<typeof ExitTransactionStatus, 'instanceOf'>]>;
 export declare enum ExternalFrostDerivation_Tags {
     SigningLeaf = "SigningLeaf",
     StaticDeposit = "StaticDeposit",
@@ -14076,16 +14700,16 @@ export declare const PaymentRequest: Readonly<{
             route: CrossChainRoutePair;
             /**
              * Maximum slippage tolerance in basis points (1/100 of a percent)
-             * for the cross-chain quote. Must be in `10..=500`. Falls back to
-             * [`Config::default_slippage_bps`] when `None`, which itself
-             * defaults to 100 bps (1%) when unset.
+             * for the cross-chain quote. Must be in 10 to 500. Falls back to
+             * [`Config::default_slippage_bps`] when unset, which itself
+             * defaults to 100 bps (1%).
              */ maxSlippageBps: /*u32*/ number | undefined;
             /**
              * Target-overpay pad in basis points applied on `FeesExcluded`
              * conversion sends. Inflates the destination target before quoting
              * so the recipient lands at or above the user's requested amount
-             * despite provider slippage. Must be in `0..=500`. Falls back to
-             * [`CrossChainConfig::default_target_overpay_bps`] when `None`,
+             * despite provider slippage. Must be in 0 to 500. Falls back to
+             * [`CrossChainConfig::default_target_overpay_bps`] when unset,
              * which itself defaults to 15 bps.
              */ targetOverpayBps: /*u32*/ number | undefined;
         }): {
@@ -14107,16 +14731,16 @@ export declare const PaymentRequest: Readonly<{
             route: CrossChainRoutePair;
             /**
              * Maximum slippage tolerance in basis points (1/100 of a percent)
-             * for the cross-chain quote. Must be in `10..=500`. Falls back to
-             * [`Config::default_slippage_bps`] when `None`, which itself
-             * defaults to 100 bps (1%) when unset.
+             * for the cross-chain quote. Must be in 10 to 500. Falls back to
+             * [`Config::default_slippage_bps`] when unset, which itself
+             * defaults to 100 bps (1%).
              */ maxSlippageBps: /*u32*/ number | undefined;
             /**
              * Target-overpay pad in basis points applied on `FeesExcluded`
              * conversion sends. Inflates the destination target before quoting
              * so the recipient lands at or above the user's requested amount
-             * despite provider slippage. Must be in `0..=500`. Falls back to
-             * [`CrossChainConfig::default_target_overpay_bps`] when `None`,
+             * despite provider slippage. Must be in 0 to 500. Falls back to
+             * [`CrossChainConfig::default_target_overpay_bps`] when unset,
              * which itself defaults to 15 bps.
              */ targetOverpayBps: /*u32*/ number | undefined;
         }): {
@@ -15179,7 +15803,8 @@ export declare enum ReceivePaymentMethod_Tags {
     SparkAddress = "SparkAddress",
     SparkInvoice = "SparkInvoice",
     BitcoinAddress = "BitcoinAddress",
-    Bolt11Invoice = "Bolt11Invoice"
+    Bolt11Invoice = "Bolt11Invoice",
+    CrossChain = "CrossChain"
 }
 export declare const ReceivePaymentMethod: Readonly<{
     instanceOf: (obj: any) => obj is ReceivePaymentMethod;
@@ -15414,6 +16039,130 @@ export declare const ReceivePaymentMethod: Readonly<{
             readonly [uniffiTypeNameSymbol]: "ReceivePaymentMethod";
         };
     };
+    CrossChain: {
+        new (inner: {
+            /**
+             * The selected cross-chain route in the receive direction.
+             */ route: CrossChainRoutePair;
+            /**
+             * The amount, in the source asset's base units (`route.decimals`).
+             * USD-stable sources are at parity, so `1 USD = 10^route.decimals`
+             * (e.g. `1_000_000` for 6-decimal USDC/USDT, `10^18` for 18-decimal
+             * BSC USDC).
+             *
+             * - `FeesExcluded` (default): what the receiver ends up with, sized
+             * as if `amount` source units were converted to the Spark-side
+             * destination at parity (USDB) or the live BTC/USD rate (Bitcoin).
+             * - `FeesIncluded`: what the sender deposits. The receiver ends up
+             * with that amount minus provider fees.
+             */ amount: U128;
+            /**
+             * Spark-side asset the receiver wants delivered. When absent, the
+             * SDK auto-selects: the wallet's active stable-balance token if
+             * the route supports it, otherwise Bitcoin (sats). When set, the
+             * value must appear in the route's `accepted_assets`.
+             */ destination: SparkAsset | undefined;
+            /**
+             * How `amount` should be interpreted. When absent, defaults to
+             * `FeesExcluded`.
+             */ feeMode: CrossChainFeeMode | undefined;
+            /**
+             * Maximum slippage in basis points. When absent, the SDK default
+             * (100 bps) is used.
+             */ maxSlippageBps: /*u32*/ number | undefined;
+            /**
+             * Per-request override for the overpay buffer applied to the
+             * sender's deposit when `fee_mode == FeesExcluded`. Range 0 to 500.
+             * When absent, falls back to `CrossChainConfig::default_target_overpay_bps`
+             * then the built-in default (15 bps). Ignored when `fee_mode`
+             * is `FeesIncluded`.
+             */ targetOverpayBps: /*u32*/ number | undefined;
+        }): {
+            readonly tag: ReceivePaymentMethod_Tags.CrossChain;
+            readonly inner: Readonly<{
+                route: CrossChainRoutePair;
+                amount: U128;
+                destination: SparkAsset | undefined;
+                feeMode: CrossChainFeeMode | undefined;
+                maxSlippageBps: /*u32*/ number | undefined;
+                targetOverpayBps: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ReceivePaymentMethod";
+        };
+        "new"(inner: {
+            /**
+             * The selected cross-chain route in the receive direction.
+             */ route: CrossChainRoutePair;
+            /**
+             * The amount, in the source asset's base units (`route.decimals`).
+             * USD-stable sources are at parity, so `1 USD = 10^route.decimals`
+             * (e.g. `1_000_000` for 6-decimal USDC/USDT, `10^18` for 18-decimal
+             * BSC USDC).
+             *
+             * - `FeesExcluded` (default): what the receiver ends up with, sized
+             * as if `amount` source units were converted to the Spark-side
+             * destination at parity (USDB) or the live BTC/USD rate (Bitcoin).
+             * - `FeesIncluded`: what the sender deposits. The receiver ends up
+             * with that amount minus provider fees.
+             */ amount: U128;
+            /**
+             * Spark-side asset the receiver wants delivered. When absent, the
+             * SDK auto-selects: the wallet's active stable-balance token if
+             * the route supports it, otherwise Bitcoin (sats). When set, the
+             * value must appear in the route's `accepted_assets`.
+             */ destination: SparkAsset | undefined;
+            /**
+             * How `amount` should be interpreted. When absent, defaults to
+             * `FeesExcluded`.
+             */ feeMode: CrossChainFeeMode | undefined;
+            /**
+             * Maximum slippage in basis points. When absent, the SDK default
+             * (100 bps) is used.
+             */ maxSlippageBps: /*u32*/ number | undefined;
+            /**
+             * Per-request override for the overpay buffer applied to the
+             * sender's deposit when `fee_mode == FeesExcluded`. Range 0 to 500.
+             * When absent, falls back to `CrossChainConfig::default_target_overpay_bps`
+             * then the built-in default (15 bps). Ignored when `fee_mode`
+             * is `FeesIncluded`.
+             */ targetOverpayBps: /*u32*/ number | undefined;
+        }): {
+            readonly tag: ReceivePaymentMethod_Tags.CrossChain;
+            readonly inner: Readonly<{
+                route: CrossChainRoutePair;
+                amount: U128;
+                destination: SparkAsset | undefined;
+                feeMode: CrossChainFeeMode | undefined;
+                maxSlippageBps: /*u32*/ number | undefined;
+                targetOverpayBps: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ReceivePaymentMethod";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ReceivePaymentMethod_Tags.CrossChain;
+            readonly inner: Readonly<{
+                route: CrossChainRoutePair;
+                amount: U128;
+                destination: SparkAsset | undefined;
+                feeMode: CrossChainFeeMode | undefined;
+                maxSlippageBps: /*u32*/ number | undefined;
+                targetOverpayBps: /*u32*/ number | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ReceivePaymentMethod";
+        };
+    };
 }>;
 export type ReceivePaymentMethod = InstanceType<(typeof ReceivePaymentMethod)[keyof Omit<typeof ReceivePaymentMethod, 'instanceOf'>]>;
 export declare enum RefundState_Tags {
@@ -15512,7 +16261,6 @@ export declare enum SdkError_Tags {
     OptimizationAlreadyRunning = "OptimizationAlreadyRunning",
     OptimizationCancelled = "OptimizationCancelled",
     InsufficientCpfpFunds = "InsufficientCpfpFunds",
-    FundingUtxoConflict = "FundingUtxoConflict",
     Generic = "Generic"
 }
 /**
@@ -16774,101 +17522,6 @@ export declare const SdkError: Readonly<{
             cause?: unknown;
         }): Readonly<{
             requiredSat: bigint;
-        }>;
-        isError(error: unknown): error is Error;
-        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
-        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
-        stackTraceLimit: number;
-    };
-    FundingUtxoConflict: {
-        new (inner: {
-            txid: string;
-            vout: number;
-        }): {
-            readonly tag: SdkError_Tags.FundingUtxoConflict;
-            readonly inner: Readonly<{
-                txid: string;
-                vout: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        "new"(inner: {
-            txid: string;
-            vout: number;
-        }): {
-            readonly tag: SdkError_Tags.FundingUtxoConflict;
-            readonly inner: Readonly<{
-                txid: string;
-                vout: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: SdkError_Tags.FundingUtxoConflict;
-            readonly inner: Readonly<{
-                txid: string;
-                vout: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        hasInner(obj: any): obj is {
-            readonly tag: SdkError_Tags.FundingUtxoConflict;
-            readonly inner: Readonly<{
-                txid: string;
-                vout: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        getInner(obj: {
-            readonly tag: SdkError_Tags.FundingUtxoConflict;
-            readonly inner: Readonly<{
-                txid: string;
-                vout: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        }): Readonly<{
-            txid: string;
-            vout: number;
         }>;
         isError(error: unknown): error is Error;
         captureStackTrace(targetObject: object, constructorOpt?: Function): void;
@@ -19465,46 +20118,46 @@ export declare const SignerError: Readonly<{
  * Error type for signer operations
  */
 export type SignerError = InstanceType<(typeof SignerError)[keyof Omit<typeof SignerError, 'instanceOf'>]>;
-export declare enum SourceAsset_Tags {
+export declare enum SparkAsset_Tags {
     Bitcoin = "Bitcoin",
     Token = "Token"
 }
 /**
- * The source asset a cross-chain route accepts as input on the Spark side.
+ * The asset a cross-chain route accepts on the Spark side.
  */
-export declare const SourceAsset: Readonly<{
-    instanceOf: (obj: any) => obj is SourceAsset;
+export declare const SparkAsset: Readonly<{
+    instanceOf: (obj: any) => obj is SparkAsset;
     Bitcoin: {
         new (): {
-            readonly tag: SourceAsset_Tags.Bitcoin;
+            readonly tag: SparkAsset_Tags.Bitcoin;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SourceAsset";
+            readonly [uniffiTypeNameSymbol]: "SparkAsset";
         };
         "new"(): {
-            readonly tag: SourceAsset_Tags.Bitcoin;
+            readonly tag: SparkAsset_Tags.Bitcoin;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SourceAsset";
+            readonly [uniffiTypeNameSymbol]: "SparkAsset";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: SourceAsset_Tags.Bitcoin;
+            readonly tag: SparkAsset_Tags.Bitcoin;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SourceAsset";
+            readonly [uniffiTypeNameSymbol]: "SparkAsset";
         };
     };
     Token: {
         new (inner: {
             tokenIdentifier: string;
         }): {
-            readonly tag: SourceAsset_Tags.Token;
+            readonly tag: SparkAsset_Tags.Token;
             readonly inner: Readonly<{
                 tokenIdentifier: string;
             }>;
@@ -19512,12 +20165,12 @@ export declare const SourceAsset: Readonly<{
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SourceAsset";
+            readonly [uniffiTypeNameSymbol]: "SparkAsset";
         };
         "new"(inner: {
             tokenIdentifier: string;
         }): {
-            readonly tag: SourceAsset_Tags.Token;
+            readonly tag: SparkAsset_Tags.Token;
             readonly inner: Readonly<{
                 tokenIdentifier: string;
             }>;
@@ -19525,10 +20178,10 @@ export declare const SourceAsset: Readonly<{
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SourceAsset";
+            readonly [uniffiTypeNameSymbol]: "SparkAsset";
         };
         instanceOf(obj: any): obj is {
-            readonly tag: SourceAsset_Tags.Token;
+            readonly tag: SparkAsset_Tags.Token;
             readonly inner: Readonly<{
                 tokenIdentifier: string;
             }>;
@@ -19536,32 +20189,14 @@ export declare const SourceAsset: Readonly<{
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
-            readonly [uniffiTypeNameSymbol]: "SourceAsset";
+            readonly [uniffiTypeNameSymbol]: "SparkAsset";
         };
     };
 }>;
 /**
- * The source asset a cross-chain route accepts as input on the Spark side.
+ * The asset a cross-chain route accepts on the Spark side.
  */
-export type SourceAsset = InstanceType<(typeof SourceAsset)[keyof Omit<typeof SourceAsset, 'instanceOf'>]>;
-/**
- * The chain a cross-chain route is funded from, orthogonal to the
- * [`SourceAsset`] that moves.
- */
-export declare enum SourceChain {
-    /**
-     * Paid over Spark, using a Bitcoin or token source asset.
-     */
-    Spark = 0,
-    /**
-     * Paid over Lightning, using a Bitcoin source asset.
-     */
-    Lightning = 1,
-    /**
-     * Paid on-chain to Bitcoin (L1), using a Bitcoin source asset.
-     */
-    Bitcoin = 2
-}
+export type SparkAsset = InstanceType<(typeof SparkAsset)[keyof Omit<typeof SparkAsset, 'instanceOf'>]>;
 export declare enum SparkHtlcStatus {
     /**
      * The HTLC is waiting for the preimage to be shared by the receiver
@@ -20784,6 +21419,18 @@ export declare const TransferTarget: Readonly<{
 }>;
 export type TransferTarget = InstanceType<(typeof TransferTarget)[keyof Omit<typeof TransferTarget, 'instanceOf'>]>;
 /**
+ * Why an exit has to be built again.
+ */
+export declare enum UnilateralExitRedoReason {
+    /**
+     * The chain no longer matches the exit: something that is not one of its
+     * own transactions took an outpoint it still needs. A different refund, a
+     * fee bump from elsewhere, or funding spent on something else all land
+     * here.
+     */
+    OnChainStateDiverged = 0
+}
+/**
  * The role of a transaction in the exit path.
  */
 export declare enum UnilateralExitTxKind {
@@ -20805,6 +21452,112 @@ export declare enum UnilateralExitTxKind {
      */
     Sweep = 3
 }
+export declare enum UnilateralExitVerdict_Tags {
+    Valid = "Valid",
+    Done = "Done",
+    Redo = "Redo"
+}
+/**
+ * What to do with an exit that has been read back against the chain.
+ */
+export declare const UnilateralExitVerdict: Readonly<{
+    instanceOf: (obj: any) => obj is UnilateralExitVerdict;
+    Valid: {
+        new (): {
+            readonly tag: UnilateralExitVerdict_Tags.Valid;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnilateralExitVerdict";
+        };
+        "new"(): {
+            readonly tag: UnilateralExitVerdict_Tags.Valid;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnilateralExitVerdict";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: UnilateralExitVerdict_Tags.Valid;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnilateralExitVerdict";
+        };
+    };
+    Done: {
+        new (): {
+            readonly tag: UnilateralExitVerdict_Tags.Done;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnilateralExitVerdict";
+        };
+        "new"(): {
+            readonly tag: UnilateralExitVerdict_Tags.Done;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnilateralExitVerdict";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: UnilateralExitVerdict_Tags.Done;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnilateralExitVerdict";
+        };
+    };
+    Redo: {
+        new (inner: {
+            reason: UnilateralExitRedoReason;
+        }): {
+            readonly tag: UnilateralExitVerdict_Tags.Redo;
+            readonly inner: Readonly<{
+                reason: UnilateralExitRedoReason;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnilateralExitVerdict";
+        };
+        "new"(inner: {
+            reason: UnilateralExitRedoReason;
+        }): {
+            readonly tag: UnilateralExitVerdict_Tags.Redo;
+            readonly inner: Readonly<{
+                reason: UnilateralExitRedoReason;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnilateralExitVerdict";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: UnilateralExitVerdict_Tags.Redo;
+            readonly inner: Readonly<{
+                reason: UnilateralExitRedoReason;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UnilateralExitVerdict";
+        };
+    };
+}>;
+/**
+ * What to do with an exit that has been read back against the chain.
+ */
+export type UnilateralExitVerdict = InstanceType<(typeof UnilateralExitVerdict)[keyof Omit<typeof UnilateralExitVerdict, 'instanceOf'>]>;
 export declare enum UnsignedTransferPackage_Tags {
     Swap = "Swap",
     Transfer = "Transfer",
@@ -21571,6 +22324,17 @@ export interface BreezSdkInterface {
     checkMessage(request: CheckMessageRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<CheckMessageResponse>;
+    /**
+     * Reads an exit you kept back against the chain: which of its transactions
+     * are now in a block, and whether it can still be finished as it stands.
+     *
+     * Needs neither the wallet's leaves nor a signer, so an exit can be followed
+     * from the response alone. Store the response in place of the one you passed
+     * in, and broadcast what its statuses leave to send.
+     */
+    checkUnilateralExit(request: CheckUnilateralExitRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<CheckUnilateralExitResponse>;
     claimDeposit(request: ClaimDepositRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ClaimDepositResponse>;
@@ -21995,11 +22759,10 @@ export interface BreezSdkInterface {
      * topological broadcast order without broadcasting. Broadcast it over time,
      * respecting each transaction's `depends_on` and `csv_timelock_blocks`.
      *
-     * It resolves on-chain state first (see [`resolve_exit_observations`]): an
-     * already-confirmed fan-out or CPFP node is not rebuilt, and a leaf refund
-     * already on-chain (recognized by the leaf's refund address, so any refund
-     * variant counts) is swept directly. Re-running after partial progress
-     * therefore resumes rather than restarts.
+     * It reads on-chain state first: an already-confirmed fan-out or CPFP node
+     * is not rebuilt, and a leaf refund already on-chain (recognized by the
+     * leaf's refund address, so any refund variant counts) is swept directly.
+     * Re-running after partial progress therefore resumes rather than restarts.
      */
     unilateralExit(request: UnilateralExitRequest, signer: CpfpSigner, asyncOpts_?: {
         signal: AbortSignal;
@@ -22138,6 +22901,17 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     checkMessage(request: CheckMessageRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<CheckMessageResponse>;
+    /**
+     * Reads an exit you kept back against the chain: which of its transactions
+     * are now in a block, and whether it can still be finished as it stands.
+     *
+     * Needs neither the wallet's leaves nor a signer, so an exit can be followed
+     * from the response alone. Store the response in place of the one you passed
+     * in, and broadcast what its statuses leave to send.
+     */
+    checkUnilateralExit(request: CheckUnilateralExitRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<CheckUnilateralExitResponse>;
     claimDeposit(request: ClaimDepositRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<ClaimDepositResponse>;
@@ -22562,11 +23336,10 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
      * topological broadcast order without broadcasting. Broadcast it over time,
      * respecting each transaction's `depends_on` and `csv_timelock_blocks`.
      *
-     * It resolves on-chain state first (see [`resolve_exit_observations`]): an
-     * already-confirmed fan-out or CPFP node is not rebuilt, and a leaf refund
-     * already on-chain (recognized by the leaf's refund address, so any refund
-     * variant counts) is swept directly. Re-running after partial progress
-     * therefore resumes rather than restarts.
+     * It reads on-chain state first: an already-confirmed fan-out or CPFP node
+     * is not rebuilt, and a leaf refund already on-chain (recognized by the
+     * leaf's refund address, so any refund variant counts) is swept directly.
+     * Re-running after partial progress therefore resumes rather than restarts.
      */
     unilateralExit(request: UnilateralExitRequest, signer: CpfpSigner, asyncOpts_?: {
         signal: AbortSignal;
@@ -25237,6 +26010,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): CheckMessageResponse;
             lower(value: CheckMessageResponse): UniffiByteArray;
         };
+        FfiConverterTypeCheckUnilateralExitRequest: {
+            read(from: RustBuffer): CheckUnilateralExitRequest;
+            write(value: CheckUnilateralExitRequest, into: RustBuffer): void;
+            allocationSize(value: CheckUnilateralExitRequest): number;
+            lift(value: UniffiByteArray): CheckUnilateralExitRequest;
+            lower(value: CheckUnilateralExitRequest): UniffiByteArray;
+        };
+        FfiConverterTypeCheckUnilateralExitResponse: {
+            read(from: RustBuffer): CheckUnilateralExitResponse;
+            write(value: CheckUnilateralExitResponse, into: RustBuffer): void;
+            allocationSize(value: CheckUnilateralExitResponse): number;
+            lift(value: UniffiByteArray): CheckUnilateralExitResponse;
+            lower(value: CheckUnilateralExitResponse): UniffiByteArray;
+        };
         FfiConverterTypeClaimDepositQuote: {
             read(from: RustBuffer): ClaimDepositQuote;
             write(value: ClaimDepositQuote, into: RustBuffer): void;
@@ -25286,12 +26073,12 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): Config;
             lower(value: Config): UniffiByteArray;
         };
-        FfiConverterTypeConfirmationStatus: {
-            read(from: RustBuffer): ConfirmationStatus;
-            write(value: ConfirmationStatus, into: RustBuffer): void;
-            allocationSize(value: ConfirmationStatus): number;
-            lift(value: UniffiByteArray): ConfirmationStatus;
-            lower(value: ConfirmationStatus): UniffiByteArray;
+        FfiConverterTypeConfirmedExitNode: {
+            read(from: RustBuffer): ConfirmedExitNode;
+            write(value: ConfirmedExitNode, into: RustBuffer): void;
+            allocationSize(value: ConfirmedExitNode): number;
+            lift(value: UniffiByteArray): ConfirmedExitNode;
+            lower(value: ConfirmedExitNode): UniffiByteArray;
         };
         FfiConverterTypeConnectRequest: {
             read(from: RustBuffer): ConnectRequest;
@@ -25504,6 +26291,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): CrossChainProviderContext;
             lower(value: CrossChainProviderContext): UniffiByteArray;
         };
+        FfiConverterTypeCrossChainReceiveInfo: {
+            read(from: RustBuffer): CrossChainReceiveInfo;
+            write(value: CrossChainReceiveInfo, into: RustBuffer): void;
+            allocationSize(value: CrossChainReceiveInfo): number;
+            lift(value: UniffiByteArray): CrossChainReceiveInfo;
+            lower(value: CrossChainReceiveInfo): UniffiByteArray;
+        };
         FfiConverterTypeCrossChainRouteFilter: {
             read(from: RustBuffer): CrossChainRouteFilter;
             write(value: CrossChainRouteFilter, into: RustBuffer): void;
@@ -25524,6 +26318,13 @@ declare const _default: Readonly<{
             allocationSize(value: CurrencyInfo): number;
             lift(value: UniffiByteArray): CurrencyInfo;
             lower(value: CurrencyInfo): UniffiByteArray;
+        };
+        FfiConverterTypeDeliveryMethod: {
+            read(from: RustBuffer): DeliveryMethod;
+            write(value: DeliveryMethod, into: RustBuffer): void;
+            allocationSize(value: DeliveryMethod): number;
+            lift(value: UniffiByteArray): DeliveryMethod;
+            lower(value: DeliveryMethod): UniffiByteArray;
         };
         FfiConverterTypeDepositClaimError: {
             read(from: RustBuffer): DepositClaimError;
@@ -25574,12 +26375,47 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): ErrorKind;
             lower(value: ErrorKind): UniffiByteArray;
         };
+        FfiConverterTypeExitChainState: {
+            read(from: RustBuffer): ExitChainState;
+            write(value: ExitChainState, into: RustBuffer): void;
+            allocationSize(value: ExitChainState): number;
+            lift(value: UniffiByteArray): ExitChainState;
+            lower(value: ExitChainState): UniffiByteArray;
+        };
         FfiConverterTypeExitLeafSelection: {
             read(from: RustBuffer): ExitLeafSelection;
             write(value: ExitLeafSelection, into: RustBuffer): void;
             allocationSize(value: ExitLeafSelection): number;
             lift(value: UniffiByteArray): ExitLeafSelection;
             lower(value: ExitLeafSelection): UniffiByteArray;
+        };
+        FfiConverterTypeExitNodeConfirmation: {
+            read(from: RustBuffer): ExitNodeConfirmation;
+            write(value: ExitNodeConfirmation, into: RustBuffer): void;
+            allocationSize(value: ExitNodeConfirmation): number;
+            lift(value: UniffiByteArray): ExitNodeConfirmation;
+            lower(value: ExitNodeConfirmation): UniffiByteArray;
+        };
+        FfiConverterTypeExitRefund: {
+            read(from: RustBuffer): ExitRefund;
+            write(value: ExitRefund, into: RustBuffer): void;
+            allocationSize(value: ExitRefund): number;
+            lift(value: UniffiByteArray): ExitRefund;
+            lower(value: ExitRefund): UniffiByteArray;
+        };
+        FfiConverterTypeExitRefundState: {
+            read(from: RustBuffer): ExitRefundState;
+            write(value: ExitRefundState, into: RustBuffer): void;
+            allocationSize(value: ExitRefundState): number;
+            lift(value: UniffiByteArray): ExitRefundState;
+            lower(value: ExitRefundState): UniffiByteArray;
+        };
+        FfiConverterTypeExitTransactionStatus: {
+            read(from: RustBuffer): ExitTransactionStatus;
+            write(value: ExitTransactionStatus, into: RustBuffer): void;
+            allocationSize(value: ExitTransactionStatus): number;
+            lift(value: UniffiByteArray): ExitTransactionStatus;
+            lower(value: ExitTransactionStatus): UniffiByteArray;
         };
         FfiConverterTypeExportUnilateralExitStateResponse: {
             read(from: RustBuffer): ExportUnilateralExitStateResponse;
@@ -26890,26 +27726,19 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SilentPaymentAddressDetails;
             lower(value: SilentPaymentAddressDetails): UniffiByteArray;
         };
-        FfiConverterTypeSourceAsset: {
-            read(from: RustBuffer): SourceAsset;
-            write(value: SourceAsset, into: RustBuffer): void;
-            allocationSize(value: SourceAsset): number;
-            lift(value: UniffiByteArray): SourceAsset;
-            lower(value: SourceAsset): UniffiByteArray;
-        };
-        FfiConverterTypeSourceChain: {
-            read(from: RustBuffer): SourceChain;
-            write(value: SourceChain, into: RustBuffer): void;
-            allocationSize(value: SourceChain): number;
-            lift(value: UniffiByteArray): SourceChain;
-            lower(value: SourceChain): UniffiByteArray;
-        };
         FfiConverterTypeSparkAddressDetails: {
             read(from: RustBuffer): SparkAddressDetails;
             write(value: SparkAddressDetails, into: RustBuffer): void;
             allocationSize(value: SparkAddressDetails): number;
             lift(value: UniffiByteArray): SparkAddressDetails;
             lower(value: SparkAddressDetails): UniffiByteArray;
+        };
+        FfiConverterTypeSparkAsset: {
+            read(from: RustBuffer): SparkAsset;
+            write(value: SparkAsset, into: RustBuffer): void;
+            allocationSize(value: SparkAsset): number;
+            lift(value: UniffiByteArray): SparkAsset;
+            lower(value: SparkAsset): UniffiByteArray;
         };
         FfiConverterTypeSparkConfig: {
             read(from: RustBuffer): SparkConfig;
@@ -27166,6 +27995,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): UnilateralExitLeaf;
             lower(value: UnilateralExitLeaf): UniffiByteArray;
         };
+        FfiConverterTypeUnilateralExitRedoReason: {
+            read(from: RustBuffer): UnilateralExitRedoReason;
+            write(value: UnilateralExitRedoReason, into: RustBuffer): void;
+            allocationSize(value: UnilateralExitRedoReason): number;
+            lift(value: UniffiByteArray): UnilateralExitRedoReason;
+            lower(value: UnilateralExitRedoReason): UniffiByteArray;
+        };
         FfiConverterTypeUnilateralExitRequest: {
             read(from: RustBuffer): UnilateralExitRequest;
             write(value: UnilateralExitRequest, into: RustBuffer): void;
@@ -27193,6 +28029,13 @@ declare const _default: Readonly<{
             allocationSize(value: UnilateralExitTxKind): number;
             lift(value: UniffiByteArray): UnilateralExitTxKind;
             lower(value: UnilateralExitTxKind): UniffiByteArray;
+        };
+        FfiConverterTypeUnilateralExitVerdict: {
+            read(from: RustBuffer): UnilateralExitVerdict;
+            write(value: UnilateralExitVerdict, into: RustBuffer): void;
+            allocationSize(value: UnilateralExitVerdict): number;
+            lift(value: UniffiByteArray): UnilateralExitVerdict;
+            lower(value: UnilateralExitVerdict): UniffiByteArray;
         };
         FfiConverterTypeUnregisterWebhookRequest: {
             read(from: RustBuffer): UnregisterWebhookRequest;
