@@ -787,6 +787,14 @@ interface NativeModuleInterface {
     vout: number,
     payload: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_storage_list_watched_deposit_addresses(
+    ptr: bigint
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_storage_update_watched_deposit_address(
+    ptr: bigint,
+    address: Uint8Array,
+    payload: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_storage_set_lnurl_metadata(
     ptr: bigint,
     metadata: Uint8Array
@@ -1273,6 +1281,8 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_delete_deposit(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_deposits(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_update_deposit(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_watched_deposit_addresses(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_storage_update_watched_deposit_address(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_set_lnurl_metadata(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_contacts(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_contact(): number;
@@ -1911,101 +1921,113 @@ type UniffiCallbackInterfaceStorageMethod12 = (
 ) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod13 = (
   uniffiHandle: bigint,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceStorageMethod14 = (
+  uniffiHandle: bigint,
+  address: Uint8Array,
+  payload: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceStorageMethod15 = (
+  uniffiHandle: bigint,
   metadata: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod14 = (
+type UniffiCallbackInterfaceStorageMethod16 = (
   uniffiHandle: bigint,
   request: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod15 = (
+type UniffiCallbackInterfaceStorageMethod17 = (
   uniffiHandle: bigint,
   id: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod16 = (
+type UniffiCallbackInterfaceStorageMethod18 = (
   uniffiHandle: bigint,
   contact: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod17 = (
+type UniffiCallbackInterfaceStorageMethod19 = (
   uniffiHandle: bigint,
   id: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod18 = (
+type UniffiCallbackInterfaceStorageMethod20 = (
   uniffiHandle: bigint,
   swap: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod19 = (
+type UniffiCallbackInterfaceStorageMethod21 = (
   uniffiHandle: bigint,
   provider: Uint8Array,
   id: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod20 = (
+type UniffiCallbackInterfaceStorageMethod22 = (
   uniffiHandle: bigint,
   provider: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod21 = (
+type UniffiCallbackInterfaceStorageMethod23 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteU64,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod22 = (
+type UniffiCallbackInterfaceStorageMethod24 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   localRevision: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod23 = (
+type UniffiCallbackInterfaceStorageMethod25 = (
   uniffiHandle: bigint,
   limit: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod24 = (
+type UniffiCallbackInterfaceStorageMethod26 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteU64,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod25 = (
+type UniffiCallbackInterfaceStorageMethod27 = (
   uniffiHandle: bigint,
   records: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod26 = (
+type UniffiCallbackInterfaceStorageMethod28 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod27 = (
+type UniffiCallbackInterfaceStorageMethod29 = (
   uniffiHandle: bigint,
   limit: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod28 = (
+type UniffiCallbackInterfaceStorageMethod30 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod29 = (
+type UniffiCallbackInterfaceStorageMethod31 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
@@ -2120,23 +2142,25 @@ export type UniffiVTableCallbackInterfaceStorage = {
   deleteDeposit: UniffiCallbackInterfaceStorageMethod10;
   listDeposits: UniffiCallbackInterfaceStorageMethod11;
   updateDeposit: UniffiCallbackInterfaceStorageMethod12;
-  setLnurlMetadata: UniffiCallbackInterfaceStorageMethod13;
-  listContacts: UniffiCallbackInterfaceStorageMethod14;
-  getContact: UniffiCallbackInterfaceStorageMethod15;
-  insertContact: UniffiCallbackInterfaceStorageMethod16;
-  deleteContact: UniffiCallbackInterfaceStorageMethod17;
-  setCrossChainSwap: UniffiCallbackInterfaceStorageMethod18;
-  getCrossChainSwap: UniffiCallbackInterfaceStorageMethod19;
-  listActiveCrossChainSwaps: UniffiCallbackInterfaceStorageMethod20;
-  addOutgoingChange: UniffiCallbackInterfaceStorageMethod21;
-  completeOutgoingSync: UniffiCallbackInterfaceStorageMethod22;
-  getPendingOutgoingChanges: UniffiCallbackInterfaceStorageMethod23;
-  getLastRevision: UniffiCallbackInterfaceStorageMethod24;
-  insertIncomingRecords: UniffiCallbackInterfaceStorageMethod25;
-  deleteIncomingRecord: UniffiCallbackInterfaceStorageMethod26;
-  getIncomingRecords: UniffiCallbackInterfaceStorageMethod27;
-  getLatestOutgoingChange: UniffiCallbackInterfaceStorageMethod28;
-  updateRecordFromIncoming: UniffiCallbackInterfaceStorageMethod29;
+  listWatchedDepositAddresses: UniffiCallbackInterfaceStorageMethod13;
+  updateWatchedDepositAddress: UniffiCallbackInterfaceStorageMethod14;
+  setLnurlMetadata: UniffiCallbackInterfaceStorageMethod15;
+  listContacts: UniffiCallbackInterfaceStorageMethod16;
+  getContact: UniffiCallbackInterfaceStorageMethod17;
+  insertContact: UniffiCallbackInterfaceStorageMethod18;
+  deleteContact: UniffiCallbackInterfaceStorageMethod19;
+  setCrossChainSwap: UniffiCallbackInterfaceStorageMethod20;
+  getCrossChainSwap: UniffiCallbackInterfaceStorageMethod21;
+  listActiveCrossChainSwaps: UniffiCallbackInterfaceStorageMethod22;
+  addOutgoingChange: UniffiCallbackInterfaceStorageMethod23;
+  completeOutgoingSync: UniffiCallbackInterfaceStorageMethod24;
+  getPendingOutgoingChanges: UniffiCallbackInterfaceStorageMethod25;
+  getLastRevision: UniffiCallbackInterfaceStorageMethod26;
+  insertIncomingRecords: UniffiCallbackInterfaceStorageMethod27;
+  deleteIncomingRecord: UniffiCallbackInterfaceStorageMethod28;
+  getIncomingRecords: UniffiCallbackInterfaceStorageMethod29;
+  getLatestOutgoingChange: UniffiCallbackInterfaceStorageMethod30;
+  updateRecordFromIncoming: UniffiCallbackInterfaceStorageMethod31;
   uniffiFree: UniffiCallbackInterfaceFree;
 };
 export type UniffiVTableCallbackInterfaceStorageBackend = {

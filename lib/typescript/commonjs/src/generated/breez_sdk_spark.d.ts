@@ -92,9 +92,9 @@ export declare function defaultConfig(network: Network): Config;
  *
  * * `mnemonic` - BIP39 mnemonic phrase (12 or 24 words)
  * * `passphrase` - Optional passphrase for the mnemonic
- * * `network` - Network to use (Mainnet or Regtest)
+ * * `network` - Network to use (Mainnet, Signet, or Regtest)
  * * `account_number` - Account number in the derivation path. Unset uses the
- * network default: 0 on Regtest, 1 on all other networks.
+ * network default: 0 on Regtest and Signet, 1 on Mainnet.
  */
 export declare function defaultExternalSigners(mnemonic: string, passphrase: string | undefined, network: Network, accountNumber: /*u32*/ number | undefined): ExternalSigners;
 /**
@@ -1048,9 +1048,20 @@ export type ClaimDepositRequest = {
     txid: string;
     vout: number;
     /**
-     * Caps what the claim may cost. A deposit that has not matured is claimed
-     * instantly when the provider's spread fits within this, so the same ceiling
-     * governs both. Falls back to the configured max deposit claim fee.
+     * Caps what the claim may cost, and is recorded on the deposit so later
+     * automatic attempts are held to it too.
+     *
+     * Raising it above the quoted spread is what lets a deposit be claimed ahead
+     * of maturity without further input. Lowering it below the spread keeps the
+     * deposit from being claimed early, and does not hold back its claim at
+     * maturity: that one runs under whichever is larger, this or the configured
+     * max deposit claim fee.
+     *
+     * Unset claims under the configured max deposit claim fee and clears any
+     * ceiling previously recorded on the deposit.
+     *
+     * The ceiling is recorded before the claim is attempted, so it stands even
+     * when the attempt is then declined for exceeding it.
      */
     maxFee: MaxFee | undefined;
 };
@@ -1075,14 +1086,11 @@ export declare const ClaimDepositRequest: Readonly<{
 }>;
 export type ClaimDepositResponse = {
     /**
-     * The settled claim payment, present when the deposit was claimed at maturity,
-     * which completes synchronously. Absent when it was claimed before maturity,
-     * whose transfer settles asynchronously: watch for the payment via events or
-     * `list_payments`. Which of the two happens follows from the deposit's maturity
-     * and the fee ceiling, not from anything the caller asks for, so treat the
-     * payment as optional on every claim.
+     * What the call did. Which outcome occurs follows from the deposit's maturity
+     * and the fee ceiling, not from anything the caller asks for, so handle all
+     * three on every claim.
      */
-    payment: Payment | undefined;
+    outcome: ClaimDepositOutcome;
 };
 /**
  * Generated factory for {@link ClaimDepositResponse} record objects.
@@ -1205,15 +1213,20 @@ export type Config = {
     preferSparkOverLightning: boolean;
     /**
      * Whether the data needed to exit a payment unilaterally, without the Spark
-     * operators, is collected as funds arrive. Collection runs in the background,
-     * and a sync waits for a collection pass before returning, so syncing is how
-     * to make that happen at a moment of your choosing. A leaf the operators
-     * cannot complete stays un-exitable until a later attempt succeeds.
+     * operators, is collected automatically as funds arrive. Collection runs in
+     * the background, after an operation rather than during it. A leaf the
+     * operators cannot complete stays un-exitable until a later attempt
+     * succeeds.
      *
-     * Leave this on unless bandwidth matters more than being able to recover funds
-     * when the operators are unreachable. With it off, chains are only collected
-     * when an exit is prepared, which needs the operators reachable at that
-     * moment: a leaf cannot be exited without them until one is collected.
+     * Turn it off when collecting behind every operation costs more than it is
+     * worth, on a busy wallet holding many leaves. `sync_wallet` collects
+     * regardless of this flag, and waits for the pass before returning, so an
+     * explicit sync on a cadence of your choosing is how the data is kept
+     * current with the automatic collection off.
+     *
+     * Only that automatic collection is governed, so this has no effect at all
+     * where none runs: with `background_tasks_enabled` off there is no
+     * background collector, and every sync is an explicit one.
      *
      * Default value is true.
      */
@@ -1942,6 +1955,38 @@ export declare const Credentials: Readonly<{
      */
     defaults: () => Partial<Credentials>;
 }>;
+/**
+ * A Spark-side asset a route accepts, with the amount bounds that apply to it.
+ *
+ * Bounds are per asset rather than per route: the same external endpoint can
+ * carry a dust floor when moved as sats and none when moved as a token.
+ */
+export type CrossChainAcceptedAsset = {
+    asset: SparkAsset;
+    /**
+     * Unset when the provider publishes no bounds for this pairing.
+     */
+    limits: CrossChainRouteLimits | undefined;
+};
+/**
+ * Generated factory for {@link CrossChainAcceptedAsset} record objects.
+ */
+export declare const CrossChainAcceptedAsset: Readonly<{
+    /**
+     * Create a frozen instance of {@link CrossChainAcceptedAsset}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CrossChainAcceptedAsset> & Required<Omit<CrossChainAcceptedAsset, never>>) => CrossChainAcceptedAsset;
+    /**
+     * Create a frozen instance of {@link CrossChainAcceptedAsset}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CrossChainAcceptedAsset> & Required<Omit<CrossChainAcceptedAsset, never>>) => CrossChainAcceptedAsset;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CrossChainAcceptedAsset>;
+}>;
 export type CrossChainAddressDetails = {
     address: string;
     addressFamily: CrossChainAddressFamily;
@@ -2054,6 +2099,11 @@ export type CrossChainReceiveInfo = {
      */
     serviceFeeAsset: string | undefined;
     /**
+     * Decimals of `service_fee_asset`, for formatting `service_fee_amount`.
+     * Unset when the fee is in sats or the provider did not report them.
+     */
+    serviceFeeAssetDecimals: /*u32*/ number | undefined;
+    /**
      * Quote expiry as a unix timestamp in seconds.
      */
     expiresAt: bigint;
@@ -2076,6 +2126,59 @@ export declare const CrossChainReceiveInfo: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<CrossChainReceiveInfo>;
+}>;
+/**
+ * Amount bounds a provider publishes for moving a route with one Spark-side
+ * asset.
+ *
+ * A route can enforce a tighter bound than it publishes, so an amount inside
+ * these can still be rejected when the payment is prepared.
+ *
+ * The two groups are independent, and either can be absent: a route may
+ * publish a base-unit floor (a dust minimum on a sats-funded route), a USD
+ * notional band, both, or neither.
+ *
+ * `min_amount` / `max_amount` bound the asset that is paid in, so which asset
+ * they are denominated in follows the direction: the Spark-side asset on a
+ * send, the external asset on a receive. The USD band bounds the order's
+ * value and reads the same in both directions.
+ */
+export type CrossChainRouteLimits = {
+    /**
+     * Smallest amount accepted, in the base units of the asset paid in.
+     */
+    minAmount: U128 | undefined;
+    /**
+     * Largest amount accepted, in the base units of the asset paid in.
+     */
+    maxAmount: U128 | undefined;
+    /**
+     * Smallest order value accepted, in USD cents.
+     */
+    minUsdCents: /*u64*/ bigint | undefined;
+    /**
+     * Largest order value accepted, in USD cents.
+     */
+    maxUsdCents: /*u64*/ bigint | undefined;
+};
+/**
+ * Generated factory for {@link CrossChainRouteLimits} record objects.
+ */
+export declare const CrossChainRouteLimits: Readonly<{
+    /**
+     * Create a frozen instance of {@link CrossChainRouteLimits}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CrossChainRouteLimits> & Required<Omit<CrossChainRouteLimits, never>>) => CrossChainRouteLimits;
+    /**
+     * Create a frozen instance of {@link CrossChainRouteLimits}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CrossChainRouteLimits> & Required<Omit<CrossChainRouteLimits, never>>) => CrossChainRouteLimits;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CrossChainRouteLimits>;
 }>;
 /**
  * A single route available for cross-chain transfers, tagged with the provider
@@ -2113,9 +2216,9 @@ export type CrossChainRoutePair = {
      */
     exactOutEligible: boolean;
     /**
-     * Spark-side assets this route accepts.
+     * Spark-side assets this route accepts, each with its own amount bounds.
      */
-    acceptedAssets: Array<SparkAsset>;
+    acceptedAssets: Array<CrossChainAcceptedAsset>;
     /**
      * Rails this route can be delivered over, orthogonal to
      * `accepted_assets` (the asset moved vs the rail moved on).
@@ -2210,6 +2313,14 @@ export type DepositInfo = {
      * Unset when no instant claim has been attempted.
      */
     instantClaimStatus: InstantClaimStatus | undefined;
+    /**
+     * The fee ceiling standing for this deposit alone. It caps what may be paid
+     * to claim the deposit ahead of maturity. The claim at maturity runs under
+     * whichever is larger, this or the configured max deposit claim fee, so a
+     * ceiling set below that one does not hold the deposit back from it. Unset
+     * means the configured ceiling applies to both.
+     */
+    maxClaimFee: MaxFee | undefined;
 };
 /**
  * Generated factory for {@link DepositInfo} record objects.
@@ -2698,6 +2809,32 @@ export declare const ExternalInputParser: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<ExternalInputParser>;
+}>;
+/**
+ * FFI-safe representation of `spark_wallet::LeafSigningKey`: the leaf signing
+ * key derived from `derived_from`.
+ */
+export type ExternalLeafSigningKey = {
+    derivedFrom: ExternalTreeNodeId;
+};
+/**
+ * Generated factory for {@link ExternalLeafSigningKey} record objects.
+ */
+export declare const ExternalLeafSigningKey: Readonly<{
+    /**
+     * Create a frozen instance of {@link ExternalLeafSigningKey}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<ExternalLeafSigningKey> & Required<Omit<ExternalLeafSigningKey, never>>) => ExternalLeafSigningKey;
+    /**
+     * Create a frozen instance of {@link ExternalLeafSigningKey}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<ExternalLeafSigningKey> & Required<Omit<ExternalLeafSigningKey, never>>) => ExternalLeafSigningKey;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<ExternalLeafSigningKey>;
 }>;
 /**
  * FFI-safe representation of `spark_wallet::NewLeafKey`.
@@ -3337,12 +3474,14 @@ export declare const ExternalStartedStaticDepositRefund: Readonly<{
     defaults: () => Partial<ExternalStartedStaticDepositRefund>;
 }>;
 /**
- * FFI-safe representation of `spark_wallet::TransferLeafInput`. Conveys the old
- * leaf id and the new (post-transfer) leaf id; the signer derives keys from them.
+ * FFI-safe representation of `spark_wallet::TransferLeafInput`. Conveys the
+ * leaf id, the key the leaf is held under and the new (post-transfer) leaf id;
+ * the signer derives the keys from them.
  */
 export type ExternalTransferLeafInput = {
     nodeId: ExternalTreeNodeId;
     newLeafId: ExternalTreeNodeId;
+    signingKey: ExternalLeafSigningKey;
 };
 /**
  * Generated factory for {@link ExternalTransferLeafInput} record objects.
@@ -5439,6 +5578,11 @@ export type PreparePaymentLinkResponse = {
      */
     serviceFeeAsset: string | undefined;
     /**
+     * Decimals of `service_fee_asset`, for formatting `service_fee_amount`.
+     * Unset when the fee is in sats or the provider did not report them.
+     */
+    serviceFeeAssetDecimals: /*u32*/ number | undefined;
+    /**
      * RFC3339 timestamp after which the quote is no longer valid.
      */
     expiresAt: string;
@@ -5650,6 +5794,11 @@ export declare const PrepareUnilateralExitRequest: Readonly<{
  * fee at the requested rate, and how much to fund.
  */
 export type PrepareUnilateralExitResponse = {
+    /**
+     * The leaves the exit covers. A leaf whose exit already finished is left out,
+     * even when named: `exit_chain_state` shows its refund swept or its branch
+     * stopped.
+     */
     leaves: Array<UnilateralExitLeaf>;
     /**
      * Total value of the selected leaves, in satoshis.
@@ -7769,6 +7918,7 @@ export type TurnkeyConfig = {
     /**
      * Network the wallet operates on; selects the Spark address format
      * (mainnet or regtest) used for Spark-protocol and Schnorr signing.
+     * Signet is unsupported by Turnkey's Spark account formats.
      */
     network: Network;
     /**
@@ -8404,6 +8554,40 @@ export declare const WalletSetup: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<WalletSetup>;
+}>;
+/**
+ * A static deposit address being watched on-chain for unconfirmed deposits.
+ */
+export type WatchedDepositAddress = {
+    address: string;
+    /**
+     * When the address was handed out, in seconds since the epoch. The watch
+     * window is measured from here.
+     */
+    issuedAt: bigint;
+    /**
+     * Whether a deposit to it has been seen unconfirmed.
+     */
+    seen: boolean;
+};
+/**
+ * Generated factory for {@link WatchedDepositAddress} record objects.
+ */
+export declare const WatchedDepositAddress: Readonly<{
+    /**
+     * Create a frozen instance of {@link WatchedDepositAddress}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<WatchedDepositAddress> & Required<Omit<WatchedDepositAddress, never>>) => WatchedDepositAddress;
+    /**
+     * Create a frozen instance of {@link WatchedDepositAddress}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<WatchedDepositAddress> & Required<Omit<WatchedDepositAddress, never>>) => WatchedDepositAddress;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<WatchedDepositAddress>;
 }>;
 /**
  * A registered webhook entry.
@@ -9274,6 +9458,7 @@ export declare enum ChainApiType {
 export declare enum ChainServiceError_Tags {
     InvalidAddress = "InvalidAddress",
     ServiceConnectivity = "ServiceConnectivity",
+    NotFound = "NotFound",
     Generic = "Generic"
 }
 export declare const ChainServiceError: Readonly<{
@@ -9420,6 +9605,77 @@ export declare const ChainServiceError: Readonly<{
         prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
         stackTraceLimit: number;
     };
+    NotFound: {
+        new (v0: string): {
+            readonly tag: ChainServiceError_Tags.NotFound;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ChainServiceError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(v0: string): {
+            readonly tag: ChainServiceError_Tags.NotFound;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ChainServiceError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ChainServiceError_Tags.NotFound;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ChainServiceError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: ChainServiceError_Tags.NotFound;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ChainServiceError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: ChainServiceError_Tags.NotFound;
+            readonly inner: Readonly<[string]>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ChainServiceError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
     Generic: {
         new (v0: string): {
             readonly tag: ChainServiceError_Tags.Generic;
@@ -9493,6 +9749,257 @@ export declare const ChainServiceError: Readonly<{
     };
 }>;
 export type ChainServiceError = InstanceType<(typeof ChainServiceError)[keyof Omit<typeof ChainServiceError, 'instanceOf'>]>;
+export declare enum ClaimDeferredReason_Tags {
+    MaxFeeExceeded = "MaxFeeExceeded",
+    NoEarlyClaimAvailable = "NoEarlyClaimAvailable",
+    ProviderDeclined = "ProviderDeclined"
+}
+/**
+ * Why a claim was deferred rather than made.
+ */
+export declare const ClaimDeferredReason: Readonly<{
+    instanceOf: (obj: any) => obj is ClaimDeferredReason;
+    MaxFeeExceeded: {
+        new (inner: {
+            /**
+             * What the provider asked to credit the deposit early.
+             */ requiredFeeSats: bigint;
+            /**
+             * The ceiling it was held to.
+             */ maxFeeSats: bigint;
+        }): {
+            readonly tag: ClaimDeferredReason_Tags.MaxFeeExceeded;
+            readonly inner: Readonly<{
+                requiredFeeSats: bigint;
+                maxFeeSats: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDeferredReason";
+        };
+        "new"(inner: {
+            /**
+             * What the provider asked to credit the deposit early.
+             */ requiredFeeSats: bigint;
+            /**
+             * The ceiling it was held to.
+             */ maxFeeSats: bigint;
+        }): {
+            readonly tag: ClaimDeferredReason_Tags.MaxFeeExceeded;
+            readonly inner: Readonly<{
+                requiredFeeSats: bigint;
+                maxFeeSats: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDeferredReason";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ClaimDeferredReason_Tags.MaxFeeExceeded;
+            readonly inner: Readonly<{
+                requiredFeeSats: bigint;
+                maxFeeSats: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDeferredReason";
+        };
+    };
+    NoEarlyClaimAvailable: {
+        new (): {
+            readonly tag: ClaimDeferredReason_Tags.NoEarlyClaimAvailable;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDeferredReason";
+        };
+        "new"(): {
+            readonly tag: ClaimDeferredReason_Tags.NoEarlyClaimAvailable;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDeferredReason";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ClaimDeferredReason_Tags.NoEarlyClaimAvailable;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDeferredReason";
+        };
+    };
+    ProviderDeclined: {
+        new (inner: {
+            message: string;
+        }): {
+            readonly tag: ClaimDeferredReason_Tags.ProviderDeclined;
+            readonly inner: Readonly<{
+                message: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDeferredReason";
+        };
+        "new"(inner: {
+            message: string;
+        }): {
+            readonly tag: ClaimDeferredReason_Tags.ProviderDeclined;
+            readonly inner: Readonly<{
+                message: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDeferredReason";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ClaimDeferredReason_Tags.ProviderDeclined;
+            readonly inner: Readonly<{
+                message: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDeferredReason";
+        };
+    };
+}>;
+/**
+ * Why a claim was deferred rather than made.
+ */
+export type ClaimDeferredReason = InstanceType<(typeof ClaimDeferredReason)[keyof Omit<typeof ClaimDeferredReason, 'instanceOf'>]>;
+export declare enum ClaimDepositOutcome_Tags {
+    Settled = "Settled",
+    Submitted = "Submitted",
+    Deferred = "Deferred"
+}
+/**
+ * What became of a claim.
+ */
+export declare const ClaimDepositOutcome: Readonly<{
+    instanceOf: (obj: any) => obj is ClaimDepositOutcome;
+    Settled: {
+        new (inner: {
+            payment: Payment;
+        }): {
+            readonly tag: ClaimDepositOutcome_Tags.Settled;
+            readonly inner: Readonly<{
+                payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDepositOutcome";
+        };
+        "new"(inner: {
+            payment: Payment;
+        }): {
+            readonly tag: ClaimDepositOutcome_Tags.Settled;
+            readonly inner: Readonly<{
+                payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDepositOutcome";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ClaimDepositOutcome_Tags.Settled;
+            readonly inner: Readonly<{
+                payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDepositOutcome";
+        };
+    };
+    Submitted: {
+        new (): {
+            readonly tag: ClaimDepositOutcome_Tags.Submitted;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDepositOutcome";
+        };
+        "new"(): {
+            readonly tag: ClaimDepositOutcome_Tags.Submitted;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDepositOutcome";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ClaimDepositOutcome_Tags.Submitted;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDepositOutcome";
+        };
+    };
+    Deferred: {
+        new (inner: {
+            reason: ClaimDeferredReason;
+        }): {
+            readonly tag: ClaimDepositOutcome_Tags.Deferred;
+            readonly inner: Readonly<{
+                reason: ClaimDeferredReason;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDepositOutcome";
+        };
+        "new"(inner: {
+            reason: ClaimDeferredReason;
+        }): {
+            readonly tag: ClaimDepositOutcome_Tags.Deferred;
+            readonly inner: Readonly<{
+                reason: ClaimDeferredReason;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDepositOutcome";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: ClaimDepositOutcome_Tags.Deferred;
+            readonly inner: Readonly<{
+                reason: ClaimDeferredReason;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "ClaimDepositOutcome";
+        };
+    };
+}>;
+/**
+ * What became of a claim.
+ */
+export type ClaimDepositOutcome = InstanceType<(typeof ClaimDepositOutcome)[keyof Omit<typeof ClaimDepositOutcome, 'instanceOf'>]>;
 export declare enum ConversionChain_Tags {
     Spark = "Spark",
     Lightning = "Lightning",
@@ -9813,6 +10320,10 @@ export declare const ConversionInfo: Readonly<{
              * Asset the service fee is denominated in. Unset means BTC sats.
              */ serviceFeeAsset: string | undefined;
             /**
+             * Decimals of `service_fee_asset`, for formatting `service_fee_amount`.
+             * Unset when the fee is in sats or the provider did not report them.
+             */ serviceFeeAssetDecimals: /*u32*/ number | undefined;
+            /**
              * Asset decimals (e.g. 6 for USDC).
              */ assetDecimals: number;
             /**
@@ -9837,6 +10348,7 @@ export declare const ConversionInfo: Readonly<{
                 feeAmount: U128 | undefined;
                 serviceFeeAmount: U128 | undefined;
                 serviceFeeAsset: string | undefined;
+                serviceFeeAssetDecimals: /*u32*/ number | undefined;
                 assetDecimals: number;
                 assetContract: string | undefined;
             }>;
@@ -9904,6 +10416,10 @@ export declare const ConversionInfo: Readonly<{
              * Asset the service fee is denominated in. Unset means BTC sats.
              */ serviceFeeAsset: string | undefined;
             /**
+             * Decimals of `service_fee_asset`, for formatting `service_fee_amount`.
+             * Unset when the fee is in sats or the provider did not report them.
+             */ serviceFeeAssetDecimals: /*u32*/ number | undefined;
+            /**
              * Asset decimals (e.g. 6 for USDC).
              */ assetDecimals: number;
             /**
@@ -9928,6 +10444,7 @@ export declare const ConversionInfo: Readonly<{
                 feeAmount: U128 | undefined;
                 serviceFeeAmount: U128 | undefined;
                 serviceFeeAsset: string | undefined;
+                serviceFeeAssetDecimals: /*u32*/ number | undefined;
                 assetDecimals: number;
                 assetContract: string | undefined;
             }>;
@@ -9955,6 +10472,7 @@ export declare const ConversionInfo: Readonly<{
                 feeAmount: U128 | undefined;
                 serviceFeeAmount: U128 | undefined;
                 serviceFeeAsset: string | undefined;
+                serviceFeeAssetDecimals: /*u32*/ number | undefined;
                 assetDecimals: number;
                 assetContract: string | undefined;
             }>;
@@ -12466,7 +12984,8 @@ export declare const InputType: Readonly<{
 export type InputType = InstanceType<(typeof InputType)[keyof Omit<typeof InputType, 'instanceOf'>]>;
 export declare enum InstantClaimStatus_Tags {
     Declined = "Declined",
-    Submitted = "Submitted"
+    Submitted = "Submitted",
+    Claimed = "Claimed"
 }
 /**
  * State of an instant claim attempt on a deposit.
@@ -12549,6 +13068,32 @@ export declare const InstantClaimStatus: Readonly<{
             readonly inner: Readonly<{
                 claimId: string;
             }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "InstantClaimStatus";
+        };
+    };
+    Claimed: {
+        new (): {
+            readonly tag: InstantClaimStatus_Tags.Claimed;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "InstantClaimStatus";
+        };
+        "new"(): {
+            readonly tag: InstantClaimStatus_Tags.Claimed;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "InstantClaimStatus";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: InstantClaimStatus_Tags.Claimed;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -12768,7 +13313,8 @@ export declare const MaxFee: Readonly<{
 export type MaxFee = InstanceType<(typeof MaxFee)[keyof Omit<typeof MaxFee, 'instanceOf'>]>;
 export declare enum Network {
     Mainnet = 0,
-    Regtest = 1
+    Regtest = 1,
+    Signet = 2
 }
 export declare enum OnchainConfirmationSpeed {
     Fast = 0,
@@ -16249,6 +16795,8 @@ export declare enum SdkError_Tags {
     InsufficientFunds = "InsufficientFunds",
     InvalidUuid = "InvalidUuid",
     InvalidInput = "InvalidInput",
+    CrossChainAmountOutOfRange = "CrossChainAmountOutOfRange",
+    CrossChainRouteUnavailable = "CrossChainRouteUnavailable",
     NetworkError = "NetworkError",
     StorageError = "StorageError",
     ChainServiceError = "ChainServiceError",
@@ -16569,6 +17117,234 @@ export declare const SdkError: Readonly<{
             stack?: string;
             cause?: unknown;
         }): Readonly<[string]>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    CrossChainAmountOutOfRange: {
+        new (inner: {
+            reason: string;
+            /**
+             * `true` for a rejection below the minimum, `false` for one above the
+             * maximum or beyond available liquidity.
+             */ tooSmall: boolean;
+            /**
+             * The published bound in the base units of the asset paid in: the
+             * Spark-side asset on a send, the external asset on a receive.
+             */ boundAmount: U128 | undefined;
+            /**
+             * The published bound as an order value in USD cents.
+             */ boundUsdCents: /*u64*/ bigint | undefined;
+        }): {
+            readonly tag: SdkError_Tags.CrossChainAmountOutOfRange;
+            readonly inner: Readonly<{
+                reason: string;
+                tooSmall: boolean;
+                boundAmount: U128 | undefined;
+                boundUsdCents: /*u64*/ bigint | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(inner: {
+            reason: string;
+            /**
+             * `true` for a rejection below the minimum, `false` for one above the
+             * maximum or beyond available liquidity.
+             */ tooSmall: boolean;
+            /**
+             * The published bound in the base units of the asset paid in: the
+             * Spark-side asset on a send, the external asset on a receive.
+             */ boundAmount: U128 | undefined;
+            /**
+             * The published bound as an order value in USD cents.
+             */ boundUsdCents: /*u64*/ bigint | undefined;
+        }): {
+            readonly tag: SdkError_Tags.CrossChainAmountOutOfRange;
+            readonly inner: Readonly<{
+                reason: string;
+                tooSmall: boolean;
+                boundAmount: U128 | undefined;
+                boundUsdCents: /*u64*/ bigint | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkError_Tags.CrossChainAmountOutOfRange;
+            readonly inner: Readonly<{
+                reason: string;
+                tooSmall: boolean;
+                boundAmount: U128 | undefined;
+                boundUsdCents: /*u64*/ bigint | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SdkError_Tags.CrossChainAmountOutOfRange;
+            readonly inner: Readonly<{
+                reason: string;
+                tooSmall: boolean;
+                boundAmount: U128 | undefined;
+                boundUsdCents: /*u64*/ bigint | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SdkError_Tags.CrossChainAmountOutOfRange;
+            readonly inner: Readonly<{
+                reason: string;
+                tooSmall: boolean;
+                boundAmount: U128 | undefined;
+                boundUsdCents: /*u64*/ bigint | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<{
+            reason: string;
+            tooSmall: boolean;
+            boundAmount: U128 | undefined;
+            boundUsdCents: /*u64*/ bigint | undefined;
+        }>;
+        isError(error: unknown): error is Error;
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+        stackTraceLimit: number;
+    };
+    CrossChainRouteUnavailable: {
+        new (inner: {
+            reason: string;
+            /**
+             * `true` when the provider expects the route back shortly, so the
+             * same request can succeed later. Otherwise try another route.
+             */ temporary: boolean;
+        }): {
+            readonly tag: SdkError_Tags.CrossChainRouteUnavailable;
+            readonly inner: Readonly<{
+                reason: string;
+                temporary: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        "new"(inner: {
+            reason: string;
+            /**
+             * `true` when the provider expects the route back shortly, so the
+             * same request can succeed later. Otherwise try another route.
+             */ temporary: boolean;
+        }): {
+            readonly tag: SdkError_Tags.CrossChainRouteUnavailable;
+            readonly inner: Readonly<{
+                reason: string;
+                temporary: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkError_Tags.CrossChainRouteUnavailable;
+            readonly inner: Readonly<{
+                reason: string;
+                temporary: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        hasInner(obj: any): obj is {
+            readonly tag: SdkError_Tags.CrossChainRouteUnavailable;
+            readonly inner: Readonly<{
+                reason: string;
+                temporary: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        };
+        getInner(obj: {
+            readonly tag: SdkError_Tags.CrossChainRouteUnavailable;
+            readonly inner: Readonly<{
+                reason: string;
+                temporary: boolean;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkError";
+            name: string;
+            message: string;
+            stack?: string;
+            cause?: unknown;
+        }): Readonly<{
+            reason: string;
+            temporary: boolean;
+        }>;
         isError(error: unknown): error is Error;
         captureStackTrace(targetObject: object, constructorOpt?: Function): void;
         prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
@@ -17611,6 +18387,7 @@ export declare enum SdkEvent_Tags {
     PaymentSucceeded = "PaymentSucceeded",
     PaymentPending = "PaymentPending",
     PaymentFailed = "PaymentFailed",
+    PaymentMetadataUpdated = "PaymentMetadataUpdated",
     AutoOptimization = "AutoOptimization",
     LightningAddressChanged = "LightningAddressChanged",
     NewDeposits = "NewDeposits",
@@ -17832,6 +18609,45 @@ export declare const SdkEvent: Readonly<{
         };
         instanceOf(obj: any): obj is {
             readonly tag: SdkEvent_Tags.PaymentFailed;
+            readonly inner: Readonly<{
+                payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+    };
+    PaymentMetadataUpdated: {
+        new (inner: {
+            payment: Payment;
+        }): {
+            readonly tag: SdkEvent_Tags.PaymentMetadataUpdated;
+            readonly inner: Readonly<{
+                payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+        "new"(inner: {
+            payment: Payment;
+        }): {
+            readonly tag: SdkEvent_Tags.PaymentMetadataUpdated;
+            readonly inner: Readonly<{
+                payment: Payment;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SdkEvent";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SdkEvent_Tags.PaymentMetadataUpdated;
             readonly inner: Readonly<{
                 payment: Payment;
             }>;
@@ -18347,6 +19163,10 @@ export declare const SendPaymentMethod: Readonly<{
              * Asset which service fee is denominated in. Unset means BTC sats.
              */ serviceFeeAsset: string | undefined;
             /**
+             * Decimals of `service_fee_asset`, for formatting `service_fee_amount`.
+             * Unset when the fee is in sats or the provider did not report them.
+             */ serviceFeeAssetDecimals: /*u32*/ number | undefined;
+            /**
              * Sats budget for moving the amount in from the wallet to the provider.
              */ sourceTransferFeeSats: bigint;
             /**
@@ -18370,6 +19190,7 @@ export declare const SendPaymentMethod: Readonly<{
                 feeAmount: U128;
                 serviceFeeAmount: U128;
                 serviceFeeAsset: string | undefined;
+                serviceFeeAssetDecimals: /*u32*/ number | undefined;
                 sourceTransferFeeSats: bigint;
                 feeMode: CrossChainFeeMode;
                 expiresAt: string;
@@ -18416,6 +19237,10 @@ export declare const SendPaymentMethod: Readonly<{
              * Asset which service fee is denominated in. Unset means BTC sats.
              */ serviceFeeAsset: string | undefined;
             /**
+             * Decimals of `service_fee_asset`, for formatting `service_fee_amount`.
+             * Unset when the fee is in sats or the provider did not report them.
+             */ serviceFeeAssetDecimals: /*u32*/ number | undefined;
+            /**
              * Sats budget for moving the amount in from the wallet to the provider.
              */ sourceTransferFeeSats: bigint;
             /**
@@ -18439,6 +19264,7 @@ export declare const SendPaymentMethod: Readonly<{
                 feeAmount: U128;
                 serviceFeeAmount: U128;
                 serviceFeeAsset: string | undefined;
+                serviceFeeAssetDecimals: /*u32*/ number | undefined;
                 sourceTransferFeeSats: bigint;
                 feeMode: CrossChainFeeMode;
                 expiresAt: string;
@@ -18461,6 +19287,7 @@ export declare const SendPaymentMethod: Readonly<{
                 feeAmount: U128;
                 serviceFeeAmount: U128;
                 serviceFeeAsset: string | undefined;
+                serviceFeeAssetDecimals: /*u32*/ number | undefined;
                 sourceTransferFeeSats: bigint;
                 feeMode: CrossChainFeeMode;
                 expiresAt: string;
@@ -21820,7 +22647,8 @@ export declare enum UpdateDepositPayload_Tags {
     ClaimError = "ClaimError",
     Refund = "Refund",
     InstantClaim = "InstantClaim",
-    RefundBroadcastState = "RefundBroadcastState"
+    RefundBroadcastState = "RefundBroadcastState",
+    MaxClaimFee = "MaxClaimFee"
 }
 export declare const UpdateDepositPayload: Readonly<{
     instanceOf: (obj: any) => obj is UpdateDepositPayload;
@@ -21995,8 +22823,160 @@ export declare const UpdateDepositPayload: Readonly<{
             readonly [uniffiTypeNameSymbol]: "UpdateDepositPayload";
         };
     };
+    MaxClaimFee: {
+        new (inner: {
+            maxFee: MaxFee | undefined;
+        }): {
+            readonly tag: UpdateDepositPayload_Tags.MaxClaimFee;
+            readonly inner: Readonly<{
+                maxFee: MaxFee | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateDepositPayload";
+        };
+        "new"(inner: {
+            maxFee: MaxFee | undefined;
+        }): {
+            readonly tag: UpdateDepositPayload_Tags.MaxClaimFee;
+            readonly inner: Readonly<{
+                maxFee: MaxFee | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateDepositPayload";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: UpdateDepositPayload_Tags.MaxClaimFee;
+            readonly inner: Readonly<{
+                maxFee: MaxFee | undefined;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateDepositPayload";
+        };
+    };
 }>;
 export type UpdateDepositPayload = InstanceType<(typeof UpdateDepositPayload)[keyof Omit<typeof UpdateDepositPayload, 'instanceOf'>]>;
+export declare enum UpdateWatchedAddressPayload_Tags {
+    Watch = "Watch",
+    Seen = "Seen",
+    Unwatch = "Unwatch"
+}
+export declare const UpdateWatchedAddressPayload: Readonly<{
+    instanceOf: (obj: any) => obj is UpdateWatchedAddressPayload;
+    Watch: {
+        new (inner: {
+            issuedAt: bigint;
+        }): {
+            readonly tag: UpdateWatchedAddressPayload_Tags.Watch;
+            readonly inner: Readonly<{
+                issuedAt: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateWatchedAddressPayload";
+        };
+        "new"(inner: {
+            issuedAt: bigint;
+        }): {
+            readonly tag: UpdateWatchedAddressPayload_Tags.Watch;
+            readonly inner: Readonly<{
+                issuedAt: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateWatchedAddressPayload";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: UpdateWatchedAddressPayload_Tags.Watch;
+            readonly inner: Readonly<{
+                issuedAt: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateWatchedAddressPayload";
+        };
+    };
+    Seen: {
+        new (): {
+            readonly tag: UpdateWatchedAddressPayload_Tags.Seen;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateWatchedAddressPayload";
+        };
+        "new"(): {
+            readonly tag: UpdateWatchedAddressPayload_Tags.Seen;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateWatchedAddressPayload";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: UpdateWatchedAddressPayload_Tags.Seen;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateWatchedAddressPayload";
+        };
+    };
+    Unwatch: {
+        new (inner: {
+            issuedAt: bigint;
+        }): {
+            readonly tag: UpdateWatchedAddressPayload_Tags.Unwatch;
+            readonly inner: Readonly<{
+                issuedAt: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateWatchedAddressPayload";
+        };
+        "new"(inner: {
+            issuedAt: bigint;
+        }): {
+            readonly tag: UpdateWatchedAddressPayload_Tags.Unwatch;
+            readonly inner: Readonly<{
+                issuedAt: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateWatchedAddressPayload";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: UpdateWatchedAddressPayload_Tags.Unwatch;
+            readonly inner: Readonly<{
+                issuedAt: bigint;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "UpdateWatchedAddressPayload";
+        };
+    };
+}>;
+export type UpdateWatchedAddressPayload = InstanceType<(typeof UpdateWatchedAddressPayload)[keyof Omit<typeof UpdateWatchedAddressPayload, 'instanceOf'>]>;
 export declare enum WebhookEventType_Tags {
     LightningReceiveFinished = "LightningReceiveFinished",
     LightningSendFinished = "LightningSendFinished",
@@ -22748,7 +23728,13 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<SignMessageResponse>;
     /**
-     * Synchronizes the wallet with the Spark network
+     * Synchronizes the wallet with the Spark network.
+     *
+     * Also collects the data a unilateral exit needs for any leaf still missing
+     * it, and waits for that before returning. This happens regardless of
+     * [`exit_chain_auto_fetch_enabled`](crate::Config::exit_chain_auto_fetch_enabled),
+     * which governs only the automatic collection: syncing is how to run one at
+     * a moment of your choosing with that turned off.
      */
     syncWallet(request: SyncWalletRequest, asyncOpts_?: {
         signal: AbortSignal;
@@ -23325,7 +24311,13 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<SignMessageResponse>;
     /**
-     * Synchronizes the wallet with the Spark network
+     * Synchronizes the wallet with the Spark network.
+     *
+     * Also collects the data a unilateral exit needs for any leaf still missing
+     * it, and waits for that before returning. This happens regardless of
+     * [`exit_chain_auto_fetch_enabled`](crate::Config::exit_chain_auto_fetch_enabled),
+     * which governs only the automatic collection: syncing is how to run one at
+     * a moment of your choosing with that turned off.
      */
     syncWallet(request: SyncWalletRequest, asyncOpts_?: {
         signal: AbortSignal;
@@ -23811,7 +24803,7 @@ export interface ExternalSparkSigner {
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
-     * The signing public key for a tree leaf.
+     * The public key of the leaf signing key derived from `leaf_id`.
      */
     getPublicKeyForLeaf(leafId: ExternalTreeNodeId, asyncOpts_?: {
         signal: AbortSignal;
@@ -23843,7 +24835,8 @@ export interface ExternalSparkSigner {
     }): Promise<EcdsaSignatureBytes>;
     /**
      * Schnorr-sign `sighash` to spend a tree leaf's P2TR refund output as a
-     * BIP341 key-path spend (empty script tree).
+     * BIP341 key-path spend (empty script tree), with the leaf signing key
+     * derived from `leaf_id`.
      */
     signLeafRefundSpend(leafId: ExternalTreeNodeId, sighash: ArrayBuffer, asyncOpts_?: {
         signal: AbortSignal;
@@ -23924,7 +24917,7 @@ export declare class ExternalSparkSignerImpl extends UniffiAbstractObject implem
         signal: AbortSignal;
     }): Promise<PublicKeyBytes>;
     /**
-     * The signing public key for a tree leaf.
+     * The public key of the leaf signing key derived from `leaf_id`.
      */
     getPublicKeyForLeaf(leafId: ExternalTreeNodeId, asyncOpts_?: {
         signal: AbortSignal;
@@ -23956,7 +24949,8 @@ export declare class ExternalSparkSignerImpl extends UniffiAbstractObject implem
     }): Promise<EcdsaSignatureBytes>;
     /**
      * Schnorr-sign `sighash` to spend a tree leaf's P2TR refund output as a
-     * BIP341 key-path spend (empty script tree).
+     * BIP341 key-path spend (empty script tree), with the leaf signing key
+     * derived from `leaf_id`.
      */
     signLeafRefundSpend(leafId: ExternalTreeNodeId, sighash: ArrayBuffer, asyncOpts_?: {
         signal: AbortSignal;
@@ -24625,7 +25619,7 @@ export interface SdkBuilderInterface {
      * Sets the account number for key derivation. All wallet keys derive from
      * the seed at `m/8797555'/<account number>'`, so each account number
      * yields an independent wallet from the same seed. Defaults to 0 on
-     * Regtest and 1 on all other networks when unset.
+     * Regtest and Signet, and 1 on Mainnet when unset.
      * Arguments:
      * - `account_number`: The account number in the derivation path.
      */
@@ -24776,7 +25770,7 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
      * Sets the account number for key derivation. All wallet keys derive from
      * the seed at `m/8797555'/<account number>'`, so each account number
      * yields an independent wallet from the same seed. Defaults to 0 on
-     * Regtest and 1 on all other networks when unset.
+     * Regtest and Signet, and 1 on Mainnet when unset.
      * Arguments:
      * - `account_number`: The account number in the derivation path.
      */
@@ -25118,6 +26112,20 @@ export interface Storage {
     updateDeposit(txid: string, vout: number, payload: UpdateDepositPayload, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
+    /**
+     * Lists the deposit addresses currently being watched for unconfirmed
+     * deposits, most recently issued first.
+     */
+    listWatchedDepositAddresses(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<WatchedDepositAddress>>;
+    /**
+     * Applies one change to a watched deposit address. `Watch` inserts or
+     * restarts it, `Seen` marks it, and `Unwatch` removes it.
+     */
+    updateWatchedDepositAddress(address: string, payload: UpdateWatchedAddressPayload, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
     setLnurlMetadata(metadata: Array<SetLnurlMetadataItem>, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
@@ -25367,6 +26375,20 @@ export declare class StorageImpl extends UniffiAbstractObject implements Storage
      * Success or a `StorageError`
      */
     updateDeposit(txid: string, vout: number, payload: UpdateDepositPayload, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<void>;
+    /**
+     * Lists the deposit addresses currently being watched for unconfirmed
+     * deposits, most recently issued first.
+     */
+    listWatchedDepositAddresses(asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<Array<WatchedDepositAddress>>;
+    /**
+     * Applies one change to a watched deposit address. `Watch` inserts or
+     * restarts it, `Seen` marks it, and `Unwatch` removes it.
+     */
+    updateWatchedDepositAddress(address: string, payload: UpdateWatchedAddressPayload, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<void>;
     setLnurlMetadata(metadata: Array<SetLnurlMetadataItem>, asyncOpts_?: {
@@ -26024,6 +27046,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): CheckUnilateralExitResponse;
             lower(value: CheckUnilateralExitResponse): UniffiByteArray;
         };
+        FfiConverterTypeClaimDeferredReason: {
+            read(from: RustBuffer): ClaimDeferredReason;
+            write(value: ClaimDeferredReason, into: RustBuffer): void;
+            allocationSize(value: ClaimDeferredReason): number;
+            lift(value: UniffiByteArray): ClaimDeferredReason;
+            lower(value: ClaimDeferredReason): UniffiByteArray;
+        };
+        FfiConverterTypeClaimDepositOutcome: {
+            read(from: RustBuffer): ClaimDepositOutcome;
+            write(value: ClaimDepositOutcome, into: RustBuffer): void;
+            allocationSize(value: ClaimDepositOutcome): number;
+            lift(value: UniffiByteArray): ClaimDepositOutcome;
+            lower(value: ClaimDepositOutcome): UniffiByteArray;
+        };
         FfiConverterTypeClaimDepositQuote: {
             read(from: RustBuffer): ClaimDepositQuote;
             write(value: ClaimDepositQuote, into: RustBuffer): void;
@@ -26249,6 +27285,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): Credentials;
             lower(value: Credentials): UniffiByteArray;
         };
+        FfiConverterTypeCrossChainAcceptedAsset: {
+            read(from: RustBuffer): CrossChainAcceptedAsset;
+            write(value: CrossChainAcceptedAsset, into: RustBuffer): void;
+            allocationSize(value: CrossChainAcceptedAsset): number;
+            lift(value: UniffiByteArray): CrossChainAcceptedAsset;
+            lower(value: CrossChainAcceptedAsset): UniffiByteArray;
+        };
         FfiConverterTypeCrossChainAddressDetails: {
             read(from: RustBuffer): CrossChainAddressDetails;
             write(value: CrossChainAddressDetails, into: RustBuffer): void;
@@ -26304,6 +27347,13 @@ declare const _default: Readonly<{
             allocationSize(value: CrossChainRouteFilter): number;
             lift(value: UniffiByteArray): CrossChainRouteFilter;
             lower(value: CrossChainRouteFilter): UniffiByteArray;
+        };
+        FfiConverterTypeCrossChainRouteLimits: {
+            read(from: RustBuffer): CrossChainRouteLimits;
+            write(value: CrossChainRouteLimits, into: RustBuffer): void;
+            allocationSize(value: CrossChainRouteLimits): number;
+            lift(value: UniffiByteArray): CrossChainRouteLimits;
+            lower(value: CrossChainRouteLimits): UniffiByteArray;
         };
         FfiConverterTypeCrossChainRoutePair: {
             read(from: RustBuffer): CrossChainRoutePair;
@@ -26487,6 +27537,13 @@ declare const _default: Readonly<{
             allocationSize(value: ExternalInputParser): number;
             lift(value: UniffiByteArray): ExternalInputParser;
             lower(value: ExternalInputParser): UniffiByteArray;
+        };
+        FfiConverterTypeExternalLeafSigningKey: {
+            read(from: RustBuffer): ExternalLeafSigningKey;
+            write(value: ExternalLeafSigningKey, into: RustBuffer): void;
+            allocationSize(value: ExternalLeafSigningKey): number;
+            lift(value: UniffiByteArray): ExternalLeafSigningKey;
+            lower(value: ExternalLeafSigningKey): UniffiByteArray;
         };
         FfiConverterTypeExternalNewLeafKey: {
             read(from: RustBuffer): ExternalNewLeafKey;
@@ -28079,6 +29136,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): UpdateUserSettingsRequest;
             lower(value: UpdateUserSettingsRequest): UniffiByteArray;
         };
+        FfiConverterTypeUpdateWatchedAddressPayload: {
+            read(from: RustBuffer): UpdateWatchedAddressPayload;
+            write(value: UpdateWatchedAddressPayload, into: RustBuffer): void;
+            allocationSize(value: UpdateWatchedAddressPayload): number;
+            lift(value: UniffiByteArray): UpdateWatchedAddressPayload;
+            lower(value: UpdateWatchedAddressPayload): UniffiByteArray;
+        };
         FfiConverterTypeUrlSuccessActionData: {
             read(from: RustBuffer): UrlSuccessActionData;
             write(value: UrlSuccessActionData, into: RustBuffer): void;
@@ -28113,6 +29177,13 @@ declare const _default: Readonly<{
             allocationSize(value: WalletSetup): number;
             lift(value: UniffiByteArray): WalletSetup;
             lower(value: WalletSetup): UniffiByteArray;
+        };
+        FfiConverterTypeWatchedDepositAddress: {
+            read(from: RustBuffer): WatchedDepositAddress;
+            write(value: WatchedDepositAddress, into: RustBuffer): void;
+            allocationSize(value: WatchedDepositAddress): number;
+            lift(value: UniffiByteArray): WatchedDepositAddress;
+            lower(value: WatchedDepositAddress): UniffiByteArray;
         };
         FfiConverterTypeWebhook: {
             read(from: RustBuffer): Webhook;
