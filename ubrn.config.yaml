@@ -1,6 +1,6 @@
 rust:
   repo: https://github.com/breez/spark-sdk
-  rev: 2c140a5d721f04d21c5ac334fecc3efe7c069943
+  rev: 1a8f9c3d83f0aabf98319f39120423d2ff0d142d
   manifestPath: crates/breez-sdk/bindings/Cargo.toml
 bindings:
   cpp: cpp/generated
@@ -10,6 +10,8 @@ android:
   # Disable server-side storage features (postgres, mysql) to reduce binary size (not needed for mobile)
   cargoExtras:
     - --no-default-features
+    - --features
+    - secp-lowmemory,release-max-level-debug
 ios:
   targets:
     - aarch64-apple-ios
@@ -19,6 +21,8 @@ ios:
   # Disable server-side storage features (postgres, mysql) to reduce binary size (not needed for mobile)
   cargoExtras:
     - --no-default-features
+    - --features
+    - secp-lowmemory,release-max-level-debug
 turboModule:
   cpp: cpp
   ts: src

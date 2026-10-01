@@ -242,6 +242,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_fn_func_init_logging(logDir: Uint8Array, appLogger: Uint8Array, logFilter: Uint8Array, uniffi_out_err: UniffiRustCallStatus): void;
     ubrn_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(url: Uint8Array, network: Uint8Array, apiType: Uint8Array, credentials: Uint8Array, request: Uint8Array): bigint;
     ubrn_uniffi_breez_sdk_spark_fn_func_new_shared_sdk_context(config: Uint8Array): bigint;
+    ubrn_uniffi_breez_sdk_spark_fn_func_parse_spark_config(json: Uint8Array, uniffi_out_err: UniffiRustCallStatus): Uint8Array;
     ubrn_uniffi_breez_sdk_spark_fn_func_single_key_cpfp_signer(secretKeyBytes: Uint8Array, uniffi_out_err: UniffiRustCallStatus): bigint;
     ubrn_ffi_breez_sdk_spark_rust_future_poll_u8(handle: bigint, callback: UniffiRustFutureContinuationCallback, callbackData: bigint): void;
     ubrn_ffi_breez_sdk_spark_rust_future_cancel_u8(handle: bigint): void;
@@ -310,6 +311,7 @@ interface NativeModuleInterface {
     ubrn_uniffi_breez_sdk_spark_checksum_func_init_logging(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_func_new_rest_chain_service(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_func_new_shared_sdk_context(): number;
+    ubrn_uniffi_breez_sdk_spark_checksum_func_parse_spark_config(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_func_single_key_cpfp_signer(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_utxos(): number;
     ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_txos(): number;
