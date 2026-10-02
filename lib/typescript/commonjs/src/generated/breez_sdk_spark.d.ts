@@ -189,12 +189,6 @@ export declare function newSharedSdkContext(config: SdkContextConfig, asyncOpts_
     signal: AbortSignal;
 }): Promise<SdkContextInterface>;
 /**
- * Reads a [`SparkConfig`] from JSON, for a deployment that publishes its
- * operators, service provider and certificates as a file. Set it on
- * [`Config::spark_config`] to connect a wallet to that deployment.
- */
-export declare function parseSparkConfig(json: string): SparkConfig;
-/**
  * A CPFP signer backed by a single private key. Signs P2WPKH and P2TR key-path
  * inputs only; taproot script-path spends are not supported.
  */
@@ -11581,7 +11575,6 @@ export declare enum DeliveryMethod {
 export declare enum DepositClaimError_Tags {
     MaxDepositClaimFeeExceeded = "MaxDepositClaimFeeExceeded",
     MissingUtxo = "MissingUtxo",
-    DepositTooSmall = "DepositTooSmall",
     Generic = "Generic"
 }
 export declare const DepositClaimError: Readonly<{
@@ -11678,50 +11671,6 @@ export declare const DepositClaimError: Readonly<{
         };
         instanceOf(obj: any): obj is {
             readonly tag: DepositClaimError_Tags.MissingUtxo;
-            readonly inner: Readonly<{
-                tx: string;
-                vout: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "DepositClaimError";
-        };
-    };
-    DepositTooSmall: {
-        new (inner: {
-            tx: string;
-            vout: number;
-        }): {
-            readonly tag: DepositClaimError_Tags.DepositTooSmall;
-            readonly inner: Readonly<{
-                tx: string;
-                vout: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "DepositClaimError";
-        };
-        "new"(inner: {
-            tx: string;
-            vout: number;
-        }): {
-            readonly tag: DepositClaimError_Tags.DepositTooSmall;
-            readonly inner: Readonly<{
-                tx: string;
-                vout: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "DepositClaimError";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: DepositClaimError_Tags.DepositTooSmall;
             readonly inner: Readonly<{
                 tx: string;
                 vout: number;
@@ -16853,7 +16802,6 @@ export declare enum SdkError_Tags {
     ChainServiceError = "ChainServiceError",
     MaxDepositClaimFeeExceeded = "MaxDepositClaimFeeExceeded",
     MissingUtxo = "MissingUtxo",
-    DepositTooSmall = "DepositTooSmall",
     DepositClaimInProgress = "DepositClaimInProgress",
     RefundReplacementFeeTooLow = "RefundReplacementFeeTooLow",
     LnurlError = "LnurlError",
@@ -17829,101 +17777,6 @@ export declare const SdkError: Readonly<{
         prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
         stackTraceLimit: number;
     };
-    DepositTooSmall: {
-        new (inner: {
-            tx: string;
-            vout: number;
-        }): {
-            readonly tag: SdkError_Tags.DepositTooSmall;
-            readonly inner: Readonly<{
-                tx: string;
-                vout: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        "new"(inner: {
-            tx: string;
-            vout: number;
-        }): {
-            readonly tag: SdkError_Tags.DepositTooSmall;
-            readonly inner: Readonly<{
-                tx: string;
-                vout: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: SdkError_Tags.DepositTooSmall;
-            readonly inner: Readonly<{
-                tx: string;
-                vout: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        hasInner(obj: any): obj is {
-            readonly tag: SdkError_Tags.DepositTooSmall;
-            readonly inner: Readonly<{
-                tx: string;
-                vout: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        };
-        getInner(obj: {
-            readonly tag: SdkError_Tags.DepositTooSmall;
-            readonly inner: Readonly<{
-                tx: string;
-                vout: number;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkError";
-            name: string;
-            message: string;
-            stack?: string;
-            cause?: unknown;
-        }): Readonly<{
-            tx: string;
-            vout: number;
-        }>;
-        isError(error: unknown): error is Error;
-        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
-        prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
-        stackTraceLimit: number;
-    };
     DepositClaimInProgress: {
         new (inner: {
             tx: string;
@@ -18538,8 +18391,7 @@ export declare enum SdkEvent_Tags {
     AutoOptimization = "AutoOptimization",
     LightningAddressChanged = "LightningAddressChanged",
     NewDeposits = "NewDeposits",
-    UnilateralExitStateChanged = "UnilateralExitStateChanged",
-    StableBalanceConversionFailed = "StableBalanceConversionFailed"
+    UnilateralExitStateChanged = "UnilateralExitStateChanged"
 }
 /**
  * Events emitted by the SDK
@@ -18942,55 +18794,6 @@ export declare const SdkEvent: Readonly<{
         };
         instanceOf(obj: any): obj is {
             readonly tag: SdkEvent_Tags.UnilateralExitStateChanged;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkEvent";
-        };
-    };
-    StableBalanceConversionFailed: {
-        new (inner: {
-            conversion: StableBalanceConversionKind;
-            error: string;
-            retryInSecs: /*u64*/ bigint | undefined;
-        }): {
-            readonly tag: SdkEvent_Tags.StableBalanceConversionFailed;
-            readonly inner: Readonly<{
-                conversion: StableBalanceConversionKind;
-                error: string;
-                retryInSecs: /*u64*/ bigint | undefined;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkEvent";
-        };
-        "new"(inner: {
-            conversion: StableBalanceConversionKind;
-            error: string;
-            retryInSecs: /*u64*/ bigint | undefined;
-        }): {
-            readonly tag: SdkEvent_Tags.StableBalanceConversionFailed;
-            readonly inner: Readonly<{
-                conversion: StableBalanceConversionKind;
-                error: string;
-                retryInSecs: /*u64*/ bigint | undefined;
-            }>;
-            /**
-             * @private
-             * This field is private and should not be used, use `tag` instead.
-             */
-            readonly [uniffiTypeNameSymbol]: "SdkEvent";
-        };
-        instanceOf(obj: any): obj is {
-            readonly tag: SdkEvent_Tags.StableBalanceConversionFailed;
-            readonly inner: Readonly<{
-                conversion: StableBalanceConversionKind;
-                error: string;
-                retryInSecs: /*u64*/ bigint | undefined;
-            }>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -21393,24 +21196,6 @@ export declare const StableBalanceActiveLabel: Readonly<{
  * Specifies how to update the active stable balance token.
  */
 export type StableBalanceActiveLabel = InstanceType<(typeof StableBalanceActiveLabel)[keyof Omit<typeof StableBalanceActiveLabel, 'instanceOf'>]>;
-/**
- * Which Stable Balance conversion an [`SdkEvent::StableBalanceConversionFailed`]
- * refers to.
- */
-export declare enum StableBalanceConversionKind {
-    /**
-     * A single received payment being converted to the stable token.
-     */
-    PerReceive = 0,
-    /**
-     * Bitcoin above the threshold being swept into the stable token.
-     */
-    AutoConvert = 1,
-    /**
-     * The stable token being converted back to bitcoin after deactivation.
-     */
-    Deactivation = 2
-}
 export declare enum StorageError_Tags {
     Connection = "Connection",
     Implementation = "Implementation",
@@ -23604,9 +23389,6 @@ export interface BreezSdkInterface {
      *
      * The early quote is requested from the provider on each call rather than read
      * from cache, so call this when a user is deciding, not on a timer.
-     *
-     * Fails with `DepositTooSmall` for a deposit worth too little to claim at the
-     * current fees.
      */
     fetchClaimDepositQuote(request: FetchClaimDepositQuoteRequest, asyncOpts_?: {
         signal: AbortSignal;
@@ -24190,9 +23972,6 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
      *
      * The early quote is requested from the provider on each call rather than read
      * from cache, so call this when a user is deciding, not on a timer.
-     *
-     * Fails with `DepositTooSmall` for a deposit worth too little to claim at the
-     * current fees.
      */
     fetchClaimDepositQuote(request: FetchClaimDepositQuoteRequest, asyncOpts_?: {
         signal: AbortSignal;
@@ -25885,8 +25664,7 @@ export interface SdkBuilderInterface {
         signal: AbortSignal;
     }): Promise<void>;
     /**
-     * Adds a REST chain service backend to be used by the SDK. Call it more
-     * than once to add fallbacks, tried in the order they were added.
+     * Sets the REST chain service to be used by the SDK.
      * Arguments:
      * - `url`: The base URL of the REST API.
      * - `api_type`: The API type to be used.
@@ -26037,8 +25815,7 @@ export declare class SdkBuilder extends UniffiAbstractObject implements SdkBuild
         signal: AbortSignal;
     }): Promise<void>;
     /**
-     * Adds a REST chain service backend to be used by the SDK. Call it more
-     * than once to add fallbacks, tried in the order they were added.
+     * Sets the REST chain service to be used by the SDK.
      * Arguments:
      * - `url`: The base URL of the REST API.
      * - `api_type`: The API type to be used.
@@ -29103,13 +28880,6 @@ declare const _default: Readonly<{
             allocationSize(value: StableBalanceConfig): number;
             lift(value: UniffiByteArray): StableBalanceConfig;
             lower(value: StableBalanceConfig): UniffiByteArray;
-        };
-        FfiConverterTypeStableBalanceConversionKind: {
-            read(from: RustBuffer): StableBalanceConversionKind;
-            write(value: StableBalanceConversionKind, into: RustBuffer): void;
-            allocationSize(value: StableBalanceConversionKind): number;
-            lift(value: UniffiByteArray): StableBalanceConversionKind;
-            lower(value: StableBalanceConversionKind): UniffiByteArray;
         };
         FfiConverterTypeStableBalanceToken: {
             read(from: RustBuffer): StableBalanceToken;

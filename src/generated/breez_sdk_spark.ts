@@ -694,27 +694,6 @@ export async function newSharedSdkContext(
   }
 }
 /**
- * Reads a [`SparkConfig`] from JSON, for a deployment that publishes its
- * operators, service provider and certificates as a file. Set it on
- * [`Config::spark_config`] to connect a wallet to that deployment.
- */
-export function parseSparkConfig(json: string): SparkConfig /*throws*/ {
-  return FfiConverterTypeSparkConfig.lift(
-    uniffiCaller.rustCallWithError(
-      /*liftError:*/ FfiConverterTypeSdkError.lift.bind(
-        FfiConverterTypeSdkError
-      ),
-      /*caller:*/ (callStatus) => {
-        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_parse_spark_config(
-          FfiConverterString.lower(json),
-          callStatus
-        );
-      },
-      /*liftString:*/ FfiConverterString.lift
-    )
-  );
-}
-/**
  * A CPFP signer backed by a single private key. Signs P2WPKH and P2TR key-path
  * inputs only; taproot script-path spends are not supported.
  */
@@ -24313,7 +24292,6 @@ const FfiConverterTypeDeliveryMethod = (() => {
 export enum DepositClaimError_Tags {
   MaxDepositClaimFeeExceeded = 'MaxDepositClaimFeeExceeded',
   MissingUtxo = 'MissingUtxo',
-  DepositTooSmall = 'DepositTooSmall',
   Generic = 'Generic',
 }
 export const DepositClaimError = (() => {
@@ -24398,41 +24376,6 @@ export const DepositClaimError = (() => {
     }
   }
 
-  type DepositTooSmall__interface = {
-    tag: DepositClaimError_Tags.DepositTooSmall;
-    inner: Readonly<{ tx: string; vout: /*u32*/ number }>;
-  };
-
-  /**
-   * The deposit is worth too little to claim: after the claim fee, what would
-   * be credited is below the dust limit. A drop in on-chain fees can make it
-   * claimable.
-   */
-  class DepositTooSmall_
-    extends UniffiEnum
-    implements DepositTooSmall__interface
-  {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'DepositClaimError';
-    readonly tag = DepositClaimError_Tags.DepositTooSmall;
-    readonly inner: Readonly<{ tx: string; vout: /*u32*/ number }>;
-    constructor(inner: { tx: string; vout: /*u32*/ number }) {
-      super('DepositClaimError', 'DepositTooSmall');
-      this.inner = Object.freeze(inner);
-    }
-
-    static new(inner: { tx: string; vout: /*u32*/ number }): DepositTooSmall_ {
-      return new DepositTooSmall_(inner);
-    }
-
-    static instanceOf(obj: any): obj is DepositTooSmall_ {
-      return obj.tag === DepositClaimError_Tags.DepositTooSmall;
-    }
-  }
-
   type Generic__interface = {
     tag: DepositClaimError_Tags.Generic;
     inner: Readonly<{ message: string }>;
@@ -24468,7 +24411,6 @@ export const DepositClaimError = (() => {
     instanceOf,
     MaxDepositClaimFeeExceeded: MaxDepositClaimFeeExceeded_,
     MissingUtxo: MissingUtxo_,
-    DepositTooSmall: DepositTooSmall_,
     Generic: Generic_,
   });
 })();
@@ -24498,11 +24440,6 @@ const FfiConverterTypeDepositClaimError = (() => {
             vout: FfiConverterUInt32.read(from),
           });
         case 3:
-          return new DepositClaimError.DepositTooSmall({
-            tx: FfiConverterString.read(from),
-            vout: FfiConverterUInt32.read(from),
-          });
-        case 4:
           return new DepositClaimError.Generic({
             message: FfiConverterString.read(from),
           });
@@ -24529,15 +24466,8 @@ const FfiConverterTypeDepositClaimError = (() => {
           FfiConverterUInt32.write(inner.vout, into);
           return;
         }
-        case DepositClaimError_Tags.DepositTooSmall: {
-          ordinalConverter.write(3, into);
-          const inner = value.inner;
-          FfiConverterString.write(inner.tx, into);
-          FfiConverterUInt32.write(inner.vout, into);
-          return;
-        }
         case DepositClaimError_Tags.Generic: {
-          ordinalConverter.write(4, into);
+          ordinalConverter.write(3, into);
           const inner = value.inner;
           FfiConverterString.write(inner.message, into);
           return;
@@ -24568,16 +24498,9 @@ const FfiConverterTypeDepositClaimError = (() => {
           size += FfiConverterUInt32.allocationSize(inner.vout);
           return size;
         }
-        case DepositClaimError_Tags.DepositTooSmall: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(3);
-          size += FfiConverterString.allocationSize(inner.tx);
-          size += FfiConverterUInt32.allocationSize(inner.vout);
-          return size;
-        }
         case DepositClaimError_Tags.Generic: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(4);
+          let size = ordinalConverter.allocationSize(3);
           size += FfiConverterString.allocationSize(inner.message);
           return size;
         }
@@ -31757,7 +31680,6 @@ export enum SdkError_Tags {
   ChainServiceError = 'ChainServiceError',
   MaxDepositClaimFeeExceeded = 'MaxDepositClaimFeeExceeded',
   MissingUtxo = 'MissingUtxo',
-  DepositTooSmall = 'DepositTooSmall',
   DepositClaimInProgress = 'DepositClaimInProgress',
   RefundReplacementFeeTooLow = 'RefundReplacementFeeTooLow',
   LnurlError = 'LnurlError',
@@ -32301,51 +32223,6 @@ export const SdkError = (() => {
     }
   }
 
-  type DepositTooSmall__interface = {
-    tag: SdkError_Tags.DepositTooSmall;
-    inner: Readonly<{ tx: string; vout: /*u32*/ number }>;
-  };
-
-  /**
-   * The deposit is worth too little to claim: after the claim fee, what would
-   * be credited is below the dust limit. A drop in on-chain fees can make it
-   * claimable.
-   */
-  class DepositTooSmall_
-    extends UniffiError
-    implements DepositTooSmall__interface
-  {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'SdkError';
-    readonly tag = SdkError_Tags.DepositTooSmall;
-    readonly inner: Readonly<{ tx: string; vout: /*u32*/ number }>;
-    constructor(inner: { tx: string; vout: /*u32*/ number }) {
-      super('SdkError', 'DepositTooSmall');
-      this.inner = Object.freeze(inner);
-    }
-
-    static new(inner: { tx: string; vout: /*u32*/ number }): DepositTooSmall_ {
-      return new DepositTooSmall_(inner);
-    }
-
-    static instanceOf(obj: any): obj is DepositTooSmall_ {
-      return obj.tag === SdkError_Tags.DepositTooSmall;
-    }
-
-    static hasInner(obj: any): obj is DepositTooSmall_ {
-      return DepositTooSmall_.instanceOf(obj);
-    }
-
-    static getInner(
-      obj: DepositTooSmall_
-    ): Readonly<{ tx: string; vout: /*u32*/ number }> {
-      return obj.inner;
-    }
-  }
-
   type DepositClaimInProgress__interface = {
     tag: SdkError_Tags.DepositClaimInProgress;
     inner: Readonly<{ tx: string; vout: /*u32*/ number }>;
@@ -32686,7 +32563,6 @@ export const SdkError = (() => {
     ChainServiceError: ChainServiceError_,
     MaxDepositClaimFeeExceeded: MaxDepositClaimFeeExceeded_,
     MissingUtxo: MissingUtxo_,
-    DepositTooSmall: DepositTooSmall_,
     DepositClaimInProgress: DepositClaimInProgress_,
     RefundReplacementFeeTooLow: RefundReplacementFeeTooLow_,
     LnurlError: LnurlError_,
@@ -32755,33 +32631,28 @@ const FfiConverterTypeSdkError = (() => {
             vout: FfiConverterUInt32.read(from),
           });
         case 12:
-          return new SdkError.DepositTooSmall({
-            tx: FfiConverterString.read(from),
-            vout: FfiConverterUInt32.read(from),
-          });
-        case 13:
           return new SdkError.DepositClaimInProgress({
             tx: FfiConverterString.read(from),
             vout: FfiConverterUInt32.read(from),
           });
-        case 14:
+        case 13:
           return new SdkError.RefundReplacementFeeTooLow({
             pendingFeeSats: FfiConverterUInt64.read(from),
             requiredFeeSats: FfiConverterUInt64.read(from),
           });
-        case 15:
+        case 14:
           return new SdkError.LnurlError(FfiConverterString.read(from));
-        case 16:
+        case 15:
           return new SdkError.Signer(FfiConverterString.read(from));
-        case 17:
+        case 16:
           return new SdkError.OptimizationAlreadyRunning();
-        case 18:
+        case 17:
           return new SdkError.OptimizationCancelled();
-        case 19:
+        case 18:
           return new SdkError.InsufficientCpfpFunds({
             requiredSat: FfiConverterUInt64.read(from),
           });
-        case 20:
+        case 19:
           return new SdkError.Generic(FfiConverterString.read(from));
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -32864,55 +32735,48 @@ const FfiConverterTypeSdkError = (() => {
           FfiConverterUInt32.write(inner.vout, into);
           return;
         }
-        case SdkError_Tags.DepositTooSmall: {
+        case SdkError_Tags.DepositClaimInProgress: {
           ordinalConverter.write(12, into);
           const inner = value.inner;
           FfiConverterString.write(inner.tx, into);
           FfiConverterUInt32.write(inner.vout, into);
           return;
         }
-        case SdkError_Tags.DepositClaimInProgress: {
-          ordinalConverter.write(13, into);
-          const inner = value.inner;
-          FfiConverterString.write(inner.tx, into);
-          FfiConverterUInt32.write(inner.vout, into);
-          return;
-        }
         case SdkError_Tags.RefundReplacementFeeTooLow: {
-          ordinalConverter.write(14, into);
+          ordinalConverter.write(13, into);
           const inner = value.inner;
           FfiConverterUInt64.write(inner.pendingFeeSats, into);
           FfiConverterUInt64.write(inner.requiredFeeSats, into);
           return;
         }
         case SdkError_Tags.LnurlError: {
-          ordinalConverter.write(15, into);
+          ordinalConverter.write(14, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
         }
         case SdkError_Tags.Signer: {
-          ordinalConverter.write(16, into);
+          ordinalConverter.write(15, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
         }
         case SdkError_Tags.OptimizationAlreadyRunning: {
-          ordinalConverter.write(17, into);
+          ordinalConverter.write(16, into);
           return;
         }
         case SdkError_Tags.OptimizationCancelled: {
-          ordinalConverter.write(18, into);
+          ordinalConverter.write(17, into);
           return;
         }
         case SdkError_Tags.InsufficientCpfpFunds: {
-          ordinalConverter.write(19, into);
+          ordinalConverter.write(18, into);
           const inner = value.inner;
           FfiConverterUInt64.write(inner.requiredSat, into);
           return;
         }
         case SdkError_Tags.Generic: {
-          ordinalConverter.write(20, into);
+          ordinalConverter.write(19, into);
           const inner = value.inner;
           FfiConverterString.write(inner[0], into);
           return;
@@ -33007,54 +32871,47 @@ const FfiConverterTypeSdkError = (() => {
           size += FfiConverterUInt32.allocationSize(inner.vout);
           return size;
         }
-        case SdkError_Tags.DepositTooSmall: {
+        case SdkError_Tags.DepositClaimInProgress: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(12);
           size += FfiConverterString.allocationSize(inner.tx);
           size += FfiConverterUInt32.allocationSize(inner.vout);
           return size;
         }
-        case SdkError_Tags.DepositClaimInProgress: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(13);
-          size += FfiConverterString.allocationSize(inner.tx);
-          size += FfiConverterUInt32.allocationSize(inner.vout);
-          return size;
-        }
         case SdkError_Tags.RefundReplacementFeeTooLow: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(14);
+          let size = ordinalConverter.allocationSize(13);
           size += FfiConverterUInt64.allocationSize(inner.pendingFeeSats);
           size += FfiConverterUInt64.allocationSize(inner.requiredFeeSats);
           return size;
         }
         case SdkError_Tags.LnurlError: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(15);
+          let size = ordinalConverter.allocationSize(14);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
         case SdkError_Tags.Signer: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(16);
+          let size = ordinalConverter.allocationSize(15);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
         case SdkError_Tags.OptimizationAlreadyRunning: {
-          return ordinalConverter.allocationSize(17);
+          return ordinalConverter.allocationSize(16);
         }
         case SdkError_Tags.OptimizationCancelled: {
-          return ordinalConverter.allocationSize(18);
+          return ordinalConverter.allocationSize(17);
         }
         case SdkError_Tags.InsufficientCpfpFunds: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(19);
+          let size = ordinalConverter.allocationSize(18);
           size += FfiConverterUInt64.allocationSize(inner.requiredSat);
           return size;
         }
         case SdkError_Tags.Generic: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(20);
+          let size = ordinalConverter.allocationSize(19);
           size += FfiConverterString.allocationSize(inner[0]);
           return size;
         }
@@ -33079,7 +32936,6 @@ export enum SdkEvent_Tags {
   LightningAddressChanged = 'LightningAddressChanged',
   NewDeposits = 'NewDeposits',
   UnilateralExitStateChanged = 'UnilateralExitStateChanged',
-  StableBalanceConversionFailed = 'StableBalanceConversionFailed',
 }
 /**
  * Events emitted by the SDK
@@ -33457,60 +33313,6 @@ export const SdkEvent = (() => {
     }
   }
 
-  type StableBalanceConversionFailed__interface = {
-    tag: SdkEvent_Tags.StableBalanceConversionFailed;
-    inner: Readonly<{
-      conversion: StableBalanceConversionKind;
-      error: string;
-      retryInSecs: /*u64*/ bigint | undefined;
-    }>;
-  };
-
-  /**
-   * Emitted when a Stable Balance conversion failed: sweeping received
-   * bitcoin into the stable token, or converting the token back to bitcoin
-   * on deactivation. The SDK tries again after a growing delay, and
-   * `retry_in_secs` is the soonest it will. It is unset for a received
-   * payment's own conversion, which is not retried: its sats go to the next
-   * batch conversion, which reports its own failures.
-   */
-  class StableBalanceConversionFailed_
-    extends UniffiEnum
-    implements StableBalanceConversionFailed__interface
-  {
-    /**
-     * @private
-     * This field is private and should not be used, use `tag` instead.
-     */
-    readonly [uniffiTypeNameSymbol] = 'SdkEvent';
-    readonly tag = SdkEvent_Tags.StableBalanceConversionFailed;
-    readonly inner: Readonly<{
-      conversion: StableBalanceConversionKind;
-      error: string;
-      retryInSecs: /*u64*/ bigint | undefined;
-    }>;
-    constructor(inner: {
-      conversion: StableBalanceConversionKind;
-      error: string;
-      retryInSecs: /*u64*/ bigint | undefined;
-    }) {
-      super('SdkEvent', 'StableBalanceConversionFailed');
-      this.inner = Object.freeze(inner);
-    }
-
-    static new(inner: {
-      conversion: StableBalanceConversionKind;
-      error: string;
-      retryInSecs: /*u64*/ bigint | undefined;
-    }): StableBalanceConversionFailed_ {
-      return new StableBalanceConversionFailed_(inner);
-    }
-
-    static instanceOf(obj: any): obj is StableBalanceConversionFailed_ {
-      return obj.tag === SdkEvent_Tags.StableBalanceConversionFailed;
-    }
-  }
-
   function instanceOf(obj: any): obj is SdkEvent {
     return obj[uniffiTypeNameSymbol] === 'SdkEvent';
   }
@@ -33528,7 +33330,6 @@ export const SdkEvent = (() => {
     LightningAddressChanged: LightningAddressChanged_,
     NewDeposits: NewDeposits_,
     UnilateralExitStateChanged: UnilateralExitStateChanged_,
-    StableBalanceConversionFailed: StableBalanceConversionFailed_,
   });
 })();
 
@@ -33588,12 +33389,6 @@ const FfiConverterTypeSdkEvent = (() => {
           });
         case 11:
           return new SdkEvent.UnilateralExitStateChanged();
-        case 12:
-          return new SdkEvent.StableBalanceConversionFailed({
-            conversion: FfiConverterTypeStableBalanceConversionKind.read(from),
-            error: FfiConverterString.read(from),
-            retryInSecs: FfiConverterOptionalUInt64.read(from),
-          });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
@@ -33666,17 +33461,6 @@ const FfiConverterTypeSdkEvent = (() => {
         }
         case SdkEvent_Tags.UnilateralExitStateChanged: {
           ordinalConverter.write(11, into);
-          return;
-        }
-        case SdkEvent_Tags.StableBalanceConversionFailed: {
-          ordinalConverter.write(12, into);
-          const inner = value.inner;
-          FfiConverterTypeStableBalanceConversionKind.write(
-            inner.conversion,
-            into
-          );
-          FfiConverterString.write(inner.error, into);
-          FfiConverterOptionalUInt64.write(inner.retryInSecs, into);
           return;
         }
         default:
@@ -33755,16 +33539,6 @@ const FfiConverterTypeSdkEvent = (() => {
         }
         case SdkEvent_Tags.UnilateralExitStateChanged: {
           return ordinalConverter.allocationSize(11);
-        }
-        case SdkEvent_Tags.StableBalanceConversionFailed: {
-          const inner = value.inner;
-          let size = ordinalConverter.allocationSize(12);
-          size += FfiConverterTypeStableBalanceConversionKind.allocationSize(
-            inner.conversion
-          );
-          size += FfiConverterString.allocationSize(inner.error);
-          size += FfiConverterOptionalUInt64.allocationSize(inner.retryInSecs);
-          return size;
         }
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -36488,58 +36262,6 @@ const FfiConverterTypeStableBalanceActiveLabel = (() => {
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
-    }
-  }
-  return new FFIConverter();
-})();
-
-/**
- * Which Stable Balance conversion an [`SdkEvent::StableBalanceConversionFailed`]
- * refers to.
- */
-export enum StableBalanceConversionKind {
-  /**
-   * A single received payment being converted to the stable token.
-   */
-  PerReceive,
-  /**
-   * Bitcoin above the threshold being swept into the stable token.
-   */
-  AutoConvert,
-  /**
-   * The stable token being converted back to bitcoin after deactivation.
-   */
-  Deactivation,
-}
-
-const FfiConverterTypeStableBalanceConversionKind = (() => {
-  const ordinalConverter = FfiConverterInt32;
-  type TypeName = StableBalanceConversionKind;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      switch (ordinalConverter.read(from)) {
-        case 1:
-          return StableBalanceConversionKind.PerReceive;
-        case 2:
-          return StableBalanceConversionKind.AutoConvert;
-        case 3:
-          return StableBalanceConversionKind.Deactivation;
-        default:
-          throw new UniffiInternalError.UnexpectedEnumCase();
-      }
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      switch (value) {
-        case StableBalanceConversionKind.PerReceive:
-          return ordinalConverter.write(1, into);
-        case StableBalanceConversionKind.AutoConvert:
-          return ordinalConverter.write(2, into);
-        case StableBalanceConversionKind.Deactivation:
-          return ordinalConverter.write(3, into);
-      }
-    }
-    allocationSize(value: TypeName): number {
-      return ordinalConverter.allocationSize(0);
     }
   }
   return new FFIConverter();
@@ -40559,9 +40281,6 @@ export interface BreezSdkInterface {
    *
    * The early quote is requested from the provider on each call rather than read
    * from cache, so call this when a user is deciding, not on a timer.
-   *
-   * Fails with `DepositTooSmall` for a deposit worth too little to claim at the
-   * current fees.
    */
   fetchClaimDepositQuote(
     request: FetchClaimDepositQuoteRequest,
@@ -41785,9 +41504,6 @@ export class BreezSdk
    *
    * The early quote is requested from the provider on each call rather than read
    * from cache, so call this when a user is deciding, not on a timer.
-   *
-   * Fails with `DepositTooSmall` for a deposit worth too little to claim at the
-   * current fees.
    */
   public async fetchClaimDepositQuote(
     request: FetchClaimDepositQuoteRequest,
@@ -49951,8 +49667,7 @@ export interface SdkBuilderInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): Promise<void>;
   /**
-   * Adds a REST chain service backend to be used by the SDK. Call it more
-   * than once to add fallbacks, tried in the order they were added.
+   * Sets the REST chain service to be used by the SDK.
    * Arguments:
    * - `url`: The base URL of the REST API.
    * - `api_type`: The API type to be used.
@@ -50388,8 +50103,7 @@ export class SdkBuilder
   }
 
   /**
-   * Adds a REST chain service backend to be used by the SDK. Call it more
-   * than once to add fallbacks, tried in the order they were added.
+   * Sets the REST chain service to be used by the SDK.
    * Arguments:
    * - `url`: The base URL of the REST API.
    * - `api_type`: The API type to be used.
@@ -55932,14 +55646,6 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
-    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_parse_spark_config() !==
-    54802
-  ) {
-    throw new UniffiInternalError.ApiChecksumMismatch(
-      'uniffi_breez_sdk_spark_checksum_func_parse_spark_config'
-    );
-  }
-  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_single_key_cpfp_signer() !==
     28762
   ) {
@@ -56149,7 +55855,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_claim_deposit_quote() !==
-    39876
+    30349
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_claim_deposit_quote'
@@ -56925,7 +56631,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service() !==
-    10546
+    63155
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_sdkbuilder_with_rest_chain_service'
@@ -57683,7 +57389,6 @@ export default Object.freeze({
     FfiConverterTypeSparkStatus,
     FfiConverterTypeStableBalanceActiveLabel,
     FfiConverterTypeStableBalanceConfig,
-    FfiConverterTypeStableBalanceConversionKind,
     FfiConverterTypeStableBalanceToken,
     FfiConverterTypeStorage,
     FfiConverterTypeStorageBackend,
