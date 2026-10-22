@@ -85,11 +85,23 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_bridge_from_cash_app(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_bridge_to_cash_app(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_batch_package(
     ptr: bigint,
     request: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_lnurl_pay_package(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_build_unsigned_pull_package(
     ptr: bigint,
     request: Uint8Array
   ): bigint;
@@ -109,7 +121,7 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_check_unilateral_exit(
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_check_recover_funds(
     ptr: bigint,
     request: Uint8Array
   ): bigint;
@@ -122,6 +134,10 @@ interface NativeModuleInterface {
     request: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_claim_lightning_address_transfer(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_create_token_allowance(
     ptr: bigint,
     request: Uint8Array
   ): bigint;
@@ -190,6 +206,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_list_token_allowances(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_list_unclaimed_deposits(
     ptr: bigint,
     request: Uint8Array
@@ -225,6 +245,14 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_pull_payment(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_recover_funds(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_send_batch(
     ptr: bigint,
     request: Uint8Array
@@ -233,15 +261,19 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_prepare_unilateral_exit(
-    ptr: bigint,
-    request: Uint8Array
-  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_publish_signed_lnurl_pay_package(
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_publish_signed_pull_package(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_publish_signed_transfer_package(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_pull_payment(
     ptr: bigint,
     request: Uint8Array
   ): bigint;
@@ -251,6 +283,11 @@ interface NativeModuleInterface {
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_recommended_fees(
     ptr: bigint
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_recover_funds(
+    ptr: bigint,
+    request: Uint8Array,
+    signer: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_refund_deposit(
     ptr: bigint,
@@ -271,6 +308,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     id: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_revoke_token_allowance(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_send_batch(
     ptr: bigint,
     request: Uint8Array
@@ -286,11 +327,6 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_sync_wallet(
     ptr: bigint,
     request: Uint8Array
-  ): bigint;
-  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_unilateral_exit(
-    ptr: bigint,
-    request: Uint8Array,
-    signer: bigint
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_unregister_webhook(
     ptr: bigint,
@@ -458,6 +494,14 @@ interface NativeModuleInterface {
     request: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_static_deposit_refund(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_start_watchtower_exit_recovery(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_sign_watchtower_exit_recovery(
     ptr: bigint,
     request: Uint8Array
   ): bigint;
@@ -795,6 +839,13 @@ interface NativeModuleInterface {
     address: Uint8Array,
     payload: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_storage_list_leaf_recoveries(
+    ptr: bigint
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_storage_update_leaf_recovery(
+    ptr: bigint,
+    update: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_storage_set_lnurl_metadata(
     ptr: bigint,
     metadata: Uint8Array
@@ -976,6 +1027,10 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_fn_func_new_shared_sdk_context(
     config: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_func_parse_spark_config(
+    json: Uint8Array,
+    uniffi_out_err: UniffiRustCallStatus
+  ): Uint8Array;
   ubrn_uniffi_breez_sdk_spark_fn_func_single_key_cpfp_signer(
     secretKeyBytes: Uint8Array,
     uniffi_out_err: UniffiRustCallStatus
@@ -1138,6 +1193,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_func_init_logging(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_new_rest_chain_service(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_new_shared_sdk_context(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_func_parse_spark_config(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_single_key_cpfp_signer(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_utxos(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_bitcoinchainservice_get_address_txos(): number;
@@ -1150,16 +1206,20 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_add_contact(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_add_event_listener(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_authorize_lightning_address_transfer(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_bridge_from_cash_app(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_bridge_to_cash_app(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_batch_package(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_lnurl_pay_package(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_pull_package(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_build_unsigned_transfer_package(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_buy_bitcoin(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_lightning_address_available(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_message(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_unilateral_exit(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_check_recover_funds(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_deposit(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_htlc_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_claim_lightning_address_transfer(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_create_token_allowance(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_contact(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_delete_lightning_address(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_disconnect(): number;
@@ -1178,6 +1238,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_currencies(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_fiat_rates(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_payments(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_token_allowances(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_unclaimed_deposits(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_list_webhooks(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_lnurl_auth(): number;
@@ -1187,23 +1248,27 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_parse(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_lnurl_pay(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_payment_link(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_pull_payment(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_recover_funds(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_batch(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_send_payment(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_unilateral_exit(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_publish_signed_lnurl_pay_package(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_publish_signed_pull_package(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_publish_signed_transfer_package(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_pull_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_receive_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_recommended_fees(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_recover_funds(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_deposit(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_refund_pending_conversions(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_register_lightning_address(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_register_webhook(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_remove_event_listener(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_revoke_token_allowance(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_batch(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_send_payment(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sign_message(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_sync_wallet(): number;
-  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_unilateral_exit(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_unregister_webhook(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_update_contact(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_update_user_settings(): number;
@@ -1233,6 +1298,8 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_static_deposit_refund(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_static_deposit_refund(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_watchtower_exit_recovery(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_watchtower_exit_recovery(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_spark_invoice(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_token_transaction(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit_claim(): number;
@@ -1283,6 +1350,8 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_update_deposit(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_watched_deposit_addresses(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_update_watched_deposit_address(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_leaf_recoveries(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_storage_update_leaf_recovery(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_set_lnurl_metadata(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_list_contacts(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_storage_get_contact(): number;
@@ -1753,6 +1822,18 @@ type UniffiCallbackInterfaceExternalSparkSignerMethod16 = (
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
+type UniffiCallbackInterfaceExternalSparkSignerMethod17 = (
+  uniffiHandle: bigint,
+  request: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceExternalSparkSignerMethod18 = (
+  uniffiHandle: bigint,
+  request: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
 type UniffiCallbackInterfaceFiatServiceMethod0 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
@@ -1933,101 +2014,112 @@ type UniffiCallbackInterfaceStorageMethod14 = (
 ) => UniffiForeignFuture;
 type UniffiCallbackInterfaceStorageMethod15 = (
   uniffiHandle: bigint,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceStorageMethod16 = (
+  uniffiHandle: bigint,
+  update: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceStorageMethod17 = (
+  uniffiHandle: bigint,
   metadata: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod16 = (
+type UniffiCallbackInterfaceStorageMethod18 = (
   uniffiHandle: bigint,
   request: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod17 = (
+type UniffiCallbackInterfaceStorageMethod19 = (
   uniffiHandle: bigint,
   id: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod18 = (
+type UniffiCallbackInterfaceStorageMethod20 = (
   uniffiHandle: bigint,
   contact: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod19 = (
+type UniffiCallbackInterfaceStorageMethod21 = (
   uniffiHandle: bigint,
   id: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod20 = (
+type UniffiCallbackInterfaceStorageMethod22 = (
   uniffiHandle: bigint,
   swap: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod21 = (
+type UniffiCallbackInterfaceStorageMethod23 = (
   uniffiHandle: bigint,
   provider: Uint8Array,
   id: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod22 = (
+type UniffiCallbackInterfaceStorageMethod24 = (
   uniffiHandle: bigint,
   provider: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod23 = (
+type UniffiCallbackInterfaceStorageMethod25 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteU64,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod24 = (
+type UniffiCallbackInterfaceStorageMethod26 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   localRevision: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod25 = (
+type UniffiCallbackInterfaceStorageMethod27 = (
   uniffiHandle: bigint,
   limit: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod26 = (
+type UniffiCallbackInterfaceStorageMethod28 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteU64,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod27 = (
+type UniffiCallbackInterfaceStorageMethod29 = (
   uniffiHandle: bigint,
   records: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod28 = (
+type UniffiCallbackInterfaceStorageMethod30 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod29 = (
+type UniffiCallbackInterfaceStorageMethod31 = (
   uniffiHandle: bigint,
   limit: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod30 = (
+type UniffiCallbackInterfaceStorageMethod32 = (
   uniffiHandle: bigint,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceStorageMethod31 = (
+type UniffiCallbackInterfaceStorageMethod33 = (
   uniffiHandle: bigint,
   record: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteVoid,
@@ -2095,9 +2187,11 @@ export type UniffiVTableCallbackInterfaceExternalSparkSigner = {
   prepareStaticDeposit: UniffiCallbackInterfaceExternalSparkSignerMethod11;
   startStaticDepositRefund: UniffiCallbackInterfaceExternalSparkSignerMethod12;
   signStaticDepositRefund: UniffiCallbackInterfaceExternalSparkSignerMethod13;
-  signSparkInvoice: UniffiCallbackInterfaceExternalSparkSignerMethod14;
-  prepareTokenTransaction: UniffiCallbackInterfaceExternalSparkSignerMethod15;
-  prepareStaticDepositClaim: UniffiCallbackInterfaceExternalSparkSignerMethod16;
+  startWatchtowerExitRecovery: UniffiCallbackInterfaceExternalSparkSignerMethod14;
+  signWatchtowerExitRecovery: UniffiCallbackInterfaceExternalSparkSignerMethod15;
+  signSparkInvoice: UniffiCallbackInterfaceExternalSparkSignerMethod16;
+  prepareTokenTransaction: UniffiCallbackInterfaceExternalSparkSignerMethod17;
+  prepareStaticDepositClaim: UniffiCallbackInterfaceExternalSparkSignerMethod18;
   uniffiFree: UniffiCallbackInterfaceFree;
 };
 export type UniffiVTableCallbackInterfaceFiatService = {
@@ -2144,23 +2238,25 @@ export type UniffiVTableCallbackInterfaceStorage = {
   updateDeposit: UniffiCallbackInterfaceStorageMethod12;
   listWatchedDepositAddresses: UniffiCallbackInterfaceStorageMethod13;
   updateWatchedDepositAddress: UniffiCallbackInterfaceStorageMethod14;
-  setLnurlMetadata: UniffiCallbackInterfaceStorageMethod15;
-  listContacts: UniffiCallbackInterfaceStorageMethod16;
-  getContact: UniffiCallbackInterfaceStorageMethod17;
-  insertContact: UniffiCallbackInterfaceStorageMethod18;
-  deleteContact: UniffiCallbackInterfaceStorageMethod19;
-  setCrossChainSwap: UniffiCallbackInterfaceStorageMethod20;
-  getCrossChainSwap: UniffiCallbackInterfaceStorageMethod21;
-  listActiveCrossChainSwaps: UniffiCallbackInterfaceStorageMethod22;
-  addOutgoingChange: UniffiCallbackInterfaceStorageMethod23;
-  completeOutgoingSync: UniffiCallbackInterfaceStorageMethod24;
-  getPendingOutgoingChanges: UniffiCallbackInterfaceStorageMethod25;
-  getLastRevision: UniffiCallbackInterfaceStorageMethod26;
-  insertIncomingRecords: UniffiCallbackInterfaceStorageMethod27;
-  deleteIncomingRecord: UniffiCallbackInterfaceStorageMethod28;
-  getIncomingRecords: UniffiCallbackInterfaceStorageMethod29;
-  getLatestOutgoingChange: UniffiCallbackInterfaceStorageMethod30;
-  updateRecordFromIncoming: UniffiCallbackInterfaceStorageMethod31;
+  listLeafRecoveries: UniffiCallbackInterfaceStorageMethod15;
+  updateLeafRecovery: UniffiCallbackInterfaceStorageMethod16;
+  setLnurlMetadata: UniffiCallbackInterfaceStorageMethod17;
+  listContacts: UniffiCallbackInterfaceStorageMethod18;
+  getContact: UniffiCallbackInterfaceStorageMethod19;
+  insertContact: UniffiCallbackInterfaceStorageMethod20;
+  deleteContact: UniffiCallbackInterfaceStorageMethod21;
+  setCrossChainSwap: UniffiCallbackInterfaceStorageMethod22;
+  getCrossChainSwap: UniffiCallbackInterfaceStorageMethod23;
+  listActiveCrossChainSwaps: UniffiCallbackInterfaceStorageMethod24;
+  addOutgoingChange: UniffiCallbackInterfaceStorageMethod25;
+  completeOutgoingSync: UniffiCallbackInterfaceStorageMethod26;
+  getPendingOutgoingChanges: UniffiCallbackInterfaceStorageMethod27;
+  getLastRevision: UniffiCallbackInterfaceStorageMethod28;
+  insertIncomingRecords: UniffiCallbackInterfaceStorageMethod29;
+  deleteIncomingRecord: UniffiCallbackInterfaceStorageMethod30;
+  getIncomingRecords: UniffiCallbackInterfaceStorageMethod31;
+  getLatestOutgoingChange: UniffiCallbackInterfaceStorageMethod32;
+  updateRecordFromIncoming: UniffiCallbackInterfaceStorageMethod33;
   uniffiFree: UniffiCallbackInterfaceFree;
 };
 export type UniffiVTableCallbackInterfaceStorageBackend = {
