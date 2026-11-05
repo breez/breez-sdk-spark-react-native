@@ -79,6 +79,10 @@ export declare function createTurnkeySigningOnlySigner(config: TurnkeyConfig, as
  * The tree, token-output and session stores use the in-memory defaults.
  */
 export declare function customStorage(storage: Storage): StorageBackend;
+/**
+ * Settings for [`new_bridging_client`] with every optional field unset.
+ */
+export declare function defaultBridgingConfig(apiKey: string): BridgingConfig;
 export declare function defaultConfig(network: Network): Config;
 /**
  * Creates the default external signers from a mnemonic.
@@ -164,6 +168,12 @@ export declare function getSparkStatus(request: GetSparkStatusRequest, asyncOpts
     signal: AbortSignal;
 }): Promise<SparkStatus>;
 export declare function initLogging(logDir: string | undefined, appLogger: Logger | undefined, logFilter: string | undefined): void;
+/**
+ * Builds a [`BridgingClient`] from an API key, with no seed or storage.
+ */
+export declare function newBridgingClient(config: BridgingConfig, asyncOpts_?: {
+    signal: AbortSignal;
+}): Promise<BridgingClientInterface>;
 /**
  * Constructs a shareable REST-based [`BitcoinChainService`].
  *
@@ -752,6 +762,9 @@ export declare const Bolt12OfferDetails: Readonly<{
     defaults: () => Partial<Bolt12OfferDetails>;
 }>;
 /**
+ * **Deprecated.** Use `CreateBridgeRequest` with the bridging client's
+ * `bridge_from_cash_app`.
+ *
  * Request to bridge from Cash App to USDC/USDT on an external chain.
  *
  * The payer pays the returned URL in Cash App over Lightning, and the
@@ -809,6 +822,9 @@ export declare const BridgeFromCashAppRequest: Readonly<{
     defaults: () => Partial<BridgeFromCashAppRequest>;
 }>;
 /**
+ * **Deprecated.** Use `CreateBridgeResponse`, from the bridging client's
+ * `bridge_from_cash_app`.
+ *
  * Response to a [`BridgeFromCashAppRequest`]: the URL to pay plus the quote,
  * so the caller can display the expected delivery and fees.
  */
@@ -869,6 +885,90 @@ export declare const BridgeFromCashAppResponse: Readonly<{
     defaults: () => Partial<BridgeFromCashAppResponse>;
 }>;
 /**
+ * A way to pay a recipient: what the payer pays, and what the recipient
+ * receives.
+ */
+export type BridgeRoutePair = {
+    provider: CrossChainProvider;
+    /**
+     * What the payer pays.
+     */
+    source: BridgeRoutePairSide;
+    /**
+     * What the recipient receives.
+     */
+    destination: BridgeRoutePairSide;
+    /**
+     * Bounds on what the payer pays, in `source` base units. Unset when the
+     * provider publishes none.
+     */
+    limits: CrossChainRouteLimits | undefined;
+};
+/**
+ * Generated factory for {@link BridgeRoutePair} record objects.
+ */
+export declare const BridgeRoutePair: Readonly<{
+    /**
+     * Create a frozen instance of {@link BridgeRoutePair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<BridgeRoutePair> & Required<Omit<BridgeRoutePair, never>>) => BridgeRoutePair;
+    /**
+     * Create a frozen instance of {@link BridgeRoutePair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<BridgeRoutePair> & Required<Omit<BridgeRoutePair, never>>) => BridgeRoutePair;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<BridgeRoutePair>;
+}>;
+/**
+ * One side of a [`BridgeRoutePair`].
+ */
+export type BridgeRoutePairSide = {
+    /**
+     * `"spark"`, `"lightning"`, or another chain, e.g. `"base"` or `"tron"`.
+     */
+    chain: string;
+    /**
+     * EVM `chainId` as a decimal string. Unset on chains without one.
+     */
+    chainId: string | undefined;
+    /**
+     * Asset symbol, e.g. `"USDC"`, `"USDT"`, `"BTC"` or `"USDB"`.
+     */
+    asset: string;
+    /**
+     * Token contract or mint address, or the token identifier on Spark.
+     * Unset for Bitcoin.
+     */
+    contractAddress: string | undefined;
+    decimals: number;
+};
+/**
+ * Generated factory for {@link BridgeRoutePairSide} record objects.
+ */
+export declare const BridgeRoutePairSide: Readonly<{
+    /**
+     * Create a frozen instance of {@link BridgeRoutePairSide}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<BridgeRoutePairSide> & Required<Omit<BridgeRoutePairSide, never>>) => BridgeRoutePairSide;
+    /**
+     * Create a frozen instance of {@link BridgeRoutePairSide}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<BridgeRoutePairSide> & Required<Omit<BridgeRoutePairSide, never>>) => BridgeRoutePairSide;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<BridgeRoutePairSide>;
+}>;
+/**
+ * **Deprecated.** Use `CreateBridgeRequest` with the bridging client's
+ * `bridge_to_cash_app`.
+ *
  * Request to bridge USDC/USDT from an external chain to a Cash App user.
  *
  * The payer deposits the stablecoin to the returned address, and the
@@ -932,6 +1032,9 @@ export declare const BridgeToCashAppRequest: Readonly<{
     defaults: () => Partial<BridgeToCashAppRequest>;
 }>;
 /**
+ * **Deprecated.** Use `CreateBridgeResponse`, from the bridging client's
+ * `bridge_to_cash_app`.
+ *
  * Response to a [`BridgeToCashAppRequest`].
  */
 export type BridgeToCashAppResponse = {
@@ -964,6 +1067,43 @@ export declare const BridgeToCashAppResponse: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<BridgeToCashAppResponse>;
+}>;
+/**
+ * Settings for a [`BridgingClient`](super::BridgingClient) built with
+ * [`new_bridging_client`](super::new_bridging_client).
+ */
+export type BridgingConfig = {
+    /**
+     * Breez API key.
+     */
+    apiKey: string;
+    /**
+     * Routes the client's connections through a SOCKS5 proxy.
+     */
+    proxy: ProxyConfig | undefined;
+    /**
+     * Default slippage and overpay. Unset uses the built-in defaults.
+     */
+    crossChainConfig: CrossChainConfig | undefined;
+};
+/**
+ * Generated factory for {@link BridgingConfig} record objects.
+ */
+export declare const BridgingConfig: Readonly<{
+    /**
+     * Create a frozen instance of {@link BridgingConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<BridgingConfig> & Required<Omit<BridgingConfig, "proxy" | "crossChainConfig">>) => BridgingConfig;
+    /**
+     * Create a frozen instance of {@link BridgingConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<BridgingConfig> & Required<Omit<BridgingConfig, "proxy" | "crossChainConfig">>) => BridgingConfig;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<BridgingConfig>;
 }>;
 export type BuildUnsignedBatchPackageRequest = {
     prepareResponse: PrepareSendBatchResponse;
@@ -1085,7 +1225,8 @@ export type BuyBitcoinResponse = {
      */
     url: string;
     /**
-     * The conversion quote, populated only for cross-chain delivery.
+     * The conversion quote, populated for cross-chain delivery and for
+     * `CashApp`, whose purchase is delivered through a conversion provider.
      */
     crossChainInfo: CrossChainReceiveInfo | undefined;
 };
@@ -2183,6 +2324,101 @@ export declare const CooperativeRecoveryFailure: Readonly<{
      */
     defaults: () => Partial<CooperativeRecoveryFailure>;
 }>;
+export type CreateBridgeRequest = {
+    /**
+     * Who to pay, as given to [`BridgingClient::get_routes`](super::BridgingClient::get_routes).
+     */
+    recipient: string;
+    /**
+     * A route from [`BridgingClient::get_routes`](super::BridgingClient::get_routes)
+     * for this recipient.
+     */
+    route: BridgeRoutePair;
+    /**
+     * Amount in stablecoin base units: the destination asset when the
+     * recipient is paid in a stablecoin, the source asset otherwise, per that
+     * side's `decimals`. At parity this is the USD value: `1_000_000` is 1
+     * USDC at 6 decimals.
+     */
+    amount: U128;
+    /**
+     * The payer's address on the source chain, where the deposit is refunded
+     * if the recipient can't be paid. Required to pay a Lightning address,
+     * and recommended whenever the payer pays from another chain: without
+     * one the provider has no address to refund to. Ignored when the payer
+     * pays over Lightning.
+     */
+    refundAddress: string | undefined;
+    /**
+     * Whether fees are added on top of `amount` (`FeesExcluded`, the default)
+     * or deducted from it (`FeesIncluded`).
+     */
+    feePolicy: FeePolicy | undefined;
+    /**
+     * Maximum slippage tolerance in basis points. Unset uses the configured
+     * default.
+     */
+    maxSlippageBps: /*u32*/ number | undefined;
+};
+/**
+ * Generated factory for {@link CreateBridgeRequest} record objects.
+ */
+export declare const CreateBridgeRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link CreateBridgeRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CreateBridgeRequest> & Required<Omit<CreateBridgeRequest, "feePolicy" | "maxSlippageBps" | "refundAddress">>) => CreateBridgeRequest;
+    /**
+     * Create a frozen instance of {@link CreateBridgeRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CreateBridgeRequest> & Required<Omit<CreateBridgeRequest, "feePolicy" | "maxSlippageBps" | "refundAddress">>) => CreateBridgeRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CreateBridgeRequest>;
+}>;
+export type CreateBridgeResponse = {
+    /**
+     * Identifies the bridge for [`BridgingClient::get_bridge_status`](super::BridgingClient::get_bridge_status).
+     * Store it to look up the status later.
+     */
+    bridgeId: string;
+    /**
+     * Pass it to
+     * [`BridgingClient::get_bridge_status`](super::BridgingClient::get_bridge_status).
+     */
+    statusToken: string | undefined;
+    /**
+     * What the payer pays: an EIP-681 URI on EVM chains, a BOLT11 invoice or a
+     * Cash App link over Lightning, otherwise the bare deposit address.
+     */
+    paymentRequest: string;
+    /**
+     * The deposit and the expected delivery.
+     */
+    info: CrossChainReceiveInfo;
+};
+/**
+ * Generated factory for {@link CreateBridgeResponse} record objects.
+ */
+export declare const CreateBridgeResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link CreateBridgeResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<CreateBridgeResponse> & Required<Omit<CreateBridgeResponse, never>>) => CreateBridgeResponse;
+    /**
+     * Create a frozen instance of {@link CreateBridgeResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<CreateBridgeResponse> & Required<Omit<CreateBridgeResponse, never>>) => CreateBridgeResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<CreateBridgeResponse>;
+}>;
 export type CreateIssuerTokenRequest = {
     name: string;
     ticker: string;
@@ -2431,36 +2667,44 @@ export declare const CrossChainConfig: Readonly<{
     defaults: () => Partial<CrossChainConfig>;
 }>;
 /**
- * Information about the cross-chain receive quote.
+ * Information about the cross-chain receive quote: what the sender deposits
+ * and what the receiver is expected to get.
  */
 export type CrossChainReceiveInfo = {
     /**
-     * Bare external deposit address the sender pays to.
+     * The provider's id for this receive. The incoming payment carries the
+     * same id in its conversion info, so it can be matched to this receive.
+     */
+    quoteId: string;
+    /**
+     * Bare deposit address the sender pays to on the source chain, or the
+     * BOLT11 invoice when the sender pays over Lightning.
      */
     depositAddress: string;
     /**
      * Amount the sender must deposit, in source-asset base units
-     * (`route.decimals`). On `FeesExcluded` this may differ from the
-     * request's `amount` because the SDK inflates the deposit to absorb
-     * provider fees. Render this value to the sender.
+     * (`route.decimals`, or sats over Lightning). On `FeesExcluded` this may
+     * differ from the request's `amount` because the SDK inflates the deposit
+     * to absorb provider fees. Render this value to the sender.
      */
     depositAmount: U128;
     /**
      * Amount the receiver will see, net of provider fees, in
-     * destination-asset base units. Sats when receiving BTC into Spark,
-     * or token base units when receiving a Spark token (e.g. USDB). The
-     * final delivered amount may move within the slippage tolerance.
+     * destination-asset base units. Sats when receiving BTC, token base
+     * units when receiving a Spark token (e.g. USDB), or stablecoin base
+     * units when the receiver is on another chain. The final delivered
+     * amount may move within the slippage tolerance.
      */
     expectedReceivedAmount: U128;
     /**
-     * Symbol of the Spark-side asset `expected_received_amount` is
-     * denominated in, as the provider reports it: `"BTC"` for sats, or the
-     * token symbol (e.g. `"USDB"`).
+     * Symbol of the asset `expected_received_amount` is denominated in, as
+     * the provider reports it: `"BTC"` for sats, a Spark token symbol (e.g.
+     * `"USDB"`), or the stablecoin when the receiver is on another chain.
      */
     destinationAsset: string;
     /**
-     * Spark token identifier when the destination is a token. Absent when
-     * the destination is BTC and the receiver will see sats.
+     * Spark token identifier when the destination is a Spark token. Absent
+     * otherwise.
      */
     tokenIdentifier: string | undefined;
     /**
@@ -4197,13 +4441,149 @@ export declare const FreezeIssuerTokenResponse: Readonly<{
      */
     defaults: () => Partial<FreezeIssuerTokenResponse>;
 }>;
+export type GetBridgeRoutesRequest = {
+    /**
+     * Who to pay: a Spark address, a Lightning address (a Cash App
+     * `$cashtag` included), or an EVM/Solana/Tron address or URI.
+     */
+    recipient: string;
+};
+/**
+ * Generated factory for {@link GetBridgeRoutesRequest} record objects.
+ */
+export declare const GetBridgeRoutesRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link GetBridgeRoutesRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<GetBridgeRoutesRequest> & Required<Omit<GetBridgeRoutesRequest, never>>) => GetBridgeRoutesRequest;
+    /**
+     * Create a frozen instance of {@link GetBridgeRoutesRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<GetBridgeRoutesRequest> & Required<Omit<GetBridgeRoutesRequest, never>>) => GetBridgeRoutesRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<GetBridgeRoutesRequest>;
+}>;
+export type GetBridgeRoutesResponse = {
+    /**
+     * The routes that can pay the recipient. Empty when none can.
+     */
+    routes: Array<BridgeRoutePair>;
+};
+/**
+ * Generated factory for {@link GetBridgeRoutesResponse} record objects.
+ */
+export declare const GetBridgeRoutesResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link GetBridgeRoutesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<GetBridgeRoutesResponse> & Required<Omit<GetBridgeRoutesResponse, never>>) => GetBridgeRoutesResponse;
+    /**
+     * Create a frozen instance of {@link GetBridgeRoutesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<GetBridgeRoutesResponse> & Required<Omit<GetBridgeRoutesResponse, never>>) => GetBridgeRoutesResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<GetBridgeRoutesResponse>;
+}>;
+export type GetBridgeStatusRequest = {
+    bridgeId: string;
+    /**
+     * The bridge's status token, if any.
+     */
+    statusToken: string | undefined;
+};
+/**
+ * Generated factory for {@link GetBridgeStatusRequest} record objects.
+ */
+export declare const GetBridgeStatusRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link GetBridgeStatusRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<GetBridgeStatusRequest> & Required<Omit<GetBridgeStatusRequest, "statusToken">>) => GetBridgeStatusRequest;
+    /**
+     * Create a frozen instance of {@link GetBridgeStatusRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<GetBridgeStatusRequest> & Required<Omit<GetBridgeStatusRequest, "statusToken">>) => GetBridgeStatusRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<GetBridgeStatusRequest>;
+}>;
+export type GetBridgeStatusResponse = {
+    status: BridgeStatus;
+    /**
+     * The provider's own status, e.g. `"bridging"` or `"awaiting_approval"`,
+     * for display and support. Unset before the payment arrives.
+     */
+    providerStatus: string | undefined;
+    /**
+     * The provider's order id, once the payment arrived.
+     */
+    orderId: string | undefined;
+    /**
+     * The amount the payer paid, in the source asset's base units.
+     */
+    amountIn: U128 | undefined;
+    /**
+     * The amount the recipient received, in the destination asset's base
+     * units. Set once completed.
+     */
+    amountOut: U128 | undefined;
+    /**
+     * The payer's transaction on the source chain.
+     */
+    depositTxHash: string | undefined;
+    /**
+     * The transaction that paid the recipient, or the Spark transfer when the
+     * recipient is on Spark. Set once completed.
+     */
+    deliveryTxHash: string | undefined;
+    /**
+     * The transaction that refunded the payer.
+     */
+    refundTxHash: string | undefined;
+    /**
+     * The provider's error code when the bridge failed.
+     */
+    errorCode: string | undefined;
+};
+/**
+ * Generated factory for {@link GetBridgeStatusResponse} record objects.
+ */
+export declare const GetBridgeStatusResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link GetBridgeStatusResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<GetBridgeStatusResponse> & Required<Omit<GetBridgeStatusResponse, never>>) => GetBridgeStatusResponse;
+    /**
+     * Create a frozen instance of {@link GetBridgeStatusResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<GetBridgeStatusResponse> & Required<Omit<GetBridgeStatusResponse, never>>) => GetBridgeStatusResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<GetBridgeStatusResponse>;
+}>;
 /**
  * Request to get the balance of the wallet
  */
 export type GetInfoRequest = {
     /**
      * When `Some(true)`, and `background_tasks_enabled` is `true`, the call
-     * waits for the initial Full sync to complete before returning.
+     * waits for the initial Full sync to complete before returning. The sync
+     * can fail to reach the network: `last_sync_error` in the response says
+     * whether it did.
      *
      * When `background_tasks_enabled` is `false`, setting this to `Some(true)`
      * is rejected with an invalid-input error. There is no background sync to
@@ -4256,6 +4636,17 @@ export type GetInfoResponse = {
      * you choose.
      */
     recoverableFundsSats: bigint;
+    /**
+     * Why the latest sync could not refresh the balances, which may then be
+     * out of date. Unset once a sync succeeds. It is not persisted, so it is
+     * also unset after each `connect` until the first sync ends.
+     */
+    lastSyncError: SyncError | undefined;
+    /**
+     * When a sync last refreshed the balances, in seconds since the Unix
+     * epoch. Unset until a sync succeeds with this storage.
+     */
+    lastSyncedAt: /*u64*/ bigint | undefined;
 };
 /**
  * Generated factory for {@link GetInfoResponse} record objects.
@@ -5249,6 +5640,11 @@ export type LnurlReceiveMetadata = {
     nostrZapRequest: string | undefined;
     nostrZapReceipt: string | undefined;
     senderComment: string | undefined;
+    /**
+     * The Lightning address the payment was received on. Unset for some payments received
+     * before the LNURL server recorded addresses.
+     */
+    lightningAddress: string | undefined;
 };
 /**
  * Generated factory for {@link LnurlReceiveMetadata} record objects.
@@ -5973,7 +6369,8 @@ export declare const PaymentRequestSource: Readonly<{
     defaults: () => Partial<PaymentRequestSource>;
 }>;
 /**
- * How much to fund one branch of the exit to avoid a fan-out.
+ * How much one funding UTXO must hold to avoid a fan-out: for a branch of the
+ * exit, or under `CpfpFundingStrategy::PerNode` for one transaction of it.
  */
 export type PerBranchFunding = {
     /**
@@ -5981,7 +6378,7 @@ export type PerBranchFunding = {
      */
     leafId: string;
     /**
-     * Fund a UTXO of at least this many satoshis for this branch.
+     * Fund a UTXO of at least this many satoshis.
      */
     fundingSats: bigint;
 };
@@ -6093,7 +6490,8 @@ export declare const PrepareLnurlPayResponse: Readonly<{
     defaults: () => Partial<PrepareLnurlPayResponse>;
 }>;
 /**
- * **Deprecated.** Use [`BridgeFromCashAppRequest`].
+ * **Deprecated.** Use `CreateBridgeRequest` with the bridging client's
+ * `bridge_from_cash_app`.
  *
  * Request for a payment link that sends USDC/USDT to an external-chain
  * recipient, funded by Cash App over Lightning.
@@ -6153,7 +6551,8 @@ export declare const PreparePaymentLinkRequest: Readonly<{
     defaults: () => Partial<PreparePaymentLinkRequest>;
 }>;
 /**
- * **Deprecated.** Use [`BridgeFromCashAppResponse`].
+ * **Deprecated.** Use `CreateBridgeResponse`, from the bridging client's
+ * `bridge_from_cash_app`.
  *
  * Response to a [`PreparePaymentLinkRequest`]. Mirrors `BuyBitcoinResponse`
  * (a payable `url`) plus the quote so the caller can display the expected
@@ -6293,6 +6692,11 @@ export type PrepareRecoverFundsRequest = {
      */
     fundingKind: CpfpFundingKind | undefined;
     /**
+     * How the funding UTXOs pay a unilateral exit's CPFP children. Unset funds
+     * one UTXO per branch.
+     */
+    fundingStrategy: CpfpFundingStrategy | undefined;
+    /**
      * The Bitcoin address the recovered funds are sent to.
      */
     destination: string;
@@ -6306,12 +6710,12 @@ export declare const PrepareRecoverFundsRequest: Readonly<{
      * Create a frozen instance of {@link PrepareRecoverFundsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<PrepareRecoverFundsRequest> & Required<Omit<PrepareRecoverFundsRequest, "fundingKind">>) => PrepareRecoverFundsRequest;
+    create: (partial: Partial<PrepareRecoverFundsRequest> & Required<Omit<PrepareRecoverFundsRequest, "fundingKind" | "fundingStrategy">>) => PrepareRecoverFundsRequest;
     /**
      * Create a frozen instance of {@link PrepareRecoverFundsRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<PrepareRecoverFundsRequest> & Required<Omit<PrepareRecoverFundsRequest, "fundingKind">>) => PrepareRecoverFundsRequest;
+    new: (partial: Partial<PrepareRecoverFundsRequest> & Required<Omit<PrepareRecoverFundsRequest, "fundingKind" | "fundingStrategy">>) => PrepareRecoverFundsRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -6348,8 +6752,8 @@ export type PrepareRecoverFundsResponse = {
      */
     cpfpFeeSats: bigint;
     /**
-     * Paid by the fan-out, from your funding UTXO. Funding one UTXO per branch
-     * (`funding.per_branch`) avoids it.
+     * Paid by the fan-out, from your funding UTXO. Funding one UTXO per
+     * `funding.per_branch` entry avoids it.
      */
     fanoutFeeSats: bigint;
     /**
@@ -7007,7 +7411,7 @@ export type RecoverFundsRequest = {
     prepared: PrepareRecoverFundsResponse;
     /**
      * UTXOs that meet the quote's `funding`: one of at least `single_utxo_sats`,
-     * or one per branch. Not needed when the quote has no `funding`.
+     * or one per `per_branch` entry. Not needed when the quote has no `funding`.
      */
     fundingInputs: Array<CpfpInput>;
 };
@@ -7112,14 +7516,20 @@ export declare const RecoverableEcdsaSignatureBytes: Readonly<{
 export type RecoveryFunding = {
     /**
      * Fund a single UTXO of at least this many satoshis, which a fan-out
-     * splits over the branches.
+     * splits over the `per_branch` entries.
      */
     singleUtxoSats: bigint;
     /**
-     * To skip the fan-out, fund one UTXO per branch of at least the given
-     * amount.
+     * To skip the fan-out, fund one UTXO per entry of at least its amount, in
+     * any order. An entry is a branch, or under `CpfpFundingStrategy::PerNode`
+     * one transaction of a branch, so a leaf can have several.
      */
     perBranch: Array<PerBranchFunding>;
+    /**
+     * The strategy the amounts were computed for, which `recover_funds` builds
+     * with.
+     */
+    strategy: CpfpFundingStrategy;
 };
 /**
  * Generated factory for {@link RecoveryFunding} record objects.
@@ -7796,6 +8206,8 @@ export declare const SendPaymentResponse: Readonly<{
 export type Session = {
     token: string;
     expiration: bigint;
+    refreshToken: string | undefined;
+    refreshTokenExpiration: /*u64*/ bigint | undefined;
 };
 /**
  * Generated factory for {@link Session} record objects.
@@ -7821,6 +8233,7 @@ export type SetLnurlMetadataItem = {
     senderComment: string | undefined;
     nostrZapRequest: string | undefined;
     nostrZapReceipt: string | undefined;
+    lightningAddress: string | undefined;
 };
 /**
  * Generated factory for {@link SetLnurlMetadataItem} record objects.
@@ -8073,30 +8486,6 @@ export declare const SigningOnlyExternalSigners: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<SigningOnlyExternalSigners>;
-}>;
-export type SilentPaymentAddressDetails = {
-    address: string;
-    network: BitcoinNetwork;
-    source: PaymentRequestSource;
-};
-/**
- * Generated factory for {@link SilentPaymentAddressDetails} record objects.
- */
-export declare const SilentPaymentAddressDetails: Readonly<{
-    /**
-     * Create a frozen instance of {@link SilentPaymentAddressDetails}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create: (partial: Partial<SilentPaymentAddressDetails> & Required<Omit<SilentPaymentAddressDetails, never>>) => SilentPaymentAddressDetails;
-    /**
-     * Create a frozen instance of {@link SilentPaymentAddressDetails}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: (partial: Partial<SilentPaymentAddressDetails> & Required<Omit<SilentPaymentAddressDetails, never>>) => SilentPaymentAddressDetails;
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () => Partial<SilentPaymentAddressDetails>;
 }>;
 /**
  * A leaf the selection covers that `prepare_recover_funds` leaves out of the
@@ -8751,7 +9140,18 @@ export declare const SyncWalletRequest: Readonly<{
 /**
  * Response from synchronizing the wallet
  */
-export type SyncWalletResponse = {};
+export type SyncWalletResponse = {
+    /**
+     * Why the sync could not refresh the balances, which may then be out of
+     * date. Unset when it succeeded.
+     */
+    lastSyncError: SyncError | undefined;
+    /**
+     * When a sync last refreshed the balances, in seconds since the Unix
+     * epoch. Unset until a sync succeeds with this storage.
+     */
+    lastSyncedAt: /*u64*/ bigint | undefined;
+};
 /**
  * Generated factory for {@link SyncWalletResponse} record objects.
  */
@@ -10222,6 +10622,42 @@ export declare enum BitcoinNetwork {
     Signet = 3,
     Regtest = 4
 }
+/**
+ * Where a bridge is in its lifecycle.
+ */
+export declare enum BridgeStatus {
+    /**
+     * The bridge was created, and the payer hasn't paid yet. An unpaid bridge
+     * stays `Created` after its `expires_at`. A late deposit on another chain
+     * may still be accepted at a new price.
+     */
+    Created = 0,
+    /**
+     * The provider is processing the payment, from confirming the deposit to
+     * paying the recipient. `provider_status` gives the stage.
+     */
+    Pending = 1,
+    /**
+     * The recipient can't be paid, and the payment is being refunded.
+     */
+    Refunding = 2,
+    /**
+     * The recipient was paid.
+     */
+    Completed = 3,
+    /**
+     * The payment was refunded to the payer's refund address.
+     */
+    Refunded = 4,
+    /**
+     * The bridge failed. `error_code` gives the reason.
+     */
+    Failed = 5,
+    /**
+     * The provider's order expired without a payment.
+     */
+    Expired = 6
+}
 export declare enum BuildTransferPackageOptions_Tags {
     BitcoinAddress = "BitcoinAddress",
     Bolt11Invoice = "Bolt11Invoice"
@@ -10390,7 +10826,7 @@ export declare const BuyBitcoinRequest: Readonly<{
     CashApp: {
         new (inner: {
             /**
-             * Amount in satoshis for the Lightning invoice. Must be non-zero.
+             * Amount in satoshis the wallet receives. Must be non-zero.
              */ amountSats: bigint;
         }): {
             readonly tag: BuyBitcoinRequest_Tags.CashApp;
@@ -10405,7 +10841,7 @@ export declare const BuyBitcoinRequest: Readonly<{
         };
         "new"(inner: {
             /**
-             * Amount in satoshis for the Lightning invoice. Must be non-zero.
+             * Amount in satoshis the wallet receives. Must be non-zero.
              */ amountSats: bigint;
         }): {
             readonly tag: BuyBitcoinRequest_Tags.CashApp;
@@ -12178,6 +12614,23 @@ export declare const CpfpFundingKind: Readonly<{
  * The kind of UTXO that will fund an exit's fees.
  */
 export type CpfpFundingKind = InstanceType<(typeof CpfpFundingKind)[keyof Omit<typeof CpfpFundingKind, 'instanceOf'>]>;
+/**
+ * How funding UTXOs pay a unilateral exit's CPFP children.
+ */
+export declare enum CpfpFundingStrategy {
+    /**
+     * One UTXO per branch. Each child after the first spends the change of the
+     * one before it, so a child's inputs depend on the fee rate of every child
+     * above it.
+     */
+    PerBranch = 0,
+    /**
+     * One UTXO per fee-bumped transaction. No child spends another's output,
+     * so each can be signed at any fee rate without knowing the others. Each
+     * child's change stays on the funding script rather than being swept.
+     */
+    PerNode = 1
+}
 export declare enum CpfpInput_Tags {
     P2wpkh = "P2wpkh",
     P2tr = "P2tr",
@@ -13104,9 +13557,9 @@ export declare enum ExitLeafSelection_Tags {
 /**
  * Which leaves to recover. `All` and `RecoverableOnly` take a leaf only when
  * what is left of its funds exceeds what recovering it costs. That cost leaves
- * out the shared fan-out fee, so funding several unilateral exits from one UTXO
- * adds `fanout_fee_sats` on top: compare `recoverable_value_sats` with
- * `total_fee_sats`, or fund one UTXO per branch to avoid the fan-out.
+ * out the shared fan-out fee, which you also pay when you fund several
+ * `funding.per_branch` entries from one UTXO: compare `recoverable_value_sats`
+ * with `total_fee_sats`, or fund one UTXO per entry to avoid the fan-out.
  */
 export declare const ExitLeafSelection: Readonly<{
     instanceOf: (obj: any) => obj is ExitLeafSelection;
@@ -13205,9 +13658,9 @@ export declare const ExitLeafSelection: Readonly<{
 /**
  * Which leaves to recover. `All` and `RecoverableOnly` take a leaf only when
  * what is left of its funds exceeds what recovering it costs. That cost leaves
- * out the shared fan-out fee, so funding several unilateral exits from one UTXO
- * adds `fanout_fee_sats` on top: compare `recoverable_value_sats` with
- * `total_fee_sats`, or fund one UTXO per branch to avoid the fan-out.
+ * out the shared fan-out fee, which you also pay when you fund several
+ * `funding.per_branch` entries from one UTXO: compare `recoverable_value_sats`
+ * with `total_fee_sats`, or fund one UTXO per entry to avoid the fan-out.
  */
 export type ExitLeafSelection = InstanceType<(typeof ExitLeafSelection)[keyof Omit<typeof ExitLeafSelection, 'instanceOf'>]>;
 /**
@@ -13954,18 +14407,18 @@ export declare const InputType: Readonly<{
         };
     };
     SilentPaymentAddress: {
-        new (v0: SilentPaymentAddressDetails): {
+        new (v0: BitcoinAddressDetails): {
             readonly tag: InputType_Tags.SilentPaymentAddress;
-            readonly inner: Readonly<[SilentPaymentAddressDetails]>;
+            readonly inner: Readonly<[BitcoinAddressDetails]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
              */
             readonly [uniffiTypeNameSymbol]: "InputType";
         };
-        "new"(v0: SilentPaymentAddressDetails): {
+        "new"(v0: BitcoinAddressDetails): {
             readonly tag: InputType_Tags.SilentPaymentAddress;
-            readonly inner: Readonly<[SilentPaymentAddressDetails]>;
+            readonly inner: Readonly<[BitcoinAddressDetails]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -13974,7 +14427,7 @@ export declare const InputType: Readonly<{
         };
         instanceOf(obj: any): obj is {
             readonly tag: InputType_Tags.SilentPaymentAddress;
-            readonly inner: Readonly<[SilentPaymentAddressDetails]>;
+            readonly inner: Readonly<[BitcoinAddressDetails]>;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -16138,10 +16591,17 @@ export declare const PaymentDetails: Readonly<{
     Withdraw: {
         new (inner: {
             txId: string;
+            /**
+             * The index of the withdrawal transaction's output that pays the
+             * destination address.
+             */ vout: number;
+            destinationAddress: string;
         }): {
             readonly tag: PaymentDetails_Tags.Withdraw;
             readonly inner: Readonly<{
                 txId: string;
+                vout: number;
+                destinationAddress: string;
             }>;
             /**
              * @private
@@ -16151,10 +16611,17 @@ export declare const PaymentDetails: Readonly<{
         };
         "new"(inner: {
             txId: string;
+            /**
+             * The index of the withdrawal transaction's output that pays the
+             * destination address.
+             */ vout: number;
+            destinationAddress: string;
         }): {
             readonly tag: PaymentDetails_Tags.Withdraw;
             readonly inner: Readonly<{
                 txId: string;
+                vout: number;
+                destinationAddress: string;
             }>;
             /**
              * @private
@@ -16166,6 +16633,8 @@ export declare const PaymentDetails: Readonly<{
             readonly tag: PaymentDetails_Tags.Withdraw;
             readonly inner: Readonly<{
                 txId: string;
+                vout: number;
+                destinationAddress: string;
             }>;
             /**
              * @private
@@ -17877,6 +18346,14 @@ export declare const ReceivePaymentMethod: Readonly<{
              * Spark identity public key that will receive the payment.
              * If absent, the connected wallet's identity public key is used.
              */ receiverIdentityPublicKey: string | undefined;
+            /**
+             * If set, creates an invoice for the hash of this preimage (hex-encoded)
+             * instead of one the SDK generates. The SSP settles the payment without
+             * the receiver, and the payer learns the preimage. Use a random value
+             * below the secp256k1 group order, and a new one for each invoice. The
+             * invoice never includes a Spark address. Set at most one of this and
+             * `payment_hash`.
+             */ preimage: string | undefined;
         }): {
             readonly tag: ReceivePaymentMethod_Tags.Bolt11Invoice;
             readonly inner: Readonly<{
@@ -17885,6 +18362,7 @@ export declare const ReceivePaymentMethod: Readonly<{
                 expirySecs: /*u32*/ number | undefined;
                 paymentHash: string | undefined;
                 receiverIdentityPublicKey: string | undefined;
+                preimage: string | undefined;
             }>;
             /**
              * @private
@@ -17907,6 +18385,14 @@ export declare const ReceivePaymentMethod: Readonly<{
              * Spark identity public key that will receive the payment.
              * If absent, the connected wallet's identity public key is used.
              */ receiverIdentityPublicKey: string | undefined;
+            /**
+             * If set, creates an invoice for the hash of this preimage (hex-encoded)
+             * instead of one the SDK generates. The SSP settles the payment without
+             * the receiver, and the payer learns the preimage. Use a random value
+             * below the secp256k1 group order, and a new one for each invoice. The
+             * invoice never includes a Spark address. Set at most one of this and
+             * `payment_hash`.
+             */ preimage: string | undefined;
         }): {
             readonly tag: ReceivePaymentMethod_Tags.Bolt11Invoice;
             readonly inner: Readonly<{
@@ -17915,6 +18401,7 @@ export declare const ReceivePaymentMethod: Readonly<{
                 expirySecs: /*u32*/ number | undefined;
                 paymentHash: string | undefined;
                 receiverIdentityPublicKey: string | undefined;
+                preimage: string | undefined;
             }>;
             /**
              * @private
@@ -17930,6 +18417,7 @@ export declare const ReceivePaymentMethod: Readonly<{
                 expirySecs: /*u32*/ number | undefined;
                 paymentHash: string | undefined;
                 receiverIdentityPublicKey: string | undefined;
+                preimage: string | undefined;
             }>;
             /**
              * @private
@@ -18102,8 +18590,10 @@ export declare enum RecoveryTxKind {
      */
     Cooperative = 0,
     /**
-     * Splits the caller's funding into one output per branch. Present only
-     * when the funding couldn't be matched one-to-one to branches.
+     * Splits the caller's funding into one output per `funding.per_branch`
+     * entry: per branch, or under `CpfpFundingStrategy::PerNode` per
+     * transaction. Present only when the funding couldn't be matched
+     * one-to-one to the entries.
      */
     FanOut = 1,
     /**
@@ -22933,6 +23423,7 @@ export declare enum SkippedLeafReason_Tags {
     FeeExceedsValue = "FeeExceedsValue",
     FundsNotFound = "FundsNotFound",
     Unverified = "Unverified",
+    OperatorsUnavailable = "OperatorsUnavailable",
     NotRecoverable = "NotRecoverable"
 }
 /**
@@ -23011,6 +23502,32 @@ export declare const SkippedLeafReason: Readonly<{
         };
         instanceOf(obj: any): obj is {
             readonly tag: SkippedLeafReason_Tags.Unverified;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SkippedLeafReason";
+        };
+    };
+    OperatorsUnavailable: {
+        new (): {
+            readonly tag: SkippedLeafReason_Tags.OperatorsUnavailable;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SkippedLeafReason";
+        };
+        "new"(): {
+            readonly tag: SkippedLeafReason_Tags.OperatorsUnavailable;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SkippedLeafReason";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SkippedLeafReason_Tags.OperatorsUnavailable;
             /**
              * @private
              * This field is private and should not be used, use `tag` instead.
@@ -24133,6 +24650,100 @@ export declare enum SwapDegradation {
      */
     MissingInfo = 2
 }
+export declare enum SyncError_Tags {
+    Network = "Network",
+    Generic = "Generic"
+}
+/**
+ * Why a sync could not refresh the balances. Each message is for logs, not
+ * for display.
+ */
+export declare const SyncError: Readonly<{
+    instanceOf: (obj: any) => obj is SyncError;
+    Network: {
+        new (inner: {
+            message: string;
+        }): {
+            readonly tag: SyncError_Tags.Network;
+            readonly inner: Readonly<{
+                message: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncError";
+        };
+        "new"(inner: {
+            message: string;
+        }): {
+            readonly tag: SyncError_Tags.Network;
+            readonly inner: Readonly<{
+                message: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncError";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SyncError_Tags.Network;
+            readonly inner: Readonly<{
+                message: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncError";
+        };
+    };
+    Generic: {
+        new (inner: {
+            message: string;
+        }): {
+            readonly tag: SyncError_Tags.Generic;
+            readonly inner: Readonly<{
+                message: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncError";
+        };
+        "new"(inner: {
+            message: string;
+        }): {
+            readonly tag: SyncError_Tags.Generic;
+            readonly inner: Readonly<{
+                message: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncError";
+        };
+        instanceOf(obj: any): obj is {
+            readonly tag: SyncError_Tags.Generic;
+            readonly inner: Readonly<{
+                message: string;
+            }>;
+            /**
+             * @private
+             * This field is private and should not be used, use `tag` instead.
+             */
+            readonly [uniffiTypeNameSymbol]: "SyncError";
+        };
+    };
+}>;
+/**
+ * Why a sync could not refresh the balances. Each message is for logs, not
+ * for display.
+ */
+export type SyncError = InstanceType<(typeof SyncError)[keyof Omit<typeof SyncError, 'instanceOf'>]>;
 export declare enum TokenAllowanceErrorReason {
     NotEnabled = 0,
     NotFound = 1,
@@ -25425,6 +26036,10 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<TransferAuthorization>;
     /**
+     * **Deprecated.** Use `bridge_from_cash_app` on the client from
+     * [`get_bridging_client`](Self::get_bridging_client), whose bridges can be
+     * looked up with `get_bridge_status`.
+     *
      * Bridge from Cash App to USDC/USDT on an external chain.
      *
      * Creates a cross-chain order and returns a `cash.app` deep link the payer
@@ -25436,6 +26051,10 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<BridgeFromCashAppResponse>;
     /**
+     * **Deprecated.** Use `bridge_to_cash_app` on the client from
+     * [`get_bridging_client`](Self::get_bridging_client), whose bridges can be
+     * looked up with `get_bridge_status`.
+     *
      * Bridge USDC/USDT from an external chain to a Cash App user.
      *
      * Returns the deposit the payer makes on the source chain. Once it lands,
@@ -25597,6 +26216,14 @@ export interface BreezSdkInterface {
     fetchConversionLimits(request: FetchConversionLimitsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<FetchConversionLimitsResponse>;
+    /**
+     * Returns a client for bridges: orders in which a payer on another chain
+     * or on Lightning pays a recipient, with no funds moving through the
+     * SDK. It shares this SDK's API key, and its cross-chain settings when
+     * set. It doesn't need cross-chain payments enabled, so it also works in
+     * server mode. Only available on mainnet.
+     */
+    getBridgingClient(): BridgingClientInterface;
     /**
      * Returns the available cross-chain routes.
      *
@@ -25806,7 +26433,8 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<PrepareLnurlPayResponse>;
     /**
-     * **Deprecated.** Use [`bridge_from_cash_app`](Self::bridge_from_cash_app).
+     * **Deprecated.** Use `bridge_from_cash_app` on the client from
+     * [`get_bridging_client`](Self::get_bridging_client).
      */
     preparePaymentLink(request: PreparePaymentLinkRequest, asyncOpts_?: {
         signal: AbortSignal;
@@ -26069,6 +26697,10 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<TransferAuthorization>;
     /**
+     * **Deprecated.** Use `bridge_from_cash_app` on the client from
+     * [`get_bridging_client`](Self::get_bridging_client), whose bridges can be
+     * looked up with `get_bridge_status`.
+     *
      * Bridge from Cash App to USDC/USDT on an external chain.
      *
      * Creates a cross-chain order and returns a `cash.app` deep link the payer
@@ -26080,6 +26712,10 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<BridgeFromCashAppResponse>;
     /**
+     * **Deprecated.** Use `bridge_to_cash_app` on the client from
+     * [`get_bridging_client`](Self::get_bridging_client), whose bridges can be
+     * looked up with `get_bridge_status`.
+     *
      * Bridge USDC/USDT from an external chain to a Cash App user.
      *
      * Returns the deposit the payer makes on the source chain. Once it lands,
@@ -26241,6 +26877,14 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     fetchConversionLimits(request: FetchConversionLimitsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<FetchConversionLimitsResponse>;
+    /**
+     * Returns a client for bridges: orders in which a payer on another chain
+     * or on Lightning pays a recipient, with no funds moving through the
+     * SDK. It shares this SDK's API key, and its cross-chain settings when
+     * set. It doesn't need cross-chain payments enabled, so it also works in
+     * server mode. Only available on mainnet.
+     */
+    getBridgingClient(): BridgingClientInterface;
     /**
      * Returns the available cross-chain routes.
      *
@@ -26450,7 +27094,8 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
         signal: AbortSignal;
     }): Promise<PrepareLnurlPayResponse>;
     /**
-     * **Deprecated.** Use [`bridge_from_cash_app`](Self::bridge_from_cash_app).
+     * **Deprecated.** Use `bridge_from_cash_app` on the client from
+     * [`get_bridging_client`](Self::get_bridging_client).
      */
     preparePaymentLink(request: PreparePaymentLinkRequest, asyncOpts_?: {
         signal: AbortSignal;
@@ -26664,6 +27309,103 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
      */
     uniffiDestroy(): void;
     static instanceOf(obj: any): obj is BreezSdk;
+}
+/**
+ * Creates bridges: orders that pay a recipient from another chain or over
+ * Lightning, with no funds moving through the SDK. Get one with
+ * [`new_bridging_client`], or from a connected SDK with
+ * `get_bridging_client`. Only available on mainnet.
+ */
+export interface BridgingClientInterface {
+    /**
+     * Pays a recipient on another chain from Cash App. Takes a route for the
+     * address that the payer funds over Lightning, and returns the bridge
+     * with the Cash App link as its `payment_request`.
+     */
+    bridgeFromCashApp(request: CreateBridgeRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<CreateBridgeResponse>;
+    /**
+     * Pays a Cash App user from another chain. The recipient is their
+     * username, as `$alice`, or their `alice@cash.app` Lightning address, as
+     * given to [`Self::get_routes`].
+     */
+    bridgeToCashApp(request: CreateBridgeRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<CreateBridgeResponse>;
+    /**
+     * Creates a bridge and returns what the payer pays. Once paid, the
+     * provider delivers to the recipient, or refunds `refund_address` if it
+     * can't. Track it with [`Self::get_bridge_status`].
+     */
+    createBridge(request: CreateBridgeRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<CreateBridgeResponse>;
+    /**
+     * Reads a bridge's status from the provider.
+     */
+    getBridgeStatus(request: GetBridgeStatusRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<GetBridgeStatusResponse>;
+    /**
+     * Lists the routes that can pay `recipient`.
+     */
+    getRoutes(request: GetBridgeRoutesRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<GetBridgeRoutesResponse>;
+}
+/**
+ * Creates bridges: orders that pay a recipient from another chain or over
+ * Lightning, with no funds moving through the SDK. Get one with
+ * [`new_bridging_client`], or from a connected SDK with
+ * `get_bridging_client`. Only available on mainnet.
+ */
+export declare class BridgingClient extends UniffiAbstractObject implements BridgingClientInterface {
+    readonly [uniffiTypeNameSymbol] = "BridgingClient";
+    readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+    readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+    private constructor();
+    /**
+     * Pays a recipient on another chain from Cash App. Takes a route for the
+     * address that the payer funds over Lightning, and returns the bridge
+     * with the Cash App link as its `payment_request`.
+     */
+    bridgeFromCashApp(request: CreateBridgeRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<CreateBridgeResponse>;
+    /**
+     * Pays a Cash App user from another chain. The recipient is their
+     * username, as `$alice`, or their `alice@cash.app` Lightning address, as
+     * given to [`Self::get_routes`].
+     */
+    bridgeToCashApp(request: CreateBridgeRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<CreateBridgeResponse>;
+    /**
+     * Creates a bridge and returns what the payer pays. Once paid, the
+     * provider delivers to the recipient, or refunds `refund_address` if it
+     * can't. Track it with [`Self::get_bridge_status`].
+     */
+    createBridge(request: CreateBridgeRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<CreateBridgeResponse>;
+    /**
+     * Reads a bridge's status from the provider.
+     */
+    getBridgeStatus(request: GetBridgeStatusRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<GetBridgeStatusResponse>;
+    /**
+     * Lists the routes that can pay `recipient`.
+     */
+    getRoutes(request: GetBridgeRoutesRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<GetBridgeRoutesResponse>;
+    /**
+     * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+     */
+    uniffiDestroy(): void;
+    static instanceOf(obj: any): obj is BridgingClient;
 }
 /**
  * Signer for external UTXO inputs in CPFP fee-bumping transactions.
@@ -29336,6 +30078,27 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): BridgeFromCashAppResponse;
             lower(value: BridgeFromCashAppResponse): UniffiByteArray;
         };
+        FfiConverterTypeBridgeRoutePair: {
+            read(from: RustBuffer): BridgeRoutePair;
+            write(value: BridgeRoutePair, into: RustBuffer): void;
+            allocationSize(value: BridgeRoutePair): number;
+            lift(value: UniffiByteArray): BridgeRoutePair;
+            lower(value: BridgeRoutePair): UniffiByteArray;
+        };
+        FfiConverterTypeBridgeRoutePairSide: {
+            read(from: RustBuffer): BridgeRoutePairSide;
+            write(value: BridgeRoutePairSide, into: RustBuffer): void;
+            allocationSize(value: BridgeRoutePairSide): number;
+            lift(value: UniffiByteArray): BridgeRoutePairSide;
+            lower(value: BridgeRoutePairSide): UniffiByteArray;
+        };
+        FfiConverterTypeBridgeStatus: {
+            read(from: RustBuffer): BridgeStatus;
+            write(value: BridgeStatus, into: RustBuffer): void;
+            allocationSize(value: BridgeStatus): number;
+            lift(value: UniffiByteArray): BridgeStatus;
+            lower(value: BridgeStatus): UniffiByteArray;
+        };
         FfiConverterTypeBridgeToCashAppRequest: {
             read(from: RustBuffer): BridgeToCashAppRequest;
             write(value: BridgeToCashAppRequest, into: RustBuffer): void;
@@ -29349,6 +30112,14 @@ declare const _default: Readonly<{
             allocationSize(value: BridgeToCashAppResponse): number;
             lift(value: UniffiByteArray): BridgeToCashAppResponse;
             lower(value: BridgeToCashAppResponse): UniffiByteArray;
+        };
+        FfiConverterTypeBridgingClient: FfiConverterObject<BridgingClientInterface>;
+        FfiConverterTypeBridgingConfig: {
+            read(from: RustBuffer): BridgingConfig;
+            write(value: BridgingConfig, into: RustBuffer): void;
+            allocationSize(value: BridgingConfig): number;
+            lift(value: UniffiByteArray): BridgingConfig;
+            lower(value: BridgingConfig): UniffiByteArray;
         };
         FfiConverterTypeBuildTransferPackageOptions: {
             read(from: RustBuffer): BuildTransferPackageOptions;
@@ -29686,6 +30457,13 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): CpfpFundingKind;
             lower(value: CpfpFundingKind): UniffiByteArray;
         };
+        FfiConverterTypeCpfpFundingStrategy: {
+            read(from: RustBuffer): CpfpFundingStrategy;
+            write(value: CpfpFundingStrategy, into: RustBuffer): void;
+            allocationSize(value: CpfpFundingStrategy): number;
+            lift(value: UniffiByteArray): CpfpFundingStrategy;
+            lower(value: CpfpFundingStrategy): UniffiByteArray;
+        };
         FfiConverterTypeCpfpInput: {
             read(from: RustBuffer): CpfpInput;
             write(value: CpfpInput, into: RustBuffer): void;
@@ -29694,6 +30472,20 @@ declare const _default: Readonly<{
             lower(value: CpfpInput): UniffiByteArray;
         };
         FfiConverterTypeCpfpSigner: FfiConverterObjectWithCallbacks<CpfpSigner>;
+        FfiConverterTypeCreateBridgeRequest: {
+            read(from: RustBuffer): CreateBridgeRequest;
+            write(value: CreateBridgeRequest, into: RustBuffer): void;
+            allocationSize(value: CreateBridgeRequest): number;
+            lift(value: UniffiByteArray): CreateBridgeRequest;
+            lower(value: CreateBridgeRequest): UniffiByteArray;
+        };
+        FfiConverterTypeCreateBridgeResponse: {
+            read(from: RustBuffer): CreateBridgeResponse;
+            write(value: CreateBridgeResponse, into: RustBuffer): void;
+            allocationSize(value: CreateBridgeResponse): number;
+            lift(value: UniffiByteArray): CreateBridgeResponse;
+            lower(value: CreateBridgeResponse): UniffiByteArray;
+        };
         FfiConverterTypeCreateIssuerTokenRequest: {
             read(from: RustBuffer): CreateIssuerTokenRequest;
             write(value: CreateIssuerTokenRequest, into: RustBuffer): void;
@@ -30257,6 +31049,34 @@ declare const _default: Readonly<{
             allocationSize(value: FreezeIssuerTokenResponse): number;
             lift(value: UniffiByteArray): FreezeIssuerTokenResponse;
             lower(value: FreezeIssuerTokenResponse): UniffiByteArray;
+        };
+        FfiConverterTypeGetBridgeRoutesRequest: {
+            read(from: RustBuffer): GetBridgeRoutesRequest;
+            write(value: GetBridgeRoutesRequest, into: RustBuffer): void;
+            allocationSize(value: GetBridgeRoutesRequest): number;
+            lift(value: UniffiByteArray): GetBridgeRoutesRequest;
+            lower(value: GetBridgeRoutesRequest): UniffiByteArray;
+        };
+        FfiConverterTypeGetBridgeRoutesResponse: {
+            read(from: RustBuffer): GetBridgeRoutesResponse;
+            write(value: GetBridgeRoutesResponse, into: RustBuffer): void;
+            allocationSize(value: GetBridgeRoutesResponse): number;
+            lift(value: UniffiByteArray): GetBridgeRoutesResponse;
+            lower(value: GetBridgeRoutesResponse): UniffiByteArray;
+        };
+        FfiConverterTypeGetBridgeStatusRequest: {
+            read(from: RustBuffer): GetBridgeStatusRequest;
+            write(value: GetBridgeStatusRequest, into: RustBuffer): void;
+            allocationSize(value: GetBridgeStatusRequest): number;
+            lift(value: UniffiByteArray): GetBridgeStatusRequest;
+            lower(value: GetBridgeStatusRequest): UniffiByteArray;
+        };
+        FfiConverterTypeGetBridgeStatusResponse: {
+            read(from: RustBuffer): GetBridgeStatusResponse;
+            write(value: GetBridgeStatusResponse, into: RustBuffer): void;
+            allocationSize(value: GetBridgeStatusResponse): number;
+            lift(value: UniffiByteArray): GetBridgeStatusResponse;
+            lower(value: GetBridgeStatusResponse): UniffiByteArray;
         };
         FfiConverterTypeGetInfoRequest: {
             read(from: RustBuffer): GetInfoRequest;
@@ -31388,13 +32208,6 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): SigningOnlyExternalSigners;
             lower(value: SigningOnlyExternalSigners): UniffiByteArray;
         };
-        FfiConverterTypeSilentPaymentAddressDetails: {
-            read(from: RustBuffer): SilentPaymentAddressDetails;
-            write(value: SilentPaymentAddressDetails, into: RustBuffer): void;
-            allocationSize(value: SilentPaymentAddressDetails): number;
-            lift(value: UniffiByteArray): SilentPaymentAddressDetails;
-            lower(value: SilentPaymentAddressDetails): UniffiByteArray;
-        };
         FfiConverterTypeSkippedLeaf: {
             read(from: RustBuffer): SkippedLeaf;
             write(value: SkippedLeaf, into: RustBuffer): void;
@@ -31585,6 +32398,13 @@ declare const _default: Readonly<{
             allocationSize(value: Symbol): number;
             lift(value: UniffiByteArray): Symbol;
             lower(value: Symbol): UniffiByteArray;
+        };
+        FfiConverterTypeSyncError: {
+            read(from: RustBuffer): SyncError;
+            write(value: SyncError, into: RustBuffer): void;
+            allocationSize(value: SyncError): number;
+            lift(value: UniffiByteArray): SyncError;
+            lower(value: SyncError): UniffiByteArray;
         };
         FfiConverterTypeSyncWalletRequest: {
             read(from: RustBuffer): SyncWalletRequest;

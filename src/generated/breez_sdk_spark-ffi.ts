@@ -162,6 +162,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_bridging_client(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_cross_chain_routes(
     ptr: bigint,
     filter: Uint8Array
@@ -337,6 +341,34 @@ interface NativeModuleInterface {
     request: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_update_user_settings(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_clone_bridgingclient(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_free_bridgingclient(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_method_bridgingclient_bridge_from_cash_app(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_bridgingclient_bridge_to_cash_app(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_bridgingclient_create_bridge(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_bridgingclient_get_bridge_status(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_bridgingclient_get_routes(
     ptr: bigint,
     request: Uint8Array
   ): bigint;
@@ -984,6 +1016,10 @@ interface NativeModuleInterface {
     storage: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_func_default_bridging_config(
+    apiKey: Uint8Array,
+    uniffi_out_err: UniffiRustCallStatus
+  ): Uint8Array;
   ubrn_uniffi_breez_sdk_spark_fn_func_default_config(
     network: Uint8Array,
     uniffi_out_err: UniffiRustCallStatus
@@ -1017,6 +1053,9 @@ interface NativeModuleInterface {
     logFilter: Uint8Array,
     uniffi_out_err: UniffiRustCallStatus
   ): void;
+  ubrn_uniffi_breez_sdk_spark_fn_func_new_bridging_client(
+    config: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_func_new_rest_chain_service(
     url: Uint8Array,
     network: Uint8Array,
@@ -1184,6 +1223,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_func_create_turnkey_signer(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_create_turnkey_signing_only_signer(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_custom_storage(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_func_default_bridging_config(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_default_config(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_default_external_signers(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_default_server_config(): number;
@@ -1191,6 +1231,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_func_default_storage(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_get_spark_status(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_init_logging(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_func_new_bridging_client(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_new_rest_chain_service(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_new_shared_sdk_context(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_func_parse_spark_config(): number;
@@ -1226,6 +1267,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_export_unilateral_exit_state(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_claim_deposit_quote(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_bridging_client(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_cross_chain_routes(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_lightning_address(): number;
@@ -1272,6 +1314,11 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_unregister_webhook(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_update_contact(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_update_user_settings(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_bridgingclient_bridge_from_cash_app(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_bridgingclient_bridge_to_cash_app(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_bridgingclient_create_bridge(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_bridgingclient_get_bridge_status(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_bridgingclient_get_routes(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_cpfpsigner_sign_psbt(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_derive_public_key(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalbreezsigner_sign_ecdsa(): number;
@@ -1389,6 +1436,10 @@ interface NativeModuleInterface {
     uniffi_out_err: UniffiRustCallStatus
   ): UniffiRustArcPtr;
   ubrn_uniffi_internal_fn_method_breezsdk_ffi__bless_pointer(
+    pointer: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): UniffiRustArcPtr;
+  ubrn_uniffi_internal_fn_method_bridgingclient_ffi__bless_pointer(
     pointer: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): UniffiRustArcPtr;

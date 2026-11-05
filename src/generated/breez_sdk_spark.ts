@@ -360,6 +360,22 @@ export function customStorage(storage: Storage): StorageBackend {
     )
   );
 }
+/**
+ * Settings for [`new_bridging_client`] with every optional field unset.
+ */
+export function defaultBridgingConfig(apiKey: string): BridgingConfig {
+  return FfiConverterTypeBridgingConfig.lift(
+    uniffiCaller.rustCall(
+      /*caller:*/ (callStatus) => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_default_bridging_config(
+          FfiConverterString.lower(apiKey),
+          callStatus
+        );
+      },
+      /*liftString:*/ FfiConverterString.lift
+    )
+  );
+}
 export function defaultConfig(network: Network): Config {
   return FfiConverterTypeConfig.lift(
     uniffiCaller.rustCall(
@@ -592,6 +608,46 @@ export function initLogging(
     },
     /*liftString:*/ FfiConverterString.lift
   );
+}
+/**
+ * Builds a [`BridgingClient`] from an API key, with no seed or storage.
+ */
+export async function newBridgingClient(
+  config: BridgingConfig,
+  asyncOpts_?: { signal: AbortSignal }
+): Promise<BridgingClientInterface> /*throws*/ {
+  const __stack = uniffiIsDebug ? new Error().stack : undefined;
+  try {
+    return await uniffiRustCallAsync(
+      /*rustCaller:*/ uniffiCaller,
+      /*rustFutureFunc:*/ () => {
+        return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_func_new_bridging_client(
+          FfiConverterTypeBridgingConfig.lower(config)
+        );
+      },
+      /*pollFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_poll_pointer,
+      /*cancelFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_cancel_pointer,
+      /*completeFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_complete_pointer,
+      /*freeFunc:*/ nativeModule()
+        .ubrn_ffi_breez_sdk_spark_rust_future_free_pointer,
+      /*liftFunc:*/ FfiConverterTypeBridgingClient.lift.bind(
+        FfiConverterTypeBridgingClient
+      ),
+      /*liftString:*/ FfiConverterString.lift,
+      /*asyncOpts:*/ asyncOpts_,
+      /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+        FfiConverterTypeSdkError
+      )
+    );
+  } catch (__error: any) {
+    if (uniffiIsDebug && __error instanceof Error) {
+      __error.stack = __stack;
+    }
+    throw __error;
+  }
 }
 /**
  * Constructs a shareable REST-based [`BitcoinChainService`].
@@ -2137,6 +2193,9 @@ const FfiConverterTypeBolt12OfferDetails = (() => {
 })();
 
 /**
+ * **Deprecated.** Use `CreateBridgeRequest` with the bridging client's
+ * `bridge_from_cash_app`.
+ *
  * Request to bridge from Cash App to USDC/USDT on an external chain.
  *
  * The payer pays the returned URL in Cash App over Lightning, and the
@@ -2240,6 +2299,9 @@ const FfiConverterTypeBridgeFromCashAppRequest = (() => {
 })();
 
 /**
+ * **Deprecated.** Use `CreateBridgeResponse`, from the bridging client's
+ * `bridge_from_cash_app`.
+ *
  * Response to a [`BridgeFromCashAppRequest`]: the URL to pay plus the quote,
  * so the caller can display the expected delivery and fees.
  */
@@ -2357,6 +2419,177 @@ const FfiConverterTypeBridgeFromCashAppResponse = (() => {
 })();
 
 /**
+ * A way to pay a recipient: what the payer pays, and what the recipient
+ * receives.
+ */
+export type BridgeRoutePair = {
+  provider: CrossChainProvider;
+  /**
+   * What the payer pays.
+   */
+  source: BridgeRoutePairSide;
+  /**
+   * What the recipient receives.
+   */
+  destination: BridgeRoutePairSide;
+  /**
+   * Bounds on what the payer pays, in `source` base units. Unset when the
+   * provider publishes none.
+   */
+  limits: CrossChainRouteLimits | undefined;
+};
+
+/**
+ * Generated factory for {@link BridgeRoutePair} record objects.
+ */
+export const BridgeRoutePair = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<BridgeRoutePair, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link BridgeRoutePair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link BridgeRoutePair}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<BridgeRoutePair>,
+  });
+})();
+
+const FfiConverterTypeBridgeRoutePair = (() => {
+  type TypeName = BridgeRoutePair;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        provider: FfiConverterTypeCrossChainProvider.read(from),
+        source: FfiConverterTypeBridgeRoutePairSide.read(from),
+        destination: FfiConverterTypeBridgeRoutePairSide.read(from),
+        limits: FfiConverterOptionalTypeCrossChainRouteLimits.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeCrossChainProvider.write(value.provider, into);
+      FfiConverterTypeBridgeRoutePairSide.write(value.source, into);
+      FfiConverterTypeBridgeRoutePairSide.write(value.destination, into);
+      FfiConverterOptionalTypeCrossChainRouteLimits.write(value.limits, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeCrossChainProvider.allocationSize(value.provider) +
+        FfiConverterTypeBridgeRoutePairSide.allocationSize(value.source) +
+        FfiConverterTypeBridgeRoutePairSide.allocationSize(value.destination) +
+        FfiConverterOptionalTypeCrossChainRouteLimits.allocationSize(
+          value.limits
+        )
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * One side of a [`BridgeRoutePair`].
+ */
+export type BridgeRoutePairSide = {
+  /**
+   * `"spark"`, `"lightning"`, or another chain, e.g. `"base"` or `"tron"`.
+   */
+  chain: string;
+  /**
+   * EVM `chainId` as a decimal string. Unset on chains without one.
+   */
+  chainId: string | undefined;
+  /**
+   * Asset symbol, e.g. `"USDC"`, `"USDT"`, `"BTC"` or `"USDB"`.
+   */
+  asset: string;
+  /**
+   * Token contract or mint address, or the token identifier on Spark.
+   * Unset for Bitcoin.
+   */
+  contractAddress: string | undefined;
+  decimals: /*u8*/ number;
+};
+
+/**
+ * Generated factory for {@link BridgeRoutePairSide} record objects.
+ */
+export const BridgeRoutePairSide = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<BridgeRoutePairSide, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link BridgeRoutePairSide}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link BridgeRoutePairSide}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<BridgeRoutePairSide>,
+  });
+})();
+
+const FfiConverterTypeBridgeRoutePairSide = (() => {
+  type TypeName = BridgeRoutePairSide;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        chain: FfiConverterString.read(from),
+        chainId: FfiConverterOptionalString.read(from),
+        asset: FfiConverterString.read(from),
+        contractAddress: FfiConverterOptionalString.read(from),
+        decimals: FfiConverterUInt8.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.chain, into);
+      FfiConverterOptionalString.write(value.chainId, into);
+      FfiConverterString.write(value.asset, into);
+      FfiConverterOptionalString.write(value.contractAddress, into);
+      FfiConverterUInt8.write(value.decimals, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.chain) +
+        FfiConverterOptionalString.allocationSize(value.chainId) +
+        FfiConverterString.allocationSize(value.asset) +
+        FfiConverterOptionalString.allocationSize(value.contractAddress) +
+        FfiConverterUInt8.allocationSize(value.decimals)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * **Deprecated.** Use `CreateBridgeRequest` with the bridging client's
+ * `bridge_to_cash_app`.
+ *
  * Request to bridge USDC/USDT from an external chain to a Cash App user.
  *
  * The payer deposits the stablecoin to the returned address, and the
@@ -2469,6 +2702,9 @@ const FfiConverterTypeBridgeToCashAppRequest = (() => {
 })();
 
 /**
+ * **Deprecated.** Use `CreateBridgeResponse`, from the bridging client's
+ * `bridge_to_cash_app`.
+ *
  * Response to a [`BridgeToCashAppRequest`].
  */
 export type BridgeToCashAppResponse = {
@@ -2533,6 +2769,86 @@ const FfiConverterTypeBridgeToCashAppResponse = (() => {
       return (
         FfiConverterString.allocationSize(value.paymentRequest) +
         FfiConverterTypeCrossChainReceiveInfo.allocationSize(value.info)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Settings for a [`BridgingClient`](super::BridgingClient) built with
+ * [`new_bridging_client`](super::new_bridging_client).
+ */
+export type BridgingConfig = {
+  /**
+   * Breez API key.
+   */
+  apiKey: string;
+  /**
+   * Routes the client's connections through a SOCKS5 proxy.
+   */
+  proxy: ProxyConfig | undefined;
+  /**
+   * Default slippage and overpay. Unset uses the built-in defaults.
+   */
+  crossChainConfig: CrossChainConfig | undefined;
+};
+
+/**
+ * Generated factory for {@link BridgingConfig} record objects.
+ */
+export const BridgingConfig = (() => {
+  const defaults = () => ({ proxy: undefined, crossChainConfig: undefined });
+  const create = (() => {
+    return uniffiCreateRecord<BridgingConfig, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link BridgingConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link BridgingConfig}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<BridgingConfig>,
+  });
+})();
+
+const FfiConverterTypeBridgingConfig = (() => {
+  type TypeName = BridgingConfig;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        apiKey: FfiConverterString.read(from),
+        proxy: FfiConverterOptionalTypeProxyConfig.read(from),
+        crossChainConfig: FfiConverterOptionalTypeCrossChainConfig.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.apiKey, into);
+      FfiConverterOptionalTypeProxyConfig.write(value.proxy, into);
+      FfiConverterOptionalTypeCrossChainConfig.write(
+        value.crossChainConfig,
+        into
+      );
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.apiKey) +
+        FfiConverterOptionalTypeProxyConfig.allocationSize(value.proxy) +
+        FfiConverterOptionalTypeCrossChainConfig.allocationSize(
+          value.crossChainConfig
+        )
       );
     }
   }
@@ -2849,7 +3165,8 @@ export type BuyBitcoinResponse = {
    */
   url: string;
   /**
-   * The conversion quote, populated only for cross-chain delivery.
+   * The conversion quote, populated for cross-chain delivery and for
+   * `CashApp`, whose purchase is delivered through a conversion provider.
    */
   crossChainInfo: CrossChainReceiveInfo | undefined;
 };
@@ -5126,6 +5443,194 @@ const FfiConverterTypeCooperativeRecoveryFailure = (() => {
   return new FFIConverter();
 })();
 
+export type CreateBridgeRequest = {
+  /**
+   * Who to pay, as given to [`BridgingClient::get_routes`](super::BridgingClient::get_routes).
+   */
+  recipient: string;
+  /**
+   * A route from [`BridgingClient::get_routes`](super::BridgingClient::get_routes)
+   * for this recipient.
+   */
+  route: BridgeRoutePair;
+  /**
+   * Amount in stablecoin base units: the destination asset when the
+   * recipient is paid in a stablecoin, the source asset otherwise, per that
+   * side's `decimals`. At parity this is the USD value: `1_000_000` is 1
+   * USDC at 6 decimals.
+   */
+  amount: U128;
+  /**
+   * The payer's address on the source chain, where the deposit is refunded
+   * if the recipient can't be paid. Required to pay a Lightning address,
+   * and recommended whenever the payer pays from another chain: without
+   * one the provider has no address to refund to. Ignored when the payer
+   * pays over Lightning.
+   */
+  refundAddress: string | undefined;
+  /**
+   * Whether fees are added on top of `amount` (`FeesExcluded`, the default)
+   * or deducted from it (`FeesIncluded`).
+   */
+  feePolicy: FeePolicy | undefined;
+  /**
+   * Maximum slippage tolerance in basis points. Unset uses the configured
+   * default.
+   */
+  maxSlippageBps: /*u32*/ number | undefined;
+};
+
+/**
+ * Generated factory for {@link CreateBridgeRequest} record objects.
+ */
+export const CreateBridgeRequest = (() => {
+  const defaults = () => ({
+    refundAddress: undefined,
+    feePolicy: undefined,
+    maxSlippageBps: undefined,
+  });
+  const create = (() => {
+    return uniffiCreateRecord<CreateBridgeRequest, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link CreateBridgeRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link CreateBridgeRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<CreateBridgeRequest>,
+  });
+})();
+
+const FfiConverterTypeCreateBridgeRequest = (() => {
+  type TypeName = CreateBridgeRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        recipient: FfiConverterString.read(from),
+        route: FfiConverterTypeBridgeRoutePair.read(from),
+        amount: FfiConverterTypeu128.read(from),
+        refundAddress: FfiConverterOptionalString.read(from),
+        feePolicy: FfiConverterOptionalTypeFeePolicy.read(from),
+        maxSlippageBps: FfiConverterOptionalUInt32.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.recipient, into);
+      FfiConverterTypeBridgeRoutePair.write(value.route, into);
+      FfiConverterTypeu128.write(value.amount, into);
+      FfiConverterOptionalString.write(value.refundAddress, into);
+      FfiConverterOptionalTypeFeePolicy.write(value.feePolicy, into);
+      FfiConverterOptionalUInt32.write(value.maxSlippageBps, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.recipient) +
+        FfiConverterTypeBridgeRoutePair.allocationSize(value.route) +
+        FfiConverterTypeu128.allocationSize(value.amount) +
+        FfiConverterOptionalString.allocationSize(value.refundAddress) +
+        FfiConverterOptionalTypeFeePolicy.allocationSize(value.feePolicy) +
+        FfiConverterOptionalUInt32.allocationSize(value.maxSlippageBps)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type CreateBridgeResponse = {
+  /**
+   * Identifies the bridge for [`BridgingClient::get_bridge_status`](super::BridgingClient::get_bridge_status).
+   * Store it to look up the status later.
+   */
+  bridgeId: string;
+  /**
+   * Pass it to
+   * [`BridgingClient::get_bridge_status`](super::BridgingClient::get_bridge_status).
+   */
+  statusToken: string | undefined;
+  /**
+   * What the payer pays: an EIP-681 URI on EVM chains, a BOLT11 invoice or a
+   * Cash App link over Lightning, otherwise the bare deposit address.
+   */
+  paymentRequest: string;
+  /**
+   * The deposit and the expected delivery.
+   */
+  info: CrossChainReceiveInfo;
+};
+
+/**
+ * Generated factory for {@link CreateBridgeResponse} record objects.
+ */
+export const CreateBridgeResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      CreateBridgeResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link CreateBridgeResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link CreateBridgeResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<CreateBridgeResponse>,
+  });
+})();
+
+const FfiConverterTypeCreateBridgeResponse = (() => {
+  type TypeName = CreateBridgeResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bridgeId: FfiConverterString.read(from),
+        statusToken: FfiConverterOptionalString.read(from),
+        paymentRequest: FfiConverterString.read(from),
+        info: FfiConverterTypeCrossChainReceiveInfo.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.bridgeId, into);
+      FfiConverterOptionalString.write(value.statusToken, into);
+      FfiConverterString.write(value.paymentRequest, into);
+      FfiConverterTypeCrossChainReceiveInfo.write(value.info, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.bridgeId) +
+        FfiConverterOptionalString.allocationSize(value.statusToken) +
+        FfiConverterString.allocationSize(value.paymentRequest) +
+        FfiConverterTypeCrossChainReceiveInfo.allocationSize(value.info)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type CreateIssuerTokenRequest = {
   name: string;
   ticker: string;
@@ -5698,36 +6203,44 @@ const FfiConverterTypeCrossChainConfig = (() => {
 })();
 
 /**
- * Information about the cross-chain receive quote.
+ * Information about the cross-chain receive quote: what the sender deposits
+ * and what the receiver is expected to get.
  */
 export type CrossChainReceiveInfo = {
   /**
-   * Bare external deposit address the sender pays to.
+   * The provider's id for this receive. The incoming payment carries the
+   * same id in its conversion info, so it can be matched to this receive.
+   */
+  quoteId: string;
+  /**
+   * Bare deposit address the sender pays to on the source chain, or the
+   * BOLT11 invoice when the sender pays over Lightning.
    */
   depositAddress: string;
   /**
    * Amount the sender must deposit, in source-asset base units
-   * (`route.decimals`). On `FeesExcluded` this may differ from the
-   * request's `amount` because the SDK inflates the deposit to absorb
-   * provider fees. Render this value to the sender.
+   * (`route.decimals`, or sats over Lightning). On `FeesExcluded` this may
+   * differ from the request's `amount` because the SDK inflates the deposit
+   * to absorb provider fees. Render this value to the sender.
    */
   depositAmount: U128;
   /**
    * Amount the receiver will see, net of provider fees, in
-   * destination-asset base units. Sats when receiving BTC into Spark,
-   * or token base units when receiving a Spark token (e.g. USDB). The
-   * final delivered amount may move within the slippage tolerance.
+   * destination-asset base units. Sats when receiving BTC, token base
+   * units when receiving a Spark token (e.g. USDB), or stablecoin base
+   * units when the receiver is on another chain. The final delivered
+   * amount may move within the slippage tolerance.
    */
   expectedReceivedAmount: U128;
   /**
-   * Symbol of the Spark-side asset `expected_received_amount` is
-   * denominated in, as the provider reports it: `"BTC"` for sats, or the
-   * token symbol (e.g. `"USDB"`).
+   * Symbol of the asset `expected_received_amount` is denominated in, as
+   * the provider reports it: `"BTC"` for sats, a Spark token symbol (e.g.
+   * `"USDB"`), or the stablecoin when the receiver is on another chain.
    */
   destinationAsset: string;
   /**
-   * Spark token identifier when the destination is a token. Absent when
-   * the destination is BTC and the receiver will see sats.
+   * Spark token identifier when the destination is a Spark token. Absent
+   * otherwise.
    */
   tokenIdentifier: string | undefined;
   /**
@@ -5787,6 +6300,7 @@ const FfiConverterTypeCrossChainReceiveInfo = (() => {
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
       return {
+        quoteId: FfiConverterString.read(from),
         depositAddress: FfiConverterString.read(from),
         depositAmount: FfiConverterTypeu128.read(from),
         expectedReceivedAmount: FfiConverterTypeu128.read(from),
@@ -5799,6 +6313,7 @@ const FfiConverterTypeCrossChainReceiveInfo = (() => {
       };
     }
     write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.quoteId, into);
       FfiConverterString.write(value.depositAddress, into);
       FfiConverterTypeu128.write(value.depositAmount, into);
       FfiConverterTypeu128.write(value.expectedReceivedAmount, into);
@@ -5811,6 +6326,7 @@ const FfiConverterTypeCrossChainReceiveInfo = (() => {
     }
     allocationSize(value: TypeName): number {
       return (
+        FfiConverterString.allocationSize(value.quoteId) +
         FfiConverterString.allocationSize(value.depositAddress) +
         FfiConverterTypeu128.allocationSize(value.depositAmount) +
         FfiConverterTypeu128.allocationSize(value.expectedReceivedAmount) +
@@ -9740,13 +10256,308 @@ const FfiConverterTypeFreezeIssuerTokenResponse = (() => {
   return new FFIConverter();
 })();
 
+export type GetBridgeRoutesRequest = {
+  /**
+   * Who to pay: a Spark address, a Lightning address (a Cash App
+   * `$cashtag` included), or an EVM/Solana/Tron address or URI.
+   */
+  recipient: string;
+};
+
+/**
+ * Generated factory for {@link GetBridgeRoutesRequest} record objects.
+ */
+export const GetBridgeRoutesRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      GetBridgeRoutesRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link GetBridgeRoutesRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link GetBridgeRoutesRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<GetBridgeRoutesRequest>,
+  });
+})();
+
+const FfiConverterTypeGetBridgeRoutesRequest = (() => {
+  type TypeName = GetBridgeRoutesRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        recipient: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.recipient, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterString.allocationSize(value.recipient);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type GetBridgeRoutesResponse = {
+  /**
+   * The routes that can pay the recipient. Empty when none can.
+   */
+  routes: Array<BridgeRoutePair>;
+};
+
+/**
+ * Generated factory for {@link GetBridgeRoutesResponse} record objects.
+ */
+export const GetBridgeRoutesResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      GetBridgeRoutesResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link GetBridgeRoutesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link GetBridgeRoutesResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<GetBridgeRoutesResponse>,
+  });
+})();
+
+const FfiConverterTypeGetBridgeRoutesResponse = (() => {
+  type TypeName = GetBridgeRoutesResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        routes: FfiConverterArrayTypeBridgeRoutePair.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayTypeBridgeRoutePair.write(value.routes, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayTypeBridgeRoutePair.allocationSize(value.routes);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type GetBridgeStatusRequest = {
+  bridgeId: string;
+  /**
+   * The bridge's status token, if any.
+   */
+  statusToken: string | undefined;
+};
+
+/**
+ * Generated factory for {@link GetBridgeStatusRequest} record objects.
+ */
+export const GetBridgeStatusRequest = (() => {
+  const defaults = () => ({ statusToken: undefined });
+  const create = (() => {
+    return uniffiCreateRecord<
+      GetBridgeStatusRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link GetBridgeStatusRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link GetBridgeStatusRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<GetBridgeStatusRequest>,
+  });
+})();
+
+const FfiConverterTypeGetBridgeStatusRequest = (() => {
+  type TypeName = GetBridgeStatusRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        bridgeId: FfiConverterString.read(from),
+        statusToken: FfiConverterOptionalString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.bridgeId, into);
+      FfiConverterOptionalString.write(value.statusToken, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.bridgeId) +
+        FfiConverterOptionalString.allocationSize(value.statusToken)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type GetBridgeStatusResponse = {
+  status: BridgeStatus;
+  /**
+   * The provider's own status, e.g. `"bridging"` or `"awaiting_approval"`,
+   * for display and support. Unset before the payment arrives.
+   */
+  providerStatus: string | undefined;
+  /**
+   * The provider's order id, once the payment arrived.
+   */
+  orderId: string | undefined;
+  /**
+   * The amount the payer paid, in the source asset's base units.
+   */
+  amountIn: U128 | undefined;
+  /**
+   * The amount the recipient received, in the destination asset's base
+   * units. Set once completed.
+   */
+  amountOut: U128 | undefined;
+  /**
+   * The payer's transaction on the source chain.
+   */
+  depositTxHash: string | undefined;
+  /**
+   * The transaction that paid the recipient, or the Spark transfer when the
+   * recipient is on Spark. Set once completed.
+   */
+  deliveryTxHash: string | undefined;
+  /**
+   * The transaction that refunded the payer.
+   */
+  refundTxHash: string | undefined;
+  /**
+   * The provider's error code when the bridge failed.
+   */
+  errorCode: string | undefined;
+};
+
+/**
+ * Generated factory for {@link GetBridgeStatusResponse} record objects.
+ */
+export const GetBridgeStatusResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      GetBridgeStatusResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link GetBridgeStatusResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link GetBridgeStatusResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<GetBridgeStatusResponse>,
+  });
+})();
+
+const FfiConverterTypeGetBridgeStatusResponse = (() => {
+  type TypeName = GetBridgeStatusResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        status: FfiConverterTypeBridgeStatus.read(from),
+        providerStatus: FfiConverterOptionalString.read(from),
+        orderId: FfiConverterOptionalString.read(from),
+        amountIn: FfiConverterOptionalTypeu128.read(from),
+        amountOut: FfiConverterOptionalTypeu128.read(from),
+        depositTxHash: FfiConverterOptionalString.read(from),
+        deliveryTxHash: FfiConverterOptionalString.read(from),
+        refundTxHash: FfiConverterOptionalString.read(from),
+        errorCode: FfiConverterOptionalString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterTypeBridgeStatus.write(value.status, into);
+      FfiConverterOptionalString.write(value.providerStatus, into);
+      FfiConverterOptionalString.write(value.orderId, into);
+      FfiConverterOptionalTypeu128.write(value.amountIn, into);
+      FfiConverterOptionalTypeu128.write(value.amountOut, into);
+      FfiConverterOptionalString.write(value.depositTxHash, into);
+      FfiConverterOptionalString.write(value.deliveryTxHash, into);
+      FfiConverterOptionalString.write(value.refundTxHash, into);
+      FfiConverterOptionalString.write(value.errorCode, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterTypeBridgeStatus.allocationSize(value.status) +
+        FfiConverterOptionalString.allocationSize(value.providerStatus) +
+        FfiConverterOptionalString.allocationSize(value.orderId) +
+        FfiConverterOptionalTypeu128.allocationSize(value.amountIn) +
+        FfiConverterOptionalTypeu128.allocationSize(value.amountOut) +
+        FfiConverterOptionalString.allocationSize(value.depositTxHash) +
+        FfiConverterOptionalString.allocationSize(value.deliveryTxHash) +
+        FfiConverterOptionalString.allocationSize(value.refundTxHash) +
+        FfiConverterOptionalString.allocationSize(value.errorCode)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
 /**
  * Request to get the balance of the wallet
  */
 export type GetInfoRequest = {
   /**
    * When `Some(true)`, and `background_tasks_enabled` is `true`, the call
-   * waits for the initial Full sync to complete before returning.
+   * waits for the initial Full sync to complete before returning. The sync
+   * can fail to reach the network: `last_sync_error` in the response says
+   * whether it did.
    *
    * When `background_tasks_enabled` is `false`, setting this to `Some(true)`
    * is rejected with an invalid-input error. There is no background sync to
@@ -9829,6 +10640,17 @@ export type GetInfoResponse = {
    * you choose.
    */
   recoverableFundsSats: /*u64*/ bigint;
+  /**
+   * Why the latest sync could not refresh the balances, which may then be
+   * out of date. Unset once a sync succeeds. It is not persisted, so it is
+   * also unset after each `connect` until the first sync ends.
+   */
+  lastSyncError: SyncError | undefined;
+  /**
+   * When a sync last refreshed the balances, in seconds since the Unix
+   * epoch. Unset until a sync succeeds with this storage.
+   */
+  lastSyncedAt: /*u64*/ bigint | undefined;
 };
 
 /**
@@ -9870,6 +10692,8 @@ const FfiConverterTypeGetInfoResponse = (() => {
         balanceSats: FfiConverterUInt64.read(from),
         tokenBalances: FfiConverterMapStringTypeTokenBalance.read(from),
         recoverableFundsSats: FfiConverterUInt64.read(from),
+        lastSyncError: FfiConverterOptionalTypeSyncError.read(from),
+        lastSyncedAt: FfiConverterOptionalUInt64.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -9877,6 +10701,8 @@ const FfiConverterTypeGetInfoResponse = (() => {
       FfiConverterUInt64.write(value.balanceSats, into);
       FfiConverterMapStringTypeTokenBalance.write(value.tokenBalances, into);
       FfiConverterUInt64.write(value.recoverableFundsSats, into);
+      FfiConverterOptionalTypeSyncError.write(value.lastSyncError, into);
+      FfiConverterOptionalUInt64.write(value.lastSyncedAt, into);
     }
     allocationSize(value: TypeName): number {
       return (
@@ -9885,7 +10711,9 @@ const FfiConverterTypeGetInfoResponse = (() => {
         FfiConverterMapStringTypeTokenBalance.allocationSize(
           value.tokenBalances
         ) +
-        FfiConverterUInt64.allocationSize(value.recoverableFundsSats)
+        FfiConverterUInt64.allocationSize(value.recoverableFundsSats) +
+        FfiConverterOptionalTypeSyncError.allocationSize(value.lastSyncError) +
+        FfiConverterOptionalUInt64.allocationSize(value.lastSyncedAt)
       );
     }
   }
@@ -12165,6 +12993,11 @@ export type LnurlReceiveMetadata = {
   nostrZapRequest: string | undefined;
   nostrZapReceipt: string | undefined;
   senderComment: string | undefined;
+  /**
+   * The Lightning address the payment was received on. Unset for some payments received
+   * before the LNURL server recorded addresses.
+   */
+  lightningAddress: string | undefined;
 };
 
 /**
@@ -12206,18 +13039,21 @@ const FfiConverterTypeLnurlReceiveMetadata = (() => {
         nostrZapRequest: FfiConverterOptionalString.read(from),
         nostrZapReceipt: FfiConverterOptionalString.read(from),
         senderComment: FfiConverterOptionalString.read(from),
+        lightningAddress: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterOptionalString.write(value.nostrZapRequest, into);
       FfiConverterOptionalString.write(value.nostrZapReceipt, into);
       FfiConverterOptionalString.write(value.senderComment, into);
+      FfiConverterOptionalString.write(value.lightningAddress, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterOptionalString.allocationSize(value.nostrZapRequest) +
         FfiConverterOptionalString.allocationSize(value.nostrZapReceipt) +
-        FfiConverterOptionalString.allocationSize(value.senderComment)
+        FfiConverterOptionalString.allocationSize(value.senderComment) +
+        FfiConverterOptionalString.allocationSize(value.lightningAddress)
       );
     }
   }
@@ -13781,7 +14617,8 @@ const FfiConverterTypePaymentRequestSource = (() => {
 })();
 
 /**
- * How much to fund one branch of the exit to avoid a fan-out.
+ * How much one funding UTXO must hold to avoid a fan-out: for a branch of the
+ * exit, or under `CpfpFundingStrategy::PerNode` for one transaction of it.
  */
 export type PerBranchFunding = {
   /**
@@ -13789,7 +14626,7 @@ export type PerBranchFunding = {
    */
   leafId: string;
   /**
-   * Fund a UTXO of at least this many satoshis for this branch.
+   * Fund a UTXO of at least this many satoshis.
    */
   fundingSats: /*u64*/ bigint;
 };
@@ -14070,7 +14907,8 @@ const FfiConverterTypePrepareLnurlPayResponse = (() => {
 })();
 
 /**
- * **Deprecated.** Use [`BridgeFromCashAppRequest`].
+ * **Deprecated.** Use `CreateBridgeRequest` with the bridging client's
+ * `bridge_from_cash_app`.
  *
  * Request for a payment link that sends USDC/USDT to an external-chain
  * recipient, funded by Cash App over Lightning.
@@ -14176,7 +15014,8 @@ const FfiConverterTypePreparePaymentLinkRequest = (() => {
 })();
 
 /**
- * **Deprecated.** Use [`BridgeFromCashAppResponse`].
+ * **Deprecated.** Use `CreateBridgeResponse`, from the bridging client's
+ * `bridge_from_cash_app`.
  *
  * Response to a [`PreparePaymentLinkRequest`]. Mirrors `BuyBitcoinResponse`
  * (a payable `url`) plus the quote so the caller can display the expected
@@ -14465,6 +15304,11 @@ export type PrepareRecoverFundsRequest = {
    */
   fundingKind: CpfpFundingKind | undefined;
   /**
+   * How the funding UTXOs pay a unilateral exit's CPFP children. Unset funds
+   * one UTXO per branch.
+   */
+  fundingStrategy: CpfpFundingStrategy | undefined;
+  /**
    * The Bitcoin address the recovered funds are sent to.
    */
   destination: string;
@@ -14475,7 +15319,10 @@ export type PrepareRecoverFundsRequest = {
  * Generated factory for {@link PrepareRecoverFundsRequest} record objects.
  */
 export const PrepareRecoverFundsRequest = (() => {
-  const defaults = () => ({ fundingKind: undefined });
+  const defaults = () => ({
+    fundingKind: undefined,
+    fundingStrategy: undefined,
+  });
   const create = (() => {
     return uniffiCreateRecord<
       PrepareRecoverFundsRequest,
@@ -14510,6 +15357,7 @@ const FfiConverterTypePrepareRecoverFundsRequest = (() => {
       return {
         feeRateSatPerVbyte: FfiConverterUInt64.read(from),
         fundingKind: FfiConverterOptionalTypeCpfpFundingKind.read(from),
+        fundingStrategy: FfiConverterOptionalTypeCpfpFundingStrategy.read(from),
         destination: FfiConverterString.read(from),
         selection: FfiConverterTypeExitLeafSelection.read(from),
       };
@@ -14517,6 +15365,10 @@ const FfiConverterTypePrepareRecoverFundsRequest = (() => {
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterUInt64.write(value.feeRateSatPerVbyte, into);
       FfiConverterOptionalTypeCpfpFundingKind.write(value.fundingKind, into);
+      FfiConverterOptionalTypeCpfpFundingStrategy.write(
+        value.fundingStrategy,
+        into
+      );
       FfiConverterString.write(value.destination, into);
       FfiConverterTypeExitLeafSelection.write(value.selection, into);
     }
@@ -14525,6 +15377,9 @@ const FfiConverterTypePrepareRecoverFundsRequest = (() => {
         FfiConverterUInt64.allocationSize(value.feeRateSatPerVbyte) +
         FfiConverterOptionalTypeCpfpFundingKind.allocationSize(
           value.fundingKind
+        ) +
+        FfiConverterOptionalTypeCpfpFundingStrategy.allocationSize(
+          value.fundingStrategy
         ) +
         FfiConverterString.allocationSize(value.destination) +
         FfiConverterTypeExitLeafSelection.allocationSize(value.selection)
@@ -14565,8 +15420,8 @@ export type PrepareRecoverFundsResponse = {
    */
   cpfpFeeSats: /*u64*/ bigint;
   /**
-   * Paid by the fan-out, from your funding UTXO. Funding one UTXO per branch
-   * (`funding.per_branch`) avoids it.
+   * Paid by the fan-out, from your funding UTXO. Funding one UTXO per
+   * `funding.per_branch` entry avoids it.
    */
   fanoutFeeSats: /*u64*/ bigint;
   /**
@@ -16100,7 +16955,7 @@ export type RecoverFundsRequest = {
   prepared: PrepareRecoverFundsResponse;
   /**
    * UTXOs that meet the quote's `funding`: one of at least `single_utxo_sats`,
-   * or one per branch. Not needed when the quote has no `funding`.
+   * or one per `per_branch` entry. Not needed when the quote has no `funding`.
    */
   fundingInputs: Array<CpfpInput>;
 };
@@ -16346,14 +17201,20 @@ const FfiConverterTypeRecoverableEcdsaSignatureBytes = (() => {
 export type RecoveryFunding = {
   /**
    * Fund a single UTXO of at least this many satoshis, which a fan-out
-   * splits over the branches.
+   * splits over the `per_branch` entries.
    */
   singleUtxoSats: /*u64*/ bigint;
   /**
-   * To skip the fan-out, fund one UTXO per branch of at least the given
-   * amount.
+   * To skip the fan-out, fund one UTXO per entry of at least its amount, in
+   * any order. An entry is a branch, or under `CpfpFundingStrategy::PerNode`
+   * one transaction of a branch, so a leaf can have several.
    */
   perBranch: Array<PerBranchFunding>;
+  /**
+   * The strategy the amounts were computed for, which `recover_funds` builds
+   * with.
+   */
+  strategy: CpfpFundingStrategy;
 };
 
 /**
@@ -16393,16 +17254,19 @@ const FfiConverterTypeRecoveryFunding = (() => {
       return {
         singleUtxoSats: FfiConverterUInt64.read(from),
         perBranch: FfiConverterArrayTypePerBranchFunding.read(from),
+        strategy: FfiConverterTypeCpfpFundingStrategy.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterUInt64.write(value.singleUtxoSats, into);
       FfiConverterArrayTypePerBranchFunding.write(value.perBranch, into);
+      FfiConverterTypeCpfpFundingStrategy.write(value.strategy, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterUInt64.allocationSize(value.singleUtxoSats) +
-        FfiConverterArrayTypePerBranchFunding.allocationSize(value.perBranch)
+        FfiConverterArrayTypePerBranchFunding.allocationSize(value.perBranch) +
+        FfiConverterTypeCpfpFundingStrategy.allocationSize(value.strategy)
       );
     }
   }
@@ -17871,6 +18735,8 @@ const FfiConverterTypeSendPaymentResponse = (() => {
 export type Session = {
   token: string;
   expiration: /*u64*/ bigint;
+  refreshToken: string | undefined;
+  refreshTokenExpiration: /*u64*/ bigint | undefined;
 };
 
 /**
@@ -17908,16 +18774,22 @@ const FfiConverterTypeSession = (() => {
       return {
         token: FfiConverterString.read(from),
         expiration: FfiConverterUInt64.read(from),
+        refreshToken: FfiConverterOptionalString.read(from),
+        refreshTokenExpiration: FfiConverterOptionalUInt64.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterString.write(value.token, into);
       FfiConverterUInt64.write(value.expiration, into);
+      FfiConverterOptionalString.write(value.refreshToken, into);
+      FfiConverterOptionalUInt64.write(value.refreshTokenExpiration, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterString.allocationSize(value.token) +
-        FfiConverterUInt64.allocationSize(value.expiration)
+        FfiConverterUInt64.allocationSize(value.expiration) +
+        FfiConverterOptionalString.allocationSize(value.refreshToken) +
+        FfiConverterOptionalUInt64.allocationSize(value.refreshTokenExpiration)
       );
     }
   }
@@ -17929,6 +18801,7 @@ export type SetLnurlMetadataItem = {
   senderComment: string | undefined;
   nostrZapRequest: string | undefined;
   nostrZapReceipt: string | undefined;
+  lightningAddress: string | undefined;
 };
 
 /**
@@ -17971,6 +18844,7 @@ const FfiConverterTypeSetLnurlMetadataItem = (() => {
         senderComment: FfiConverterOptionalString.read(from),
         nostrZapRequest: FfiConverterOptionalString.read(from),
         nostrZapReceipt: FfiConverterOptionalString.read(from),
+        lightningAddress: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -17978,13 +18852,15 @@ const FfiConverterTypeSetLnurlMetadataItem = (() => {
       FfiConverterOptionalString.write(value.senderComment, into);
       FfiConverterOptionalString.write(value.nostrZapRequest, into);
       FfiConverterOptionalString.write(value.nostrZapReceipt, into);
+      FfiConverterOptionalString.write(value.lightningAddress, into);
     }
     allocationSize(value: TypeName): number {
       return (
         FfiConverterString.allocationSize(value.paymentHash) +
         FfiConverterOptionalString.allocationSize(value.senderComment) +
         FfiConverterOptionalString.allocationSize(value.nostrZapRequest) +
-        FfiConverterOptionalString.allocationSize(value.nostrZapReceipt)
+        FfiConverterOptionalString.allocationSize(value.nostrZapReceipt) +
+        FfiConverterOptionalString.allocationSize(value.lightningAddress)
       );
     }
   }
@@ -18505,70 +19381,6 @@ const FfiConverterTypeSigningOnlyExternalSigners = (() => {
           value.breezSigner
         ) +
         FfiConverterTypeExternalSparkSigner.allocationSize(value.sparkSigner)
-      );
-    }
-  }
-  return new FFIConverter();
-})();
-
-export type SilentPaymentAddressDetails = {
-  address: string;
-  network: BitcoinNetwork;
-  source: PaymentRequestSource;
-};
-
-/**
- * Generated factory for {@link SilentPaymentAddressDetails} record objects.
- */
-export const SilentPaymentAddressDetails = (() => {
-  const defaults = () => ({});
-  const create = (() => {
-    return uniffiCreateRecord<
-      SilentPaymentAddressDetails,
-      ReturnType<typeof defaults>
-    >(defaults);
-  })();
-  return Object.freeze({
-    /**
-     * Create a frozen instance of {@link SilentPaymentAddressDetails}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    create,
-
-    /**
-     * Create a frozen instance of {@link SilentPaymentAddressDetails}, with defaults specified
-     * in Rust, in the {@link breez_sdk_spark} crate.
-     */
-    new: create,
-
-    /**
-     * Defaults specified in the {@link breez_sdk_spark} crate.
-     */
-    defaults: () =>
-      Object.freeze(defaults()) as Partial<SilentPaymentAddressDetails>,
-  });
-})();
-
-const FfiConverterTypeSilentPaymentAddressDetails = (() => {
-  type TypeName = SilentPaymentAddressDetails;
-  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
-    read(from: RustBuffer): TypeName {
-      return {
-        address: FfiConverterString.read(from),
-        network: FfiConverterTypeBitcoinNetwork.read(from),
-        source: FfiConverterTypePaymentRequestSource.read(from),
-      };
-    }
-    write(value: TypeName, into: RustBuffer): void {
-      FfiConverterString.write(value.address, into);
-      FfiConverterTypeBitcoinNetwork.write(value.network, into);
-      FfiConverterTypePaymentRequestSource.write(value.source, into);
-    }
-    allocationSize(value: TypeName): number {
-      return (
-        FfiConverterString.allocationSize(value.address) +
-        FfiConverterTypeBitcoinNetwork.allocationSize(value.network) +
-        FfiConverterTypePaymentRequestSource.allocationSize(value.source)
       );
     }
   }
@@ -19973,7 +20785,18 @@ const FfiConverterTypeSyncWalletRequest = (() => {
 /**
  * Response from synchronizing the wallet
  */
-export type SyncWalletResponse = {};
+export type SyncWalletResponse = {
+  /**
+   * Why the sync could not refresh the balances, which may then be out of
+   * date. Unset when it succeeded.
+   */
+  lastSyncError: SyncError | undefined;
+  /**
+   * When a sync last refreshed the balances, in seconds since the Unix
+   * epoch. Unset until a sync succeeds with this storage.
+   */
+  lastSyncedAt: /*u64*/ bigint | undefined;
+};
 
 /**
  * Generated factory for {@link SyncWalletResponse} record objects.
@@ -20009,11 +20832,20 @@ const FfiConverterTypeSyncWalletResponse = (() => {
   type TypeName = SyncWalletResponse;
   class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
     read(from: RustBuffer): TypeName {
-      return {};
+      return {
+        lastSyncError: FfiConverterOptionalTypeSyncError.read(from),
+        lastSyncedAt: FfiConverterOptionalUInt64.read(from),
+      };
     }
-    write(value: TypeName, into: RustBuffer): void {}
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalTypeSyncError.write(value.lastSyncError, into);
+      FfiConverterOptionalUInt64.write(value.lastSyncedAt, into);
+    }
     allocationSize(value: TypeName): number {
-      return 0;
+      return (
+        FfiConverterOptionalTypeSyncError.allocationSize(value.lastSyncError) +
+        FfiConverterOptionalUInt64.allocationSize(value.lastSyncedAt)
+      );
     }
   }
   return new FFIConverter();
@@ -22930,6 +23762,92 @@ const FfiConverterTypeBitcoinNetwork = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * Where a bridge is in its lifecycle.
+ */
+export enum BridgeStatus {
+  /**
+   * The bridge was created, and the payer hasn't paid yet. An unpaid bridge
+   * stays `Created` after its `expires_at`. A late deposit on another chain
+   * may still be accepted at a new price.
+   */
+  Created,
+  /**
+   * The provider is processing the payment, from confirming the deposit to
+   * paying the recipient. `provider_status` gives the stage.
+   */
+  Pending,
+  /**
+   * The recipient can't be paid, and the payment is being refunded.
+   */
+  Refunding,
+  /**
+   * The recipient was paid.
+   */
+  Completed,
+  /**
+   * The payment was refunded to the payer's refund address.
+   */
+  Refunded,
+  /**
+   * The bridge failed. `error_code` gives the reason.
+   */
+  Failed,
+  /**
+   * The provider's order expired without a payment.
+   */
+  Expired,
+}
+
+const FfiConverterTypeBridgeStatus = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = BridgeStatus;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return BridgeStatus.Created;
+        case 2:
+          return BridgeStatus.Pending;
+        case 3:
+          return BridgeStatus.Refunding;
+        case 4:
+          return BridgeStatus.Completed;
+        case 5:
+          return BridgeStatus.Refunded;
+        case 6:
+          return BridgeStatus.Failed;
+        case 7:
+          return BridgeStatus.Expired;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case BridgeStatus.Created:
+          return ordinalConverter.write(1, into);
+        case BridgeStatus.Pending:
+          return ordinalConverter.write(2, into);
+        case BridgeStatus.Refunding:
+          return ordinalConverter.write(3, into);
+        case BridgeStatus.Completed:
+          return ordinalConverter.write(4, into);
+        case BridgeStatus.Refunded:
+          return ordinalConverter.write(5, into);
+        case BridgeStatus.Failed:
+          return ordinalConverter.write(6, into);
+        case BridgeStatus.Expired:
+          return ordinalConverter.write(7, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
 // Enum: BuildTransferPackageOptions
 export enum BuildTransferPackageOptions_Tags {
   BitcoinAddress = 'BitcoinAddress',
@@ -23175,8 +24093,9 @@ export const BuyBitcoinRequest = (() => {
 
   /**
    * `CashApp`: Pay via the Lightning Network.
-   * Generates a bolt11 invoice for the given amount and returns a
-   * `cash.app` deep link. Only available on mainnet.
+   * Returns a `cash.app` deep link to a bolt11 invoice. A conversion
+   * provider delivers the payment to the wallet over Spark, and the payer
+   * pays its fee on top of the amount. Only available on mainnet.
    *
    * The amount is required. With an amountless invoice, Cash App only
    * lets the payer fund from their existing Cash App BTC balance. With
@@ -23193,7 +24112,7 @@ export const BuyBitcoinRequest = (() => {
     readonly inner: Readonly<{ amountSats: /*u64*/ bigint }>;
     constructor(inner: {
       /**
-       * Amount in satoshis for the Lightning invoice. Must be non-zero.
+       * Amount in satoshis the wallet receives. Must be non-zero.
        */ amountSats: /*u64*/ bigint;
     }) {
       super('BuyBitcoinRequest', 'CashApp');
@@ -23202,7 +24121,7 @@ export const BuyBitcoinRequest = (() => {
 
     static new(inner: {
       /**
-       * Amount in satoshis for the Lightning invoice. Must be non-zero.
+       * Amount in satoshis the wallet receives. Must be non-zero.
        */ amountSats: /*u64*/ bigint;
     }): CashApp_ {
       return new CashApp_(inner);
@@ -25931,6 +26850,53 @@ const FfiConverterTypeCpfpFundingKind = (() => {
   return new FFIConverter();
 })();
 
+/**
+ * How funding UTXOs pay a unilateral exit's CPFP children.
+ */
+export enum CpfpFundingStrategy {
+  /**
+   * One UTXO per branch. Each child after the first spends the change of the
+   * one before it, so a child's inputs depend on the fee rate of every child
+   * above it.
+   */
+  PerBranch,
+  /**
+   * One UTXO per fee-bumped transaction. No child spends another's output,
+   * so each can be signed at any fee rate without knowing the others. Each
+   * child's change stays on the funding script rather than being swept.
+   */
+  PerNode,
+}
+
+const FfiConverterTypeCpfpFundingStrategy = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = CpfpFundingStrategy;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return CpfpFundingStrategy.PerBranch;
+        case 2:
+          return CpfpFundingStrategy.PerNode;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case CpfpFundingStrategy.PerBranch:
+          return ordinalConverter.write(1, into);
+        case CpfpFundingStrategy.PerNode:
+          return ordinalConverter.write(2, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
 // Enum: CpfpInput
 export enum CpfpInput_Tags {
   P2wpkh = 'P2wpkh',
@@ -27504,9 +28470,9 @@ export enum ExitLeafSelection_Tags {
 /**
  * Which leaves to recover. `All` and `RecoverableOnly` take a leaf only when
  * what is left of its funds exceeds what recovering it costs. That cost leaves
- * out the shared fan-out fee, so funding several unilateral exits from one UTXO
- * adds `fanout_fee_sats` on top: compare `recoverable_value_sats` with
- * `total_fee_sats`, or fund one UTXO per branch to avoid the fan-out.
+ * out the shared fan-out fee, which you also pay when you fund several
+ * `funding.per_branch` entries from one UTXO: compare `recoverable_value_sats`
+ * with `total_fee_sats`, or fund one UTXO per entry to avoid the fan-out.
  */
 export const ExitLeafSelection = (() => {
   type All__interface = {
@@ -27615,9 +28581,9 @@ export const ExitLeafSelection = (() => {
 /**
  * Which leaves to recover. `All` and `RecoverableOnly` take a leaf only when
  * what is left of its funds exceeds what recovering it costs. That cost leaves
- * out the shared fan-out fee, so funding several unilateral exits from one UTXO
- * adds `fanout_fee_sats` on top: compare `recoverable_value_sats` with
- * `total_fee_sats`, or fund one UTXO per branch to avoid the fan-out.
+ * out the shared fan-out fee, which you also pay when you fund several
+ * `funding.per_branch` entries from one UTXO: compare `recoverable_value_sats`
+ * with `total_fee_sats`, or fund one UTXO per entry to avoid the fan-out.
  */
 
 export type ExitLeafSelection = InstanceType<
@@ -28880,7 +29846,7 @@ export const InputType = (() => {
 
   type SilentPaymentAddress__interface = {
     tag: InputType_Tags.SilentPaymentAddress;
-    inner: Readonly<[SilentPaymentAddressDetails]>;
+    inner: Readonly<[BitcoinAddressDetails]>;
   };
 
   class SilentPaymentAddress_
@@ -28893,13 +29859,13 @@ export const InputType = (() => {
      */
     readonly [uniffiTypeNameSymbol] = 'InputType';
     readonly tag = InputType_Tags.SilentPaymentAddress;
-    readonly inner: Readonly<[SilentPaymentAddressDetails]>;
-    constructor(v0: SilentPaymentAddressDetails) {
+    readonly inner: Readonly<[BitcoinAddressDetails]>;
+    constructor(v0: BitcoinAddressDetails) {
       super('InputType', 'SilentPaymentAddress');
       this.inner = Object.freeze([v0]);
     }
 
-    static new(v0: SilentPaymentAddressDetails): SilentPaymentAddress_ {
+    static new(v0: BitcoinAddressDetails): SilentPaymentAddress_ {
       return new SilentPaymentAddress_(v0);
     }
 
@@ -29191,7 +30157,7 @@ const FfiConverterTypeInputType = (() => {
           );
         case 7:
           return new InputType.SilentPaymentAddress(
-            FfiConverterTypeSilentPaymentAddressDetails.read(from)
+            FfiConverterTypeBitcoinAddressDetails.read(from)
           );
         case 8:
           return new InputType.LnurlAuth(
@@ -29266,7 +30232,7 @@ const FfiConverterTypeInputType = (() => {
         case InputType_Tags.SilentPaymentAddress: {
           ordinalConverter.write(7, into);
           const inner = value.inner;
-          FfiConverterTypeSilentPaymentAddressDetails.write(inner[0], into);
+          FfiConverterTypeBitcoinAddressDetails.write(inner[0], into);
           return;
         }
         case InputType_Tags.LnurlAuth: {
@@ -29369,7 +30335,7 @@ const FfiConverterTypeInputType = (() => {
         case InputType_Tags.SilentPaymentAddress: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(7);
-          size += FfiConverterTypeSilentPaymentAddressDetails.allocationSize(
+          size += FfiConverterTypeBitcoinAddressDetails.allocationSize(
             inner[0]
           );
           return size;
@@ -31800,7 +32766,11 @@ export const PaymentDetails = (() => {
 
   type Withdraw__interface = {
     tag: PaymentDetails_Tags.Withdraw;
-    inner: Readonly<{ txId: string }>;
+    inner: Readonly<{
+      txId: string;
+      vout: /*u32*/ number;
+      destinationAddress: string;
+    }>;
   };
 
   class Withdraw_ extends UniffiEnum implements Withdraw__interface {
@@ -31810,13 +32780,31 @@ export const PaymentDetails = (() => {
      */
     readonly [uniffiTypeNameSymbol] = 'PaymentDetails';
     readonly tag = PaymentDetails_Tags.Withdraw;
-    readonly inner: Readonly<{ txId: string }>;
-    constructor(inner: { txId: string }) {
+    readonly inner: Readonly<{
+      txId: string;
+      vout: /*u32*/ number;
+      destinationAddress: string;
+    }>;
+    constructor(inner: {
+      txId: string;
+      /**
+       * The index of the withdrawal transaction's output that pays the
+       * destination address.
+       */ vout: /*u32*/ number;
+      destinationAddress: string;
+    }) {
       super('PaymentDetails', 'Withdraw');
       this.inner = Object.freeze(inner);
     }
 
-    static new(inner: { txId: string }): Withdraw_ {
+    static new(inner: {
+      txId: string;
+      /**
+       * The index of the withdrawal transaction's output that pays the
+       * destination address.
+       */ vout: /*u32*/ number;
+      destinationAddress: string;
+    }): Withdraw_ {
       return new Withdraw_(inner);
     }
 
@@ -31909,6 +32897,8 @@ const FfiConverterTypePaymentDetails = (() => {
         case 4:
           return new PaymentDetails.Withdraw({
             txId: FfiConverterString.read(from),
+            vout: FfiConverterUInt32.read(from),
+            destinationAddress: FfiConverterString.read(from),
           });
         case 5:
           return new PaymentDetails.Deposit({
@@ -31980,6 +32970,8 @@ const FfiConverterTypePaymentDetails = (() => {
           ordinalConverter.write(4, into);
           const inner = value.inner;
           FfiConverterString.write(inner.txId, into);
+          FfiConverterUInt32.write(inner.vout, into);
+          FfiConverterString.write(inner.destinationAddress, into);
           return;
         }
         case PaymentDetails_Tags.Deposit: {
@@ -32055,6 +33047,8 @@ const FfiConverterTypePaymentDetails = (() => {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(4);
           size += FfiConverterString.allocationSize(inner.txId);
+          size += FfiConverterUInt32.allocationSize(inner.vout);
+          size += FfiConverterString.allocationSize(inner.destinationAddress);
           return size;
         }
         case PaymentDetails_Tags.Deposit: {
@@ -34111,6 +35105,7 @@ export const ReceivePaymentMethod = (() => {
       expirySecs: /*u32*/ number | undefined;
       paymentHash: string | undefined;
       receiverIdentityPublicKey: string | undefined;
+      preimage: string | undefined;
     }>;
   };
 
@@ -34127,6 +35122,7 @@ export const ReceivePaymentMethod = (() => {
       expirySecs: /*u32*/ number | undefined;
       paymentHash: string | undefined;
       receiverIdentityPublicKey: string | undefined;
+      preimage: string | undefined;
     }>;
     constructor(inner: {
       description: string;
@@ -34143,6 +35139,14 @@ export const ReceivePaymentMethod = (() => {
        * Spark identity public key that will receive the payment.
        * If absent, the connected wallet's identity public key is used.
        */ receiverIdentityPublicKey: string | undefined;
+      /**
+       * If set, creates an invoice for the hash of this preimage (hex-encoded)
+       * instead of one the SDK generates. The SSP settles the payment without
+       * the receiver, and the payer learns the preimage. Use a random value
+       * below the secp256k1 group order, and a new one for each invoice. The
+       * invoice never includes a Spark address. Set at most one of this and
+       * `payment_hash`.
+       */ preimage: string | undefined;
     }) {
       super('ReceivePaymentMethod', 'Bolt11Invoice');
       this.inner = Object.freeze(inner);
@@ -34163,6 +35167,14 @@ export const ReceivePaymentMethod = (() => {
        * Spark identity public key that will receive the payment.
        * If absent, the connected wallet's identity public key is used.
        */ receiverIdentityPublicKey: string | undefined;
+      /**
+       * If set, creates an invoice for the hash of this preimage (hex-encoded)
+       * instead of one the SDK generates. The SSP settles the payment without
+       * the receiver, and the payer learns the preimage. Use a random value
+       * below the secp256k1 group order, and a new one for each invoice. The
+       * invoice never includes a Spark address. Set at most one of this and
+       * `payment_hash`.
+       */ preimage: string | undefined;
     }): Bolt11Invoice_ {
       return new Bolt11Invoice_(inner);
     }
@@ -34336,6 +35348,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
             expirySecs: FfiConverterOptionalUInt32.read(from),
             paymentHash: FfiConverterOptionalString.read(from),
             receiverIdentityPublicKey: FfiConverterOptionalString.read(from),
+            preimage: FfiConverterOptionalString.read(from),
           });
         case 5:
           return new ReceivePaymentMethod.CrossChain({
@@ -34383,6 +35396,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
             inner.receiverIdentityPublicKey,
             into
           );
+          FfiConverterOptionalString.write(inner.preimage, into);
           return;
         }
         case ReceivePaymentMethod_Tags.CrossChain: {
@@ -34436,6 +35450,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
           size += FfiConverterOptionalString.allocationSize(
             inner.receiverIdentityPublicKey
           );
+          size += FfiConverterOptionalString.allocationSize(inner.preimage);
           return size;
         }
         case ReceivePaymentMethod_Tags.CrossChain: {
@@ -34561,8 +35576,10 @@ export enum RecoveryTxKind {
    */
   Cooperative,
   /**
-   * Splits the caller's funding into one output per branch. Present only
-   * when the funding couldn't be matched one-to-one to branches.
+   * Splits the caller's funding into one output per `funding.per_branch`
+   * entry: per branch, or under `CpfpFundingStrategy::PerNode` per
+   * transaction. Present only when the funding couldn't be matched
+   * one-to-one to the entries.
    */
   FanOut,
   /**
@@ -39539,6 +40556,7 @@ export enum SkippedLeafReason_Tags {
   FeeExceedsValue = 'FeeExceedsValue',
   FundsNotFound = 'FundsNotFound',
   Unverified = 'Unverified',
+  OperatorsUnavailable = 'OperatorsUnavailable',
   NotRecoverable = 'NotRecoverable',
 }
 /**
@@ -39633,6 +40651,38 @@ export const SkippedLeafReason = (() => {
     }
   }
 
+  type OperatorsUnavailable__interface = {
+    tag: SkippedLeafReason_Tags.OperatorsUnavailable;
+  };
+
+  /**
+   * The SDK needs data from the Spark operators to find the leaf's funds,
+   * and could not reach them or they were too busy. It tries again the next
+   * time you prepare.
+   */
+  class OperatorsUnavailable_
+    extends UniffiEnum
+    implements OperatorsUnavailable__interface
+  {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SkippedLeafReason';
+    readonly tag = SkippedLeafReason_Tags.OperatorsUnavailable;
+    constructor() {
+      super('SkippedLeafReason', 'OperatorsUnavailable');
+    }
+
+    static new(): OperatorsUnavailable_ {
+      return new OperatorsUnavailable_();
+    }
+
+    static instanceOf(obj: any): obj is OperatorsUnavailable_ {
+      return obj.tag === SkippedLeafReason_Tags.OperatorsUnavailable;
+    }
+  }
+
   type NotRecoverable__interface = {
     tag: SkippedLeafReason_Tags.NotRecoverable;
     inner: Readonly<{ message: string }>;
@@ -39675,6 +40725,7 @@ export const SkippedLeafReason = (() => {
     FeeExceedsValue: FeeExceedsValue_,
     FundsNotFound: FundsNotFound_,
     Unverified: Unverified_,
+    OperatorsUnavailable: OperatorsUnavailable_,
     NotRecoverable: NotRecoverable_,
   });
 })();
@@ -39701,6 +40752,8 @@ const FfiConverterTypeSkippedLeafReason = (() => {
         case 3:
           return new SkippedLeafReason.Unverified();
         case 4:
+          return new SkippedLeafReason.OperatorsUnavailable();
+        case 5:
           return new SkippedLeafReason.NotRecoverable({
             message: FfiConverterString.read(from),
           });
@@ -39722,8 +40775,12 @@ const FfiConverterTypeSkippedLeafReason = (() => {
           ordinalConverter.write(3, into);
           return;
         }
-        case SkippedLeafReason_Tags.NotRecoverable: {
+        case SkippedLeafReason_Tags.OperatorsUnavailable: {
           ordinalConverter.write(4, into);
+          return;
+        }
+        case SkippedLeafReason_Tags.NotRecoverable: {
+          ordinalConverter.write(5, into);
           const inner = value.inner;
           FfiConverterString.write(inner.message, into);
           return;
@@ -39744,9 +40801,12 @@ const FfiConverterTypeSkippedLeafReason = (() => {
         case SkippedLeafReason_Tags.Unverified: {
           return ordinalConverter.allocationSize(3);
         }
+        case SkippedLeafReason_Tags.OperatorsUnavailable: {
+          return ordinalConverter.allocationSize(4);
+        }
         case SkippedLeafReason_Tags.NotRecoverable: {
           const inner = value.inner;
-          let size = ordinalConverter.allocationSize(4);
+          let size = ordinalConverter.allocationSize(5);
           size += FfiConverterString.allocationSize(inner.message);
           return size;
         }
@@ -41337,6 +42397,156 @@ const FfiConverterTypeSwapDegradation = (() => {
     }
     allocationSize(value: TypeName): number {
       return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
+// Enum: SyncError
+export enum SyncError_Tags {
+  Network = 'Network',
+  Generic = 'Generic',
+}
+/**
+ * Why a sync could not refresh the balances. Each message is for logs, not
+ * for display.
+ */
+export const SyncError = (() => {
+  type Network__interface = {
+    tag: SyncError_Tags.Network;
+    inner: Readonly<{ message: string }>;
+  };
+
+  /**
+   * The network could not be reached, or is temporarily too busy to answer.
+   */
+  class Network_ extends UniffiEnum implements Network__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SyncError';
+    readonly tag = SyncError_Tags.Network;
+    readonly inner: Readonly<{ message: string }>;
+    constructor(inner: { message: string }) {
+      super('SyncError', 'Network');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { message: string }): Network_ {
+      return new Network_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Network_ {
+      return obj.tag === SyncError_Tags.Network;
+    }
+  }
+
+  type Generic__interface = {
+    tag: SyncError_Tags.Generic;
+    inner: Readonly<{ message: string }>;
+  };
+
+  /**
+   * Any other failure.
+   */
+  class Generic_ extends UniffiEnum implements Generic__interface {
+    /**
+     * @private
+     * This field is private and should not be used, use `tag` instead.
+     */
+    readonly [uniffiTypeNameSymbol] = 'SyncError';
+    readonly tag = SyncError_Tags.Generic;
+    readonly inner: Readonly<{ message: string }>;
+    constructor(inner: { message: string }) {
+      super('SyncError', 'Generic');
+      this.inner = Object.freeze(inner);
+    }
+
+    static new(inner: { message: string }): Generic_ {
+      return new Generic_(inner);
+    }
+
+    static instanceOf(obj: any): obj is Generic_ {
+      return obj.tag === SyncError_Tags.Generic;
+    }
+  }
+
+  function instanceOf(obj: any): obj is SyncError {
+    return obj[uniffiTypeNameSymbol] === 'SyncError';
+  }
+
+  return Object.freeze({
+    instanceOf,
+    Network: Network_,
+    Generic: Generic_,
+  });
+})();
+
+/**
+ * Why a sync could not refresh the balances. Each message is for logs, not
+ * for display.
+ */
+
+export type SyncError = InstanceType<
+  (typeof SyncError)[keyof Omit<typeof SyncError, 'instanceOf'>]
+>;
+
+// FfiConverter for enum SyncError
+const FfiConverterTypeSyncError = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = SyncError;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return new SyncError.Network({
+            message: FfiConverterString.read(from),
+          });
+        case 2:
+          return new SyncError.Generic({
+            message: FfiConverterString.read(from),
+          });
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value.tag) {
+        case SyncError_Tags.Network: {
+          ordinalConverter.write(1, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.message, into);
+          return;
+        }
+        case SyncError_Tags.Generic: {
+          ordinalConverter.write(2, into);
+          const inner = value.inner;
+          FfiConverterString.write(inner.message, into);
+          return;
+        }
+        default:
+          // Throwing from here means that SyncError_Tags hasn't matched an ordinal.
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    allocationSize(value: TypeName): number {
+      switch (value.tag) {
+        case SyncError_Tags.Network: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(1);
+          size += FfiConverterString.allocationSize(inner.message);
+          return size;
+        }
+        case SyncError_Tags.Generic: {
+          const inner = value.inner;
+          let size = ordinalConverter.allocationSize(2);
+          size += FfiConverterString.allocationSize(inner.message);
+          return size;
+        }
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
     }
   }
   return new FFIConverter();
@@ -44276,6 +45486,10 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<TransferAuthorization>;
   /**
+   * **Deprecated.** Use `bridge_from_cash_app` on the client from
+   * [`get_bridging_client`](Self::get_bridging_client), whose bridges can be
+   * looked up with `get_bridge_status`.
+   *
    * Bridge from Cash App to USDC/USDT on an external chain.
    *
    * Creates a cross-chain order and returns a `cash.app` deep link the payer
@@ -44288,6 +45502,10 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<BridgeFromCashAppResponse>;
   /**
+   * **Deprecated.** Use `bridge_to_cash_app` on the client from
+   * [`get_bridging_client`](Self::get_bridging_client), whose bridges can be
+   * looked up with `get_bridge_status`.
+   *
    * Bridge USDC/USDT from an external chain to a Cash App user.
    *
    * Returns the deposit the payer makes on the source chain. Once it lands,
@@ -44463,6 +45681,14 @@ export interface BreezSdkInterface {
     request: FetchConversionLimitsRequest,
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<FetchConversionLimitsResponse>;
+  /**
+   * Returns a client for bridges: orders in which a payer on another chain
+   * or on Lightning pays a recipient, with no funds moving through the
+   * SDK. It shares this SDK's API key, and its cross-chain settings when
+   * set. It doesn't need cross-chain payments enabled, so it also works in
+   * server mode. Only available on mainnet.
+   */
+  getBridgingClient(): /*throws*/ BridgingClientInterface;
   /**
    * Returns the available cross-chain routes.
    *
@@ -44687,7 +45913,8 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<PrepareLnurlPayResponse>;
   /**
-   * **Deprecated.** Use [`bridge_from_cash_app`](Self::bridge_from_cash_app).
+   * **Deprecated.** Use `bridge_from_cash_app` on the client from
+   * [`get_bridging_client`](Self::get_bridging_client).
    */
   preparePaymentLink(
     request: PreparePaymentLinkRequest,
@@ -45088,6 +46315,10 @@ export class BreezSdk
   }
 
   /**
+   * **Deprecated.** Use `bridge_from_cash_app` on the client from
+   * [`get_bridging_client`](Self::get_bridging_client), whose bridges can be
+   * looked up with `get_bridge_status`.
+   *
    * Bridge from Cash App to USDC/USDT on an external chain.
    *
    * Creates a cross-chain order and returns a `cash.app` deep link the payer
@@ -45135,6 +46366,10 @@ export class BreezSdk
   }
 
   /**
+   * **Deprecated.** Use `bridge_to_cash_app` on the client from
+   * [`get_bridging_client`](Self::get_bridging_client), whose bridges can be
+   * looked up with `get_bridge_status`.
+   *
    * Bridge USDC/USDT from an external chain to a Cash App user.
    *
    * Returns the deposit the payer makes on the source chain. Once it lands,
@@ -45964,6 +47199,30 @@ export class BreezSdk
       }
       throw __error;
     }
+  }
+
+  /**
+   * Returns a client for bridges: orders in which a payer on another chain
+   * or on Lightning pays a recipient, with no funds moving through the
+   * SDK. It shares this SDK's API key, and its cross-chain settings when
+   * set. It doesn't need cross-chain payments enabled, so it also works in
+   * server mode. Only available on mainnet.
+   */
+  public getBridgingClient(): BridgingClientInterface /*throws*/ {
+    return FfiConverterTypeBridgingClient.lift(
+      uniffiCaller.rustCallWithError(
+        /*liftError:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        ),
+        /*caller:*/ (callStatus) => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_bridging_client(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            callStatus
+          );
+        },
+        /*liftString:*/ FfiConverterString.lift
+      )
+    );
   }
 
   /**
@@ -46898,7 +48157,8 @@ export class BreezSdk
   }
 
   /**
-   * **Deprecated.** Use [`bridge_from_cash_app`](Self::bridge_from_cash_app).
+   * **Deprecated.** Use `bridge_from_cash_app` on the client from
+   * [`get_bridging_client`](Self::get_bridging_client).
    */
   public async preparePaymentLink(
     request: PreparePaymentLinkRequest,
@@ -48078,6 +49338,380 @@ const uniffiTypeBreezSdkObjectFactory: UniffiObjectFactory<BreezSdkInterface> =
 // FfiConverter for BreezSdkInterface
 const FfiConverterTypeBreezSdk = new FfiConverterObject(
   uniffiTypeBreezSdkObjectFactory
+);
+
+/**
+ * Creates bridges: orders that pay a recipient from another chain or over
+ * Lightning, with no funds moving through the SDK. Get one with
+ * [`new_bridging_client`], or from a connected SDK with
+ * `get_bridging_client`. Only available on mainnet.
+ */
+export interface BridgingClientInterface {
+  /**
+   * Pays a recipient on another chain from Cash App. Takes a route for the
+   * address that the payer funds over Lightning, and returns the bridge
+   * with the Cash App link as its `payment_request`.
+   */
+  bridgeFromCashApp(
+    request: CreateBridgeRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<CreateBridgeResponse>;
+  /**
+   * Pays a Cash App user from another chain. The recipient is their
+   * username, as `$alice`, or their `alice@cash.app` Lightning address, as
+   * given to [`Self::get_routes`].
+   */
+  bridgeToCashApp(
+    request: CreateBridgeRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<CreateBridgeResponse>;
+  /**
+   * Creates a bridge and returns what the payer pays. Once paid, the
+   * provider delivers to the recipient, or refunds `refund_address` if it
+   * can't. Track it with [`Self::get_bridge_status`].
+   */
+  createBridge(
+    request: CreateBridgeRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<CreateBridgeResponse>;
+  /**
+   * Reads a bridge's status from the provider.
+   */
+  getBridgeStatus(
+    request: GetBridgeStatusRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<GetBridgeStatusResponse>;
+  /**
+   * Lists the routes that can pay `recipient`.
+   */
+  getRoutes(
+    request: GetBridgeRoutesRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<GetBridgeRoutesResponse>;
+}
+
+/**
+ * Creates bridges: orders that pay a recipient from another chain or over
+ * Lightning, with no funds moving through the SDK. Get one with
+ * [`new_bridging_client`], or from a connected SDK with
+ * `get_bridging_client`. Only available on mainnet.
+ */
+export class BridgingClient
+  extends UniffiAbstractObject
+  implements BridgingClientInterface
+{
+  readonly [uniffiTypeNameSymbol] = 'BridgingClient';
+  readonly [destructorGuardSymbol]: UniffiRustArcPtr;
+  readonly [pointerLiteralSymbol]: UnsafeMutableRawPointer;
+  // No primary constructor declared for this class.
+  private constructor(pointer: UnsafeMutableRawPointer) {
+    super();
+    this[pointerLiteralSymbol] = pointer;
+    this[destructorGuardSymbol] =
+      uniffiTypeBridgingClientObjectFactory.bless(pointer);
+  }
+
+  /**
+   * Pays a recipient on another chain from Cash App. Takes a route for the
+   * address that the payer funds over Lightning, and returns the bridge
+   * with the Cash App link as its `payment_request`.
+   */
+  public async bridgeFromCashApp(
+    request: CreateBridgeRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<CreateBridgeResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_bridgingclient_bridge_from_cash_app(
+            uniffiTypeBridgingClientObjectFactory.clonePointer(this),
+            FfiConverterTypeCreateBridgeRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeCreateBridgeResponse.lift.bind(
+          FfiConverterTypeCreateBridgeResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Pays a Cash App user from another chain. The recipient is their
+   * username, as `$alice`, or their `alice@cash.app` Lightning address, as
+   * given to [`Self::get_routes`].
+   */
+  public async bridgeToCashApp(
+    request: CreateBridgeRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<CreateBridgeResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_bridgingclient_bridge_to_cash_app(
+            uniffiTypeBridgingClientObjectFactory.clonePointer(this),
+            FfiConverterTypeCreateBridgeRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeCreateBridgeResponse.lift.bind(
+          FfiConverterTypeCreateBridgeResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Creates a bridge and returns what the payer pays. Once paid, the
+   * provider delivers to the recipient, or refunds `refund_address` if it
+   * can't. Track it with [`Self::get_bridge_status`].
+   */
+  public async createBridge(
+    request: CreateBridgeRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<CreateBridgeResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_bridgingclient_create_bridge(
+            uniffiTypeBridgingClientObjectFactory.clonePointer(this),
+            FfiConverterTypeCreateBridgeRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeCreateBridgeResponse.lift.bind(
+          FfiConverterTypeCreateBridgeResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Reads a bridge's status from the provider.
+   */
+  public async getBridgeStatus(
+    request: GetBridgeStatusRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<GetBridgeStatusResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_bridgingclient_get_bridge_status(
+            uniffiTypeBridgingClientObjectFactory.clonePointer(this),
+            FfiConverterTypeGetBridgeStatusRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeGetBridgeStatusResponse.lift.bind(
+          FfiConverterTypeGetBridgeStatusResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Lists the routes that can pay `recipient`.
+   */
+  public async getRoutes(
+    request: GetBridgeRoutesRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<GetBridgeRoutesResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_bridgingclient_get_routes(
+            uniffiTypeBridgingClientObjectFactory.clonePointer(this),
+            FfiConverterTypeGetBridgeRoutesRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeGetBridgeRoutesResponse.lift.bind(
+          FfiConverterTypeGetBridgeRoutesResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * {@inheritDoc uniffi-bindgen-react-native#UniffiAbstractObject.uniffiDestroy}
+   */
+  uniffiDestroy(): void {
+    const ptr = (this as any)[destructorGuardSymbol];
+    if (ptr !== undefined) {
+      const pointer = uniffiTypeBridgingClientObjectFactory.pointer(this);
+      uniffiTypeBridgingClientObjectFactory.freePointer(pointer);
+      uniffiTypeBridgingClientObjectFactory.unbless(ptr);
+      delete (this as any)[destructorGuardSymbol];
+    }
+  }
+
+  static instanceOf(obj: any): obj is BridgingClient {
+    return uniffiTypeBridgingClientObjectFactory.isConcreteType(obj);
+  }
+}
+
+const uniffiTypeBridgingClientObjectFactory: UniffiObjectFactory<BridgingClientInterface> =
+  (() => {
+    return {
+      create(pointer: UnsafeMutableRawPointer): BridgingClientInterface {
+        const instance = Object.create(BridgingClient.prototype);
+        instance[pointerLiteralSymbol] = pointer;
+        instance[destructorGuardSymbol] = this.bless(pointer);
+        instance[uniffiTypeNameSymbol] = 'BridgingClient';
+        return instance;
+      },
+
+      bless(p: UnsafeMutableRawPointer): UniffiRustArcPtr {
+        return uniffiCaller.rustCall(
+          /*caller:*/ (status) =>
+            nativeModule().ubrn_uniffi_internal_fn_method_bridgingclient_ffi__bless_pointer(
+              p,
+              status
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      unbless(ptr: UniffiRustArcPtr) {
+        ptr.markDestroyed();
+      },
+
+      pointer(obj: BridgingClientInterface): UnsafeMutableRawPointer {
+        if ((obj as any)[destructorGuardSymbol] === undefined) {
+          throw new UniffiInternalError.UnexpectedNullPointer();
+        }
+        return (obj as any)[pointerLiteralSymbol];
+      },
+
+      clonePointer(obj: BridgingClientInterface): UnsafeMutableRawPointer {
+        const pointer = this.pointer(obj);
+        return uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_clone_bridgingclient(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      freePointer(pointer: UnsafeMutableRawPointer): void {
+        uniffiCaller.rustCall(
+          /*caller:*/ (callStatus) =>
+            nativeModule().ubrn_uniffi_breez_sdk_spark_fn_free_bridgingclient(
+              pointer,
+              callStatus
+            ),
+          /*liftString:*/ FfiConverterString.lift
+        );
+      },
+
+      isConcreteType(obj: any): obj is BridgingClientInterface {
+        return (
+          obj[destructorGuardSymbol] &&
+          obj[uniffiTypeNameSymbol] === 'BridgingClient'
+        );
+      },
+    };
+  })();
+// FfiConverter for BridgingClientInterface
+const FfiConverterTypeBridgingClient = new FfiConverterObject(
+  uniffiTypeBridgingClientObjectFactory
 );
 
 /**
@@ -60127,6 +61761,11 @@ const FfiConverterArrayTypeBolt12OfferBlindedPath = new FfiConverterArray(
   FfiConverterTypeBolt12OfferBlindedPath
 );
 
+// FfiConverter for Array<BridgeRoutePair>
+const FfiConverterArrayTypeBridgeRoutePair = new FfiConverterArray(
+  FfiConverterTypeBridgeRoutePair
+);
+
 // FfiConverter for Array<ConfirmedExitNode>
 const FfiConverterArrayTypeConfirmedExitNode = new FfiConverterArray(
   FfiConverterTypeConfirmedExitNode
@@ -60414,6 +62053,11 @@ const FfiConverterOptionalTypeCpfpFundingKind = new FfiConverterOptional(
   FfiConverterTypeCpfpFundingKind
 );
 
+// FfiConverter for CpfpFundingStrategy | undefined
+const FfiConverterOptionalTypeCpfpFundingStrategy = new FfiConverterOptional(
+  FfiConverterTypeCpfpFundingStrategy
+);
+
 // FfiConverter for CrossChainFeeMode | undefined
 const FfiConverterOptionalTypeCrossChainFeeMode = new FfiConverterOptional(
   FfiConverterTypeCrossChainFeeMode
@@ -60485,6 +62129,11 @@ const FfiConverterOptionalTypeSuccessActionProcessed = new FfiConverterOptional(
 // FfiConverter for SwapDegradation | undefined
 const FfiConverterOptionalTypeSwapDegradation = new FfiConverterOptional(
   FfiConverterTypeSwapDegradation
+);
+
+// FfiConverter for SyncError | undefined
+const FfiConverterOptionalTypeSyncError = new FfiConverterOptional(
+  FfiConverterTypeSyncError
 );
 
 // FfiConverter for TokenTransactionType | undefined
@@ -60654,6 +62303,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_default_bridging_config() !==
+    23181
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_default_bridging_config'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_default_config() !==
     62194
   ) {
@@ -60707,6 +62364,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_func_init_logging'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_func_new_bridging_client() !==
+    35110
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_func_new_bridging_client'
     );
   }
   if (
@@ -60831,7 +62496,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_bridge_from_cash_app() !==
-    35122
+    29767
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_bridge_from_cash_app'
@@ -60839,7 +62504,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_bridge_to_cash_app() !==
-    54543
+    25187
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_bridge_to_cash_app'
@@ -60987,6 +62652,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_bridging_client() !==
+    12454
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_get_bridging_client'
     );
   }
   if (
@@ -61159,7 +62832,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_payment_link() !==
-    32711
+    7617
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_prepare_payment_link'
@@ -61355,6 +63028,46 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_update_user_settings'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bridgingclient_bridge_from_cash_app() !==
+    63903
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_bridgingclient_bridge_from_cash_app'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bridgingclient_bridge_to_cash_app() !==
+    29057
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_bridgingclient_bridge_to_cash_app'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bridgingclient_create_bridge() !==
+    60481
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_bridgingclient_create_bridge'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bridgingclient_get_bridge_status() !==
+    45714
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_bridgingclient_get_bridge_status'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bridgingclient_get_routes() !==
+    65444
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_bridgingclient_get_routes'
     );
   }
   if (
@@ -62294,8 +64007,13 @@ export default Object.freeze({
     FfiConverterTypeBreezSdk,
     FfiConverterTypeBridgeFromCashAppRequest,
     FfiConverterTypeBridgeFromCashAppResponse,
+    FfiConverterTypeBridgeRoutePair,
+    FfiConverterTypeBridgeRoutePairSide,
+    FfiConverterTypeBridgeStatus,
     FfiConverterTypeBridgeToCashAppRequest,
     FfiConverterTypeBridgeToCashAppResponse,
+    FfiConverterTypeBridgingClient,
+    FfiConverterTypeBridgingConfig,
     FfiConverterTypeBuildTransferPackageOptions,
     FfiConverterTypeBuildUnsignedBatchPackageRequest,
     FfiConverterTypeBuildUnsignedLnurlPayPackageRequest,
@@ -62344,8 +64062,11 @@ export default Object.freeze({
     FfiConverterTypeCooperativeRecoveryError,
     FfiConverterTypeCooperativeRecoveryFailure,
     FfiConverterTypeCpfpFundingKind,
+    FfiConverterTypeCpfpFundingStrategy,
     FfiConverterTypeCpfpInput,
     FfiConverterTypeCpfpSigner,
+    FfiConverterTypeCreateBridgeRequest,
+    FfiConverterTypeCreateBridgeResponse,
     FfiConverterTypeCreateIssuerTokenRequest,
     FfiConverterTypeCreatePasskeyOutput,
     FfiConverterTypeCreateTokenAllowanceRequest,
@@ -62430,6 +64151,10 @@ export default Object.freeze({
     FfiConverterTypeFiatService,
     FfiConverterTypeFreezeIssuerTokenRequest,
     FfiConverterTypeFreezeIssuerTokenResponse,
+    FfiConverterTypeGetBridgeRoutesRequest,
+    FfiConverterTypeGetBridgeRoutesResponse,
+    FfiConverterTypeGetBridgeStatusRequest,
+    FfiConverterTypeGetBridgeStatusResponse,
     FfiConverterTypeGetInfoRequest,
     FfiConverterTypeGetInfoResponse,
     FfiConverterTypeGetPaymentRequest,
@@ -62600,7 +64325,6 @@ export default Object.freeze({
     FfiConverterTypeSignedTransferPackage,
     FfiConverterTypeSignerError,
     FfiConverterTypeSigningOnlyExternalSigners,
-    FfiConverterTypeSilentPaymentAddressDetails,
     FfiConverterTypeSkippedLeaf,
     FfiConverterTypeSkippedLeafReason,
     FfiConverterTypeSparkAddressDetails,
@@ -62630,6 +64354,7 @@ export default Object.freeze({
     FfiConverterTypeSuccessActionProcessed,
     FfiConverterTypeSwapDegradation,
     FfiConverterTypeSymbol,
+    FfiConverterTypeSyncError,
     FfiConverterTypeSyncWalletRequest,
     FfiConverterTypeSyncWalletResponse,
     FfiConverterTypeTokenAllowance,
