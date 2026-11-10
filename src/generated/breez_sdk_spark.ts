@@ -5463,9 +5463,11 @@ export type CreateBridgeRequest = {
   /**
    * The payer's address on the source chain, where the deposit is refunded
    * if the recipient can't be paid. Required to pay a Lightning address,
-   * and recommended whenever the payer pays from another chain: without
-   * one the provider has no address to refund to. Ignored when the payer
-   * pays over Lightning.
+   * and recommended otherwise: without one the provider has no address to
+   * refund to. When the payer pays over Lightning, it is a Lightning
+   * address, a Cash App `$cashtag` or an amountless BOLT11 invoice that
+   * doesn't expire before the bridge, refunded if the payment fails before
+   * the swap. Anything else is rejected.
    */
   refundAddress: string | undefined;
   /**
@@ -12735,7 +12737,7 @@ export type LnurlPayRequest = {
   /**
    * If set, providing the same idempotency key for multiple requests will ensure that only one
    * payment is made. If an idempotency key is re-used, the same payment will be returned.
-   * The idempotency key must be a valid UUID.
+   * The idempotency key must be a valid UUID. The payment's id is the idempotency key.
    */
   idempotencyKey: string | undefined;
 };
@@ -14283,7 +14285,8 @@ const FfiConverterTypePasskeyProviderOptions = (() => {
  */
 export type Payment = {
   /**
-   * Unique identifier for the payment
+   * Unique identifier for the payment. A second payment of the same invoice has a
+   * different id.
    */
   id: string;
   /**
@@ -18609,7 +18612,7 @@ export type SendPaymentRequest = {
    * and cross-chain sends).
    * If set, providing the same idempotency key for multiple requests will ensure that only one
    * payment is made. If an idempotency key is re-used, the same payment will be returned.
-   * The idempotency key must be a valid UUID.
+   * The idempotency key must be a valid UUID. The payment's id is the idempotency key.
    */
   idempotencyKey: string | undefined;
 };
@@ -23767,9 +23770,10 @@ const FfiConverterTypeBitcoinNetwork = (() => {
  */
 export enum BridgeStatus {
   /**
-   * The bridge was created, and the payer hasn't paid yet. An unpaid bridge
-   * stays `Created` after its `expires_at`. A late deposit on another chain
-   * may still be accepted at a new price.
+   * The bridge was created, and the payer hasn't paid yet. A bridge from
+   * Cash App becomes `Expired` once it can no longer be paid. Other unpaid
+   * bridges stay `Created` after their `expires_at`, and a late deposit on
+   * another chain may still be accepted at a new price.
    */
   Created,
   /**
@@ -23794,7 +23798,7 @@ export enum BridgeStatus {
    */
   Failed,
   /**
-   * The provider's order expired without a payment.
+   * The bridge can no longer be paid, and nobody paid it.
    */
   Expired,
 }
@@ -45494,8 +45498,9 @@ export interface BreezSdkInterface {
    *
    * Creates a cross-chain order and returns a `cash.app` deep link the payer
    * opens. Once paid over Lightning, the provider delivers the stablecoin to
-   * `address`. No funds move through the Spark wallet, and nothing is
-   * tracked. Only available on mainnet.
+   * `address`, or refunds a failure before the swap to this wallet's
+   * Lightning address, when one is registered. Nothing is tracked. Only
+   * available on mainnet.
    */
   bridgeFromCashApp(
     request: BridgeFromCashAppRequest,
@@ -46323,8 +46328,9 @@ export class BreezSdk
    *
    * Creates a cross-chain order and returns a `cash.app` deep link the payer
    * opens. Once paid over Lightning, the provider delivers the stablecoin to
-   * `address`. No funds move through the Spark wallet, and nothing is
-   * tracked. Only available on mainnet.
+   * `address`, or refunds a failure before the swap to this wallet's
+   * Lightning address, when one is registered. Nothing is tracked. Only
+   * available on mainnet.
    */
   public async bridgeFromCashApp(
     request: BridgeFromCashAppRequest,
@@ -49350,7 +49356,10 @@ export interface BridgingClientInterface {
   /**
    * Pays a recipient on another chain from Cash App. Takes a route for the
    * address that the payer funds over Lightning, and returns the bridge
-   * with the Cash App link as its `payment_request`.
+   * with the Cash App link as its `payment_request`. The provider allows
+   * these payments 10% slippage when they execute. With fees excluded,
+   * `max_slippage_bps` bounds how far the quoted delivery may fall short of
+   * `amount` when the bridge is created.
    */
   bridgeFromCashApp(
     request: CreateBridgeRequest,
@@ -49414,7 +49423,10 @@ export class BridgingClient
   /**
    * Pays a recipient on another chain from Cash App. Takes a route for the
    * address that the payer funds over Lightning, and returns the bridge
-   * with the Cash App link as its `payment_request`.
+   * with the Cash App link as its `payment_request`. The provider allows
+   * these payments 10% slippage when they execute. With fees excluded,
+   * `max_slippage_bps` bounds how far the quoted delivery may fall short of
+   * `amount` when the bridge is created.
    */
   public async bridgeFromCashApp(
     request: CreateBridgeRequest,
@@ -62496,7 +62508,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_bridge_from_cash_app() !==
-    29767
+    8629
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_bridge_from_cash_app'
@@ -63032,7 +63044,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_bridgingclient_bridge_from_cash_app() !==
-    63903
+    61880
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_bridgingclient_bridge_from_cash_app'
