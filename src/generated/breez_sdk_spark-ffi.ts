@@ -162,6 +162,10 @@ interface NativeModuleInterface {
     ptr: bigint,
     request: Uint8Array
   ): bigint;
+  ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_lightning_send_status(
+    ptr: bigint,
+    request: Uint8Array
+  ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_get_bridging_client(
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
@@ -481,6 +485,10 @@ interface NativeModuleInterface {
     leafId: Uint8Array
   ): bigint;
   ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_is_remote(
+    ptr: bigint,
+    uniffi_out_err: UniffiRustCallStatus
+  ): number;
+  ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_supports_adaptor_v2(
     ptr: bigint,
     uniffi_out_err: UniffiRustCallStatus
   ): number;
@@ -1267,6 +1275,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_export_unilateral_exit_state(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_claim_deposit_quote(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_lightning_send_status(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_bridging_client(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_cross_chain_routes(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_info(): number;
@@ -1334,6 +1343,7 @@ interface NativeModuleInterface {
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_identity_public_key(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_public_key_for_leaf(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_is_remote(): number;
+  ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_supports_adaptor_v2(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_static_deposit_public_key(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_authentication_challenge(): number;
   ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_message(): number;
@@ -1789,39 +1799,36 @@ type UniffiCallbackInterfaceExternalSparkSignerMethod2 = (
   uniffiHandle: bigint
 ) => UniffiResult<number>;
 type UniffiCallbackInterfaceExternalSparkSignerMethod3 = (
+  uniffiHandle: bigint
+) => UniffiResult<number>;
+type UniffiCallbackInterfaceExternalSparkSignerMethod4 = (
   uniffiHandle: bigint,
   index: number,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceExternalSparkSignerMethod4 = (
+type UniffiCallbackInterfaceExternalSparkSignerMethod5 = (
   uniffiHandle: bigint,
   challenge: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceExternalSparkSignerMethod5 = (
+type UniffiCallbackInterfaceExternalSparkSignerMethod6 = (
   uniffiHandle: bigint,
   message: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceExternalSparkSignerMethod6 = (
+type UniffiCallbackInterfaceExternalSparkSignerMethod7 = (
   uniffiHandle: bigint,
   leafId: Uint8Array,
   sighash: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
-type UniffiCallbackInterfaceExternalSparkSignerMethod7 = (
-  uniffiHandle: bigint,
-  jobs: Uint8Array,
-  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
-  uniffiCallbackData: bigint
-) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSparkSignerMethod8 = (
   uniffiHandle: bigint,
-  request: Uint8Array,
+  jobs: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
@@ -1880,6 +1887,12 @@ type UniffiCallbackInterfaceExternalSparkSignerMethod17 = (
   uniffiCallbackData: bigint
 ) => UniffiForeignFuture;
 type UniffiCallbackInterfaceExternalSparkSignerMethod18 = (
+  uniffiHandle: bigint,
+  request: Uint8Array,
+  uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
+  uniffiCallbackData: bigint
+) => UniffiForeignFuture;
+type UniffiCallbackInterfaceExternalSparkSignerMethod19 = (
   uniffiHandle: bigint,
   request: Uint8Array,
   uniffiFutureCallback: UniffiForeignFutureCompleteRustBuffer,
@@ -2227,22 +2240,23 @@ export type UniffiVTableCallbackInterfaceExternalSparkSigner = {
   getIdentityPublicKey: UniffiCallbackInterfaceExternalSparkSignerMethod0;
   getPublicKeyForLeaf: UniffiCallbackInterfaceExternalSparkSignerMethod1;
   isRemote: UniffiCallbackInterfaceExternalSparkSignerMethod2;
-  getStaticDepositPublicKey: UniffiCallbackInterfaceExternalSparkSignerMethod3;
-  signAuthenticationChallenge: UniffiCallbackInterfaceExternalSparkSignerMethod4;
-  signMessage: UniffiCallbackInterfaceExternalSparkSignerMethod5;
-  signLeafRefundSpend: UniffiCallbackInterfaceExternalSparkSignerMethod6;
-  signFrost: UniffiCallbackInterfaceExternalSparkSignerMethod7;
-  prepareTransfer: UniffiCallbackInterfaceExternalSparkSignerMethod8;
-  prepareClaim: UniffiCallbackInterfaceExternalSparkSignerMethod9;
-  prepareLightningReceive: UniffiCallbackInterfaceExternalSparkSignerMethod10;
-  prepareStaticDeposit: UniffiCallbackInterfaceExternalSparkSignerMethod11;
-  startStaticDepositRefund: UniffiCallbackInterfaceExternalSparkSignerMethod12;
-  signStaticDepositRefund: UniffiCallbackInterfaceExternalSparkSignerMethod13;
-  startWatchtowerExitRecovery: UniffiCallbackInterfaceExternalSparkSignerMethod14;
-  signWatchtowerExitRecovery: UniffiCallbackInterfaceExternalSparkSignerMethod15;
-  signSparkInvoice: UniffiCallbackInterfaceExternalSparkSignerMethod16;
-  prepareTokenTransaction: UniffiCallbackInterfaceExternalSparkSignerMethod17;
-  prepareStaticDepositClaim: UniffiCallbackInterfaceExternalSparkSignerMethod18;
+  supportsAdaptorV2: UniffiCallbackInterfaceExternalSparkSignerMethod3;
+  getStaticDepositPublicKey: UniffiCallbackInterfaceExternalSparkSignerMethod4;
+  signAuthenticationChallenge: UniffiCallbackInterfaceExternalSparkSignerMethod5;
+  signMessage: UniffiCallbackInterfaceExternalSparkSignerMethod6;
+  signLeafRefundSpend: UniffiCallbackInterfaceExternalSparkSignerMethod7;
+  signFrost: UniffiCallbackInterfaceExternalSparkSignerMethod8;
+  prepareTransfer: UniffiCallbackInterfaceExternalSparkSignerMethod9;
+  prepareClaim: UniffiCallbackInterfaceExternalSparkSignerMethod10;
+  prepareLightningReceive: UniffiCallbackInterfaceExternalSparkSignerMethod11;
+  prepareStaticDeposit: UniffiCallbackInterfaceExternalSparkSignerMethod12;
+  startStaticDepositRefund: UniffiCallbackInterfaceExternalSparkSignerMethod13;
+  signStaticDepositRefund: UniffiCallbackInterfaceExternalSparkSignerMethod14;
+  startWatchtowerExitRecovery: UniffiCallbackInterfaceExternalSparkSignerMethod15;
+  signWatchtowerExitRecovery: UniffiCallbackInterfaceExternalSparkSignerMethod16;
+  signSparkInvoice: UniffiCallbackInterfaceExternalSparkSignerMethod17;
+  prepareTokenTransaction: UniffiCallbackInterfaceExternalSparkSignerMethod18;
+  prepareStaticDepositClaim: UniffiCallbackInterfaceExternalSparkSignerMethod19;
   uniffiFree: UniffiCallbackInterfaceFree;
 };
 export type UniffiVTableCallbackInterfaceFiatService = {

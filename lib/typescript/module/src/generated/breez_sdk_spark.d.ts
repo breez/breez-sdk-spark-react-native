@@ -2427,6 +2427,11 @@ export type CreateIssuerTokenRequest = {
     decimals: number;
     isFreezable: boolean;
     maxSupply: U128;
+    /**
+     * Arbitrary data to attach to the token, such as an icon or a JSON description, of at most
+     * 1024 bytes. It is part of the token identifier, so it cannot be changed after creation.
+     */
+    extraMetadata: ArrayBuffer | undefined;
 };
 /**
  * Generated factory for {@link CreateIssuerTokenRequest} record objects.
@@ -2436,12 +2441,12 @@ export declare const CreateIssuerTokenRequest: Readonly<{
      * Create a frozen instance of {@link CreateIssuerTokenRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<CreateIssuerTokenRequest> & Required<Omit<CreateIssuerTokenRequest, never>>) => CreateIssuerTokenRequest;
+    create: (partial: Partial<CreateIssuerTokenRequest> & Required<Omit<CreateIssuerTokenRequest, "extraMetadata">>) => CreateIssuerTokenRequest;
     /**
      * Create a frozen instance of {@link CreateIssuerTokenRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<CreateIssuerTokenRequest> & Required<Omit<CreateIssuerTokenRequest, never>>) => CreateIssuerTokenRequest;
+    new: (partial: Partial<CreateIssuerTokenRequest> & Required<Omit<CreateIssuerTokenRequest, "extraMetadata">>) => CreateIssuerTokenRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -3257,6 +3262,12 @@ export type ExternalFrostJob = {
      * Optional adaptor public key (33 bytes compressed).
      */
     adaptorPublicKey: ArrayBuffer | undefined;
+    /**
+     * Sign the adaptor signature with version 2 adaptor signing, whose FROST
+     * binding factors include the adaptor point. Only set when the signer's
+     * `supports_adaptor_v2` returns true.
+     */
+    adaptorV2: boolean;
 };
 /**
  * Generated factory for {@link ExternalFrostJob} record objects.
@@ -4371,6 +4382,63 @@ export declare const FetchConversionLimitsResponse: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<FetchConversionLimitsResponse>;
+}>;
+export type FetchLightningSendStatusRequest = {
+    /**
+     * The Bolt11 invoice to look up
+     */
+    invoice: string;
+};
+/**
+ * Generated factory for {@link FetchLightningSendStatusRequest} record objects.
+ */
+export declare const FetchLightningSendStatusRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link FetchLightningSendStatusRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<FetchLightningSendStatusRequest> & Required<Omit<FetchLightningSendStatusRequest, never>>) => FetchLightningSendStatusRequest;
+    /**
+     * Create a frozen instance of {@link FetchLightningSendStatusRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<FetchLightningSendStatusRequest> & Required<Omit<FetchLightningSendStatusRequest, never>>) => FetchLightningSendStatusRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<FetchLightningSendStatusRequest>;
+}>;
+export type FetchLightningSendStatusResponse = {
+    /**
+     * The status of this wallet's Lightning payments of the invoice: completed if one completed,
+     * pending if one is in flight, failed if every one was returned. Unset when there is none.
+     * A payment made by a direct Spark transfer to the invoice's Spark address is not found, so
+     * unset does not mean the invoice is unpaid.
+     */
+    status: PaymentStatus | undefined;
+    /**
+     * The hex-encoded preimage that proves the payment, set when the status is completed
+     */
+    preimage: string | undefined;
+};
+/**
+ * Generated factory for {@link FetchLightningSendStatusResponse} record objects.
+ */
+export declare const FetchLightningSendStatusResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link FetchLightningSendStatusResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<FetchLightningSendStatusResponse> & Required<Omit<FetchLightningSendStatusResponse, never>>) => FetchLightningSendStatusResponse;
+    /**
+     * Create a frozen instance of {@link FetchLightningSendStatusResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<FetchLightningSendStatusResponse> & Required<Omit<FetchLightningSendStatusResponse, never>>) => FetchLightningSendStatusResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<FetchLightningSendStatusResponse>;
 }>;
 /**
  * Wrapper around the [`CurrencyInfo`] of a fiat currency
@@ -6370,6 +6438,44 @@ export declare const PaymentRequestSource: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<PaymentRequestSource>;
+}>;
+/**
+ * Metadata of the token a payment moved. The token's extra metadata is available from
+ * `get_tokens_metadata`.
+ */
+export type PaymentTokenMetadata = {
+    identifier: string;
+    /**
+     * Hex representation of the issuer public key
+     */
+    issuerPublicKey: string;
+    name: string;
+    ticker: string;
+    /**
+     * Number of decimals the token uses
+     */
+    decimals: number;
+    maxSupply: U128;
+    isFreezable: boolean;
+};
+/**
+ * Generated factory for {@link PaymentTokenMetadata} record objects.
+ */
+export declare const PaymentTokenMetadata: Readonly<{
+    /**
+     * Create a frozen instance of {@link PaymentTokenMetadata}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<PaymentTokenMetadata> & Required<Omit<PaymentTokenMetadata, never>>) => PaymentTokenMetadata;
+    /**
+     * Create a frozen instance of {@link PaymentTokenMetadata}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<PaymentTokenMetadata> & Required<Omit<PaymentTokenMetadata, never>>) => PaymentTokenMetadata;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<PaymentTokenMetadata>;
 }>;
 /**
  * How much one funding UTXO must hold to avoid a fan-out: for a branch of the
@@ -9260,6 +9366,11 @@ export type TokenMetadata = {
     decimals: number;
     maxSupply: U128;
     isFreezable: boolean;
+    /**
+     * Arbitrary data the issuer attached when creating the token, such as an icon or a JSON
+     * description. Unset when the issuer attached none.
+     */
+    extraMetadata: ArrayBuffer | undefined;
 };
 /**
  * Generated factory for {@link TokenMetadata} record objects.
@@ -16413,7 +16524,7 @@ export declare const PaymentDetails: Readonly<{
     };
     Token: {
         new (inner: {
-            metadata: TokenMetadata;
+            metadata: PaymentTokenMetadata;
             txHash: string;
             txType: TokenTransactionType;
             /**
@@ -16425,7 +16536,7 @@ export declare const PaymentDetails: Readonly<{
         }): {
             readonly tag: PaymentDetails_Tags.Token;
             readonly inner: Readonly<{
-                metadata: TokenMetadata;
+                metadata: PaymentTokenMetadata;
                 txHash: string;
                 txType: TokenTransactionType;
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
@@ -16438,7 +16549,7 @@ export declare const PaymentDetails: Readonly<{
             readonly [uniffiTypeNameSymbol]: "PaymentDetails";
         };
         "new"(inner: {
-            metadata: TokenMetadata;
+            metadata: PaymentTokenMetadata;
             txHash: string;
             txType: TokenTransactionType;
             /**
@@ -16450,7 +16561,7 @@ export declare const PaymentDetails: Readonly<{
         }): {
             readonly tag: PaymentDetails_Tags.Token;
             readonly inner: Readonly<{
-                metadata: TokenMetadata;
+                metadata: PaymentTokenMetadata;
                 txHash: string;
                 txType: TokenTransactionType;
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
@@ -16465,7 +16576,7 @@ export declare const PaymentDetails: Readonly<{
         instanceOf(obj: any): obj is {
             readonly tag: PaymentDetails_Tags.Token;
             readonly inner: Readonly<{
-                metadata: TokenMetadata;
+                metadata: PaymentTokenMetadata;
                 txHash: string;
                 txType: TokenTransactionType;
                 invoiceDetails: SparkInvoicePaymentDetails | undefined;
@@ -26222,6 +26333,14 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<FetchConversionLimitsResponse>;
     /**
+     * Fetches the status of this wallet's Lightning payment of a Bolt11 invoice from the Spark
+     * operators, without reading the local payment history. A payment made by a direct Spark
+     * transfer to the invoice's Spark address is not covered.
+     */
+    fetchLightningSendStatus(request: FetchLightningSendStatusRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<FetchLightningSendStatusResponse>;
+    /**
      * Returns a client for bridges: orders in which a payer on another chain
      * or on Lightning pays a recipient, with no funds moving through the
      * SDK. It shares this SDK's API key, and its cross-chain settings when
@@ -26883,6 +27002,14 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     fetchConversionLimits(request: FetchConversionLimitsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<FetchConversionLimitsResponse>;
+    /**
+     * Fetches the status of this wallet's Lightning payment of a Bolt11 invoice from the Spark
+     * operators, without reading the local payment history. A payment made by a direct Spark
+     * transfer to the invoice's Spark address is not covered.
+     */
+    fetchLightningSendStatus(request: FetchLightningSendStatusRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<FetchLightningSendStatusResponse>;
     /**
      * Returns a client for bridges: orders in which a payer on another chain
      * or on Lightning pays a recipient, with no funds moving through the
@@ -27859,6 +27986,12 @@ export interface ExternalSparkSigner {
      */
     isRemote(): boolean;
     /**
+     * Whether [`sign_frost`](Self::sign_frost) can sign jobs whose
+     * `adaptor_v2` is set, with version 2 adaptor signing. The SDK only sets it
+     * for a signer that returns true.
+     */
+    supportsAdaptorV2(): boolean;
+    /**
      * The static-deposit signing public key at `index`.
      */
     getStaticDepositPublicKey(index: number, asyncOpts_?: {
@@ -28000,6 +28133,12 @@ export declare class ExternalSparkSignerImpl extends UniffiAbstractObject implem
      * verified, and does not support the watchtower fee ladder.
      */
     isRemote(): boolean;
+    /**
+     * Whether [`sign_frost`](Self::sign_frost) can sign jobs whose
+     * `adaptor_v2` is set, with version 2 adaptor signing. The SDK only sets it
+     * for a signer that returns true.
+     */
+    supportsAdaptorV2(): boolean;
     /**
      * The static-deposit signing public key at `index`.
      */
@@ -31040,6 +31179,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): FetchConversionLimitsResponse;
             lower(value: FetchConversionLimitsResponse): UniffiByteArray;
         };
+        FfiConverterTypeFetchLightningSendStatusRequest: {
+            read(from: RustBuffer): FetchLightningSendStatusRequest;
+            write(value: FetchLightningSendStatusRequest, into: RustBuffer): void;
+            allocationSize(value: FetchLightningSendStatusRequest): number;
+            lift(value: UniffiByteArray): FetchLightningSendStatusRequest;
+            lower(value: FetchLightningSendStatusRequest): UniffiByteArray;
+        };
+        FfiConverterTypeFetchLightningSendStatusResponse: {
+            read(from: RustBuffer): FetchLightningSendStatusResponse;
+            write(value: FetchLightningSendStatusResponse, into: RustBuffer): void;
+            allocationSize(value: FetchLightningSendStatusResponse): number;
+            lift(value: UniffiByteArray): FetchLightningSendStatusResponse;
+            lower(value: FetchLightningSendStatusResponse): UniffiByteArray;
+        };
         FfiConverterTypeFiatCurrency: {
             read(from: RustBuffer): FiatCurrency;
             write(value: FiatCurrency, into: RustBuffer): void;
@@ -31624,6 +31777,13 @@ declare const _default: Readonly<{
             allocationSize(value: PaymentStatus): number;
             lift(value: UniffiByteArray): PaymentStatus;
             lower(value: PaymentStatus): UniffiByteArray;
+        };
+        FfiConverterTypePaymentTokenMetadata: {
+            read(from: RustBuffer): PaymentTokenMetadata;
+            write(value: PaymentTokenMetadata, into: RustBuffer): void;
+            allocationSize(value: PaymentTokenMetadata): number;
+            lift(value: UniffiByteArray): PaymentTokenMetadata;
+            lower(value: PaymentTokenMetadata): UniffiByteArray;
         };
         FfiConverterTypePaymentType: {
             read(from: RustBuffer): PaymentType;

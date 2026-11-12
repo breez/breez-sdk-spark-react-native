@@ -5639,13 +5639,18 @@ export type CreateIssuerTokenRequest = {
   decimals: /*u32*/ number;
   isFreezable: boolean;
   maxSupply: U128;
+  /**
+   * Arbitrary data to attach to the token, such as an icon or a JSON description, of at most
+   * 1024 bytes. It is part of the token identifier, so it cannot be changed after creation.
+   */
+  extraMetadata: ArrayBuffer | undefined;
 };
 
 /**
  * Generated factory for {@link CreateIssuerTokenRequest} record objects.
  */
 export const CreateIssuerTokenRequest = (() => {
-  const defaults = () => ({});
+  const defaults = () => ({ extraMetadata: undefined });
   const create = (() => {
     return uniffiCreateRecord<
       CreateIssuerTokenRequest,
@@ -5683,6 +5688,7 @@ const FfiConverterTypeCreateIssuerTokenRequest = (() => {
         decimals: FfiConverterUInt32.read(from),
         isFreezable: FfiConverterBool.read(from),
         maxSupply: FfiConverterTypeu128.read(from),
+        extraMetadata: FfiConverterOptionalArrayBuffer.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -5691,6 +5697,7 @@ const FfiConverterTypeCreateIssuerTokenRequest = (() => {
       FfiConverterUInt32.write(value.decimals, into);
       FfiConverterBool.write(value.isFreezable, into);
       FfiConverterTypeu128.write(value.maxSupply, into);
+      FfiConverterOptionalArrayBuffer.write(value.extraMetadata, into);
     }
     allocationSize(value: TypeName): number {
       return (
@@ -5698,7 +5705,8 @@ const FfiConverterTypeCreateIssuerTokenRequest = (() => {
         FfiConverterString.allocationSize(value.ticker) +
         FfiConverterUInt32.allocationSize(value.decimals) +
         FfiConverterBool.allocationSize(value.isFreezable) +
-        FfiConverterTypeu128.allocationSize(value.maxSupply)
+        FfiConverterTypeu128.allocationSize(value.maxSupply) +
+        FfiConverterOptionalArrayBuffer.allocationSize(value.extraMetadata)
       );
     }
   }
@@ -7383,6 +7391,12 @@ export type ExternalFrostJob = {
    * Optional adaptor public key (33 bytes compressed).
    */
   adaptorPublicKey: ArrayBuffer | undefined;
+  /**
+   * Sign the adaptor signature with version 2 adaptor signing, whose FROST
+   * binding factors include the adaptor point. Only set when the signer's
+   * `supports_adaptor_v2` returns true.
+   */
+  adaptorV2: boolean;
 };
 
 /**
@@ -7426,6 +7440,7 @@ const FfiConverterTypeExternalFrostJob = (() => {
         operatorCommitments:
           FfiConverterArrayTypeIdentifierCommitmentPair.read(from),
         adaptorPublicKey: FfiConverterOptionalArrayBuffer.read(from),
+        adaptorV2: FfiConverterBool.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -7437,6 +7452,7 @@ const FfiConverterTypeExternalFrostJob = (() => {
         into
       );
       FfiConverterOptionalArrayBuffer.write(value.adaptorPublicKey, into);
+      FfiConverterBool.write(value.adaptorV2, into);
     }
     allocationSize(value: TypeName): number {
       return (
@@ -7448,7 +7464,8 @@ const FfiConverterTypeExternalFrostJob = (() => {
         FfiConverterArrayTypeIdentifierCommitmentPair.allocationSize(
           value.operatorCommitments
         ) +
-        FfiConverterOptionalArrayBuffer.allocationSize(value.adaptorPublicKey)
+        FfiConverterOptionalArrayBuffer.allocationSize(value.adaptorPublicKey) +
+        FfiConverterBool.allocationSize(value.adaptorV2)
       );
     }
   }
@@ -10077,6 +10094,132 @@ const FfiConverterTypeFetchConversionLimitsResponse = (() => {
       return (
         FfiConverterOptionalTypeu128.allocationSize(value.minFromAmount) +
         FfiConverterOptionalTypeu128.allocationSize(value.minToAmount)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type FetchLightningSendStatusRequest = {
+  /**
+   * The Bolt11 invoice to look up
+   */
+  invoice: string;
+};
+
+/**
+ * Generated factory for {@link FetchLightningSendStatusRequest} record objects.
+ */
+export const FetchLightningSendStatusRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      FetchLightningSendStatusRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link FetchLightningSendStatusRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link FetchLightningSendStatusRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<FetchLightningSendStatusRequest>,
+  });
+})();
+
+const FfiConverterTypeFetchLightningSendStatusRequest = (() => {
+  type TypeName = FetchLightningSendStatusRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        invoice: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.invoice, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterString.allocationSize(value.invoice);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type FetchLightningSendStatusResponse = {
+  /**
+   * The status of this wallet's Lightning payments of the invoice: completed if one completed,
+   * pending if one is in flight, failed if every one was returned. Unset when there is none.
+   * A payment made by a direct Spark transfer to the invoice's Spark address is not found, so
+   * unset does not mean the invoice is unpaid.
+   */
+  status: PaymentStatus | undefined;
+  /**
+   * The hex-encoded preimage that proves the payment, set when the status is completed
+   */
+  preimage: string | undefined;
+};
+
+/**
+ * Generated factory for {@link FetchLightningSendStatusResponse} record objects.
+ */
+export const FetchLightningSendStatusResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      FetchLightningSendStatusResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link FetchLightningSendStatusResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link FetchLightningSendStatusResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<FetchLightningSendStatusResponse>,
+  });
+})();
+
+const FfiConverterTypeFetchLightningSendStatusResponse = (() => {
+  type TypeName = FetchLightningSendStatusResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        status: FfiConverterOptionalTypePaymentStatus.read(from),
+        preimage: FfiConverterOptionalString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterOptionalTypePaymentStatus.write(value.status, into);
+      FfiConverterOptionalString.write(value.preimage, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterOptionalTypePaymentStatus.allocationSize(value.status) +
+        FfiConverterOptionalString.allocationSize(value.preimage)
       );
     }
   }
@@ -14613,6 +14756,95 @@ const FfiConverterTypePaymentRequestSource = (() => {
       return (
         FfiConverterOptionalString.allocationSize(value.bip21Uri) +
         FfiConverterOptionalString.allocationSize(value.bip353Address)
+      );
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * Metadata of the token a payment moved. The token's extra metadata is available from
+ * `get_tokens_metadata`.
+ */
+export type PaymentTokenMetadata = {
+  identifier: string;
+  /**
+   * Hex representation of the issuer public key
+   */
+  issuerPublicKey: string;
+  name: string;
+  ticker: string;
+  /**
+   * Number of decimals the token uses
+   */
+  decimals: /*u32*/ number;
+  maxSupply: U128;
+  isFreezable: boolean;
+};
+
+/**
+ * Generated factory for {@link PaymentTokenMetadata} record objects.
+ */
+export const PaymentTokenMetadata = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      PaymentTokenMetadata,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link PaymentTokenMetadata}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link PaymentTokenMetadata}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<PaymentTokenMetadata>,
+  });
+})();
+
+const FfiConverterTypePaymentTokenMetadata = (() => {
+  type TypeName = PaymentTokenMetadata;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        identifier: FfiConverterString.read(from),
+        issuerPublicKey: FfiConverterString.read(from),
+        name: FfiConverterString.read(from),
+        ticker: FfiConverterString.read(from),
+        decimals: FfiConverterUInt32.read(from),
+        maxSupply: FfiConverterTypeu128.read(from),
+        isFreezable: FfiConverterBool.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.identifier, into);
+      FfiConverterString.write(value.issuerPublicKey, into);
+      FfiConverterString.write(value.name, into);
+      FfiConverterString.write(value.ticker, into);
+      FfiConverterUInt32.write(value.decimals, into);
+      FfiConverterTypeu128.write(value.maxSupply, into);
+      FfiConverterBool.write(value.isFreezable, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.identifier) +
+        FfiConverterString.allocationSize(value.issuerPublicKey) +
+        FfiConverterString.allocationSize(value.name) +
+        FfiConverterString.allocationSize(value.ticker) +
+        FfiConverterUInt32.allocationSize(value.decimals) +
+        FfiConverterTypeu128.allocationSize(value.maxSupply) +
+        FfiConverterBool.allocationSize(value.isFreezable)
       );
     }
   }
@@ -21042,6 +21274,11 @@ export type TokenMetadata = {
   decimals: /*u32*/ number;
   maxSupply: U128;
   isFreezable: boolean;
+  /**
+   * Arbitrary data the issuer attached when creating the token, such as an icon or a JSON
+   * description. Unset when the issuer attached none.
+   */
+  extraMetadata: ArrayBuffer | undefined;
 };
 
 /**
@@ -21086,6 +21323,7 @@ const FfiConverterTypeTokenMetadata = (() => {
         decimals: FfiConverterUInt32.read(from),
         maxSupply: FfiConverterTypeu128.read(from),
         isFreezable: FfiConverterBool.read(from),
+        extraMetadata: FfiConverterOptionalArrayBuffer.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -21096,6 +21334,7 @@ const FfiConverterTypeTokenMetadata = (() => {
       FfiConverterUInt32.write(value.decimals, into);
       FfiConverterTypeu128.write(value.maxSupply, into);
       FfiConverterBool.write(value.isFreezable, into);
+      FfiConverterOptionalArrayBuffer.write(value.extraMetadata, into);
     }
     allocationSize(value: TypeName): number {
       return (
@@ -21105,7 +21344,8 @@ const FfiConverterTypeTokenMetadata = (() => {
         FfiConverterString.allocationSize(value.ticker) +
         FfiConverterUInt32.allocationSize(value.decimals) +
         FfiConverterTypeu128.allocationSize(value.maxSupply) +
-        FfiConverterBool.allocationSize(value.isFreezable)
+        FfiConverterBool.allocationSize(value.isFreezable) +
+        FfiConverterOptionalArrayBuffer.allocationSize(value.extraMetadata)
       );
     }
   }
@@ -32609,7 +32849,7 @@ export const PaymentDetails = (() => {
   type Token__interface = {
     tag: PaymentDetails_Tags.Token;
     inner: Readonly<{
-      metadata: TokenMetadata;
+      metadata: PaymentTokenMetadata;
       txHash: string;
       txType: TokenTransactionType;
       invoiceDetails: SparkInvoicePaymentDetails | undefined;
@@ -32625,14 +32865,14 @@ export const PaymentDetails = (() => {
     readonly [uniffiTypeNameSymbol] = 'PaymentDetails';
     readonly tag = PaymentDetails_Tags.Token;
     readonly inner: Readonly<{
-      metadata: TokenMetadata;
+      metadata: PaymentTokenMetadata;
       txHash: string;
       txType: TokenTransactionType;
       invoiceDetails: SparkInvoicePaymentDetails | undefined;
       conversionInfo: ConversionInfo | undefined;
     }>;
     constructor(inner: {
-      metadata: TokenMetadata;
+      metadata: PaymentTokenMetadata;
       txHash: string;
       txType: TokenTransactionType;
       /**
@@ -32647,7 +32887,7 @@ export const PaymentDetails = (() => {
     }
 
     static new(inner: {
-      metadata: TokenMetadata;
+      metadata: PaymentTokenMetadata;
       txHash: string;
       txType: TokenTransactionType;
       /**
@@ -32878,7 +33118,7 @@ const FfiConverterTypePaymentDetails = (() => {
           });
         case 2:
           return new PaymentDetails.Token({
-            metadata: FfiConverterTypeTokenMetadata.read(from),
+            metadata: FfiConverterTypePaymentTokenMetadata.read(from),
             txHash: FfiConverterString.read(from),
             txType: FfiConverterTypeTokenTransactionType.read(from),
             invoiceDetails:
@@ -32935,7 +33175,7 @@ const FfiConverterTypePaymentDetails = (() => {
         case PaymentDetails_Tags.Token: {
           ordinalConverter.write(2, into);
           const inner = value.inner;
-          FfiConverterTypeTokenMetadata.write(inner.metadata, into);
+          FfiConverterTypePaymentTokenMetadata.write(inner.metadata, into);
           FfiConverterString.write(inner.txHash, into);
           FfiConverterTypeTokenTransactionType.write(inner.txType, into);
           FfiConverterOptionalTypeSparkInvoicePaymentDetails.write(
@@ -33010,7 +33250,9 @@ const FfiConverterTypePaymentDetails = (() => {
         case PaymentDetails_Tags.Token: {
           const inner = value.inner;
           let size = ordinalConverter.allocationSize(2);
-          size += FfiConverterTypeTokenMetadata.allocationSize(inner.metadata);
+          size += FfiConverterTypePaymentTokenMetadata.allocationSize(
+            inner.metadata
+          );
           size += FfiConverterString.allocationSize(inner.txHash);
           size += FfiConverterTypeTokenTransactionType.allocationSize(
             inner.txType
@@ -45687,6 +45929,15 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<FetchConversionLimitsResponse>;
   /**
+   * Fetches the status of this wallet's Lightning payment of a Bolt11 invoice from the Spark
+   * operators, without reading the local payment history. A payment made by a direct Spark
+   * transfer to the invoice's Spark address is not covered.
+   */
+  fetchLightningSendStatus(
+    request: FetchLightningSendStatusRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<FetchLightningSendStatusResponse>;
+  /**
    * Returns a client for bridges: orders in which a payer on another chain
    * or on Lightning pays a recipient, with no funds moving through the
    * SDK. It shares this SDK's API key, and its cross-chain settings when
@@ -47192,6 +47443,50 @@ export class BreezSdk
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypeFetchConversionLimitsResponse.lift.bind(
           FfiConverterTypeFetchConversionLimitsResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Fetches the status of this wallet's Lightning payment of a Bolt11 invoice from the Spark
+   * operators, without reading the local payment history. A payment made by a direct Spark
+   * transfer to the invoice's Spark address is not covered.
+   */
+  public async fetchLightningSendStatus(
+    request: FetchLightningSendStatusRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<FetchLightningSendStatusResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_lightning_send_status(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeFetchLightningSendStatusRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeFetchLightningSendStatusResponse.lift.bind(
+          FfiConverterTypeFetchLightningSendStatusResponse
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -51591,6 +51886,12 @@ export interface ExternalSparkSigner {
    */
   isRemote(): boolean;
   /**
+   * Whether [`sign_frost`](Self::sign_frost) can sign jobs whose
+   * `adaptor_v2` is set, with version 2 adaptor signing. The SDK only sets it
+   * for a signer that returns true.
+   */
+  supportsAdaptorV2(): boolean;
+  /**
    * The static-deposit signing public key at `index`.
    */
   getStaticDepositPublicKey(
@@ -51834,6 +52135,25 @@ export class ExternalSparkSignerImpl
       uniffiCaller.rustCall(
         /*caller:*/ (callStatus) => {
           return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_is_remote(
+            uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
+            callStatus
+          );
+        },
+        /*liftString:*/ FfiConverterString.lift
+      )
+    );
+  }
+
+  /**
+   * Whether [`sign_frost`](Self::sign_frost) can sign jobs whose
+   * `adaptor_v2` is set, with version 2 adaptor signing. The SDK only sets it
+   * for a signer that returns true.
+   */
+  public supportsAdaptorV2(): boolean {
+    return FfiConverterBool.lift(
+      uniffiCaller.rustCall(
+        /*caller:*/ (callStatus) => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_externalsparksigner_supports_adaptor_v2(
             uniffiTypeExternalSparkSignerImplObjectFactory.clonePointer(this),
             callStatus
           );
@@ -52745,6 +53065,27 @@ const uniffiCallbackInterfaceExternalSparkSigner: {
         const jsCallback =
           FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
         return jsCallback.isRemote();
+      };
+      const uniffiResult = UniffiResult.ready<number>();
+      const uniffiHandleSuccess = (obj: any) => {
+        UniffiResult.writeSuccess(uniffiResult, FfiConverterBool.lower(obj));
+      };
+      const uniffiHandleError = (code: number, errBuf: UniffiByteArray) => {
+        UniffiResult.writeError(uniffiResult, code, errBuf);
+      };
+      uniffiTraitInterfaceCall(
+        /*makeCall:*/ uniffiMakeCall,
+        /*handleSuccess:*/ uniffiHandleSuccess,
+        /*handleError:*/ uniffiHandleError,
+        /*lowerString:*/ FfiConverterString.lower
+      );
+      return uniffiResult;
+    },
+    supportsAdaptorV2: (uniffiHandle: bigint) => {
+      const uniffiMakeCall = (): boolean => {
+        const jsCallback =
+          FfiConverterTypeExternalSparkSigner.lift(uniffiHandle);
+        return jsCallback.supportsAdaptorV2();
       };
       const uniffiResult = UniffiResult.ready<number>();
       const uniffiHandleSuccess = (obj: any) => {
@@ -62105,6 +62446,11 @@ const FfiConverterOptionalTypePaymentDetails = new FfiConverterOptional(
   FfiConverterTypePaymentDetails
 );
 
+// FfiConverter for PaymentStatus | undefined
+const FfiConverterOptionalTypePaymentStatus = new FfiConverterOptional(
+  FfiConverterTypePaymentStatus
+);
+
 // FfiConverter for RefundState | undefined
 const FfiConverterOptionalTypeRefundState = new FfiConverterOptional(
   FfiConverterTypeRefundState
@@ -62667,6 +63013,14 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_lightning_send_status() !==
+    52698
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_lightning_send_status'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_get_bridging_client() !==
     12454
   ) {
@@ -63203,8 +63557,16 @@ function uniffiEnsureInitialized() {
     );
   }
   if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_supports_adaptor_v2() !==
+    56510
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_supports_adaptor_v2'
+    );
+  }
+  if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_static_deposit_public_key() !==
-    54380
+    27896
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_get_static_deposit_public_key'
@@ -63212,7 +63574,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_authentication_challenge() !==
-    53611
+    58211
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_authentication_challenge'
@@ -63220,7 +63582,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_message() !==
-    1815
+    32678
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_message'
@@ -63228,7 +63590,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_leaf_refund_spend() !==
-    61127
+    47798
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_leaf_refund_spend'
@@ -63236,7 +63598,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_frost() !==
-    58732
+    36320
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_frost'
@@ -63244,7 +63606,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_transfer() !==
-    29829
+    39309
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_transfer'
@@ -63252,7 +63614,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_claim() !==
-    17684
+    7759
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_claim'
@@ -63260,7 +63622,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_lightning_receive() !==
-    25306
+    6460
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_lightning_receive'
@@ -63268,7 +63630,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit() !==
-    3348
+    37233
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit'
@@ -63276,7 +63638,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_static_deposit_refund() !==
-    24696
+    59292
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_static_deposit_refund'
@@ -63284,7 +63646,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_static_deposit_refund() !==
-    52719
+    45794
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_static_deposit_refund'
@@ -63292,7 +63654,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_watchtower_exit_recovery() !==
-    4407
+    65328
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_start_watchtower_exit_recovery'
@@ -63300,7 +63662,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_watchtower_exit_recovery() !==
-    31640
+    32035
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_watchtower_exit_recovery'
@@ -63308,7 +63670,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_spark_invoice() !==
-    10640
+    31691
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_sign_spark_invoice'
@@ -63316,7 +63678,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_token_transaction() !==
-    40168
+    18619
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_token_transaction'
@@ -63324,7 +63686,7 @@ function uniffiEnsureInitialized() {
   }
   if (
     nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit_claim() !==
-    29840
+    44445
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_externalsparksigner_prepare_static_deposit_claim'
@@ -64159,6 +64521,8 @@ export default Object.freeze({
     FfiConverterTypeFetchClaimDepositQuoteResponse,
     FfiConverterTypeFetchConversionLimitsRequest,
     FfiConverterTypeFetchConversionLimitsResponse,
+    FfiConverterTypeFetchLightningSendStatusRequest,
+    FfiConverterTypeFetchLightningSendStatusResponse,
     FfiConverterTypeFiatCurrency,
     FfiConverterTypeFiatService,
     FfiConverterTypeFreezeIssuerTokenRequest,
@@ -64246,6 +64610,7 @@ export default Object.freeze({
     FfiConverterTypePaymentRequest,
     FfiConverterTypePaymentRequestSource,
     FfiConverterTypePaymentStatus,
+    FfiConverterTypePaymentTokenMetadata,
     FfiConverterTypePaymentType,
     FfiConverterTypePerBranchFunding,
     FfiConverterTypePrepareLnurlPayRequest,
