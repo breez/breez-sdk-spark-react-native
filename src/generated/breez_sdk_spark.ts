@@ -5462,9 +5462,10 @@ export type CreateBridgeRequest = {
   amount: U128;
   /**
    * The payer's address on the source chain, where the deposit is refunded
-   * if the recipient can't be paid. Required to pay a Lightning address,
-   * and recommended otherwise: without one the provider has no address to
-   * refund to. When the payer pays over Lightning, it is a Lightning
+   * if the recipient can't be paid. Required to pay a Lightning address or
+   * when the payer sends from an exchange, and advised for BSC and Tron:
+   * unset, the provider refunds the sending address only when that is
+   * safe. When the payer pays over Lightning, it is a Lightning
    * address, a Cash App `$cashtag` or an amountless BOLT11 invoice that
    * doesn't expire before the bridge, refunded if the payment fails before
    * the swap. Anything else is rejected.
@@ -24030,7 +24031,8 @@ export enum BridgeStatus {
    */
   Completed,
   /**
-   * The payment was refunded to the payer's refund address.
+   * The payment was refunded to the payer's refund address, or without one
+   * to the address it came from.
    */
   Refunded,
   /**
@@ -25571,6 +25573,7 @@ export const ConversionInfo = (() => {
       estimatedOut: U128;
       deliveredAmount: U128 | undefined;
       externalTxHash: string | undefined;
+      refundTxHash: string | undefined;
       status: ConversionStatus;
       feeAmount: U128 | undefined;
       serviceFeeAmount: U128 | undefined;
@@ -25609,6 +25612,7 @@ export const ConversionInfo = (() => {
       estimatedOut: U128;
       deliveredAmount: U128 | undefined;
       externalTxHash: string | undefined;
+      refundTxHash: string | undefined;
       status: ConversionStatus;
       feeAmount: U128 | undefined;
       serviceFeeAmount: U128 | undefined;
@@ -25660,9 +25664,13 @@ export const ConversionInfo = (() => {
        * Transaction on `chain`, the non-Spark side of the conversion: the
        * delivery on a send, the funding deposit on a receive. Format follows
        * the chain (e.g. `0x`-prefixed hex on EVM, a base58 signature on
-       * Solana). Unset until that transaction exists, and on orders that
-       * failed or were refunded.
+       * Solana). Unset until that transaction exists.
        */ externalTxHash: string | undefined;
+      /**
+       * The transaction that refunded the deposit, to the refund address given
+       * for the order or, without one, to the payer. Set once the order is
+       * refunded.
+       */ refundTxHash: string | undefined;
       status: ConversionStatus;
       /**
        * Best-available total fee, in `asset` base units.
@@ -25733,9 +25741,13 @@ export const ConversionInfo = (() => {
        * Transaction on `chain`, the non-Spark side of the conversion: the
        * delivery on a send, the funding deposit on a receive. Format follows
        * the chain (e.g. `0x`-prefixed hex on EVM, a base58 signature on
-       * Solana). Unset until that transaction exists, and on orders that
-       * failed or were refunded.
+       * Solana). Unset until that transaction exists.
        */ externalTxHash: string | undefined;
+      /**
+       * The transaction that refunded the deposit, to the refund address given
+       * for the order or, without one, to the payer. Set once the order is
+       * refunded.
+       */ refundTxHash: string | undefined;
       status: ConversionStatus;
       /**
        * Best-available total fee, in `asset` base units.
@@ -26029,6 +26041,7 @@ const FfiConverterTypeConversionInfo = (() => {
             estimatedOut: FfiConverterTypeu128.read(from),
             deliveredAmount: FfiConverterOptionalTypeu128.read(from),
             externalTxHash: FfiConverterOptionalString.read(from),
+            refundTxHash: FfiConverterOptionalString.read(from),
             status: FfiConverterTypeConversionStatus.read(from),
             feeAmount: FfiConverterOptionalTypeu128.read(from),
             serviceFeeAmount: FfiConverterOptionalTypeu128.read(from),
@@ -26097,6 +26110,7 @@ const FfiConverterTypeConversionInfo = (() => {
           FfiConverterTypeu128.write(inner.estimatedOut, into);
           FfiConverterOptionalTypeu128.write(inner.deliveredAmount, into);
           FfiConverterOptionalString.write(inner.externalTxHash, into);
+          FfiConverterOptionalString.write(inner.refundTxHash, into);
           FfiConverterTypeConversionStatus.write(inner.status, into);
           FfiConverterOptionalTypeu128.write(inner.feeAmount, into);
           FfiConverterOptionalTypeu128.write(inner.serviceFeeAmount, into);
@@ -26175,6 +26189,7 @@ const FfiConverterTypeConversionInfo = (() => {
           size += FfiConverterOptionalString.allocationSize(
             inner.externalTxHash
           );
+          size += FfiConverterOptionalString.allocationSize(inner.refundTxHash);
           size += FfiConverterTypeConversionStatus.allocationSize(inner.status);
           size += FfiConverterOptionalTypeu128.allocationSize(inner.feeAmount);
           size += FfiConverterOptionalTypeu128.allocationSize(
@@ -35439,6 +35454,7 @@ export const ReceivePaymentMethod = (() => {
       feeMode: CrossChainFeeMode | undefined;
       maxSlippageBps: /*u32*/ number | undefined;
       targetOverpayBps: /*u32*/ number | undefined;
+      refundAddress: string | undefined;
     }>;
   };
 
@@ -35456,6 +35472,7 @@ export const ReceivePaymentMethod = (() => {
       feeMode: CrossChainFeeMode | undefined;
       maxSlippageBps: /*u32*/ number | undefined;
       targetOverpayBps: /*u32*/ number | undefined;
+      refundAddress: string | undefined;
     }>;
     constructor(inner: {
       /**
@@ -35494,6 +35511,13 @@ export const ReceivePaymentMethod = (() => {
        * then the built-in default (15 bps). Ignored when `fee_mode`
        * is `FeesIncluded`.
        */ targetOverpayBps: /*u32*/ number | undefined;
+      /**
+       * The payer's address on the route's chain, where the provider returns
+       * a deposit it can't deliver. Required when the payer sends from an
+       * exchange, and advised for BSC and Tron: unset, the provider refunds
+       * the sending address only when that is safe, and otherwise holds the
+       * deposit for manual recovery. Must not be a token contract.
+       */ refundAddress: string | undefined;
     }) {
       super('ReceivePaymentMethod', 'CrossChain');
       this.inner = Object.freeze(inner);
@@ -35536,6 +35560,13 @@ export const ReceivePaymentMethod = (() => {
        * then the built-in default (15 bps). Ignored when `fee_mode`
        * is `FeesIncluded`.
        */ targetOverpayBps: /*u32*/ number | undefined;
+      /**
+       * The payer's address on the route's chain, where the provider returns
+       * a deposit it can't deliver. Required when the payer sends from an
+       * exchange, and advised for BSC and Tron: unset, the provider refunds
+       * the sending address only when that is safe, and otherwise holds the
+       * deposit for manual recovery. Must not be a token contract.
+       */ refundAddress: string | undefined;
     }): CrossChain_ {
       return new CrossChain_(inner);
     }
@@ -35604,6 +35635,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
             feeMode: FfiConverterOptionalTypeCrossChainFeeMode.read(from),
             maxSlippageBps: FfiConverterOptionalUInt32.read(from),
             targetOverpayBps: FfiConverterOptionalUInt32.read(from),
+            refundAddress: FfiConverterOptionalString.read(from),
           });
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
@@ -35654,6 +35686,7 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
           FfiConverterOptionalTypeCrossChainFeeMode.write(inner.feeMode, into);
           FfiConverterOptionalUInt32.write(inner.maxSlippageBps, into);
           FfiConverterOptionalUInt32.write(inner.targetOverpayBps, into);
+          FfiConverterOptionalString.write(inner.refundAddress, into);
           return;
         }
         default:
@@ -35717,6 +35750,9 @@ const FfiConverterTypeReceivePaymentMethod = (() => {
           );
           size += FfiConverterOptionalUInt32.allocationSize(
             inner.targetOverpayBps
+          );
+          size += FfiConverterOptionalString.allocationSize(
+            inner.refundAddress
           );
           return size;
         }
