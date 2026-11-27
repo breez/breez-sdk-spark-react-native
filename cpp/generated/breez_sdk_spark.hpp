@@ -157,6 +157,9 @@ protected:
   cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_conversion_limits(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
+  jsi::Value cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_htlc_payments(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
   jsi::Value
   cpp_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_lightning_send_status(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
@@ -1259,6 +1262,10 @@ protected:
       size_t count);
   jsi::Value
   cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits(
+      jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
+      size_t count);
+  jsi::Value
+  cpp_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_htlc_payments(
       jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args,
       size_t count);
   jsi::Value

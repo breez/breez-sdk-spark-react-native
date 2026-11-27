@@ -2433,10 +2433,16 @@ export type BridgeRoutePair = {
    */
   destination: BridgeRoutePairSide;
   /**
-   * Bounds on what the payer pays, in `source` base units. Unset when the
-   * provider publishes none.
+   * Bounds on what the payer pays, in `source` base units. On a route
+   * paying Bitcoin on-chain, the minimum is what must reach the recipient.
+   * Unset when the provider publishes none.
    */
   limits: CrossChainRouteLimits | undefined;
+  /**
+   * The side whose base units [`CreateBridgeRequest::amount`] is in, per
+   * its `decimals`.
+   */
+  amountSide: BridgeAmountSide;
 };
 
 /**
@@ -2478,6 +2484,7 @@ const FfiConverterTypeBridgeRoutePair = (() => {
         source: FfiConverterTypeBridgeRoutePairSide.read(from),
         destination: FfiConverterTypeBridgeRoutePairSide.read(from),
         limits: FfiConverterOptionalTypeCrossChainRouteLimits.read(from),
+        amountSide: FfiConverterTypeBridgeAmountSide.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
@@ -2485,6 +2492,7 @@ const FfiConverterTypeBridgeRoutePair = (() => {
       FfiConverterTypeBridgeRoutePairSide.write(value.source, into);
       FfiConverterTypeBridgeRoutePairSide.write(value.destination, into);
       FfiConverterOptionalTypeCrossChainRouteLimits.write(value.limits, into);
+      FfiConverterTypeBridgeAmountSide.write(value.amountSide, into);
     }
     allocationSize(value: TypeName): number {
       return (
@@ -2493,7 +2501,8 @@ const FfiConverterTypeBridgeRoutePair = (() => {
         FfiConverterTypeBridgeRoutePairSide.allocationSize(value.destination) +
         FfiConverterOptionalTypeCrossChainRouteLimits.allocationSize(
           value.limits
-        )
+        ) +
+        FfiConverterTypeBridgeAmountSide.allocationSize(value.amountSide)
       );
     }
   }
@@ -2505,20 +2514,22 @@ const FfiConverterTypeBridgeRoutePair = (() => {
  */
 export type BridgeRoutePairSide = {
   /**
-   * `"spark"`, `"lightning"`, or another chain, e.g. `"base"` or `"tron"`.
+   * `"spark"`, `"lightning"`, `"bitcoin"`, or another chain, e.g. `"base"`
+   * or `"tron"`.
    */
   chain: string;
   /**
-   * EVM `chainId` as a decimal string. Unset on chains without one.
+   * The provider's id for the chain: the EVM `chainId` as a decimal string,
+   * or an id such as `"xrp:mainnet"` elsewhere. Unset when it gives none.
    */
   chainId: string | undefined;
   /**
-   * Asset symbol, e.g. `"USDC"`, `"USDT"`, `"BTC"` or `"USDB"`.
+   * Asset symbol, e.g. `"USDC"`, `"USDT"`, `"BTC"`, `"USDB"` or `"ETH"`.
    */
   asset: string;
   /**
    * Token contract or mint address, or the token identifier on Spark.
-   * Unset for Bitcoin.
+   * Unset for Bitcoin and for a chain's native coin.
    */
   contractAddress: string | undefined;
   decimals: /*u8*/ number;
@@ -3827,13 +3838,19 @@ const FfiConverterTypeClaimDepositResponse = (() => {
 
 export type ClaimHtlcPaymentRequest = {
   preimage: string;
+  /**
+   * The ID of the payment to claim. When set, the claim fails unless the claimable HTLC
+   * with the preimage's payment hash is this payment. A payment hash can be reused once
+   * an earlier HTLC locked to it was returned.
+   */
+  transferId: string | undefined;
 };
 
 /**
  * Generated factory for {@link ClaimHtlcPaymentRequest} record objects.
  */
 export const ClaimHtlcPaymentRequest = (() => {
-  const defaults = () => ({});
+  const defaults = () => ({ transferId: undefined });
   const create = (() => {
     return uniffiCreateRecord<
       ClaimHtlcPaymentRequest,
@@ -3867,13 +3884,18 @@ const FfiConverterTypeClaimHtlcPaymentRequest = (() => {
     read(from: RustBuffer): TypeName {
       return {
         preimage: FfiConverterString.read(from),
+        transferId: FfiConverterOptionalString.read(from),
       };
     }
     write(value: TypeName, into: RustBuffer): void {
       FfiConverterString.write(value.preimage, into);
+      FfiConverterOptionalString.write(value.transferId, into);
     }
     allocationSize(value: TypeName): number {
-      return FfiConverterString.allocationSize(value.preimage);
+      return (
+        FfiConverterString.allocationSize(value.preimage) +
+        FfiConverterOptionalString.allocationSize(value.transferId)
+      );
     }
   }
   return new FFIConverter();
@@ -5454,10 +5476,11 @@ export type CreateBridgeRequest = {
    */
   route: BridgeRoutePair;
   /**
-   * Amount in stablecoin base units: the destination asset when the
-   * recipient is paid in a stablecoin, the source asset otherwise, per that
-   * side's `decimals`. At parity this is the USD value: `1_000_000` is 1
-   * USDC at 6 decimals.
+   * Amount in the base units of the route's `amount_side`, per its
+   * `decimals`: the recipient's stablecoin when they are paid in one,
+   * otherwise what the payer pays (sats over Lightning, or their
+   * stablecoin). A stablecoin amount at parity is the USD value:
+   * `1_000_000` is 1 USDC at 6 decimals.
    */
   amount: U128;
   /**
@@ -6238,15 +6261,17 @@ export type CrossChainReceiveInfo = {
   /**
    * Amount the receiver will see, net of provider fees, in
    * destination-asset base units. Sats when receiving BTC, token base
-   * units when receiving a Spark token (e.g. USDB), or stablecoin base
-   * units when the receiver is on another chain. The final delivered
-   * amount may move within the slippage tolerance.
+   * units when receiving a Spark token (e.g. USDB), or the stablecoin's or
+   * native coin's base units (e.g. wei for ETH) when the receiver is on
+   * another chain. The final delivered amount may move within the slippage
+   * tolerance.
    */
   expectedReceivedAmount: U128;
   /**
    * Symbol of the asset `expected_received_amount` is denominated in, as
    * the provider reports it: `"BTC"` for sats, a Spark token symbol (e.g.
-   * `"USDB"`), or the stablecoin when the receiver is on another chain.
+   * `"USDB"`), or the stablecoin or native coin (e.g. `"ETH"`) when the
+   * receiver is on another chain.
    */
   destinationAsset: string;
   /**
@@ -10101,6 +10126,121 @@ const FfiConverterTypeFetchConversionLimitsResponse = (() => {
   return new FFIConverter();
 })();
 
+export type FetchHtlcPaymentsRequest = {
+  /**
+   * The hex-encoded payment hash to look up
+   */
+  paymentHash: string;
+};
+
+/**
+ * Generated factory for {@link FetchHtlcPaymentsRequest} record objects.
+ */
+export const FetchHtlcPaymentsRequest = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      FetchHtlcPaymentsRequest,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link FetchHtlcPaymentsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link FetchHtlcPaymentsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<FetchHtlcPaymentsRequest>,
+  });
+})();
+
+const FfiConverterTypeFetchHtlcPaymentsRequest = (() => {
+  type TypeName = FetchHtlcPaymentsRequest;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        paymentHash: FfiConverterString.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.paymentHash, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterString.allocationSize(value.paymentHash);
+    }
+  }
+  return new FFIConverter();
+})();
+
+export type FetchHtlcPaymentsResponse = {
+  /**
+   * The payments this wallet sent or received that are locked to the payment hash, newest
+   * first. Claimed and returned ones are included.
+   */
+  payments: Array<HtlcPayment>;
+};
+
+/**
+ * Generated factory for {@link FetchHtlcPaymentsResponse} record objects.
+ */
+export const FetchHtlcPaymentsResponse = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<
+      FetchHtlcPaymentsResponse,
+      ReturnType<typeof defaults>
+    >(defaults);
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link FetchHtlcPaymentsResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link FetchHtlcPaymentsResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () =>
+      Object.freeze(defaults()) as Partial<FetchHtlcPaymentsResponse>,
+  });
+})();
+
+const FfiConverterTypeFetchHtlcPaymentsResponse = (() => {
+  type TypeName = FetchHtlcPaymentsResponse;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        payments: FfiConverterArrayTypeHtlcPayment.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterArrayTypeHtlcPayment.write(value.payments, into);
+    }
+    allocationSize(value: TypeName): number {
+      return FfiConverterArrayTypeHtlcPayment.allocationSize(value.payments);
+    }
+  }
+  return new FFIConverter();
+})();
+
 export type FetchLightningSendStatusRequest = {
   /**
    * The Bolt11 invoice to look up
@@ -10405,7 +10545,8 @@ const FfiConverterTypeFreezeIssuerTokenResponse = (() => {
 export type GetBridgeRoutesRequest = {
   /**
    * Who to pay: a Spark address, a Lightning address (a Cash App
-   * `$cashtag` included), or an EVM/Solana/Tron address or URI.
+   * `$cashtag` included), a Bitcoin address or BIP21 URI, an
+   * EVM/Solana/Tron address or URI, or an XRP or Zcash transparent address.
    */
   recipient: string;
 };
@@ -11188,6 +11329,88 @@ const FfiConverterTypeHashedMessageBytes = (() => {
     }
     allocationSize(value: TypeName): number {
       return FfiConverterArrayBuffer.allocationSize(value.bytes);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
+ * A payment locked to a payment hash, as the Spark operators report it.
+ */
+export type HtlcPayment = {
+  /**
+   * The payment ID, the same one the payment list uses
+   */
+  id: string;
+  paymentType: PaymentType;
+  /**
+   * The amount the HTLC locks. For a Lightning send this includes the fee.
+   */
+  amountSats: /*u64*/ bigint;
+  /**
+   * When the HTLC was created, as a unix timestamp in seconds
+   */
+  timestamp: /*u64*/ bigint;
+  htlcDetails: SparkHtlcDetails;
+};
+
+/**
+ * Generated factory for {@link HtlcPayment} record objects.
+ */
+export const HtlcPayment = (() => {
+  const defaults = () => ({});
+  const create = (() => {
+    return uniffiCreateRecord<HtlcPayment, ReturnType<typeof defaults>>(
+      defaults
+    );
+  })();
+  return Object.freeze({
+    /**
+     * Create a frozen instance of {@link HtlcPayment}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create,
+
+    /**
+     * Create a frozen instance of {@link HtlcPayment}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: create,
+
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Object.freeze(defaults()) as Partial<HtlcPayment>,
+  });
+})();
+
+const FfiConverterTypeHtlcPayment = (() => {
+  type TypeName = HtlcPayment;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      return {
+        id: FfiConverterString.read(from),
+        paymentType: FfiConverterTypePaymentType.read(from),
+        amountSats: FfiConverterUInt64.read(from),
+        timestamp: FfiConverterUInt64.read(from),
+        htlcDetails: FfiConverterTypeSparkHtlcDetails.read(from),
+      };
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      FfiConverterString.write(value.id, into);
+      FfiConverterTypePaymentType.write(value.paymentType, into);
+      FfiConverterUInt64.write(value.amountSats, into);
+      FfiConverterUInt64.write(value.timestamp, into);
+      FfiConverterTypeSparkHtlcDetails.write(value.htlcDetails, into);
+    }
+    allocationSize(value: TypeName): number {
+      return (
+        FfiConverterString.allocationSize(value.id) +
+        FfiConverterTypePaymentType.allocationSize(value.paymentType) +
+        FfiConverterUInt64.allocationSize(value.amountSats) +
+        FfiConverterUInt64.allocationSize(value.timestamp) +
+        FfiConverterTypeSparkHtlcDetails.allocationSize(value.htlcDetails)
+      );
     }
   }
   return new FFIConverter();
@@ -24007,14 +24230,58 @@ const FfiConverterTypeBitcoinNetwork = (() => {
 })();
 
 /**
+ * The side of a [`BridgeRoutePair`] whose base units an amount is in.
+ */
+export enum BridgeAmountSide {
+  /**
+   * What the payer pays.
+   */
+  Source,
+  /**
+   * What the recipient receives.
+   */
+  Destination,
+}
+
+const FfiConverterTypeBridgeAmountSide = (() => {
+  const ordinalConverter = FfiConverterInt32;
+  type TypeName = BridgeAmountSide;
+  class FFIConverter extends AbstractFfiConverterByteArray<TypeName> {
+    read(from: RustBuffer): TypeName {
+      switch (ordinalConverter.read(from)) {
+        case 1:
+          return BridgeAmountSide.Source;
+        case 2:
+          return BridgeAmountSide.Destination;
+        default:
+          throw new UniffiInternalError.UnexpectedEnumCase();
+      }
+    }
+    write(value: TypeName, into: RustBuffer): void {
+      switch (value) {
+        case BridgeAmountSide.Source:
+          return ordinalConverter.write(1, into);
+        case BridgeAmountSide.Destination:
+          return ordinalConverter.write(2, into);
+      }
+    }
+    allocationSize(value: TypeName): number {
+      return ordinalConverter.allocationSize(0);
+    }
+  }
+  return new FFIConverter();
+})();
+
+/**
  * Where a bridge is in its lifecycle.
  */
 export enum BridgeStatus {
   /**
-   * The bridge was created, and the payer hasn't paid yet. A bridge from
-   * Cash App becomes `Expired` once it can no longer be paid. Other unpaid
-   * bridges stay `Created` after their `expires_at`, and a late deposit on
-   * another chain may still be accepted at a new price.
+   * The bridge was created, and the provider hasn't registered a payment
+   * yet. A payment over Lightning can take several minutes to register. A
+   * bridge from Cash App becomes `Expired` once it can no longer be paid.
+   * Other unpaid bridges stay `Created` after their `expires_at`, and a
+   * late deposit on another chain may still be accepted at a new price.
    */
   Created,
   /**
@@ -27459,6 +27726,8 @@ export enum CrossChainAddressFamily {
   Evm,
   Solana,
   Tron,
+  Xrp,
+  Zcash,
 }
 
 const FfiConverterTypeCrossChainAddressFamily = (() => {
@@ -27473,6 +27742,10 @@ const FfiConverterTypeCrossChainAddressFamily = (() => {
           return CrossChainAddressFamily.Solana;
         case 3:
           return CrossChainAddressFamily.Tron;
+        case 4:
+          return CrossChainAddressFamily.Xrp;
+        case 5:
+          return CrossChainAddressFamily.Zcash;
         default:
           throw new UniffiInternalError.UnexpectedEnumCase();
       }
@@ -27485,6 +27758,10 @@ const FfiConverterTypeCrossChainAddressFamily = (() => {
           return ordinalConverter.write(2, into);
         case CrossChainAddressFamily.Tron:
           return ordinalConverter.write(3, into);
+        case CrossChainAddressFamily.Xrp:
+          return ordinalConverter.write(4, into);
+        case CrossChainAddressFamily.Zcash:
+          return ordinalConverter.write(5, into);
       }
     }
     allocationSize(value: TypeName): number {
@@ -45965,6 +46242,15 @@ export interface BreezSdkInterface {
     asyncOpts_?: { signal: AbortSignal }
   ): /*throws*/ Promise<FetchConversionLimitsResponse>;
   /**
+   * Fetches the payments locked to a payment hash from the Spark operators, without reading
+   * the local payment history. Covers Spark HTLC payments and Lightning payments this wallet
+   * sent or received.
+   */
+  fetchHtlcPayments(
+    request: FetchHtlcPaymentsRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): /*throws*/ Promise<FetchHtlcPaymentsResponse>;
+  /**
    * Fetches the status of this wallet's Lightning payment of a Bolt11 invoice from the Spark
    * operators, without reading the local payment history. A payment made by a direct Spark
    * transfer to the invoice's Spark address is not covered.
@@ -47479,6 +47765,50 @@ export class BreezSdk
           .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
         /*liftFunc:*/ FfiConverterTypeFetchConversionLimitsResponse.lift.bind(
           FfiConverterTypeFetchConversionLimitsResponse
+        ),
+        /*liftString:*/ FfiConverterString.lift,
+        /*asyncOpts:*/ asyncOpts_,
+        /*errorHandler:*/ FfiConverterTypeSdkError.lift.bind(
+          FfiConverterTypeSdkError
+        )
+      );
+    } catch (__error: any) {
+      if (uniffiIsDebug && __error instanceof Error) {
+        __error.stack = __stack;
+      }
+      throw __error;
+    }
+  }
+
+  /**
+   * Fetches the payments locked to a payment hash from the Spark operators, without reading
+   * the local payment history. Covers Spark HTLC payments and Lightning payments this wallet
+   * sent or received.
+   */
+  public async fetchHtlcPayments(
+    request: FetchHtlcPaymentsRequest,
+    asyncOpts_?: { signal: AbortSignal }
+  ): Promise<FetchHtlcPaymentsResponse> /*throws*/ {
+    const __stack = uniffiIsDebug ? new Error().stack : undefined;
+    try {
+      return await uniffiRustCallAsync(
+        /*rustCaller:*/ uniffiCaller,
+        /*rustFutureFunc:*/ () => {
+          return nativeModule().ubrn_uniffi_breez_sdk_spark_fn_method_breezsdk_fetch_htlc_payments(
+            uniffiTypeBreezSdkObjectFactory.clonePointer(this),
+            FfiConverterTypeFetchHtlcPaymentsRequest.lower(request)
+          );
+        },
+        /*pollFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_poll_rust_buffer,
+        /*cancelFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_cancel_rust_buffer,
+        /*completeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_complete_rust_buffer,
+        /*freeFunc:*/ nativeModule()
+          .ubrn_ffi_breez_sdk_spark_rust_future_free_rust_buffer,
+        /*liftFunc:*/ FfiConverterTypeFetchHtlcPaymentsResponse.lift.bind(
+          FfiConverterTypeFetchHtlcPaymentsResponse
         ),
         /*liftString:*/ FfiConverterString.lift,
         /*asyncOpts:*/ asyncOpts_,
@@ -62240,6 +62570,11 @@ const FfiConverterArrayTypeFiatCurrency = new FfiConverterArray(
   FfiConverterTypeFiatCurrency
 );
 
+// FfiConverter for Array<HtlcPayment>
+const FfiConverterArrayTypeHtlcPayment = new FfiConverterArray(
+  FfiConverterTypeHtlcPayment
+);
+
 // FfiConverter for Array<IdentifierCommitmentPair>
 const FfiConverterArrayTypeIdentifierCommitmentPair = new FfiConverterArray(
   FfiConverterTypeIdentifierCommitmentPair
@@ -63046,6 +63381,14 @@ function uniffiEnsureInitialized() {
   ) {
     throw new UniffiInternalError.ApiChecksumMismatch(
       'uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_conversion_limits'
+    );
+  }
+  if (
+    nativeModule().ubrn_uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_htlc_payments() !==
+    34914
+  ) {
+    throw new UniffiInternalError.ApiChecksumMismatch(
+      'uniffi_breez_sdk_spark_checksum_method_breezsdk_fetch_htlc_payments'
     );
   }
   if (
@@ -64415,6 +64758,7 @@ export default Object.freeze({
     FfiConverterTypeBolt12OfferBlindedPath,
     FfiConverterTypeBolt12OfferDetails,
     FfiConverterTypeBreezSdk,
+    FfiConverterTypeBridgeAmountSide,
     FfiConverterTypeBridgeFromCashAppRequest,
     FfiConverterTypeBridgeFromCashAppResponse,
     FfiConverterTypeBridgeRoutePair,
@@ -64557,6 +64901,8 @@ export default Object.freeze({
     FfiConverterTypeFetchClaimDepositQuoteResponse,
     FfiConverterTypeFetchConversionLimitsRequest,
     FfiConverterTypeFetchConversionLimitsResponse,
+    FfiConverterTypeFetchHtlcPaymentsRequest,
+    FfiConverterTypeFetchHtlcPaymentsResponse,
     FfiConverterTypeFetchLightningSendStatusRequest,
     FfiConverterTypeFetchLightningSendStatusResponse,
     FfiConverterTypeFiatCurrency,
@@ -64575,6 +64921,7 @@ export default Object.freeze({
     FfiConverterTypeGetTokensMetadataRequest,
     FfiConverterTypeGetTokensMetadataResponse,
     FfiConverterTypeHashedMessageBytes,
+    FfiConverterTypeHtlcPayment,
     FfiConverterTypeIdentifierCommitmentPair,
     FfiConverterTypeIdentifierPublicKeyPair,
     FfiConverterTypeIdentifierSignaturePair,

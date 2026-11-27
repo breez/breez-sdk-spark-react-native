@@ -899,10 +899,16 @@ export type BridgeRoutePair = {
      */
     destination: BridgeRoutePairSide;
     /**
-     * Bounds on what the payer pays, in `source` base units. Unset when the
-     * provider publishes none.
+     * Bounds on what the payer pays, in `source` base units. On a route
+     * paying Bitcoin on-chain, the minimum is what must reach the recipient.
+     * Unset when the provider publishes none.
      */
     limits: CrossChainRouteLimits | undefined;
+    /**
+     * The side whose base units [`CreateBridgeRequest::amount`] is in, per
+     * its `decimals`.
+     */
+    amountSide: BridgeAmountSide;
 };
 /**
  * Generated factory for {@link BridgeRoutePair} record objects.
@@ -928,20 +934,22 @@ export declare const BridgeRoutePair: Readonly<{
  */
 export type BridgeRoutePairSide = {
     /**
-     * `"spark"`, `"lightning"`, or another chain, e.g. `"base"` or `"tron"`.
+     * `"spark"`, `"lightning"`, `"bitcoin"`, or another chain, e.g. `"base"`
+     * or `"tron"`.
      */
     chain: string;
     /**
-     * EVM `chainId` as a decimal string. Unset on chains without one.
+     * The provider's id for the chain: the EVM `chainId` as a decimal string,
+     * or an id such as `"xrp:mainnet"` elsewhere. Unset when it gives none.
      */
     chainId: string | undefined;
     /**
-     * Asset symbol, e.g. `"USDC"`, `"USDT"`, `"BTC"` or `"USDB"`.
+     * Asset symbol, e.g. `"USDC"`, `"USDT"`, `"BTC"`, `"USDB"` or `"ETH"`.
      */
     asset: string;
     /**
      * Token contract or mint address, or the token identifier on Spark.
-     * Unset for Bitcoin.
+     * Unset for Bitcoin and for a chain's native coin.
      */
     contractAddress: string | undefined;
     decimals: number;
@@ -1526,6 +1534,12 @@ export declare const ClaimDepositResponse: Readonly<{
 }>;
 export type ClaimHtlcPaymentRequest = {
     preimage: string;
+    /**
+     * The ID of the payment to claim. When set, the claim fails unless the claimable HTLC
+     * with the preimage's payment hash is this payment. A payment hash can be reused once
+     * an earlier HTLC locked to it was returned.
+     */
+    transferId: string | undefined;
 };
 /**
  * Generated factory for {@link ClaimHtlcPaymentRequest} record objects.
@@ -1535,12 +1549,12 @@ export declare const ClaimHtlcPaymentRequest: Readonly<{
      * Create a frozen instance of {@link ClaimHtlcPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    create: (partial: Partial<ClaimHtlcPaymentRequest> & Required<Omit<ClaimHtlcPaymentRequest, never>>) => ClaimHtlcPaymentRequest;
+    create: (partial: Partial<ClaimHtlcPaymentRequest> & Required<Omit<ClaimHtlcPaymentRequest, "transferId">>) => ClaimHtlcPaymentRequest;
     /**
      * Create a frozen instance of {@link ClaimHtlcPaymentRequest}, with defaults specified
      * in Rust, in the {@link breez_sdk_spark} crate.
      */
-    new: (partial: Partial<ClaimHtlcPaymentRequest> & Required<Omit<ClaimHtlcPaymentRequest, never>>) => ClaimHtlcPaymentRequest;
+    new: (partial: Partial<ClaimHtlcPaymentRequest> & Required<Omit<ClaimHtlcPaymentRequest, "transferId">>) => ClaimHtlcPaymentRequest;
     /**
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
@@ -2335,10 +2349,11 @@ export type CreateBridgeRequest = {
      */
     route: BridgeRoutePair;
     /**
-     * Amount in stablecoin base units: the destination asset when the
-     * recipient is paid in a stablecoin, the source asset otherwise, per that
-     * side's `decimals`. At parity this is the USD value: `1_000_000` is 1
-     * USDC at 6 decimals.
+     * Amount in the base units of the route's `amount_side`, per its
+     * `decimals`: the recipient's stablecoin when they are paid in one,
+     * otherwise what the payer pays (sats over Lightning, or their
+     * stablecoin). A stablecoin amount at parity is the USD value:
+     * `1_000_000` is 1 USDC at 6 decimals.
      */
     amount: U128;
     /**
@@ -2699,15 +2714,17 @@ export type CrossChainReceiveInfo = {
     /**
      * Amount the receiver will see, net of provider fees, in
      * destination-asset base units. Sats when receiving BTC, token base
-     * units when receiving a Spark token (e.g. USDB), or stablecoin base
-     * units when the receiver is on another chain. The final delivered
-     * amount may move within the slippage tolerance.
+     * units when receiving a Spark token (e.g. USDB), or the stablecoin's or
+     * native coin's base units (e.g. wei for ETH) when the receiver is on
+     * another chain. The final delivered amount may move within the slippage
+     * tolerance.
      */
     expectedReceivedAmount: U128;
     /**
      * Symbol of the asset `expected_received_amount` is denominated in, as
      * the provider reports it: `"BTC"` for sats, a Spark token symbol (e.g.
-     * `"USDB"`), or the stablecoin when the receiver is on another chain.
+     * `"USDB"`), or the stablecoin or native coin (e.g. `"ETH"`) when the
+     * receiver is on another chain.
      */
     destinationAsset: string;
     /**
@@ -4384,6 +4401,57 @@ export declare const FetchConversionLimitsResponse: Readonly<{
      */
     defaults: () => Partial<FetchConversionLimitsResponse>;
 }>;
+export type FetchHtlcPaymentsRequest = {
+    /**
+     * The hex-encoded payment hash to look up
+     */
+    paymentHash: string;
+};
+/**
+ * Generated factory for {@link FetchHtlcPaymentsRequest} record objects.
+ */
+export declare const FetchHtlcPaymentsRequest: Readonly<{
+    /**
+     * Create a frozen instance of {@link FetchHtlcPaymentsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<FetchHtlcPaymentsRequest> & Required<Omit<FetchHtlcPaymentsRequest, never>>) => FetchHtlcPaymentsRequest;
+    /**
+     * Create a frozen instance of {@link FetchHtlcPaymentsRequest}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<FetchHtlcPaymentsRequest> & Required<Omit<FetchHtlcPaymentsRequest, never>>) => FetchHtlcPaymentsRequest;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<FetchHtlcPaymentsRequest>;
+}>;
+export type FetchHtlcPaymentsResponse = {
+    /**
+     * The payments this wallet sent or received that are locked to the payment hash, newest
+     * first. Claimed and returned ones are included.
+     */
+    payments: Array<HtlcPayment>;
+};
+/**
+ * Generated factory for {@link FetchHtlcPaymentsResponse} record objects.
+ */
+export declare const FetchHtlcPaymentsResponse: Readonly<{
+    /**
+     * Create a frozen instance of {@link FetchHtlcPaymentsResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<FetchHtlcPaymentsResponse> & Required<Omit<FetchHtlcPaymentsResponse, never>>) => FetchHtlcPaymentsResponse;
+    /**
+     * Create a frozen instance of {@link FetchHtlcPaymentsResponse}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<FetchHtlcPaymentsResponse> & Required<Omit<FetchHtlcPaymentsResponse, never>>) => FetchHtlcPaymentsResponse;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<FetchHtlcPaymentsResponse>;
+}>;
 export type FetchLightningSendStatusRequest = {
     /**
      * The Bolt11 invoice to look up
@@ -4515,7 +4583,8 @@ export declare const FreezeIssuerTokenResponse: Readonly<{
 export type GetBridgeRoutesRequest = {
     /**
      * Who to pay: a Spark address, a Lightning address (a Cash App
-     * `$cashtag` included), or an EVM/Solana/Tron address or URI.
+     * `$cashtag` included), a Bitcoin address or BIP21 URI, an
+     * EVM/Solana/Tron address or URI, or an XRP or Zcash transparent address.
      */
     recipient: string;
 };
@@ -4877,6 +4946,44 @@ export declare const HashedMessageBytes: Readonly<{
      * Defaults specified in the {@link breez_sdk_spark} crate.
      */
     defaults: () => Partial<HashedMessageBytes>;
+}>;
+/**
+ * A payment locked to a payment hash, as the Spark operators report it.
+ */
+export type HtlcPayment = {
+    /**
+     * The payment ID, the same one the payment list uses
+     */
+    id: string;
+    paymentType: PaymentType;
+    /**
+     * The amount the HTLC locks. For a Lightning send this includes the fee.
+     */
+    amountSats: bigint;
+    /**
+     * When the HTLC was created, as a unix timestamp in seconds
+     */
+    timestamp: bigint;
+    htlcDetails: SparkHtlcDetails;
+};
+/**
+ * Generated factory for {@link HtlcPayment} record objects.
+ */
+export declare const HtlcPayment: Readonly<{
+    /**
+     * Create a frozen instance of {@link HtlcPayment}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    create: (partial: Partial<HtlcPayment> & Required<Omit<HtlcPayment, never>>) => HtlcPayment;
+    /**
+     * Create a frozen instance of {@link HtlcPayment}, with defaults specified
+     * in Rust, in the {@link breez_sdk_spark} crate.
+     */
+    new: (partial: Partial<HtlcPayment> & Required<Omit<HtlcPayment, never>>) => HtlcPayment;
+    /**
+     * Defaults specified in the {@link breez_sdk_spark} crate.
+     */
+    defaults: () => Partial<HtlcPayment>;
 }>;
 /**
  * FFI-safe wrapper for (Identifier, `SigningCommitments`) pair
@@ -10738,14 +10845,28 @@ export declare enum BitcoinNetwork {
     Regtest = 4
 }
 /**
+ * The side of a [`BridgeRoutePair`] whose base units an amount is in.
+ */
+export declare enum BridgeAmountSide {
+    /**
+     * What the payer pays.
+     */
+    Source = 0,
+    /**
+     * What the recipient receives.
+     */
+    Destination = 1
+}
+/**
  * Where a bridge is in its lifecycle.
  */
 export declare enum BridgeStatus {
     /**
-     * The bridge was created, and the payer hasn't paid yet. A bridge from
-     * Cash App becomes `Expired` once it can no longer be paid. Other unpaid
-     * bridges stay `Created` after their `expires_at`, and a late deposit on
-     * another chain may still be accepted at a new price.
+     * The bridge was created, and the provider hasn't registered a payment
+     * yet. A payment over Lightning can take several minutes to register. A
+     * bridge from Cash App becomes `Expired` once it can no longer be paid.
+     * Other unpaid bridges stay `Created` after their `expires_at`, and a
+     * late deposit on another chain may still be accepted at a new price.
      */
     Created = 0,
     /**
@@ -12944,7 +13065,9 @@ export type CpfpInput = InstanceType<(typeof CpfpInput)[keyof Omit<typeof CpfpIn
 export declare enum CrossChainAddressFamily {
     Evm = 0,
     Solana = 1,
-    Tron = 2
+    Tron = 2,
+    Xrp = 3,
+    Zcash = 4
 }
 /**
  * Which side of the transfer the request `amount` sizes: what leaves the
@@ -26363,6 +26486,14 @@ export interface BreezSdkInterface {
         signal: AbortSignal;
     }): Promise<FetchConversionLimitsResponse>;
     /**
+     * Fetches the payments locked to a payment hash from the Spark operators, without reading
+     * the local payment history. Covers Spark HTLC payments and Lightning payments this wallet
+     * sent or received.
+     */
+    fetchHtlcPayments(request: FetchHtlcPaymentsRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<FetchHtlcPaymentsResponse>;
+    /**
      * Fetches the status of this wallet's Lightning payment of a Bolt11 invoice from the Spark
      * operators, without reading the local payment history. A payment made by a direct Spark
      * transfer to the invoice's Spark address is not covered.
@@ -27032,6 +27163,14 @@ export declare class BreezSdk extends UniffiAbstractObject implements BreezSdkIn
     fetchConversionLimits(request: FetchConversionLimitsRequest, asyncOpts_?: {
         signal: AbortSignal;
     }): Promise<FetchConversionLimitsResponse>;
+    /**
+     * Fetches the payments locked to a payment hash from the Spark operators, without reading
+     * the local payment history. Covers Spark HTLC payments and Lightning payments this wallet
+     * sent or received.
+     */
+    fetchHtlcPayments(request: FetchHtlcPaymentsRequest, asyncOpts_?: {
+        signal: AbortSignal;
+    }): Promise<FetchHtlcPaymentsResponse>;
     /**
      * Fetches the status of this wallet's Lightning payment of a Bolt11 invoice from the Spark
      * operators, without reading the local payment history. A payment made by a direct Spark
@@ -30245,6 +30384,13 @@ declare const _default: Readonly<{
             lower(value: Bolt12OfferDetails): UniffiByteArray;
         };
         FfiConverterTypeBreezSdk: FfiConverterObject<BreezSdkInterface>;
+        FfiConverterTypeBridgeAmountSide: {
+            read(from: RustBuffer): BridgeAmountSide;
+            write(value: BridgeAmountSide, into: RustBuffer): void;
+            allocationSize(value: BridgeAmountSide): number;
+            lift(value: UniffiByteArray): BridgeAmountSide;
+            lower(value: BridgeAmountSide): UniffiByteArray;
+        };
         FfiConverterTypeBridgeFromCashAppRequest: {
             read(from: RustBuffer): BridgeFromCashAppRequest;
             write(value: BridgeFromCashAppRequest, into: RustBuffer): void;
@@ -31209,6 +31355,20 @@ declare const _default: Readonly<{
             lift(value: UniffiByteArray): FetchConversionLimitsResponse;
             lower(value: FetchConversionLimitsResponse): UniffiByteArray;
         };
+        FfiConverterTypeFetchHtlcPaymentsRequest: {
+            read(from: RustBuffer): FetchHtlcPaymentsRequest;
+            write(value: FetchHtlcPaymentsRequest, into: RustBuffer): void;
+            allocationSize(value: FetchHtlcPaymentsRequest): number;
+            lift(value: UniffiByteArray): FetchHtlcPaymentsRequest;
+            lower(value: FetchHtlcPaymentsRequest): UniffiByteArray;
+        };
+        FfiConverterTypeFetchHtlcPaymentsResponse: {
+            read(from: RustBuffer): FetchHtlcPaymentsResponse;
+            write(value: FetchHtlcPaymentsResponse, into: RustBuffer): void;
+            allocationSize(value: FetchHtlcPaymentsResponse): number;
+            lift(value: UniffiByteArray): FetchHtlcPaymentsResponse;
+            lower(value: FetchHtlcPaymentsResponse): UniffiByteArray;
+        };
         FfiConverterTypeFetchLightningSendStatusRequest: {
             read(from: RustBuffer): FetchLightningSendStatusRequest;
             write(value: FetchLightningSendStatusRequest, into: RustBuffer): void;
@@ -31328,6 +31488,13 @@ declare const _default: Readonly<{
             allocationSize(value: HashedMessageBytes): number;
             lift(value: UniffiByteArray): HashedMessageBytes;
             lower(value: HashedMessageBytes): UniffiByteArray;
+        };
+        FfiConverterTypeHtlcPayment: {
+            read(from: RustBuffer): HtlcPayment;
+            write(value: HtlcPayment, into: RustBuffer): void;
+            allocationSize(value: HtlcPayment): number;
+            lift(value: UniffiByteArray): HtlcPayment;
+            lower(value: HtlcPayment): UniffiByteArray;
         };
         FfiConverterTypeIdentifierCommitmentPair: {
             read(from: RustBuffer): IdentifierCommitmentPair;
